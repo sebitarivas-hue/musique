@@ -91,6 +91,7 @@ a.chip:hover { border-color: var(--navy); }
 details.seq { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
 details.seq > summary { list-style: none; cursor: pointer; padding: 14px 16px; display: grid; grid-template-columns: 30px 1fr 18px; gap: 10px; align-items: start; }
 details.seq > summary::-webkit-details-marker { display: none; }
+details.seq.sans-ic > summary { grid-template-columns: 1fr 18px !important; }
 .num { font: 500 13px/1.8 var(--f-mono); color: var(--gold-text); }
 .chev { color: var(--muted); font-size: 22px; line-height: 1; text-align: center; transition: transform .15s; }
 details[open] > summary .chev { transform: rotate(90deg); }
@@ -612,6 +613,18 @@ details.plus-echos > summary { cursor: pointer; font-weight: 700; color: var(--n
 .legende-niv { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 10px 0 4px; font-size: .85rem; } .legende-niv span { display: inline-flex; align-items: center; gap: 6px; }
 .legende-niv .pastille { background: var(--pc); width: 14px; height: 14px; border: 0; }
 @media print { .bottom-nav, .crumbs, .levels, .dl, .eval-raz { display: none !important; } .evt button.niv-b { width: 24px; height: 24px; } .card { break-inside: avoid; } }
+.sous-onglets { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 12px; } .sous-onglets a { padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); text-decoration: none; color: var(--navy); font-weight: 600; font-size: .9rem; background: var(--surface); }
+.sous-onglets a[aria-current="page"] { background: var(--navy); color: #fff; border-color: var(--navy); }
+.saisie-choix { display: flex; flex-wrap: wrap; gap: 10px 16px; margin: 8px 0; } .saisie-choix select { display: block; margin-top: 4px; max-width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--line); font: inherit; }
+textarea, input[type=text] { display: block; width: 100%; margin-top: 4px; padding: 8px; border-radius: 8px; border: 1px solid var(--line); font: inherit; background: var(--surface); }
+.saisie-tbl { max-height: 70vh; overflow: auto; } table.saisie { font-size: .85rem; } table.saisie th[scope=row] { position: sticky; left: 0; background: var(--surface); white-space: nowrap; font-weight: 600; z-index: 1; }
+table.saisie thead th { position: sticky; top: 0; background: var(--navy-soft, #eef1f5); z-index: 2; vertical-align: bottom; } table.saisie thead th:first-child { left: 0; z-index: 3; }
+table.saisie thead th span { display: block; font: 400 10.5px/1.25 var(--f-body); color: var(--muted); max-width: 110px; white-space: normal; text-transform: none; }
+.col-b { all: unset; cursor: pointer; display: block; font-weight: 700; } .col-b:focus-visible { outline: 3px solid var(--navy); }
+table.saisie td { text-align: center; padding: 4px; } td.vide { color: var(--muted); }
+.case-s { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 46px; height: 34px; border-radius: 8px; border: 1px dashed var(--line); font-size: .8rem; }
+span.case-s { cursor: default; border: 0; } button.case-s:focus-visible { outline: 3px solid var(--navy); } .case-s[class*="niv"] { border: 0; } .case-s .pastille { width: 14px; height: 14px; background: var(--pc); border: 0; }
+.case-s:not([class*="niv"]) b { color: var(--muted); }
 table.voc td { font-size: .85rem; } table.voc th[scope=row] { white-space: nowrap; }
 .s-texte .grille .tag { font-size: clamp(13px, 1.3vw, 17px); } .s-texte .g-ligne b { font-size: clamp(14px, 1.4vw, 18px); }
 </style>
@@ -1042,7 +1055,7 @@ function filAriane(v) {
   else if (v === "seance-accueil" || v === "proj-accueil") A.push(["#cours", "Mes cours"], ["#seance-accueil", "Séance d'accueil"]);
   else if ((m = v.match(/^pratiquer-(\w+)$/))) A.push(["#pratiquer", "Écouter"], [`#pratiquer-${m[1]}`, m[1]]);
   else if ((m = v.match(/^pratiquer-(\w+)-(\w+)$/))) A.push(["#pratiquer", "Écouter"], [`#pratiquer-${m[1]}`, m[1]], ["#" + v, ({ oeuvres: "Les œuvres", jeux: "Jeux", partitions: "Partitions", sons: "Sonothèque", playlist: "Échos", atelier: "Atelier" })[m[2]]]);
-  else if ((m = v.match(/^eval-(\w+)$/)) && role() === "prof") A.push(["#eval", "Évaluer"], [`#eval-${m[1]}`, m[1]]);
+  else if ((m = v.match(/^(eval|saisie|bilan)-(\w+)$/)) && role() === "prof") A.push(["#eval", "Évaluer"], [`#${m[1]}-${m[2]}`, m[2]]);
   else if ((m = v.match(/^(?:reviser|eval)-(\w+)$/))) A.push(["#reviser", "Réviser"], [`#reviser-${m[1]}`, m[1]]);
   else if ((m = v.match(/^quiz-(\w+)-(\d+)$/))) A.push(["#reviser", "Réviser"], [`#reviser-${m[1]}`, m[1]], [`#quiz-${m[1]}-${m[2]}`, `Quiz, séquence ${m[2]}`]);
   else if (v === "fiches") A.push(["#reviser", "Réviser"], ["#fiches", "Fiches de notions"]);
@@ -1614,7 +1627,7 @@ function brancherJeux() {
 const NIVEAUX_MAITRISE = [["1", "Maîtrise insuffisante", "même aidé, je ne sais pas encore"], ["2", "Maîtrise fragile", "avec de l'aide"], ["3", "Maîtrise satisfaisante", "seul"], ["4", "Très bonne maîtrise", "seul, et je sais l'expliquer"]];
 function vueEval(k) {
   const n = D.niveaux[k], comp = D.competences[n.cycle];
-  let h = head("Évaluer", `Évaluations de ${k}`, "Pour chaque séquence : la consigne, la grille des critères sur quatre niveaux de maîtrise et les résultats attendus.") + levels("eval", k);
+  let h = head("Évaluer", `Évaluations de ${k}`, "Pour chaque séquence : la consigne, la grille des critères sur quatre niveaux de maîtrise et les résultats attendus.") + levels("eval", k) + ongletsEval(k, "eval");
   h += `<div class="dl">${pdf(`Evaluations_${k}.pdf`, "Fiches élèves à imprimer")}<button type="button" class="btn2" onclick="print()">Imprimer cette page</button><a class="btn2" href="#reviser-${k}">Version élève : réviser et quiz</a></div>`;
   h += `<div class="legende-niv" aria-hidden="true">${NIVEAUX_MAITRISE.map(([c, l]) => `<span class="niv${c}"><i class="pastille"></i>${c}. ${l}</span>`).join("")}</div>`;
   h += `<p class="small">Touchez une pastille pour la cocher : utile pour projeter la grille ou la remplir avec un élève. Rien n'est enregistré, ni sur l'appareil ni ailleurs.</p><div class="stack" style="margin-top:12px">`;
@@ -1628,6 +1641,109 @@ function vueEval(k) {
       <div><h3 class="blk-t">Résultats attendus</h3><ul class="plain">${ev.attendus.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div></section>`;
   });
   return h + `</div><p class="small" style="margin-top:14px">${NIVEAUX_MAITRISE.map(([c, l, d]) => `${c} ${l.toLowerCase()} : ${d}`).join(". ")}.</p><p style="margin-top:8px"><button type="button" class="btn2 eval-raz" id="eval-raz">Effacer les pastilles</button></p>`;
+}
+const ongletsEval = (k, ici) => `<nav class="sous-onglets" aria-label="Évaluer">${[["eval", "La grille"], ["saisie", "Saisie par élève"], ["bilan", "Bilan des compétences"]].map(([id, l]) =>
+  `<a href="#${id}-${k}"${id === ici ? ' aria-current="page"' : ""}>${l}</a>`).join("")}</nav>`;
+
+/* ---------- Saisie par élève, à la manière d'un logiciel de vie scolaire ----------
+   Les noms et les niveaux restent dans le navigateur de cet appareil (localStorage) : rien n'est envoyé,
+   rien n'est dans le dépôt. Export en fichier tableur (CSV) et sauvegarde complète (JSON) pour changer d'appareil. */
+const CLE_SAISIE = "saisie-evaluations";
+const lireSaisie = () => { try { const x = JSON.parse(localStorage.getItem(CLE_SAISIE) || "null"); if (x && x.classes) return x; } catch (_) {} return { classes: {} }; };
+let SAISIE_OK = true;
+const ecrireSaisie = s => { try { localStorage.setItem(CLE_SAISIE, JSON.stringify(s)); SAISIE_OK = true; } catch (_) { SAISIE_OK = false; } };
+const CODES_SAISIE = ["", "1", "2", "3", "4", "Abs", "NE"];
+const LIB_CODE = { "": "pas encore évalué", "1": "maîtrise insuffisante", "2": "maîtrise fragile", "3": "maîtrise satisfaisante", "4": "très bonne maîtrise", "Abs": "absent", "NE": "non évalué" };
+function classesDe(k) { const s = lireSaisie(); return Object.entries(s.classes).filter(([, c]) => c.niveau === k).sort((a, b) => a[1].nom.localeCompare(b[1].nom, "fr")); }
+function vueSaisie(k) {
+  const n = D.niveaux[k], comp = D.competences[n.cycle], cls = classesDe(k);
+  let h = head("Évaluer", `Saisie par élève, ${k}`, "Choisissez une classe et une séquence, puis touchez chaque case pour donner un niveau.") + levels("saisie", k) + ongletsEval(k, "saisie");
+  h += `<div class="note">Les noms et les niveaux restent sur cet appareil, dans ce navigateur : rien n'est envoyé sur internet. Pensez à exporter régulièrement la sauvegarde, surtout sur iPhone, où un site qu'on n'ouvre pas pendant plusieurs semaines peut perdre ses données.</div>`;
+  if (!cls.length) return h + formulaireClasse(k, true);
+  let cid = get("saisie-classe-" + k, cls[0][0]); if (!cls.some(([id]) => id === cid)) cid = cls[0][0];
+  const c = cls.find(([id]) => id === cid)[1];
+  let sq = +get("saisie-seq-" + k, "1"); if (!(sq >= 1 && sq <= n.sequences.length)) sq = 1;
+  const crit = n.contenus[sq - 1].eval.criteres;
+  h += `<div class="saisie-choix"><label>Classe <select id="sa-classe">${cls.map(([id, x]) => `<option value="${id}"${id === cid ? " selected" : ""}>${esc(x.nom)} (${x.eleves.length})</option>`).join("")}</select></label>
+    <label>Séquence <select id="sa-seq">${n.sequences.map((s, i) => `<option value="${i + 1}"${i + 1 === sq ? " selected" : ""}>${i + 1}. ${esc(s.titre)}</option>`).join("")}</select></label></div>`;
+  h += `<p class="small">${esc(n.contenus[sq - 1].eval.consigne)} Une case : vide, puis 1, 2, 3, 4, Abs (absent), NE (non évalué). Touchez un critère en tête de colonne pour donner le même niveau à toute la classe.</p>`;
+  h += `<div class="legende-niv" aria-hidden="true">${NIVEAUX_MAITRISE.map(([cc, l]) => `<span class="niv${cc}"><i class="pastille"></i>${cc}. ${l}</span>`).join("")}</div>`;
+  h += `<div class="tbl saisie-tbl"><table class="saisie"><thead><tr><th scope="col">Élève</th>${crit.map(([cr, code], j) => `<th scope="col"><button type="button" class="col-b" data-j="${j}" title="Donner un niveau à toute la classe pour ce critère">${code}<span>${esc(cr)}</span></button></th>`).join("")}</tr></thead><tbody>
+    ${c.eleves.map(e => `<tr><th scope="row">${esc(e.nom)}</th>${crit.map(([cr], j) => { const v = (c.notes || {})[`${sq}-${j}-${e.id}`] || "";
+      return `<td><button type="button" class="case-s${/^\d$/.test(v) ? " niv" + v : ""}" data-e="${e.id}" data-j="${j}" aria-label="${esc(e.nom)}, ${esc(cr)} : ${LIB_CODE[v]}">${v ? `<i class="pastille"></i><b>${v}</b>` : ""}</button></td>`; }).join("")}</tr>`).join("")}</tbody></table></div>`;
+  h += `<p class="small" id="sa-etat" aria-live="polite"></p>`;
+  h += `<div class="dl" style="margin-top:10px"><button type="button" class="btn2" id="sa-csv">Exporter cette séquence (tableur)</button><button type="button" class="btn2" id="sa-csv-tout">Exporter toute la classe (tableur)</button></div>`;
+  h += `<details class="seq sans-ic" style="margin-top:14px"><summary><span class="seqhead"><h3>Gérer les classes et la sauvegarde</h3></span><span class="chev" aria-hidden="true">&#8250;</span></summary><div class="body">
+    <h3 class="blk-t">Ajouter des élèves à ${esc(c.nom)}</h3><textarea id="sa-ajout" rows="4" placeholder="Un nom par ligne"></textarea><p><button type="button" class="btn2" id="sa-ajouter">Ajouter</button></p>
+    <h3 class="blk-t">Retirer un élève</h3><p><select id="sa-retirer-qui">${c.eleves.map(e => `<option value="${e.id}">${esc(e.nom)}</option>`).join("")}</select> <button type="button" class="btn2" id="sa-retirer">Retirer</button></p>
+    ${formulaireClasse(k, false)}
+    <h3 class="blk-t">Sauvegarde</h3><p class="small">Un fichier avec toutes les classes et tous les niveaux, pour garder une copie ou passer sur un autre appareil.</p>
+    <div class="dl"><button type="button" class="btn2" id="sa-sauver">Télécharger la sauvegarde</button><label class="btn2" style="cursor:pointer">Restaurer une sauvegarde<input type="file" id="sa-restaurer" accept=".json,application/json" hidden></label></div>
+    <h3 class="blk-t">Supprimer</h3><p><button type="button" class="btn2" id="sa-suppr">Supprimer la classe ${esc(c.nom)} et ses niveaux</button></p></div></details>`;
+  return h;
+}
+const formulaireClasse = (k, premier) => `<section class="${premier ? "card" : ""}" style="margin-top:12px"><h3 class="blk-t">${premier ? `Créer votre première classe de ${k}` : "Créer une autre classe"}</h3>
+  <label class="small">Nom de la classe <input type="text" id="sa-nom" placeholder="par exemple ${k} A" maxlength="30"></label>
+  <label class="small">Élèves, un nom par ligne (copiés depuis la liste de l'établissement)<textarea id="sa-liste" rows="${premier ? 8 : 4}"></textarea></label>
+  <p><button type="button" class="btn-main" id="sa-creer">Créer la classe</button></p></section>`;
+const idCourt = () => Math.random().toString(36).slice(2, 9);
+const nomsDe = t => t.split(/\n/).map(x => x.replace(/[;\t]+/g, " ").trim()).filter(Boolean);
+const csv = rows => "﻿" + rows.map(r => r.map(x => `"${String(x).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+function telecharger(nom, contenu, type) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([contenu], { type })); a.download = nom; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+function brancherSaisie(k) {
+  const $ = id => document.getElementById(id), n = D.niveaux[k];
+  const etat = t => { const e = $("sa-etat"); if (e) e.textContent = SAISIE_OK ? t : "Attention : ce navigateur refuse d'enregistrer (navigation privée ?). Les niveaux seront perdus en quittant la page."; };
+  const creer = $("sa-creer"); if (creer) creer.onclick = () => {
+    const nom = $("sa-nom").value.trim() || `${k} ${String.fromCharCode(65 + classesDe(k).length)}`, eleves = nomsDe($("sa-liste").value).map(x => ({ id: idCourt(), nom: x }));
+    if (!eleves.length) { $("sa-liste").focus(); return; }
+    const s = lireSaisie(), id = idCourt(); s.classes[id] = { nom, niveau: k, eleves, notes: {} }; ecrireSaisie(s); set("saisie-classe-" + k, id); rendre();
+  };
+  const sel = $("sa-classe"); if (!sel) return;
+  const cid = sel.value, sq = +$("sa-seq").value;
+  sel.onchange = () => { set("saisie-classe-" + k, sel.value); rendre(); };
+  $("sa-seq").onchange = () => { set("saisie-seq-" + k, $("sa-seq").value); rendre(); };
+  const poser = (eid, j, v) => { const s = lireSaisie(), c = s.classes[cid]; c.notes = c.notes || {}; const cle = `${sq}-${j}-${eid}`; if (v) c.notes[cle] = v; else delete c.notes[cle]; ecrireSaisie(s); };
+  const peindre = (b, v) => { b.className = "case-s" + (/^\d$/.test(v) ? " niv" + v : ""); b.innerHTML = v ? `<i class="pastille"></i><b>${v}</b>` : ""; b.setAttribute("aria-label", b.getAttribute("aria-label").replace(/ : .*$/, " : " + LIB_CODE[v])); };
+  document.querySelectorAll(".case-s").forEach(b => b.onclick = () => {
+    const v = CODES_SAISIE[(CODES_SAISIE.indexOf(b.textContent.trim()) + 1) % CODES_SAISIE.length]; poser(b.dataset.e, b.dataset.j, v); peindre(b, v); etat("Enregistré sur cet appareil.");
+  });
+  document.querySelectorAll(".col-b").forEach(b => b.onclick = () => {
+    const v = prompt("Niveau pour toute la classe sur ce critère (1, 2, 3, 4, Abs, NE ; vide pour effacer) :", "3"); if (v === null) return;
+    const x = v.trim().toUpperCase() === "ABS" ? "Abs" : v.trim().toUpperCase(); if (!CODES_SAISIE.includes(x)) return;
+    document.querySelectorAll(`.case-s[data-j="${b.dataset.j}"]`).forEach(c => { poser(c.dataset.e, b.dataset.j, x); peindre(c, x); }); etat("Enregistré sur cet appareil.");
+  });
+  const lignes = (c, seqs) => { const rows = [["Classe", "Élève", "Séquence", "Critère", "Compétence", "Niveau"]];
+    seqs.forEach(i => n.contenus[i - 1].eval.criteres.forEach(([cr, code], j) => c.eleves.forEach(e => rows.push([c.nom, e.nom, `${i}. ${n.sequences[i - 1].titre}`, cr, code, (c.notes || {})[`${i}-${j}-${e.id}`] || ""])))); return rows; };
+  $("sa-csv").onclick = () => { const c = lireSaisie().classes[cid]; telecharger(`evaluations_${c.nom}_sequence${sq}.csv`.replace(/\s+/g, "-"), csv(lignes(c, [sq])), "text/csv"); };
+  $("sa-csv-tout").onclick = () => { const c = lireSaisie().classes[cid]; telecharger(`evaluations_${c.nom}.csv`.replace(/\s+/g, "-"), csv(lignes(c, n.sequences.map((_, i) => i + 1))), "text/csv"); };
+  $("sa-ajouter").onclick = () => { const s = lireSaisie(); s.classes[cid].eleves.push(...nomsDe($("sa-ajout").value).map(x => ({ id: idCourt(), nom: x }))); ecrireSaisie(s); rendre(); };
+  $("sa-retirer").onclick = () => { const s = lireSaisie(), c = s.classes[cid], e = c.eleves.find(x => x.id === $("sa-retirer-qui").value); if (!e || !confirm(`Retirer ${e.nom} et ses niveaux ?`)) return;
+    c.eleves = c.eleves.filter(x => x.id !== e.id); Object.keys(c.notes || {}).forEach(key => { if (key.endsWith("-" + e.id)) delete c.notes[key]; }); ecrireSaisie(s); rendre(); };
+  $("sa-suppr").onclick = () => { const s = lireSaisie(); if (!confirm(`Supprimer la classe ${s.classes[cid].nom} et tous ses niveaux ? Exportez d'abord si besoin.`)) return; delete s.classes[cid]; ecrireSaisie(s); rendre(); };
+  $("sa-sauver").onclick = () => telecharger(`sauvegarde_evaluations_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(lireSaisie(), null, 1), "application/json");
+  $("sa-restaurer").onchange = e => { const f = e.target.files[0]; if (!f) return; f.text().then(t => { const x = JSON.parse(t); if (!x || !x.classes) throw 0;
+    if (!confirm("Remplacer toutes les classes de cet appareil par celles de la sauvegarde ?")) return; ecrireSaisie(x); rendre(); }).catch(() => alert("Ce fichier n'est pas une sauvegarde des évaluations.")); };
+}
+/* Bilan : pour chaque élève, le niveau moyen par compétence sur les séquences déjà évaluées (Abs et NE ne comptent pas). */
+function vueBilan(k) {
+  const n = D.niveaux[k], comp = D.competences[n.cycle], cls = classesDe(k), codes = Object.keys(comp);
+  let h = head("Évaluer", `Bilan des compétences, ${k}`, "Pour chaque élève, le niveau moyen par compétence, calculé sur toutes les séquences déjà évaluées.") + levels("bilan", k) + ongletsEval(k, "bilan");
+  if (!cls.length) return h + `<p>Aucune classe de ${k} sur cet appareil. <a href="#saisie-${k}">Créer une classe</a>.</p>`;
+  let cid = get("saisie-classe-" + k, cls[0][0]); if (!cls.some(([id]) => id === cid)) cid = cls[0][0];
+  const c = cls.find(([id]) => id === cid)[1];
+  const moy = e => codes.map(code => { const v = []; n.contenus.forEach((ct, i) => ct.eval.criteres.forEach(([, cc], j) => { const x = (c.notes || {})[`${i + 1}-${j}-${e.id}`]; if (cc === code && /^\d$/.test(x || "")) v.push(+x); }));
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; });
+  h += `<div class="saisie-choix"><label>Classe <select id="sa-classe">${cls.map(([id, x]) => `<option value="${id}"${id === cid ? " selected" : ""}>${esc(x.nom)}</option>`).join("")}</select></label></div>`;
+  h += `<div class="tbl saisie-tbl"><table class="saisie"><thead><tr><th scope="col">Élève</th>${codes.map(code => `<th scope="col" title="${esc(comp[code])}">${code}<span>${esc(comp[code])}</span></th>`).join("")}</tr></thead><tbody>
+    ${c.eleves.map(e => `<tr><th scope="row">${esc(e.nom)}</th>${moy(e).map(m => m === null ? `<td class="vide">–</td>` : `<td><span class="case-s niv${Math.min(4, Math.max(1, Math.round(m)))}"><i class="pastille"></i><b>${m.toFixed(1).replace(".", ",")}</b></span></td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  h += `<p class="small">La couleur suit le niveau arrondi. Les cases sans évaluation restent vides.</p><div class="dl"><button type="button" class="btn2" id="bi-csv">Exporter le bilan (tableur)</button></div>`;
+  return h;
+}
+function brancherBilan(k) {
+  const sel = document.getElementById("sa-classe"); if (!sel) return;
+  sel.onchange = () => { set("saisie-classe-" + k, sel.value); rendre(); };
+  document.getElementById("bi-csv").onclick = () => { const rows = [...document.querySelectorAll("table.saisie tr")].map(tr => [...tr.children].map(td => td.querySelector("b") ? td.querySelector("b").textContent : td.childNodes[0] ? td.childNodes[0].textContent : ""));
+    telecharger(`bilan_${sel.selectedOptions[0].textContent}.csv`.replace(/\s+/g, "-"), csv(rows), "text/csv"); };
 }
 function brancherEval() {
   document.querySelectorAll(".evt .niv-b").forEach(b => b.onclick = () => {
@@ -2153,6 +2269,8 @@ function rendre() {
   if (["cours", "eval", "pratiquer", "reviser"].includes(v)) v = v + "-" + defaut;
   let m;
   if ((m = v.match(/^pratiquer-(\w+)-(oeuvres|jeux|partitions|sons|playlist|atelier)$/)) && D.niveaux[m[1]]) { set("niv", m[1]); app.innerHTML = vuePratiquer(m[1], m[2]); tab = "pratiquer"; }
+  else if ((m = v.match(/^(saisie|bilan)-(\w+)$/)) && D.niveaux[m[2]] && role() === "prof") { set("niv", m[2]); tab = "eval";
+    if (m[1] === "saisie") { app.innerHTML = vueSaisie(m[2]); brancherSaisie(m[2]); } else { app.innerHTML = vueBilan(m[2]); brancherBilan(m[2]); } }
   else if ((m = v.match(/^cours-(\w+)-(\d+)$/)) && D.niveaux[m[1]] && D.niveaux[m[1]].sequences[+m[2] - 1]) { set("niv", m[1]); app.innerHTML = vueCours(m[1], +m[2]); tab = "cours"; }
   else if ((m = v.match(/^(cours|eval|pratiquer|reviser)-(\w+)$/)) && D.niveaux[m[2]]) {
     set("niv", m[2]);
