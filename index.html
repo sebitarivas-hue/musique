@@ -51,6 +51,7 @@ main { max-width: 700px; margin: 0 auto; }
 header.top { padding-block: 20px 4px; display: flex; flex-direction: column; gap: 6px; }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--muted); font: 500 12px/1.3 var(--f-mono); letter-spacing: .07em; text-transform: uppercase; }
 .brand svg { flex: none; }
+.brand .lvlbadge { text-transform: none; letter-spacing: 0; }
 h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; color: var(--navy); }
 h1 { font-weight: 700; font-size: 2.2rem; line-height: 1.05; }
 h2 { font-weight: 700; font-size: 1.55rem; line-height: 1.15; }
@@ -150,6 +151,17 @@ details.seq > summary { grid-template-columns: 44px 1fr 18px; }
 .tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: inherit; min-width: 0; }
 .tile .ico { width: 38px; height: 38px; border-radius: 10px; background: var(--navy); color: #fff; }
 .tile h3 { font-size: 1.1rem; }
+.weeknav, .pager { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+.wbtn { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--navy); color: var(--on-navy); text-decoration: none; font-size: 26px; line-height: 1; flex: none; }
+.wbtn[aria-disabled="true"] { opacity: .3; pointer-events: none; }
+.wlabel { text-align: center; display: flex; flex-direction: column; } .wlabel b { font: 700 1.3rem/1.2 var(--f-display); color: var(--navy); }
+.strip { display: flex; gap: 6px; overflow-x: auto; padding-block: 10px 4px; scrollbar-width: none; }
+.strip::-webkit-scrollbar { display: none; }
+.strip a { flex: none; font: 500 12.5px/1 var(--f-mono); padding: 8px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); text-decoration: none; }
+.strip a.today { border-color: var(--gold); color: var(--ink); }
+.strip a.on { background: var(--navy); color: var(--on-navy); border-color: var(--navy); }
+.btn2 { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--navy); color: var(--navy); text-decoration: none; font-size: .93rem; }
+.seance h4 a { text-decoration: none; color: inherit; } .seance h4 a::after { content: " \203A"; color: var(--gold); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -202,25 +214,63 @@ function frise() {
     <span class="tl-mark" style="left:calc(${pct}% - 1px)" title="aujourd'hui"></span></div><div class="tl-leg"><span>2 novembre</span><span>3 juillet</span></div></div>`;
 }
 
-function vueSemaine() {
-  const avant = today < parse("2026-11-02");
-  let h = `<section class="hero"><div class="hero-in"><div class="id">${D.logo}<div><b>Éducation musicale</b><span>${esc(D.etablissement)}</span></div></div>
-    <h1>${avant ? `Première séance <span class="gold">lundi 2 novembre</span>` : `Cette <span class="gold">semaine</span>`}</h1>
-    <p>${avant ? "La séance d'accueil, la même pour tous les niveaux. Le plan de l'année est distribué aux élèves." : "Ce qui est prévu dans chaque niveau."}</p></div></section>`;
-  h += frise() + `<div class="staff"></div><div class="stack">`;
-  for (const k of NIV) {
-    const n = D.niveaux[k];
-    const e = avant ? n.calendrier[0] : (semaineEnCours(n.calendrier) || n.calendrier.find(x => parse(x.date) > today));
-    let detail = "";
-    if (e && e.type === "seance") detail = n.contenus[e.seq - 1].seances[e.num - 1].etapes.map(([m, t]) => `${m} min, ${t}`).slice(0, 2).join(" ");
-    if (e && e.type === "accueil") detail = D.accueil.deroule[0];
-    h += `<a class="card${avant ? "" : " now"}" href="#cours-${k}"><div class="lvlcard"><div class="lvlbadge" style="background:${D.couleurs[k]}">${k}</div><div class="stack" style="gap:4px">
-      <div class="meta">${e ? "semaine du " + esc(e.semaine) : ""}</div><h3>${esc(libelle(n, e))}</h3>${detail ? `<p class="small">${esc(detail)}</p>` : ""}</div></div></a>`;
+const WEEKS = D.niveaux[NIV[0]].calendrier.map(e => ({ semaine: e.semaine, date: e.date }));
+function indexDuJour() {
+  if (today < parse(WEEKS[0].date)) return 0;
+  for (let i = WEEKS.length - 1; i >= 0; i--) if (today >= parse(WEEKS[i].date)) return i;
+  return 0;
+}
+const seanceId = (k, e) => `seance-${k}-${e.seq}-${e.num}`;
+
+function vueSemaine(idx) {
+  const courant = indexDuJour();
+  if (idx === undefined || isNaN(idx)) idx = courant;
+  idx = Math.max(0, Math.min(WEEKS.length - 1, idx));
+  const w = WEEKS[idx], avant = today < parse(WEEKS[0].date), estCourant = idx === courant && !avant;
+  let h = "";
+  if (idx === courant) {
+    h += `<section class="hero"><div class="hero-in"><div class="id">${D.logo}<div><b>Éducation musicale</b><span>${esc(D.etablissement)}</span></div></div>
+      <h1>${avant ? `Première séance <span class="gold">lundi 2 novembre</span>` : `Cette <span class="gold">semaine</span>`}</h1>
+      <p>${avant ? "La séance d'accueil, la même pour tous les niveaux. Le plan de l'année est distribué aux élèves." : "Ce qui est prévu dans chaque niveau."}</p></div></section>` + frise();
+  } else {
+    h += head("Agenda de l'année", `Semaine du ${w.semaine}`, idx < courant ? "Semaine passée." : "Semaine à venir.");
   }
-  h += `</div><div class="staff"></div><div class="tiles">
+  h += `<div class="weeknav"><a class="wbtn" href="#semaine-${Math.max(0, idx - 1)}" aria-label="Semaine précédente"${idx === 0 ? ' aria-disabled="true"' : ""}>&#8249;</a>
+    <div class="wlabel"><span class="meta">Semaine ${idx + 1} sur ${WEEKS.length}</span><b>du ${esc(w.semaine)}</b></div>
+    <a class="wbtn" href="#semaine-${Math.min(WEEKS.length - 1, idx + 1)}" aria-label="Semaine suivante"${idx === WEEKS.length - 1 ? ' aria-disabled="true"' : ""}>&#8250;</a></div>
+    <div class="strip" id="strip">${WEEKS.map((x, i) => `<a href="#semaine-${i}" class="${i === idx ? "on" : ""}${i === courant ? " today" : ""}">${x.semaine}</a>`).join("")}</div>`;
+  if (idx !== courant) h += `<p class="small" style="margin-top:8px"><a href="#semaine">Revenir à cette semaine</a></p>`;
+  h += `<div class="stack" style="margin-top:14px">`;
+  for (const k of NIV) {
+    const n = D.niveaux[k], e = n.calendrier[idx];
+    let detail = "", lien = `#cours-${k}`;
+    if (e.type === "seance") { detail = n.contenus[e.seq - 1].seances[e.num - 1].etapes.map(([m, t]) => `${m} min, ${t}`).slice(0, 2).join(" "); lien = "#" + seanceId(k, e); }
+    if (e.type === "accueil") detail = D.accueil.deroule[0];
+    h += `<a class="card${estCourant ? " now" : ""}" href="${lien}"><div class="lvlcard"><div class="lvlbadge" style="background:${D.couleurs[k]}">${k}</div><div class="stack" style="gap:4px">
+      <h3>${esc(libelle(n, e))}</h3>${detail ? `<p class="small">${esc(detail)}</p>` : ""}${e.type === "seance" ? `<span class="small" style="color:var(--gold)">Voir la séance &#8250;</span>` : ""}</div></div></a>`;
+  }
+  h += `</div>`;
+  if (idx === courant) h += `<div class="staff"></div><div class="tiles">
     <a class="tile" href="#fiches"><span class="ico">${D.ficheIcons.figures}</span><h3>Fiches de notions</h3><span class="small">Nuances, figures, instruments, voix…</span></a>
-    <a class="tile" href="#eval"><span class="ico">${D.ficheIcons.ecoute}</span><h3>Évaluations</h3><span class="small">Grilles et résultats attendus</span></a></div>
-    <div class="staff"></div><p class="small">Séance type de 55 minutes : échauffement 5 min, écoute 15 min, chant 20 min, trace écrite 10 min, rangement 5 min.</p>`;
+    <a class="tile" href="#eval"><span class="ico">${D.ficheIcons.ecoute}</span><h3>Évaluations</h3><span class="small">Grilles et résultats attendus</span></a></div>`;
+  return h;
+}
+
+function listeSeances(k) { return D.niveaux[k].calendrier.filter(e => e.type === "seance"); }
+function vueSeance(k, seq, num) {
+  const n = D.niveaux[k], s = n.sequences[seq - 1], c = n.contenus[seq - 1], se = c.seances[num - 1];
+  const liste = listeSeances(k), pos = liste.findIndex(e => e.seq === seq && e.num === num), e = liste[pos];
+  const prev = liste[pos - 1], next = liste[pos + 1];
+  const widx = WEEKS.findIndex(w => w.date === e.date);
+  let h = `<header class="top"><div class="brand"><span class="lvlbadge" style="background:${D.couleurs[k]};width:30px;height:30px;font-size:1rem;border-radius:8px">${k}</span><span>Séquence ${seq}, ${esc(s.titre)}</span></div>
+    <h1>Séance ${num}</h1><p class="lead">${esc(se.objectif)}</p><p class="meta">Semaine du ${esc(e.semaine)}, séance ${pos + 1} sur ${liste.length} de l'année</p></header>`;
+  h += `<div class="pager"><a class="wbtn" href="${prev ? "#" + seanceId(k, prev) : "#cours-" + k}" aria-label="Séance précédente">&#8249;</a>
+    <a class="small" href="#semaine-${widx}">Toute la semaine</a><a class="wbtn" href="${next ? "#" + seanceId(k, next) : "#cours-" + k}" aria-label="Séance suivante">&#8250;</a></div>`;
+  h += `<div class="stack" style="margin-top:14px"><div class="card"><div class="label">Déroulé, 55 minutes</div><ul class="steps">${se.etapes.map(([m, t]) => `<li><span class="min">${m} min</span><span>${esc(t)}</span></li>`).join("")}</ul></div>
+    <div class="card"><div class="label">Chant</div><p>${esc(s.chant)}</p><div class="label" style="margin-top:6px">Œuvres de la séquence</div><ul class="plain">${s.oeuvres.map(o => `<li>${esc(o)}</li>`).join("")}</ul></div>
+    <div class="card"><div class="label">Trace écrite de la séquence</div><div class="trace">${c.trace.map(t => `<p>${esc(t)}</p>`).join("")}</div></div>
+    <div class="card"><div class="label">Fiches utiles</div><div class="chips">${c.fiches.map(f => `<a class="chip" href="#fiche-${f}">${esc(D.fiches[f].titre)}</a>`).join("")}</div></div></div>`;
+  h += `<div class="pager" style="margin-top:16px">${prev ? `<a class="btn2" href="#${seanceId(k, prev)}">&#8249; Séance précédente</a>` : "<span></span>"}${next ? `<a class="btn2" href="#${seanceId(k, next)}">Séance suivante &#8250;</a>` : "<span></span>"}</div>`;
   return h;
 }
 
@@ -255,7 +305,7 @@ function vueCours(k) {
       <div><div class="label">Œuvres de référence</div><ul class="plain">${s.oeuvres.map(o => `<li>${esc(o)}</li>`).join("")}</ul></div>
       <div class="stack" style="gap:8px"><div class="label">Séances</div>${c.seances.map((se, j) => {
         const now = cur && cur.seq === i + 1 && cur.num === j + 1;
-        return `<div class="seance${now ? " now" : ""}"><div class="meta">Séance ${j + 1}, semaine du ${esc(dates[(i + 1) + "-" + (j + 1)] || "")}${now ? ", cette semaine" : ""}</div><h4>${esc(se.objectif)}</h4>
+        return `<div class="seance${now ? " now" : ""}"><div class="meta">Séance ${j + 1}, semaine du ${esc(dates[(i + 1) + "-" + (j + 1)] || "")}${now ? ", cette semaine" : ""}</div><h4><a href="#seance-${k}-${i + 1}-${j + 1}">${esc(se.objectif)}</a></h4>
           <ul class="steps">${se.etapes.map(([m, t]) => `<li><span class="min">${m} min</span><span>${esc(t)}</span></li>`).join("")}</ul></div>`; }).join("")}</div>
       <div><div class="label">Trace écrite</div><div class="trace">${c.trace.map(t => `<p>${esc(t)}</p>`).join("")}</div></div>
       <div><div class="label">Travail à la maison</div><p>${esc(c.devoirs)}</p></div>
@@ -313,10 +363,14 @@ function rendre() {
   else if (v.startsWith("fiche-") && D.fiches[v.slice(6)]) { app.innerHTML = vueFiche(v.slice(6)); tab = "fiches"; }
   else if (v === "plus") { app.innerHTML = vuePlus(); tab = "plus"; }
   else if (D.pages[v]) { app.innerHTML = vuePage(v); tab = "plus"; }
+  else if (/^seance-\w+-\d+-\d+$/.test(v) && D.niveaux[v.split("-")[1]]) { const [, k, a, b] = v.split("-"); app.innerHTML = vueSeance(k, +a, +b); tab = "cours"; }
+  else if (/^semaine-\d+$/.test(v)) app.innerHTML = vueSemaine(+v.split("-")[1]);
   else app.innerHTML = vueSemaine();
   document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.t === tab ? "page" : "false"));
   ["prof", "eleves"].forEach(x => { const b = document.getElementById("m-" + x); if (b) b.onclick = () => { set("mode", x); rendre(); }; });
   window.scrollTo(0, 0);
+  const st = document.getElementById("strip"), on = st && st.querySelector(".on");
+  if (on) st.scrollLeft = on.offsetLeft - st.clientWidth / 2 + on.clientWidth / 2;
 }
 window.addEventListener("hashchange", rendre);
 rendre();
