@@ -851,6 +851,23 @@ html.signal .proj :is(button, a).p-nav, html.signal .proj .p-next { border-radiu
 /* Grands titres : un mot très long (dodécaphonisme) se coupe avec un trait d'union plutôt que de déborder de l'écran. */
 html.signal :is(h1, h2, h3, h4, .h3, .choix-titre, .hs-titre, .ns-t b, .labo-tuile b) { overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; }
 
+/* Deux navigations : barre en bas sur téléphone et tablette, colonne de menu à gauche sur ordinateur et vidéoprojecteur. */
+@media (min-width: 1100px) {
+  html { scroll-padding-bottom: 16px; }
+  body { padding-left: calc(232px + max(24px, env(safe-area-inset-left, 0px))); padding-right: 32px; padding-bottom: 56px; }
+  nav.tabs { top: 0; bottom: 0; right: auto; width: 232px; border-top: 0; border-right: 1px solid var(--line); box-shadow: none; padding: 22px 0 calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; overflow-y: auto; }
+  nav.tabs::before { content: "Éducation musicale"; display: block; padding: 0 22px 18px; font: 700 1.05rem/1.15 var(--f-display); color: var(--ink); }
+  nav.tabs ul { height: auto; max-width: none; margin: 0; display: flex; flex-direction: column; gap: 2px; grid-template-columns: none; }
+  nav.tabs a { flex-direction: row; justify-content: flex-start; gap: 14px; height: auto; min-height: 50px; padding: 10px 22px; font-size: 15px !important; letter-spacing: 0; white-space: normal; }
+  nav.tabs a svg { width: 24px; height: 24px; flex: none; }
+  #toasts { bottom: 24px; left: calc(50% + 116px); }
+  .barre { margin-left: calc(-1 * max(24px, env(safe-area-inset-left, 0px))); margin-right: -32px; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: 32px; }
+  html.signal nav.tabs { border-right: 0; }
+  html.signal nav.tabs::before { content: "Éducation musicale."; font: 700 1.25rem/1 var(--f-titre); text-transform: uppercase; color: var(--acide); padding-bottom: 22px; }
+  html.signal nav.tabs a { color: #D3D2CA; }
+  html.signal nav.tabs a[aria-current="page"] { color: var(--noir); }
+}
+
 </style>
 </head>
 <body>
