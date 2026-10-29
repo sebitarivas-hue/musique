@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <style>html,body{margin:0}*,*::before,*::after{box-sizing:border-box}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Éducation musicale Rivas</title>
+<title>Éducation musicale, Sebastian Rivas</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
@@ -188,6 +188,7 @@ details.seq > summary { grid-template-columns: 44px 1fr 18px; }
 .p-dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
 .p-dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25); }
 .p-dots span.on { background: #e0bd73; }
+.sig { max-width: 700px; margin: 28px auto 0; padding-top: 14px; border-top: 1px solid var(--line); font: 400 12px/1.5 var(--f-mono); color: var(--muted); text-align: center; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -195,6 +196,7 @@ details.seq > summary { grid-template-columns: 44px 1fr 18px; }
 
 
 <main id="app"></main>
+<footer class="sig">Cours d'éducation musicale conçu et rédigé par Sebastian Rivas. © 2026 Sebastian Rivas, tous droits réservés.</footer>
 <nav class="tabs" aria-label="Sections"><ul>
   <li><a href="#semaine" data-t="semaine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Semaine</a></li>
   <li><a href="#cours" data-t="cours"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>Cours</a></li>
@@ -214,7 +216,7 @@ const NIV = Object.keys(D.niveaux);
 const get = (k, d) => { try { return localStorage.getItem(k) || d; } catch (_) { return d; } };
 const set = (k, v) => { try { localStorage.setItem(k, v); } catch (_) {} };
 const EMBLEME = `<svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><g stroke="var(--line)" stroke-width="1"><path d="M0 4h30M0 8h30M0 12h30M0 16h30M0 20h30"/></g><path d="M15 19 C6 13 7 6 11 6 c2 0 3.2 1.4 4 2.8 C15.8 7.4 17 6 19 6 c4 0 5 7 -4 13z" fill="var(--gold)"/></svg>`;
-const head = (eyebrow, titre, lead) => `<header class="top"><div class="brand">${EMBLEME}<span>${esc(eyebrow)}</span></div><h1>${esc(titre)}</h1>${lead ? `<p class="lead">${esc(lead)}</p>` : ""}</header>`;
+const head = (eyebrow, titre, lead) => `<header class="top"><div class="brand">${EMBLEME}<span>Sebastian Rivas, éducation musicale</span></div><div class="label">${esc(eyebrow)}</div><h1>${esc(titre)}</h1>${lead ? `<p class="lead">${esc(lead)}</p>` : ""}</header>`;
 const pdf = (nom, libelle) => `<a class="btn" href="pdf/${nom}" target="_blank" rel="noopener">${esc(libelle)}</a>`;
 const gh = chemin => `<a class="alt" href="${D.depot}${chemin}" target="_blank" rel="noopener">ou sur GitHub</a>`;
 const levels = (base, k) => `<nav class="levels" aria-label="Niveau">${NIV.map(n => `<a href="#${base}-${n}" aria-current="${n === k}">${n}</a>`).join("")}</nav>`;
@@ -255,7 +257,7 @@ function vueSemaine(idx) {
   const w = WEEKS[idx], avant = today < parse(WEEKS[0].date), estCourant = idx === courant && !avant;
   let h = "";
   if (idx === courant) {
-    h += `<section class="hero"><div class="hero-in"><div class="id">${D.logo}<div><b>Éducation musicale</b><span>${esc(D.etablissement)}</span></div></div>
+    h += `<section class="hero"><div class="hero-in"><div class="id">${D.logo}<div><b>Éducation musicale, Sebastian Rivas</b><span>${esc(D.etablissement)}</span></div></div>
       <h1>${avant ? `Première séance <span class="gold">lundi 2 novembre</span>` : `Cette <span class="gold">semaine</span>`}</h1>
       <p>${avant ? "La séance d'accueil, la même pour tous les niveaux. Le plan de l'année est distribué aux élèves." : "Ce qui est prévu dans chaque niveau."}</p></div></section>` + frise();
   } else {
@@ -416,7 +418,7 @@ function dessinerProj() {
   let el = document.getElementById("proj");
   if (!el) { el = document.createElement("div"); el.id = "proj"; el.className = "proj"; document.body.appendChild(el); }
   const { vues, i, titre } = PROJ;
-  el.innerHTML = `<div class="p-top"><span class="p-t">${esc(titre)}</span><span class="p-n">${i + 1} / ${vues.length}</span>
+  el.innerHTML = `<div class="p-top"><span class="p-t">Sebastian Rivas, ${esc(titre)}</span><span class="p-n">${i + 1} / ${vues.length}</span>
       <button id="p-fs" aria-label="Plein écran">&#9974;</button><button id="p-x" aria-label="Fermer">&#10005;</button></div>
     <div class="p-stage">${vueVue(vues[i], i, vues.length)}</div>
     <div class="p-bar"><button id="p-prev" aria-label="Vue précédente"${i === 0 ? " disabled" : ""}>&#8249;</button>
