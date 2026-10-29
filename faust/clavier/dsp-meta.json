@@ -1,0 +1,196 @@
+{
+    "name": "clavier",
+    "filename": "clavier",
+    "version": "2.90.19",
+    "compile_options": "-lang wasm-i -fpga-mem-th 4 -ct 1 -es 1 -mcd 16 -mdd 1024 -mdy 33 -single -ftz 2",
+    "library_list": [
+        "/faust/user/inc0/commun.lib",
+        "/usr/share/faust/stdfaust.lib",
+        "/usr/share/faust/oscillators.lib",
+        "/usr/share/faust/signals.lib",
+        "/usr/share/faust/basics.lib",
+        "/usr/share/faust/maths.lib",
+        "/usr/share/faust/platform.lib",
+        "/usr/share/faust/envelopes.lib",
+        "/usr/share/faust/filters.lib"
+    ],
+    "include_pathnames": [
+        "/faust/user/inc0",
+        "/share/faust",
+        "/share/faust",
+        "/usr/local/share/faust",
+        "/usr/share/faust",
+        "."
+    ],
+    "size": 262388,
+    "inputs": 0,
+    "outputs": 1,
+    "meta": [
+        {
+            "basics.lib/name": "Faust Basic Element Library"
+        },
+        {
+            "basics.lib/version": "1.23.6"
+        },
+        {
+            "compile_options": "-lang wasm-i -fpga-mem-th 4 -ct 1 -es 1 -mcd 16 -mdd 1024 -mdy 33 -single -ftz 2"
+        },
+        {
+            "description": "Piano électrique en synthèse FM : l-attaque est riche, puis le son s-adoucit."
+        },
+        {
+            "envelopes.lib/adsr:author": "Yann Orlarey and Andrey Bundin"
+        },
+        {
+            "envelopes.lib/author": "GRAME"
+        },
+        {
+            "envelopes.lib/copyright": "GRAME"
+        },
+        {
+            "envelopes.lib/license": "LicenseRef-LGPL-2.1-or-later-with-Faust-exception"
+        },
+        {
+            "envelopes.lib/name": "Faust Envelope Library"
+        },
+        {
+            "envelopes.lib/version": "1.3.3"
+        },
+        {
+            "filename": "clavier"
+        },
+        {
+            "filters.lib/dcblocker:author": "Julius O. Smith III"
+        },
+        {
+            "filters.lib/dcblocker:copyright": "Copyright (C) 2003-2019 by Julius O. Smith III <jos@ccrma.stanford.edu>"
+        },
+        {
+            "filters.lib/dcblocker:license": "LicenseRef-STK-4.3"
+        },
+        {
+            "filters.lib/name": "Faust Filters Library"
+        },
+        {
+            "filters.lib/pole:author": "Julius O. Smith III"
+        },
+        {
+            "filters.lib/pole:copyright": "Copyright (C) 2003-2019 by Julius O. Smith III <jos@ccrma.stanford.edu>"
+        },
+        {
+            "filters.lib/pole:license": "LicenseRef-STK-4.3"
+        },
+        {
+            "filters.lib/version": "1.13.4"
+        },
+        {
+            "filters.lib/zero:author": "Julius O. Smith III"
+        },
+        {
+            "filters.lib/zero:copyright": "Copyright (C) 2003-2019 by Julius O. Smith III <jos@ccrma.stanford.edu>"
+        },
+        {
+            "filters.lib/zero:license": "LicenseRef-STK-4.3"
+        },
+        {
+            "maths.lib/author": "GRAME"
+        },
+        {
+            "maths.lib/copyright": "GRAME"
+        },
+        {
+            "maths.lib/license": "LicenseRef-LGPL-2.1-or-later-with-Faust-exception"
+        },
+        {
+            "maths.lib/name": "Faust Math Library"
+        },
+        {
+            "maths.lib/version": "2.9.3"
+        },
+        {
+            "name": "clavier"
+        },
+        {
+            "oscillators.lib/name": "Faust Oscillator Library"
+        },
+        {
+            "oscillators.lib/version": "1.9.5"
+        },
+        {
+            "platform.lib/name": "Generic Platform Library"
+        },
+        {
+            "platform.lib/version": "1.3.1"
+        },
+        {
+            "signals.lib/name": "Faust Routing Library"
+        },
+        {
+            "signals.lib/version": "1.8.0"
+        }
+    ],
+    "ui": [
+        {
+            "type": "vgroup",
+            "label": "clavier",
+            "items": [
+                {
+                    "type": "hslider",
+                    "label": "freq",
+                    "varname": "fHslider1",
+                    "shortname": "freq",
+                    "address": "/clavier/freq",
+                    "index": 262168,
+                    "init": 440,
+                    "min": 20,
+                    "max": 12000,
+                    "step": 0.01
+                },
+                {
+                    "type": "hslider",
+                    "label": "gain",
+                    "varname": "fHslider0",
+                    "shortname": "gain",
+                    "address": "/clavier/gain",
+                    "index": 262152,
+                    "init": 0.3,
+                    "min": 0,
+                    "max": 1,
+                    "step": 0.0001
+                },
+                {
+                    "type": "button",
+                    "label": "gate",
+                    "varname": "fButton0",
+                    "shortname": "gate",
+                    "address": "/clavier/gate",
+                    "index": 262244
+                },
+                {
+                    "type": "hslider",
+                    "label": "glide",
+                    "varname": "fHslider2",
+                    "shortname": "glide",
+                    "address": "/clavier/glide",
+                    "index": 262172,
+                    "init": 0,
+                    "min": 0,
+                    "max": 20,
+                    "step": 0.001
+                },
+                {
+                    "type": "hslider",
+                    "label": "vib",
+                    "varname": "fHslider3",
+                    "shortname": "vib",
+                    "address": "/clavier/vib",
+                    "index": 262184,
+                    "init": 0,
+                    "min": 0,
+                    "max": 0.05,
+                    "step": 0.0001
+                }
+            ]
+        }
+    ]
+}
