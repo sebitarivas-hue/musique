@@ -564,6 +564,24 @@ nav.tabs a[aria-current="page"] { color: var(--navy); } nav.tabs a[aria-current=
 .etapes-carte a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px; border-radius: 14px; background: var(--bg); border: 2px solid var(--c); color: var(--ink); text-decoration: none; font: 700 .8rem var(--f-body); }
 .etapes-carte .et-n { background: var(--c); color: #fff; border-color: var(--c); }
 details.autres-semaines { margin-top: 12px; } details.autres-semaines > summary { cursor: pointer; font-weight: 700; color: var(--navy); padding: 8px 0; }
+.mission { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; padding: 16px 18px; border-radius: 18px; background: #2f6f7a; color: #fff; text-decoration: none; box-shadow: 0 6px 16px rgba(30,45,80,.18); }
+.mission .label { color: rgba(255,255,255,.9); } .mission b { font: 700 1.25rem/1.2 var(--f-display); } .mission .small { color: rgba(255,255,255,.9); }
+.mission-go { align-self: flex-start; margin-top: 4px; padding: 8px 14px; border-radius: 999px; background: #fff; color: #1f4f57; font-weight: 700; }
+.badges { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.badge { opacity: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 10px; color: var(--ink); text-decoration: none; box-shadow: var(--ombre); }
+a.badge:hover, a.badge:focus-visible { border-color: var(--navy); }
+.badge:not(.on) .medaille { border-style: dashed; } .badge.on { border: 2px solid #a9802f; }
+.b-bar { display: block; width: 80%; height: 6px; border-radius: 3px; background: var(--navy-soft); overflow: hidden; } .b-bar span { display: block; height: 100%; background: var(--navy); }
+.b-pr { font-size: .75rem; color: var(--muted); }
+.b-go { margin-top: 2px; padding: 6px 12px; border-radius: 999px; background: var(--navy); color: var(--on-navy); font-weight: 700; font-size: .85rem; }
+.b-ok { padding: 4px 10px; border-radius: 999px; background: #fff3df; color: #8a4f00; font-weight: 700; font-size: .8rem; }
+.quetes li > a, .quetes li > div { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 12px 0; color: var(--ink); text-decoration: none; }
+.quetes .qx { padding: 4px 10px; border-radius: 999px; background: var(--navy-soft); color: var(--navy); font-family: var(--f-body); font-weight: 700; }
+h2.sec[id], .tool[id], .labo-code, #quetes { scroll-margin-top: 80px; }
+.cible-vue { outline: 4px solid #d98a1c; outline-offset: 6px; border-radius: 12px; transition: outline-color .4s; }
+.guide-l { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.guide-l li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; } .guide-l .et-n { background: var(--navy); color: var(--on-navy); border-color: var(--navy); }
+.guide-l b { font: 700 1rem var(--f-body); }
 </style>
 </head>
 <body>
@@ -722,7 +740,7 @@ function vueSemaine(idx) {
     const AGES = { "6e": ["Aux origines", "De la flûte d'os à Ut queant laxis"], "5e": ["Moyen Âge et Renaissance", "De Notre-Dame à Monteverdi"],
                    "4e": ["De Versailles au phonographe", "De Lully à Edison"], "3e": ["Modernité et présent", "Du Sacre à la K-pop"] };
     h += `<section class="accueil"><div class="choix-haut">${HEXA}<ul class="choix-liens"><li><a href="#accueil">Changer d'espace</a></li><li><span>${role() === "prof" ? "Espace enseignant" : "Espace élève"}</span></li><li><span>${esc(D.annee)}</span></li></ul></div>
-      <div class="label">${esc(D.etablissement)}</div><h1 class="choix-titre">${role() === "prof" ? "Bonjour ! Voici vos classes." : "Bonjour ! Prêt pour la musique ?"}</h1>${puceHtml()}</section>`;
+      <div class="label">${esc(D.etablissement)}</div><h1 class="choix-titre">${role() === "prof" ? "Bonjour ! Voici vos classes." : "Bonjour ! Prêt pour la musique ?"}</h1>${puceHtml()}${maClasse() ? carteMission() : ""}</section>`;
     if (role() !== "prof") { h += choixClasse(k);
     if (!k) h += `<p class="small" style="margin-top:6px">Choisis ta classe : le site affichera ta séance, ton travail et ta prochaine évaluation.</p>`; }
     h += `<h2 class="sec">${avant ? `Première séance, <span class="gt">lundi 2 novembre</span>` : "Cette semaine"}</h2>`;
@@ -928,7 +946,7 @@ function filAriane(v) {
   if ((m = v.match(/^cours-(\w+)(?:-(\d+))?$/))) { A.push(["#cours", "Mes cours"], [`#cours-${m[1]}`, m[1]]); if (m[2]) A.push([`#cours-${m[1]}-${m[2]}`, `Séquence ${m[2]}`]); }
   else if ((m = v.match(/^(?:seance|proj)-(\w+)-(\d+)-(\d+)$/))) A.push(["#cours", "Mes cours"], [`#cours-${m[1]}`, m[1]], [`#cours-${m[1]}-${m[2]}`, `Séquence ${m[2]}, ${titreSeq(m[1], +m[2])}`], [`#seance-${m[1]}-${m[2]}-${m[3]}`, `Séance ${m[3]}`]);
   else if (v === "seance-accueil" || v === "proj-accueil") A.push(["#cours", "Mes cours"], ["#seance-accueil", "Séance d'accueil"]);
-  else if ((m = v.match(/^pratiquer-(\w+)$/))) A.push(["#pratiquer", "Pratiquer"], [`#pratiquer-${m[1]}`, m[1]]);
+  else if ((m = v.match(/^pratiquer-(\w+)$/))) A.push(["#pratiquer", "Écouter"], [`#pratiquer-${m[1]}`, m[1]]);
   else if ((m = v.match(/^(?:reviser|eval)-(\w+)$/))) A.push(["#reviser", "Réviser"], [`#reviser-${m[1]}`, m[1]]);
   else if ((m = v.match(/^quiz-(\w+)-(\d+)$/))) A.push(["#reviser", "Réviser"], [`#reviser-${m[1]}`, m[1]], [`#quiz-${m[1]}-${m[2]}`, `Quiz, séquence ${m[2]}`]);
   else if (v === "fiches") A.push(["#reviser", "Réviser"], ["#fiches", "Fiches de notions"]);
@@ -1882,23 +1900,70 @@ function quetes() {
 function verifierSemaine() {
   const q = quetes(); if (q.length && q.every(x => x[2])) gagner("semaine:" + q[0][4], 50, "semaines");
 }
+
+/* Où aller pour gagner chaque badge, et où en est l'élève */
+function cibleBadge(id) {
+  const k = maClasse() || get("niv", "6e"), e = D.niveaux[k].calendrier[indexDuJour()], sq = e && e.type === "seance" ? e.seq : 1;
+  const P = a => ["#pratiquer-" + k, a];
+  return ({ "premier-son": P("j-sonotheque"), sonotheque: P("j-sonotheque"), collection: P("j-sonotheque"), lecteur: P("j-partitions"), "lecteur-expert": P("j-partitions"),
+    explorateur: ["#cours-" + k], voyageur: ["#cours-" + k], quiz: [`#quiz-${k}-${sq}`], "quiz-parfait": [`#quiz-${k}-${sq}`], "quiz-maitre": ["#reviser-" + k],
+    oreille: P("j-oreille"), "oreille-or": P("j-oreille"), pianiste: P("j-clavier"), orchestre: P("j-instr"), historien: P("j-frise"), rythmicien: ["#faust-rythmes"],
+    globe: P("j-playlist"), monde: P("j-playlist"), faust: ["#faust"], "faust-tous": ["#faust"], programmeur: ["#faust-son-pur", "labo-code"], fiches: ["#fiches"],
+    semaine: ["#parcours", "quetes"] })[id] || null;
+}
+function progresBadge(id, j) {
+  const c = j.c, np = Object.keys(j.pays).length;
+  return ({ "premier-son": [c.sons, 1], sonotheque: [c.sons, 20], collection: [c.sons, Object.keys(D.sons).length], lecteur: [c.parts, 3], "lecteur-expert": [c.parts, Object.keys(D.partitions).length],
+    explorateur: [c.seances, 10], voyageur: [c.seances, 40], quiz: [c.quiz, 1], "quiz-parfait": [c.parfaits, 1], "quiz-maitre": [c.parfaits, 5], oreille: [c.oreille, 10], "oreille-or": [c.oreille10, 1],
+    pianiste: [c.clavier, 5], orchestre: [c.instr, 15], historien: [c.frise, 1], rythmicien: [c.rythme, 1], globe: [np, 5], monde: [np, 15], faust: [c.faust, 3], "faust-tous": [c.faust, D.ateliers.length],
+    programmeur: [c.code, 1], fiches: [c.fiches, 5], serie3: [j.serie, 3], serie7: [j.serie, 7], semaine: [c.semaines, 1] })[id] || [0, 1];
+}
+const lienCible = (cible, contenu, cls) => cible ? `<a class="${cls}" href="${cible[0]}"${cible[1] ? ` data-ancre="${cible[1]}"` : ""}>${contenu}</a>` : `<div class="${cls}">${contenu}</div>`;
+/* Les missions : les badges pas encore gagnés, du plus facile au plus long */
+const ORDRE_MISSIONS = ["premier-son", "quiz", "oreille", "lecteur", "explorateur", "faust", "historien", "orchestre", "pianiste", "rythmicien", "globe", "quiz-parfait", "programmeur", "fiches", "sonotheque", "oreille-or", "faust-tous", "quiz-maitre", "monde", "voyageur", "lecteur-expert", "collection"];
+function missions(n) {
+  const j = jeu();
+  return ORDRE_MISSIONS.filter(id => !j.badges[id]).slice(0, n || 4).map(id => { const b = BADGES.find(x => x[0] === id); return { id, nom: b[1], cond: b[2], g: b[3], cible: cibleBadge(id), pr: progresBadge(id, j) }; });
+}
+function carteMission() {
+  if (!jeuActif()) return "";
+  const q = quetes().find(x => !x[2]);
+  if (q) return `<a class="mission" href="${q[3]}"><span class="label">Ta prochaine mission</span><b>${esc(q[0])}</b><span class="mission-go">C'est parti, +${q[1]} XP &#8250;</span></a>`;
+  const m = missions(1)[0]; if (!m) return "";
+  return lienCible(m.cible, `<span class="label">Ta prochaine mission</span><b>${esc(m.cond)}</b><span class="small">Pour gagner le badge « ${esc(m.nom)} »${m.pr[1] > 1 ? `, tu en es à ${Math.min(m.pr[0], m.pr[1])} sur ${m.pr[1]}` : ""}.</span><span class="mission-go">C'est parti &#8250;</span>`, "mission");
+}
+
+function guide() {
+  const el = document.createElement("div"); el.className = "fete guide"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", "Comment ça marche");
+  el.innerHTML = `<div class="fete-carte"><div class="label">Comment ça marche</div><b>Ton cours est un jeu</b>
+    <ol class="guide-l"><li><span class="et-n">1</span><span><b>Choisis ta classe</b> sur la page Ma semaine.</span></li>
+    <li><span class="et-n">2</span><span><b>Touche « Ta prochaine mission »</b> : le site t'emmène au bon endroit.</span></li>
+    <li><span class="et-n">3</span><span><b>Écoute, joue, réponds aux quiz</b> : tu gagnes des XP, des niveaux et des badges.</span></li></ol>
+    <p class="small">Tout ce qui ressemble à un bouton se touche. Ta progression est dans l'onglet Parcours.</p><button type="button" class="btn-main">C'est parti</button></div>`;
+  document.body.appendChild(el); const b = el.querySelector("button"); b.onclick = () => el.remove(); b.focus();
+}
 function vueParcours() {
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], q = quetes();
   let h = head("Mon parcours", `Niveau ${n + 1} : ${NIVEAUX_JEU[n][1]}`, NIVEAUX_JEU[n][2]);
   h += `<section class="niveau-carte"><div class="nc-n">${n + 1}</div><div class="nc-t"><div class="label">${j.xp} XP${NIVEAUX_JEU[n + 1] ? `, encore ${haut - j.xp} pour le niveau ${n + 2} (${esc(NIVEAUX_JEU[n + 1][1])})` : ", niveau maximum"}</div>
     <div class="nc-b"><span style="width:${Math.min(100, (j.xp - bas) / (haut - bas) * 100)}%"></span></div><div class="nc-s"><span>${medaille("flamme", j.serie > 0, "#c2410c")} ${j.serie} jour${j.serie > 1 ? "s" : ""} d'affilée</span><span>${medaille("coupe", true)} ${Object.keys(j.badges).length} badge${Object.keys(j.badges).length > 1 ? "s" : ""} sur ${BADGES.length}</span></div></div></section>`;
-  h += `<h2 class="sec">Quêtes de la semaine</h2>`;
+  h += carteMission();
+  h += `<h2 class="sec" id="quetes" tabindex="-1">Quêtes de la semaine</h2>`;
   if (!maClasse()) h += `<p class="small">Choisis ta classe sur la page <a href="#semaine">Ma semaine</a> pour recevoir tes quêtes.</p>`;
-  else if (!q.length) h += `<p class="small">Pas de quête cette semaine : profite-en pour gagner des badges dans Écouter et Réviser.</p>`;
+  else if (!q.length) h += `<p class="small">Pas de séance cette semaine. Voici tes missions de départ : touche une mission pour y aller.</p><ol class="quetes">${missions(4).map(m => `<li>${lienCible(m.cible, `<span class="qc" aria-hidden="true"></span><span>${esc(m.cond)}</span><span class="qx">Vas-y &#8250;</span>`, "")}</li>`).join("")}</ol>`;
   else h += `<ol class="quetes">${q.map(([t, xp, fait, lien]) => `<li class="${fait ? "fait" : ""}"><a href="${lien}"><span class="qc" aria-hidden="true">${fait ? "&#10003;" : ""}</span><span>${esc(t)}</span><span class="qx">${fait ? "fait" : `+${xp} XP`}</span></a></li>`).join("")}</ol><p class="small">Toutes les quêtes terminées : +50 XP et le badge Semaine parfaite.</p>`;
-  h += `<h2 class="sec">Badges</h2><div class="badges">${BADGES.map(([id, nom, cond, g]) => `<div class="badge${j.badges[id] ? " on" : ""}">${medaille(g, !!j.badges[id])}<b>${esc(nom)}</b><span class="small">${esc(cond)}</span></div>`).join("")}</div>`;
+  h += `<h2 class="sec">Badges</h2><p class="small">Touche un badge pour savoir comment le gagner et y aller directement.</p><div class="badges">${BADGES.map(([id, nom, cond, g]) => { const on = !!j.badges[id], [a, b] = progresBadge(id, j), cible = cibleBadge(id);
+      return lienCible(on ? null : cible, `${medaille(g, on)}<b>${esc(nom)}</b><span class="small">${esc(cond)}</span>${on ? `<span class="b-ok">Gagné</span>` : `${b > 1 ? `<span class="b-bar"><span style="width:${Math.min(100, a / b * 100)}%"></span></span><span class="b-pr">${Math.min(a, b)} sur ${b}</span>` : ""}<span class="b-go">${cible ? "Vas-y &#8250;" : "Reviens demain"}</span>`}`, "badge" + (on ? " on" : "")); }).join("")}</div>`;
   h += `<h2 class="sec">Les niveaux</h2><ol class="niveaux-l">${NIVEAUX_JEU.map(([x, nom, d], i) => `<li class="${i <= n ? "atteint" : ""}"><span class="lvlbadge" style="background:${i <= n ? "#0b0b0b" : "transparent"};color:${i <= n ? "#fff" : "var(--muted)"};border:1.5px solid ${i <= n ? "#0b0b0b" : "var(--line)"}">${i + 1}</span><span><b>${esc(nom)}</b><span class="small">${x} XP. ${esc(d)}</span></span></li>`).join("")}</ol>`;
   h += `<h2 class="sec">Comment gagner des XP</h2><ul class="plain"><li>Ouvrir une séance : 10 XP. Écouter une œuvre ou un écho : 5 XP.</li><li>Un exemple sonore : 5 XP. Suivre une partition jusqu'au bout : 15 XP.</li><li>Une bonne réponse au quiz : 10 XP, et 30 XP de bonus pour un quiz sans faute.</li><li>Les jeux : chaque réussite compte. Un atelier Faust : 10 XP. Une fiche : 5 XP.</li><li>Venir chaque jour : 5 XP, et la série de jours augmente.</li></ul>`;
+  h += `<p style="margin-top:14px"><button type="button" class="btn2" onclick="guide()">Revoir « Comment ça marche »</button></p>`;
   h += `<p class="small" style="margin-top:14px">Ton parcours reste sur cet appareil : rien n'est envoyé, personne d'autre ne le voit. <button type="button" class="lien-btn" id="raz-jeu">Tout recommencer à zéro</button></p>`;
   h += `<p style="margin-top:14px"><a class="btn2" href="#plus">Plus de ressources</a></p>`;
   return h;
 }
 /* Écouter un lien YouTube ou un écho rapporte des points */
+document.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a[data-ancre]"); if (!a) return;
+  try { sessionStorage.setItem("ancre", a.dataset.ancre); } catch (_) {} if (a.getAttribute("href") === location.hash) { e.preventDefault(); rendre(); } });
 document.addEventListener("click", e => {
   const a = e.target.closest && e.target.closest('a[href*="youtube.com/results"]'); if (!a || !jeuActif()) return;
   const q = decodeURIComponent((a.href.split("search_query=")[1] || "")), m = location.hash.match(/^#seance-(\w+)-(\d+)-(\d+)$/);
@@ -1951,6 +2016,9 @@ function rendre() {
   document.querySelectorAll(".pick-b").forEach(b => b.onclick = () => { set("classe", b.dataset.classe); set("niv", b.dataset.classe); rendre(); });
   const oth = document.getElementById("others"); if (oth) oth.addEventListener("toggle", () => set("tout", oth.open ? "1" : ""));
   journee(); majPuce();
+  if (jeuActif() && !get("guide-vu", "")) { set("guide-vu", "1"); setTimeout(guide, 300); }
+  { const anc = sessionStorage.getItem("ancre"); if (anc) { sessionStorage.removeItem("ancre"); setTimeout(() => { const el = document.getElementById(anc) || app.querySelector("." + anc);
+      if (el) { if (el.tagName === "DETAILS") el.open = true; el.scrollIntoView({ block: "start" }); const f = el.matches("h2,h3,section") ? el : el.querySelector("h2,h3,summary"); if (f) { f.tabIndex = -1; f.focus({ preventScroll: true }); } el.classList.add("cible-vue"); setTimeout(() => el.classList.remove("cible-vue"), 2200); } }, 60); } }
   app.querySelectorAll("[data-aller-etape]").forEach(a => a.addEventListener("click", () => set("etape:" + a.dataset.seance, a.dataset.allerEtape)));
   app.querySelectorAll("[data-etape]").forEach(b => b.onclick = () => { const id = b.dataset.etape; set("etape:" + location.hash.replace("#seance-", ""), id);
     app.querySelectorAll(".etapes [role=tab]").forEach(t => t.setAttribute("aria-selected", t.dataset.etape === id));
