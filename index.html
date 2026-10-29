@@ -291,6 +291,7 @@ ol.frise li { display: list-item; } ol.frise li > * { vertical-align: middle; }
 .sonbtn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 14px 8px 8px; border-radius: 999px; border: 1px solid var(--navy); background: var(--surface); color: var(--navy); font: 500 .93rem var(--f-body); cursor: pointer; text-align: left; }
 .sonbtn .sp { width: 28px; height: 28px; border-radius: 50%; background: var(--navy); flex: none; position: relative; }
 .sonbtn .sp::after { content: ""; position: absolute; left: 11px; top: 8px; border-style: solid; border-width: 6px 0 6px 9px; border-color: transparent transparent transparent var(--on-navy); }
+.sonbtn[aria-busy="true"] { opacity: .6; }
 .sonbtn[aria-pressed="true"] { background: var(--navy); color: var(--on-navy); }
 .sonbtn[aria-pressed="true"] .sp { background: var(--gold); }
 .sonbtn[aria-pressed="true"] .sp::after { left: 9px; top: 9px; border: 0; width: 10px; height: 10px; background: var(--on-navy); }
@@ -309,7 +310,7 @@ h2.sec[tabindex] { scroll-margin-top: 12px; }
 
 
 <main id="app"></main>
-<footer class="sig">Cours d'éducation musicale conçu et rédigé par Sebastian Rivas. © 2026 Sebastian Rivas, tous droits réservés.<br><a class="faust" href="https://faust.grame.fr" target="_blank" rel="noopener">Powered by Faust</a><br>Instruments de synthèse écrits en Faust, langage du GRAME, Centre national de création musicale (<a href="faust/LICENCE.txt">licence de la bibliothèque faustwasm</a>).</footer>
+<footer class="sig">Cours d'éducation musicale conçu et rédigé par Sebastian Rivas. © 2026 Sebastian Rivas, tous droits réservés.<br><a class="faust" href="https://faust.grame.fr" target="_blank" rel="noopener">Powered by Faust</a><br>Sons de synthèse calculés avec Faust, langage du GRAME, Centre national de création musicale.</footer>
 <nav class="tabs" aria-label="Rubriques"><ul>
   <li><a href="#semaine" data-t="semaine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Semaine</a></li>
   <li><a href="#cours" data-t="cours"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1z"/><path d="M12 6v14"/></svg>Mes cours</a></li>
@@ -569,107 +570,107 @@ function deverrouiller() {
     v.setUint32(24, 22050, true); v.setUint32(28, 44100, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, n * 2, true);
     const a = new Audio(URL.createObjectURL(new Blob([b], { type: "audio/wav" }))); a.setAttribute("playsinline", ""); a.loop = true; a.volume = 0.01; a.play().catch(() => {}); } catch (_) {}
 }
-/* ---------- Instruments Faust (GRAME) compilés en WebAssembly ----------
-   Sept instruments (outils/faust/*.dsp). Chaque note est confiée à une voix libre,
-   réglée à l'échantillon près. Si le navigateur ne sait pas les jouer, la synthèse simple prend le relais. */
-const FAUST = { ok: false, chargement: null, inst: {} };
-const INSTR_FAUST = { clavier: [16, 1.1, .45], souffle: [8, 1, .3], anche: [8, 2.2, .2], cordes: [16, 2, .4], voix: [10, .45, .35], cloche: [12, 1, 2.5], percu: [16, 1, .05] };
-function chargerFaust() {
-  if (FAUST.chargement) return FAUST.chargement;
-  const ac = audio();
-  if (!ac || !window.AudioWorkletNode || !window.WebAssembly) return (FAUST.chargement = Promise.resolve(false));
-  FAUST.chargement = (async () => {
-    try {
-      const fw = await import("./faust/faustwasm.js");
-      await Promise.all(Object.keys(INSTR_FAUST).map(async n => {
-        const json = await (await fetch(`faust/${n}/dsp-meta.json`)).text();
-        const module = await WebAssembly.compile(await (await fetch(`faust/${n}/dsp-module.wasm`)).arrayBuffer());
-        const chemins = {}; (function parcourir(items) { items.forEach(it => { if (it.items) parcourir(it.items); else if (it.address) chemins[it.address.split("/").pop()] = it.address; }); })(JSON.parse(json).ui);
-        FAUST.inst[n] = { fw, factory: { module, json, soundfiles: {} }, chemins, voix: [], max: INSTR_FAUST[n][0], niveau: INSTR_FAUST[n][1], relache: INSTR_FAUST[n][2] };
-      }));
-      await Promise.all(Object.keys(FAUST.inst).map(n => Promise.all([nouvelleVoix(n), nouvelleVoix(n)].map(v => v.pret))));
-      FAUST.ok = true; return true;
-    } catch (e) { console.warn("Faust indisponible, synthèse simple utilisée.", e); FAUST.inst = {}; return false; }
-  })();
-  return FAUST.chargement;
+/* ---------- Instruments calculés par Faust (GRAME) ----------
+   Les sons ont été calculés à l'avance par des programmes Faust (outils/faust/rendre.mjs) et rangés en
+   échantillons MP3 : ils se jouent partout, iPhone compris. Le navigateur les transpose, les tient en boucle,
+   les spatialise et ajoute une réverbération. Sans eux, la synthèse simple prend le relais. */
+const BANQUE = { cat: null, catalogue: null, tampons: {}, charges: {} };
+const NIVEAU = { souffle: 1, anche: 1.7, cordes: 1.6, clavier: 1, voix: 1.3, cloche: 1, percu: 1 };
+const RELACHE = { souffle: .25, anche: .2, cordes: .45, clavier: .5, voix: .35, cloche: 1.2, percu: .02 };
+const FORME_INSTR = { sine: "souffle", triangle: "clavier", square: "anche", sawtooth: "cordes", voix: "voix", cloche: "cloche" };
+let ENREG = null, FIN_SONS = 0;
+function catalogue() {
+  if (!BANQUE.catalogue) BANQUE.catalogue = fetch("faust/banque/catalogue.json").then(r => r.ok ? r.json() : []).then(c => (BANQUE.cat = c)).catch(() => (BANQUE.cat = []));
+  return BANQUE.catalogue;
 }
-function nouvelleVoix(n) {
-  const I = FAUST.inst[n], v = { n, occupe: [], node: null, attente: [] };
-  I.voix.push(v);
-  v.pret = new I.fw.FaustMonoDspGenerator().createNode(AC, n, I.factory).then(node => {
-    if (v.morte) { try { node.destroy && node.destroy(); } catch (_) {} return; }
-    v.node = node; v.pan = AC.createStereoPanner ? AC.createStereoPanner() : AC.createGain();
-    node.connect(v.pan).connect(MASTER); v.attente.forEach(f => f()); v.attente = [];
-  }).catch(() => { v.morte = true; });
-  return v;
+function chargerInstruments(noms) {
+  const ac = audio(); if (!ac) return Promise.resolve();
+  return catalogue().then(cat => Promise.all([...noms].map(n => {
+    if (!BANQUE.charges[n]) BANQUE.charges[n] = Promise.all(cat.filter(e => e.i === n).map(e => fetch(`faust/banque/${e.id}.mp3`).then(r => r.arrayBuffer())
+      .then(b => new Promise((ok, ko) => { const p = ac.decodeAudioData(b, ok, ko); if (p && p.catch) p.catch(ko); }))
+      .then(buf => { const d = buf.getChannelData(0); let m = 0; for (let i = 0; i < d.length; i++) m = Math.max(m, Math.abs(d[i]));
+        let o = 0; while (o < d.length && Math.abs(d[o]) < m * .003) o++; BANQUE.tampons[e.id] = { e, buf, off: o / buf.sampleRate }; })
+      .catch(() => {}))).then(() => true);
+    return BANQUE.charges[n];
+  })));
 }
-function voixLibre(n, t0, t1) {
-  const I = FAUST.inst[n], maint = AC.currentTime;
-  let meilleure = null;
-  for (const v of I.voix) {
-    if (v.morte) continue;
-    v.occupe = v.occupe.filter(([, b]) => b > maint);
-    if (!v.occupe.some(([a, b]) => a < t1 && b > t0)) { meilleure = v; break; }
+const pret = n => BANQUE.cat && BANQUE.cat.some(e => e.i === n && BANQUE.tampons[e.id]);
+function choisir(n, freq, opt) {
+  let c = BANQUE.cat.filter(e => e.i === n && BANQUE.tampons[e.id]);
+  if (n === "percu") return c.find(e => e.p === opt.p);
+  if (n === "voix") {
+    const t = opt.type === undefined ? 0 : opt.type, v = opt.voyelle || 0;
+    const a = c.filter(e => e.t === t && e.v === v), b = c.filter(e => e.t === t), d = c.filter(e => e.v === v);
+    c = a.length ? a : b.length ? b : d.length ? d : c;
   }
-  if (!meilleure && I.voix.filter(v => !v.morte).length < I.max) meilleure = nouvelleVoix(n);
-  if (!meilleure) meilleure = I.voix.filter(v => !v.morte).sort((a, b) => Math.max(...a.occupe.map(x => x[1])) - Math.max(...b.occupe.map(x => x[1])))[0];
-  meilleure.occupe.push([t0, t1]); FIN_SONS = Math.max(FIN_SONS, t1);
-  return meilleure;
+  let best = null, dist = 1e9;
+  c.forEach(e => { const x = Math.abs(Math.log2(freq / e.f)); if (x < dist) { dist = x; best = e; } });
+  return best;
 }
-/* Une note Faust. reglages : paramètres propres à l'instrument (dist, voyelle, type, dec). */
-function noteFaust(n, freq, duree, vol, debut, opt, reglages) {
-  const I = FAUST.inst[n]; if (!I) return false;
-  const t = AC.currentTime + (debut || 0) + .005, fin = t + duree, v = voixLibre(n, t, fin + I.relache);
-  const prog = () => {
-    const s = (k, x, at) => { if (I.chemins[k]) v.node.setParamValue(I.chemins[k], x, at); };
-    s("gate", 0, t - .004); s("glide", 0, t - .004); s("freq", freq, t - .004); s("vib", opt.vibrato ? .012 : 0, t - .004);
-    s("gain", Math.min(1, vol * I.niveau), t - .004);
-    Object.entries(reglages || {}).forEach(([k, x]) => s(k, x, t - .004));
-    if (opt.vers) { s("glide", duree, t + .002); s("freq", opt.vers, t + .003); }
-    (opt.voyelles || []).forEach(([d, x]) => s("voyelle", x, t + d));
-    s("gate", 1, t); s("gate", 0, fin);
-    if (v.pan.pan) v.pan.pan.setValueAtTime(opt.pan || 0, Math.max(AC.currentTime, t - .004));
-  };
-  if (v.node) prog(); else v.attente.push(prog);
+/* Une note jouée par un échantillon. Renvoie false si l'instrument n'est pas encore chargé. */
+function lecture(n, freq, duree, vol, debut, opt) {
+  if (ENREG) { ENREG.add(n); return true; }
+  if (!pret(n)) { chargerInstruments([n]); return false; }
+  const ent = choisir(n, freq, opt); if (!ent) return false;
+  const T = BANQUE.tampons[ent.id], ac = AC, t = ac.currentTime + (debut || 0) + .01;
+  if (opt.voyelles && n === "voix") return chaineVoyelles(freq, duree, vol, debut, opt);
+  const src = suivre(ac.createBufferSource()); src.buffer = T.buf;
+  let base = ent.f || 1500, taux = n === "percu" ? (opt.p >= 4 ? Math.max(.3, Math.min(4, freq / 1500)) : 1) : freq / base;
+  src.playbackRate.setValueAtTime(taux, t);
+  if (opt.vers && ent.f) src.playbackRate.linearRampToValueAtTime(opt.vers / base, t + duree);
+  if (opt.vibrato) { const l = suivre(ac.createOscillator()), lg = ac.createGain(); l.frequency.value = 5.5; lg.gain.value = taux * .012; l.connect(lg).connect(src.playbackRate); l.start(t); l.stop(t + duree + 1); }
+  const rel = RELACHE[n], g = ac.createGain(), niv = Math.min(1.5, vol * NIVEAU[n] * 1.15);
+  if (ent.a && duree + .3 > ent.b) { src.loop = true; src.loopStart = T.off + ent.a; src.loopEnd = T.off + ent.b; }
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(niv, t + (opt.attaque > .1 ? opt.attaque : .004));
+  const fin = n === "percu" ? t + T.buf.duration / taux : t + duree;
+  if (n !== "percu") { g.gain.setValueAtTime(niv, fin); g.gain.setTargetAtTime(0, fin, rel / 4); }
+  let sortie = g;
+  if (opt.distorsion) { const ws = ac.createWaveShaper(), c = new Float32Array(1024); for (let i = 0; i < 1024; i++) c[i] = Math.tanh((i / 512 - 1) * 8) * .8; ws.curve = c; g.connect(ws); sortie = ws; }
+  if (opt.pan !== undefined && ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = opt.pan; sortie.connect(p); sortie = p; }
+  src.connect(g); sortie.connect(MASTER);
+  src.start(t, T.off); const arret = (n === "percu" ? fin : fin + rel * 1.5) + .05; src.stop(arret);
+  FIN_SONS = Math.max(FIN_SONS, arret);
   return true;
 }
-const FORME_FAUST = { sine: "souffle", triangle: "clavier", square: "anche", sawtooth: "cordes", voix: "voix", cloche: "cloche" };
-function jouerFaust(freq, duree, vol, forme, debut, opt) {
-  if (!FAUST.ok || opt.pur) return false;
-  let n = FORME_FAUST[forme] || "clavier";
-  if (forme === "sine" && opt.sec) n = "cloche";
-  const r = {};
-  if (n === "cordes" && opt.distorsion) r.dist = .8; else if (n === "cordes") r.dist = 0;
-  if (n === "voix") { r.voyelle = opt.voyelle || 0; r.type = opt.type === undefined ? 0 : opt.type; }
-  return noteFaust(n, freq, Math.max(.05, duree), vol, debut, opt, r);
-}
-/* Percussions : 0 grosse caisse, 1 caisse claire, 2 charleston, 3 mains, 4 bois, 5 bruit filtré */
-const percuFaust = (type, d, dur, vol, freq, pan) => FAUST.ok && noteFaust("percu", freq || 1000, dur, vol, d, { pan }, { type, dec: dur });
-/* Arrêter : les voix qui ont des notes programmées sont remplacées, les autres restent prêtes. */
-function arreterFaust() {
-  if (!FAUST.ok) return;
-  const maint = AC.currentTime;
-  Object.keys(FAUST.inst).forEach(n => {
-    const I = FAUST.inst[n];
-    I.voix.forEach(v => { if (!v.morte && v.occupe.some(([, b]) => b > maint)) { v.morte = true; if (v.node) { try { v.node.disconnect(); v.node.destroy && v.node.destroy(); } catch (_) {} } } });
-    I.voix = I.voix.filter(v => !v.morte);
-    while (I.voix.length < 2) nouvelleVoix(n);
+/* Chant diphonique : la même note de basse, des voyelles qui s'enchaînent en fondu. */
+function chaineVoyelles(freq, duree, vol, debut, opt) {
+  const segs = [[0, opt.voyelle || 0], ...opt.voyelles], x = .35;
+  segs.forEach(([d, v], i) => {
+    const fin = i + 1 < segs.length ? segs[i + 1][0] : duree;
+    lecture("voix", freq, fin - d + x, vol, (debut || 0) + Math.max(0, d - (i ? x : 0)), { type: opt.type, voyelle: v, attaque: i ? x : .1 });
   });
+  return true;
 }
-let FIN_SONS = 0;
+function jouerEchantillon(freq, duree, vol, forme, debut, opt) {
+  if (opt.pur) return false;
+  let n = FORME_INSTR[forme] || "clavier";
+  if (forme === "sine" && opt.sec) n = "cloche";
+  return lecture(n, freq, Math.max(.05, duree), vol, debut, opt);
+}
+/* Percussions : 0 grosse caisse, 1 caisse claire, 2 charleston, 3 mains, 4 bois, 5 souffle filtré */
+const percuEch = (p, d, vol, freq, pan) => lecture("percu", freq || 1500, .3, vol, d, { p, pan });
+/* Réverbération : une réponse impulsionnelle fabriquée (bruit qui s'éteint et s'assombrit). */
+function reverb(ac) {
+  const sec = 2.2, n = Math.round(ac.sampleRate * sec), ir = ac.createBuffer(2, n, ac.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); let y = 0;
+    for (let i = 0; i < n; i++) { const t = i / n, k = .55 + .4 * t; y = y * k + (Math.random() * 2 - 1) * (1 - k); d[i] = y * Math.pow(1 - t, 2.6) * 3; } }
+  const cv = ac.createConvolver(); cv.buffer = ir; return cv;
+}
 /* Le contexte audio se met en veille après un silence, pour la batterie du téléphone. */
 setInterval(() => { if (AC && AC.state === "running" && !METRO && AC.currentTime > FIN_SONS + 4) AC.suspend().catch(() => {}); }, 3000);
 function audio() {
   if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; AC = new C();
-    const comp = AC.createDynamicsCompressor(); MASTER = AC.createGain(); MASTER.gain.value = 0.9; MASTER.connect(comp).connect(AC.destination); }
+    const comp = AC.createDynamicsCompressor(); MASTER = AC.createGain(); MASTER.gain.value = 0.9; MASTER.connect(comp).connect(AC.destination);
+    try { const rv = reverb(AC), mouille = AC.createGain(); mouille.gain.value = .16; MASTER.connect(rv).connect(mouille).connect(comp); } catch (_) {} }
   if (AC.state === "suspended") AC.resume(); return AC;
 }
 const suivre = n => { NOEUDS.push(n); if (NOEUDS.length > 600) NOEUDS = NOEUDS.slice(-300); return n; };
-function toutArreter() { arreterFaust(); NOEUDS.forEach(n => { try { n.stop(); } catch (_) {} }); NOEUDS = []; if (SON_EN_COURS) { clearTimeout(SON_EN_COURS.t); SON_EN_COURS.b.setAttribute("aria-pressed", "false"); SON_EN_COURS = null; } }
+function toutArreter() { NOEUDS.forEach(n => { try { n.stop(); } catch (_) {} }); NOEUDS = []; if (SON_EN_COURS) { clearTimeout(SON_EN_COURS.t); SON_EN_COURS.b.setAttribute("aria-pressed", "false"); SON_EN_COURS = null; } }
 /* jouer(fréquence, durée, volume, forme, départ, options) : une note avec une enveloppe douce. */
 function jouer(freq, duree, vol, forme, debut, opt) {
   const ac = audio(); if (!ac) return; opt = opt || {};
-  if (jouerFaust(freq, duree, vol, forme, debut, opt)) return;
+  if (jouerEchantillon(freq, duree, vol, forme, debut, opt)) return;
+  if (ENREG) return;
   if (forme === "voix") forme = "triangle"; if (forme === "cloche") { forme = "sine"; opt.sec = true; }
   FIN_SONS = Math.max(FIN_SONS, ac.currentTime + (debut || 0) + duree);
   const t = ac.currentTime + (debut || 0), o = suivre(ac.createOscillator()), g = ac.createGain();
@@ -689,7 +690,8 @@ function jouer(freq, duree, vol, forme, debut, opt) {
 let BRUIT = null;
 function bruit(debut, duree, vol, filtre, freq, pan) {
   const ac = audio(); if (!ac) return;
-  if (percuFaust(5, debut, duree, vol * 1.6, filtre === "highpass" ? Math.min(freq || 6000, 9000) : (freq || 1500), pan)) return;
+  if (percuEch(5, debut, vol * 1.4, filtre === "highpass" ? Math.min(freq || 6000, 6000) : (freq || 1500), pan)) return;
+  if (ENREG) return;
   FIN_SONS = Math.max(FIN_SONS, ac.currentTime + debut + duree);
   if (!BRUIT) { BRUIT = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = BRUIT.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
   const t = ac.currentTime + debut, s = suivre(ac.createBufferSource()), f = ac.createBiquadFilter(), g = ac.createGain();
@@ -698,11 +700,11 @@ function bruit(debut, duree, vol, filtre, freq, pan) {
   let out = g; if (pan !== undefined && ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = pan; g.connect(p); out = p; }
   s.connect(f).connect(g); out.connect(MASTER); s.start(t); s.stop(t + duree + .02);
 }
-const grosseCaisse = d => percuFaust(0, d, .4, .9) || jouer(110, .35, .9, "sine", d, { vers: 40, sec: true, attaque: .005, pur: true });
-const caisseClaire = d => percuFaust(1, d, .2, .7) || (bruit(d, .18, .5, "bandpass", 1800), jouer(190, .1, .3, "triangle", d, { sec: true, attaque: .003, pur: true }));
-const charleston = (d, v) => percuFaust(2, d, .06, (v || .25) * 1.6) || bruit(d, .05, v || .25, "highpass", 7000);
-const claque = (d, pan) => percuFaust(3, d, .14, .9, 0, pan) || bruit(d, .07, .7, "bandpass", 2400, pan);
-const tic = (d, f, v) => percuFaust(4, d, .06, (v || .3) * 1.8, f || 1500) || jouer(f || 1500, .04, v || .3, "square", d, { sec: true, attaque: .002, pur: true });
+const grosseCaisse = d => percuEch(0, d, .9) || jouer(110, .35, .9, "sine", d, { vers: 40, sec: true, attaque: .005, pur: true });
+const caisseClaire = d => percuEch(1, d, .7) || (bruit(d, .18, .5, "bandpass", 1800), jouer(190, .1, .3, "triangle", d, { sec: true, attaque: .003, pur: true }));
+const charleston = (d, v) => percuEch(2, d, (v || .25) * 1.6) || bruit(d, .05, v || .25, "highpass", 7000);
+const claque = (d, pan) => percuEch(3, d, .9, 0, pan) || bruit(d, .07, .7, "bandpass", 2400, pan);
+const tic = (d, f, v) => percuEch(4, d, (v || .3) * 1.8, f || 1500) || jouer(f || 1500, .04, v || .3, "square", d, { sec: true, attaque: .002, pur: true });
 const M = m => 440 * Math.pow(2, (m - 69) / 12);
 const N = { do3: 48, re3: 50, mi3: 52, fa3: 53, sol3: 55, la3: 57, si3: 59, do4: 60, re4: 62, mib4: 63, mi4: 64, fa4: 65, sol4: 67, la4: 69, si4: 71, do5: 72, re5: 74, mi5: 76, fa5: 77, sol5: 79, la5: 81 };
 /* suite([[note midi ou 0 pour un silence, durée en temps], ...], départ, tempo, forme, volume) -> fin en secondes */
@@ -719,7 +721,7 @@ const SONS_JS = {
   "aigu-grave": () => { jouer(M(43), 1.2, .4, "triangle", 0); jouer(M(84), 1.2, .3, "triangle", 1.5); return 2.8; },
   "long-court": () => { jouer(M(64), 2.2, .3, "triangle", 0); [0, .35, .7].forEach(d => jouer(M(64), .15, .3, "triangle", 2.6 + d)); return 3.6; },
   "piano-forte": () => { suite([[60, 1], [64, 1], [67, 2]], 0, 100, "triangle", .06); suite([[60, 1], [64, 1], [67, 2]], 2.8, 100, "triangle", .5); return 5.4; },
-  "timbres": () => { const f = FAUST.ok ? [["sine", .35], ["square", .2], ["sawtooth", .2], ["triangle", .35], ["voix", .4], ["cloche", .4]] : [["sine", .35], ["triangle", .35], ["square", .14], ["sawtooth", .14]];
+  "timbres": () => { const f = pret("voix") ? [["sine", .35], ["square", .2], ["sawtooth", .2], ["triangle", .35], ["voix", .4], ["cloche", .4]] : [["sine", .35], ["triangle", .35], ["square", .14], ["sawtooth", .14]];
     f.forEach(([x, v], i) => jouer(M(57), 1.1, v, x, i * 1.4)); return f.length * 1.4 + .3; },
   "crescendo": () => { for (let i = 0; i < 10; i++) jouer(M(62), .3, .02 + i * .05, "triangle", i * .4); return 4.2; },
   "decrescendo": () => { for (let i = 0; i < 10; i++) jouer(M(62), .3, .5 - i * .048, "triangle", i * .4); return 4.2; },
@@ -737,12 +739,12 @@ const SONS_JS = {
   "gamme-mineure": () => suite([57, 59, 60, 62, 64, 65, 67, 69].map(m => [m, 1]), 0, 150),
   "pentatonique": () => suite([61, 63, 66, 68, 70, 73, 70, 68, 66, 63, 61].map(m => [m, 1]), 0, 170),
   "hexacorde": () => suite([60, 62, 64, 65, 67, 69].map(m => [m, 1.4]), 0, 110, "voix", .35, { type: 4, voyelle: 0 }),
-  "gamelan": () => { const metal = (m, d, v) => { const f = M(m); if (FAUST.ok) { jouer(f, 1.6, v * 1.3, "cloche", d); return; } jouer(f, 1.6, v, "sine", d, { sec: true, attaque: .003 }); jouer(f * 2.76, .6, v * .3, "sine", d, { sec: true, attaque: .003 }); jouer(f * 5.4, .3, v * .12, "sine", d, { sec: true, attaque: .003 }); };
+  "gamelan": () => { const metal = (m, d, v) => { const f = M(m); if (pret("cloche") || ENREG) { jouer(f, 1.6, v * 1.3, "cloche", d); return; } jouer(f, 1.6, v, "sine", d, { sec: true, attaque: .003 }); jouer(f * 2.76, .6, v * .3, "sine", d, { sec: true, attaque: .003 }); jouer(f * 5.4, .3, v * .12, "sine", d, { sec: true, attaque: .003 }); };
     const cyc = [62, 64, 67, 69, 72, 69, 67, 64]; let t = 0;
     for (let r = 0; r < 2; r++) { cyc.forEach((m, i) => { metal(m, t, .35); if (i % 2 === 0) metal(m - 12, t, .2); t += .4; }); jouer(58, 3, .6, "sine", t - .1, { sec: true, attaque: .01 }); }
     return t + 2.5; },
   "harmoniques": () => { const f = 110, dur = 8; jouer(f, dur, .3, "sine", 0, { pur: true }); for (let n = 2; n <= 8; n++) jouer(f * n, dur - (n - 1) * .8, .3 / n, "sine", (n - 1) * .8, { pur: true }); return dur; },
-  "diphonique": () => { if (FAUST.ok) { jouer(110, 7, .5, "voix", 0, { type: 1, voyelle: 4, voyelles: [[.8, 3], [1.6, 2], [2.4, 1], [3.2, 2], [4, 3], [4.8, 4], [5.6, 2]] }); return 7.2; }
+  "diphonique": () => { if (pret("voix") || ENREG) { jouer(110, 7, .5, "voix", 0, { type: 1, voyelle: 4, voyelles: [[.8, 3], [1.6, 2], [2.4, 1], [3.2, 2], [4, 3], [4.8, 4], [5.6, 2]] }); return 7.2; }
     const ac = audio(), t = ac.currentTime, o = suivre(ac.createOscillator()), f = ac.createBiquadFilter(), g = ac.createGain(), sec = 7;
     o.type = "sawtooth"; o.frequency.value = 110; f.type = "bandpass"; f.Q.value = 28;
     [8, 9, 10, 12, 10, 9, 8, 6, 8].forEach((h, i) => f.frequency.setTargetAtTime(110 * h, t + i * .75, .05));
@@ -774,7 +776,7 @@ const SONS_JS = {
   "distorsion": () => { suite([[52, 1], [55, 1], [57, 2]], 0, 100, "sawtooth", .15); suite([[52, 1], [55, 1], [57, 2]], 3, 100, "sawtooth", .2, { distorsion: true }); return 5.6; },
   "beat": () => { const b = 60 / 90; for (let mes = 0; mes < 4; mes++) for (let k = 0; k < 8; k++) { const t = (mes * 8 + k) * b / 2;
       charleston(t, k % 2 ? .12 : .2); if (k === 0 || k === 5) grosseCaisse(t); if (k === 2 || k === 6) caisseClaire(t); } return 16 * b + .3; },
-  "theremine": () => { const ac = audio(), t = ac.currentTime, o = suivre(ac.createOscillator()), l = suivre(ac.createOscillator()), lg = ac.createGain(), g = ac.createGain();
+  "theremine": () => { if (ENREG) return 8; const ac = audio(), t = ac.currentTime, o = suivre(ac.createOscillator()), l = suivre(ac.createOscillator()), lg = ac.createGain(), g = ac.createGain();
     o.type = "sine"; l.frequency.value = 6; lg.gain.value = 7; l.connect(lg).connect(o.frequency);
     [[392, 0], [523, 1.2], [494, 2.4], [440, 3.2], [587, 4.4], [523, 5.6], [392, 6.6]].forEach(([f, d]) => o.frequency.setTargetAtTime(f, t + d, .18));
     g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.35, t + .4); g.gain.setValueAtTime(.35, t + 7.2); g.gain.exponentialRampToValueAtTime(.0001, t + 8);
@@ -796,7 +798,9 @@ async function jouerSon(cle, bouton) {
   deverrouiller();
   const enCours = SON_EN_COURS && SON_EN_COURS.b === bouton;
   toutArreter(); if (enCours || !SONS_JS[cle] || !audio()) return;
-  if (!FAUST.ok) { bouton.setAttribute("aria-busy", "true"); await Promise.race([chargerFaust(), attendre(2500)]); bouton.removeAttribute("aria-busy"); }
+  ENREG = new Set(); try { SONS_JS[cle](); } catch (_) {} const besoins = [...ENREG]; ENREG = null;
+  if (besoins.some(n => !pret(n))) { bouton.setAttribute("aria-busy", "true"); await Promise.race([chargerInstruments(besoins), attendre(6000)]); bouton.removeAttribute("aria-busy"); }
+  if (SON_EN_COURS) return;
   const duree = SONS_JS[cle]() || 2;
   bouton.setAttribute("aria-pressed", "true");
   SON_EN_COURS = { b: bouton, t: setTimeout(() => { bouton.setAttribute("aria-pressed", "false"); SON_EN_COURS = null; }, duree * 1000 + 200) };
@@ -804,7 +808,7 @@ async function jouerSon(cle, bouton) {
 const sonsHtml = cles => (cles && cles.length) ? `<div class="sons">${cles.filter(c => D.sons[c]).map(c => `<button type="button" class="sonbtn" data-son="${c}" aria-pressed="false"><span class="sp" aria-hidden="true"></span>${esc(D.sons[c])}</button>`).join("")}</div>` : "";
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-son]"); if (b) jouerSon(b.dataset.son, b); });
 document.addEventListener("touchend", deverrouiller, { once: true, passive: true });
-["pointerdown", "keydown"].forEach(ev => document.addEventListener(ev, () => { deverrouiller(); chargerFaust(); }, { once: true, passive: true }));
+["pointerdown", "keydown"].forEach(ev => document.addEventListener(ev, () => { deverrouiller(); chargerInstruments(["clavier", "percu"]); }, { once: true, passive: true }));
 const bip = ok => { if (!audio()) return; if (ok) { jouer(M(72), .14, .18, "triangle", 0); jouer(M(79), .22, .18, "triangle", .12); } else jouer(M(52), .3, .18, "triangle", 0); };
 const TEMPI = [[60, "Largo"], [76, "Adagio"], [108, "Andante"], [120, "Moderato"], [168, "Allegro"], [999, "Presto"]];
 const nomTempo = b => TEMPI.find(([m]) => b < m)[1];
@@ -853,7 +857,7 @@ function brancherAtelier() {
   const freq = () => Math.round(110 * Math.pow(16, $("p-h").value / 100));
   const maj = () => { const f = freq(); $("o-h").textContent = `${f} Hz, ${nomHauteur(f)}`; $("o-d").textContent = `${($("p-d").value / 10).toFixed(1).replace(".", ",")} s`; $("o-i").textContent = nomNuance($("p-i").value / 100); };
   ["p-h", "p-d", "p-i"].forEach(id => $(id).oninput = maj); maj();
-  $("b-son").onclick = async () => { deverrouiller(); audio(); await Promise.race([chargerFaust(), attendre(2500)]); const t = $("p-t").value; jouer(freq(), $("p-d").value / 10, $("p-i").value / 100, t === "pur" ? "sine" : t, 0, t === "pur" ? { pur: true } : {}); };
+  $("b-son").onclick = async () => { deverrouiller(); audio(); const t = $("p-t").value; await Promise.race([chargerInstruments([FORME_INSTR[t] || "souffle"]), attendre(5000)]); jouer(freq(), $("p-d").value / 10, $("p-i").value / 100, t === "pur" ? "sine" : t, 0, t === "pur" ? { pur: true } : {}); };
   const majT = () => { const b = +$("m-t").value; $("o-t").textContent = `${b} battements par minute, ${nomTempo(b)}`; }; $("m-t").oninput = () => { majT(); if (METRO) { arreter(); demarrer(); } }; majT();
   const dots = [...document.querySelectorAll(".beats span")];
   function demarrer() { let i = 0; const tick = () => { jouer(i % 4 === 0 ? 1320 : 880, 0.06, i % 4 === 0 ? 0.5 : 0.3, "square"); dots.forEach((d, j) => d.classList.toggle("on", j === i % 4)); i++; };
