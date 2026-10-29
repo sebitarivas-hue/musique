@@ -264,6 +264,29 @@ fieldset.qq legend { padding: 0; font-weight: 700; color: var(--ink); display: f
 .opt.right { border-color: #2e7d4f; background: rgba(46,125,79,.1); }
 fieldset.good .fb { color: #24683f; font-weight: 700; } fieldset.bad .fb { color: #a3261e; font-weight: 700; }
 fieldset.bad .opt.right::after { content: ""; }
+.lecon { display: flex; flex-direction: column; gap: 6px; padding-block: 12px; border-top: 1px solid var(--line); }
+.lecon:first-of-type { border-top: 0; padding-top: 4px; }
+.lecon h3 { font-size: 1.15rem; }
+.jump { margin-block: 6px 12px; } .jump button { cursor: pointer; min-height: 36px; }
+.jq { font: 700 1.15rem/1.3 var(--f-display); color: var(--navy); min-height: 1.5em; }
+.fb2 { min-height: 1.4em; font-size: .95rem; }
+.btn2:disabled { opacity: .45; cursor: default; }
+.piano { position: relative; display: flex; height: 150px; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.piano .k-b { flex: 1; min-width: 0; border: 1px solid #8a94a3; border-radius: 0 0 8px 8px; background: #fff; color: #22364d; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font: 500 12px var(--f-mono); cursor: pointer; }
+.piano .k-n { width: 9%; margin: 0 -4.5%; z-index: 1; height: 62%; border: 0; border-radius: 0 0 6px 6px; background: #1b2836; cursor: pointer; }
+.piano button.on, .piano button:active { background: var(--gold); }
+.mes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.case { display: flex; flex-direction: column; gap: 4px; font-weight: 400 !important; }
+.case span { font: 500 11.5px var(--f-mono); color: var(--muted); }
+.case select { width: 100%; font-size: .9rem; }
+.case select:disabled { opacity: .45; }
+ol.frise { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; }
+ol.frise li { padding: 4px 0; } ol.frise li::marker { font-family: var(--f-mono); color: var(--muted); }
+ol.frise li { display: list-item; } ol.frise li > * { vertical-align: middle; }
+.fn { display: inline-block; width: calc(100% - 104px); }
+.mv { width: 44px; height: 44px; margin-left: 4px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--navy); font-size: 18px; cursor: pointer; }
+.mv:disabled { opacity: .3; cursor: default; }
+@media (min-width: 720px) { .tools .tool#j-oreille, .tools .tool#j-instr { grid-column: auto; } .mes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .ex { font-size: .95rem; color: var(--ink); border-left: 3px solid var(--gold); padding-left: 10px; }
 .score { font-size: 1.05rem; }
 @media (min-width: 720px) { .tools { grid-template-columns: 1fr 1fr; } .tools .tool:last-child { grid-column: 1 / -1; } }
@@ -354,7 +377,7 @@ function carteEleve(k, idx) {
   let h = `<section class="mine" style="--c:${D.couleurs[k]}" aria-labelledby="mine-t"><div class="mine-top"><span class="lvlbadge" style="background:${D.couleurs[k]}">${k}</span>
     <div><div class="label">Semaine du ${esc(e.semaine)}</div><h2 id="mine-t">${esc(libelle(n, e))}</h2></div></div>`;
   if (e.type === "accueil") {
-    h += `<p>${esc(D.accueil.deroule[0])}</p><div class="actions"><a class="btn-main" href="#proj-accueil">Projeter la séance d'accueil</a></div>`;
+    h += `<p>${esc(D.accueil.deroule[0])}</p><div class="actions"><a class="btn-main" href="#seance-accueil">Ouvrir la séance</a><a class="btn2" href="#proj-accueil">Projeter</a></div>`;
   } else if (e.type === "tampon") {
     h += `<p>Cette semaine sert à rattraper une séance ou à préparer un concert. Profites-en pour réviser.</p><div class="actions"><a class="btn-main" href="#reviser-${k}">Réviser</a></div>`;
   } else {
@@ -409,7 +432,7 @@ function vueSemaine(idx) {
   const autres = k ? NIV.filter(n => n !== k) : NIV;
   const cartes = autres.map(n => {
     const nv = D.niveaux[n], e = nv.calendrier[idx];
-    const lien = e.type === "seance" ? "#" + seanceId(n, e) : (e.type === "accueil" ? "#proj-accueil" : `#cours-${n}`);
+    const lien = e.type === "seance" ? "#" + seanceId(n, e) : (e.type === "accueil" ? "#seance-accueil" : `#cours-${n}`);
     return `<a class="card" href="${lien}"><div class="lvlcard"><div class="lvlbadge" style="background:${D.couleurs[n]}">${n}</div><div class="stack" style="gap:4px">
       ${e.type === "seance" ? `<span class="meta">${esc(nv.sequences[e.seq - 1].titre)}</span>` : ""}<h3>${esc(libelle(nv, e))}</h3></div></div></a>`;
   }).join("");
@@ -422,6 +445,28 @@ function vueSemaine(idx) {
 }
 
 /* ---------- Séance ---------- */
+/* Le cours rédigé : les vues du diaporama, lues comme une page. */
+function coursEcrit(vues) {
+  return vues.map(v => `<div class="lecon">${v.k ? `<div class="label">${esc(v.k)}</div>` : ""}${v.h ? `<h3>${esc(v.h)}</h3>` : ""}
+    ${(v.p || []).map(t => `<p>${esc(t)}</p>`).join("")}${v.l ? `<ul class="plain">${v.l.map(t => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
+    ${v.q ? `<div class="consigne"><span class="label">Questions</span><ol>${v.q.map(t => `<li>${esc(t)}</li>`).join("")}</ol></div>` : ""}
+    ${v.svg && D.svgs[v.svg] ? `<figure class="fig">${D.svgs[v.svg]}</figure>` : ""}
+    ${v.yt ? `<div class="listens">${v.yt.map(([lib, q]) => ecoute(lib, q)).join("")}</div>` : ""}</div>`).join("");
+}
+function ressources(k, fiches, seq) {
+  return `<section class="card"><h2 class="blk-t">Ressources</h2><div class="dl" style="margin-top:0">${pdf(`Cours_${k}_detaille.pdf`, `Le cours détaillé de ${k}`)}${pdf(`Evaluations_${k}.pdf`, "Fiches d'évaluation")}${pdf(`Plan_${k}_eleves_parents.pdf`, "Plan de l'année")}</div>
+    ${fiches.length ? `<div class="dl">${fiches.map(f => pdf(`fiche_${f}.pdf`, "Fiche " + D.fiches[f].titre)).join("")}</div>` : ""}
+    <div class="chips" style="margin-top:10px">${fiches.map(f => `<a class="chip" href="#fiche-${f}">Lire : ${esc(D.fiches[f].titre)}</a>`).join("")}${seq ? `<a class="chip" href="#quiz-${k}-${seq}">Quiz d'entraînement</a>` : ""}<a class="chip" href="#pratiquer-${k}">Atelier sonore</a></div></section>`;
+}
+function vueAccueil() {
+  let h = head("Semaine du " + D.accueil.semaine + ", toutes les classes", D.accueil.titre, "La première séance de l'année, la même pour les quatre niveaux.");
+  h += `<div class="pager"><span></span><a class="btn-main" href="#proj-accueil">Projeter</a><span></span></div><div class="stack" style="margin-top:16px">`;
+  h += `<section class="card"><h2 class="blk-t">Déroulé de la séance</h2><ol class="plain">${D.accueil.deroule.map(d => `<li>${esc(d)}</li>`).join("")}</ol></section>`;
+  h += `<section class="card"><h2 class="blk-t">Le cours</h2>${coursEcrit(D.diapos.accueil)}</section>`;
+  h += `<section class="card"><h2 class="blk-t">Ressources</h2><div class="dl" style="margin-top:0">${NIV.map(n => pdf(`Plan_${n}_eleves_parents.pdf`, `Plan de l'année, ${n}`)).join("")}</div>
+    <div class="chips" style="margin-top:10px">${NIV.map(n => `<a class="chip" href="#seance-${n}-1-1">Séance suivante en ${n}</a>`).join("")}</div></section>`;
+  return h + `</div>`;
+}
 function listeSeances(k) { return D.niveaux[k].calendrier.filter(e => e.type === "seance"); }
 function vueSeance(k, seq, num) {
   const n = D.niveaux[k], s = n.sequences[seq - 1], c = n.contenus[seq - 1], se = c.seances[num - 1];
@@ -435,12 +480,18 @@ function vueSeance(k, seq, num) {
   const ec = ecoutesSeance(k, seq, num);
   const qs = [...new Set(ec.flatMap(x => x.questions))];
   h += `<div class="stack" style="margin-top:16px">`;
+  h += `<section class="card"><h2 class="blk-t">Ce que j'apprends</h2><ul class="plain">${c.objectifs.map(o => `<li>${esc(o)}</li>`).join("")}</ul></section>`;
+  h += `<section class="card"><h2 class="blk-t">Déroulé de la séance, 55 minutes</h2><ul class="steps">${se.etapes.map(([m, t]) => `<li><span class="min">${m} min</span><span>${esc(t)}</span></li>`).join("")}</ul></section>`;
+  const dv = D.diapos[k] && D.diapos[k][seq + "-" + num];
+  if (dv) h += `<section class="card"><h2 class="blk-t">Le cours</h2>${coursEcrit(dv)}</section>`;
+  else if (num === 1 && s.accroche) h += `<section class="card"><h2 class="blk-t">Accroche</h2><p>${esc(s.accroche)}</p></section>`;
   h += `<section class="card"><h2 class="blk-t">À écouter</h2><div class="listens">${ec.map(x => ecoute(x.lib, x.q)).join("")}</div>
     ${qs.length ? `<div class="consigne"><span class="label">En écoutant, je cherche</span><ol>${qs.map(q => `<li>${esc(q)}</li>`).join("")}</ol></div>` : `<p class="small">En écoutant, je repère les instruments ou les voix, le tempo et le caractère.</p>`}</section>`;
   h += `<section class="card"><h2 class="blk-t">Le chant</h2><p>${esc(s.chant)}</p></section>`;
   h += `<section class="card"><h2 class="blk-t">Je retiens</h2><div class="trace">${c.trace.map(t => `<p>${esc(t)}</p>`).join("")}</div></section>`;
-  h += `<section class="card"><h2 class="blk-t">Pour la prochaine fois</h2><p>${esc(c.devoirs)}</p><div class="chips" style="margin-top:8px">${c.fiches.map(f => `<a class="chip" href="#fiche-${f}">${esc(D.fiches[f].titre)}</a>`).join("")}<a class="chip" href="#quiz-${k}-${seq}">Quiz d'entraînement</a></div></section>`;
-  h += `<details class="seq prof"><summary><span class="seqhead"><span class="meta">Pour le professeur</span><h3>Déroulé de la séance, 55 minutes</h3></span><span class="chev" aria-hidden="true">&#8250;</span></summary><div class="body"><ul class="steps">${se.etapes.map(([m, t]) => `<li><span class="min">${m} min</span><span>${esc(t)}</span></li>`).join("")}</ul></div></details>`;
+  h += `<section class="card"><h2 class="blk-t">Pour la prochaine fois</h2><p>${esc(c.devoirs)}</p><div class="chips" style="margin-top:8px">${c.fiches.map(f => `<a class="chip" href="#fiche-${f}">${esc(D.fiches[f].titre)}</a>`).join("")}</div></section>`;
+  h += `<section class="card"><h2 class="blk-t">Évaluation de la séquence</h2><p>${esc(c.eval.consigne)}</p><p class="small"><a href="#reviser-${k}">Critères de réussite</a></p></section>`;
+  h += ressources(k, c.fiches, seq);
   h += `</div><p class="small" style="margin-top:12px;text-align:center"><a href="#semaine-${widx}">Toute la semaine</a></p>`;
   h += `<div class="pager" style="margin-top:12px">${prev ? `<a class="btn2" href="#${seanceId(k, prev)}">&#8249; Séance précédente</a>` : "<span></span>"}${next ? `<a class="btn2" href="#${seanceId(k, next)}">Séance suivante &#8250;</a>` : "<span></span>"}</div>`;
   return h;
@@ -473,7 +524,7 @@ function vueCours(k) {
   }
   h += `<div class="dl">${pdf(`Cours_${k}_detaille.pdf`, "Cours détaillé")} ${pdf(`Evaluations_${k}.pdf`, "Fiches d'évaluation")} ${gh(`${k}/Cours_${k}_detaille.pdf`)}</div>`;
   h += `<div class="stack" style="margin-top:14px"><details class="seq"><summary><span class="ico" style="background:var(--gold-text)" aria-hidden="true">${D.icones.accueil}</span><span class="seqhead"><span class="meta">Semaine du ${esc(D.accueil.semaine)}</span><h3>Séance d'accueil</h3></span><span class="chev" aria-hidden="true">&#8250;</span></summary>
-    <div class="body"><ul class="plain">${D.accueil.deroule.map(d => `<li>${esc(d)}</li>`).join("")}</ul><div class="actions"><a class="btn-main" href="#proj-accueil">Projeter</a></div></div></details>`;
+    <div class="body"><ul class="plain">${D.accueil.deroule.map(d => `<li>${esc(d)}</li>`).join("")}</ul><div class="actions"><a class="btn-main" href="#seance-accueil">Ouvrir la séance</a><a class="btn2" href="#proj-accueil">Projeter</a></div></div></details>`;
   n.sequences.forEach((s, i) => {
     const c = n.contenus[i], ouvert = cur && cur.seq === i + 1;
     h += `<details class="seq"${ouvert ? " open" : ""}><summary><span class="ico" style="background:${D.couleurs[k]}" aria-hidden="true">${D.icones[k][i]}</span><span class="seqhead"><span class="meta">Séquence ${i + 1}, ${esc(PER[s.periode])}</span><h3>${esc(s.titre)}</h3></span><span class="chev" aria-hidden="true">&#8250;</span></summary><div class="body"><p class="meta">Semaines du ${esc(s.semaines)}</p>
@@ -507,7 +558,7 @@ const nomHauteur = f => f < 200 ? "grave" : f < 600 ? "médium" : "aigu";
 const nomNuance = v => v < 0.12 ? "pianissimo (pp)" : v < 0.25 ? "piano (p)" : v < 0.45 ? "mezzo forte (mf)" : "forte (f)";
 function vuePratiquer(k) {
   const n = D.niveaux[k];
-  let h = head("Écouter et pratiquer", `Pratiquer, ${k}`, "Un atelier pour manipuler le son, et les écoutes de ta classe, séquence par séquence.") + levels("pratiquer", k);
+  let h = head("Écouter et pratiquer", `Pratiquer, ${k}`, "Un atelier pour manipuler le son, des jeux pour exercer l'oreille, et les écoutes de ta classe.") + levels("pratiquer", k);
   h += `<h2 class="sec">Atelier sonore</h2><p class="small">Monte le volume doucement. Les sons sont fabriqués par ton navigateur : aucun enregistrement n'est utilisé.</p>
   <div class="tools">
     <section class="tool" aria-labelledby="t1"><h3 id="t1">Les paramètres du son</h3>
@@ -527,6 +578,7 @@ function vuePratiquer(k) {
       <div class="ratios">${[["1", "Corde entière", 1], ["1/2", "Octave", 2], ["2/3", "Quinte", 1.5], ["3/4", "Quarte", 4 / 3]].map(([r, nm, m]) =>
         `<div class="ratio"><div class="bar" style="width:${100 / m}%"></div><b>${r}</b><span>${nm}</span><button type="button" class="btn2" data-m="${m}">Seul</button>${m > 1 ? `<button type="button" class="btn2" data-m="${m}" data-ens="1">Avec la corde entière</button>` : ""}</div>`).join("")}</div></section>
   </div>`;
+  h += htmlJeux();
   h += `<h2 class="sec">Les écoutes de la ${k}</h2><p class="small">Les liens ouvrent une recherche sur YouTube dans un nouvel onglet. Écoute d'abord sans lire, puis avec les questions.</p><div class="stack">`;
   n.sequences.forEach((s, i) => {
     const qs = []; Object.entries(D.diapos[k] || {}).forEach(([key, vues]) => { if (key.startsWith((i + 1) + "-")) vues.forEach(v => (v.q || []).forEach(q => qs.push(q))); });
@@ -553,6 +605,125 @@ function brancherAtelier() {
   $("b-metro").onclick = () => METRO ? arreter() : demarrer();
   document.querySelectorAll(".ratio button").forEach(b => b.onclick = () => { const m = +b.dataset.m, base = 220;
     if (b.dataset.ens) { jouer(base, 1.6, 0.25, "triangle"); jouer(base * m, 1.6, 0.25, "triangle"); } else jouer(base * m, 1.2, 0.35, "triangle"); });
+}
+
+/* ---------- Jeux : oreille, clavier, rythme, instruments, frise ---------- */
+const NOTES = [["do", 261.63, 0], ["do♯", 277.18, 1], ["ré", 293.66, 0], ["ré♯", 311.13, 1], ["mi", 329.63, 0], ["fa", 349.23, 0], ["fa♯", 369.99, 1],
+  ["sol", 392.0, 0], ["sol♯", 415.3, 1], ["la", 440.0, 0], ["la♯", 466.16, 1], ["si", 493.88, 0], ["do", 523.25, 0]];
+const FIGURES = [["noire", "1 temps", [1]], ["deux croches", "2 × ½ temps", [.5, .5]], ["blanche", "2 temps", [2]], ["quatre doubles", "4 × ¼ temps", [.25, .25, .25, .25]],
+  ["croche pointée et double", "¾ + ¼", [.75, .25]], ["soupir", "1 temps de silence", [-1]]];
+const INSTR = [["Flûte traversière", "bois", "Elle est en métal, mais le son naît du souffle sur un biseau, comme les autres bois."], ["Hautbois", "bois", "Une anche double."],
+  ["Clarinette", "bois", "Une anche simple."], ["Basson", "bois", "Le plus grave des bois de l'orchestre, à anche double."], ["Saxophone", "bois", "Il est en cuivre, mais c'est un bois : son anche simple le classe avec la clarinette."],
+  ["Trompette", "cuivres", "Les lèvres vibrent dans l'embouchure."], ["Cor", "cuivres", "Un long tube enroulé, les lèvres vibrent."], ["Trombone", "cuivres", "La coulisse change la longueur du tube."], ["Tuba", "cuivres", "Le plus grave des cuivres."],
+  ["Violon", "cordes", "Cordes frottées par l'archet."], ["Violoncelle", "cordes", "Cordes frottées, on le joue assis, entre les genoux."], ["Contrebasse", "cordes", "La plus grave des cordes frottées."], ["Harpe", "cordes", "Cordes pincées."],
+  ["Timbales", "percussions", "Des peaux frappées, accordées à une hauteur précise."], ["Xylophone", "percussions", "Des lames de bois frappées."], ["Triangle", "percussions", "Une barre de métal frappée."], ["Grosse caisse", "percussions", "Une grande peau frappée."]];
+const FAMILLES = [["bois", "Bois"], ["cuivres", "Cuivres"], ["cordes", "Cordes"], ["percussions", "Percussions"]];
+const FRISE = [["Hildegarde de Bingen", 1098, "1098-1179"], ["Pérotin", 1200, "vers 1200"], ["Guillaume de Machaut", 1300, "vers 1300-1377"], ["Josquin des Prés", 1450, "vers 1450-1521"],
+  ["Palestrina", 1525, "vers 1525-1594"], ["Claudio Monteverdi", 1567, "1567-1643"], ["Jean-Baptiste Lully", 1632, "1632-1687"], ["Jean-Sébastien Bach", 1685, "1685-1750"],
+  ["Wolfgang Amadeus Mozart", 1756, "1756-1791"], ["Ludwig van Beethoven", 1770, "1770-1827"], ["Claude Debussy", 1862, "1862-1918"], ["Igor Stravinsky", 1882, "1882-1971"],
+  ["Pierre Schaeffer", 1910, "1910-1995"], ["Iannis Xenakis", 1922, "1922-2001"]];
+let JEU = {};
+function htmlJeux() {
+  return `<h2 class="sec">Jeux</h2><p class="small">Pour s'entraîner seul ou à deux. Rien n'est noté, rien n'est enregistré.</p>
+  <div class="chips jump">${[["j-oreille", "Oreille"], ["j-clavier", "Clavier"], ["j-rythme", "Rythme"], ["j-instr", "Instruments"], ["j-frise", "Frise"]].map(([id, t]) => `<button type="button" class="chip" data-go="${id}">${t}</button>`).join("")}</div>
+  <div class="tools">
+    <section class="tool" id="j-oreille" aria-labelledby="jo-t"><h3 id="jo-t">L'oreille fine</h3>
+      <p class="small">Deux sons, l'un après l'autre. Réponds à la question. Dix manches.</p>
+      <p class="jq" id="jo-q" aria-live="polite">Appuie sur « Écouter » pour commencer.</p>
+      <div class="actions"><button type="button" class="btn-main" id="jo-play">Écouter</button><button type="button" class="btn2" id="jo-1" disabled>Le premier</button><button type="button" class="btn2" id="jo-2" disabled>Le second</button></div>
+      <p class="fb2" id="jo-fb" aria-live="polite"></p></section>
+    <section class="tool" id="j-clavier" aria-labelledby="jc-t"><h3 id="jc-t">Le clavier</h3>
+      <p class="small">Touche les notes. Les noms do, ré, mi viennent de l'hymne <i>Ut queant laxis</i> : ut est devenu do.</p>
+      <div class="piano" role="group" aria-label="Clavier d'une octave">${NOTES.map(([n, f, noire], i) => `<button type="button" class="${noire ? "k-n" : "k-b"}" data-f="${f}" aria-label="${n}${i === 12 ? " aigu" : ""}"><span aria-hidden="true">${noire ? "" : n}</span></button>`).join("")}</div>
+      <div class="actions"><button type="button" class="btn2" id="jc-gamme">Jouer la gamme de do</button><button type="button" class="btn2" id="jc-defi">Défi : retrouve la note</button></div>
+      <p class="fb2" id="jc-fb" aria-live="polite"></p></section>
+    <section class="tool" id="j-rythme" aria-labelledby="jr-t"><h3 id="jr-t">Compose un rythme</h3>
+      <p class="small">Une mesure à quatre temps. Choisis une figure pour chaque case, puis écoute. Une blanche occupe deux temps.</p>
+      <div class="mes">${[0, 1, 2, 3].map(i => `<label class="case"><span>Temps ${i + 1}</span><select data-t="${i}">${FIGURES.map(([n, d], j) => `<option value="${j}">${n} (${d})</option>`).join("")}</select></label>`).join("")}</div>
+      <p class="small" id="jr-info" aria-live="polite"></p>
+      <label for="jr-tempo">Tempo : <output id="jr-o">80</output> à la noire</label><input id="jr-tempo" type="range" min="50" max="140" value="80">
+      <div class="actions"><button type="button" class="btn-main" id="jr-play">Écouter ma mesure</button><button type="button" class="btn2" id="jr-hasard">Au hasard</button></div></section>
+    <section class="tool" id="j-instr" aria-labelledby="ji-t"><h3 id="ji-t">Les familles de l'orchestre</h3>
+      <p class="small">Dans quelle famille range-t-on cet instrument ?</p>
+      <p class="jq" id="ji-q" aria-live="polite"></p>
+      <div class="actions">${FAMILLES.map(([id, t]) => `<button type="button" class="btn2" data-fam="${id}">${t}</button>`).join("")}</div>
+      <p class="fb2" id="ji-fb" aria-live="polite"></p></section>
+    <section class="tool" id="j-frise" aria-labelledby="jf-t"><h3 id="jf-t">Remets dans l'ordre</h3>
+      <p class="small">Range ces compositeurs du plus ancien au plus récent avec les flèches, puis vérifie.</p>
+      <ol class="frise" id="jf-l"></ol>
+      <div class="actions"><button type="button" class="btn-main" id="jf-ok">Vérifier</button><button type="button" class="btn2" id="jf-new">Nouvelle série</button></div>
+      <p class="fb2" id="jf-fb" aria-live="polite"></p></section>
+  </div>`;
+}
+const attendre = ms => new Promise(r => setTimeout(r, ms));
+function brancherJeux() {
+  const $ = id => document.getElementById(id); if (!$("jo-play")) return;
+  document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { const t = $(b.dataset.go); t.scrollIntoView({ behavior: "smooth", block: "start" }); t.querySelector("h3").tabIndex = -1; t.querySelector("h3").focus({ preventScroll: true }); });
+  /* Oreille */
+  const O = JEU.o = { manche: 0, points: 0 };
+  function nouvelle() {
+    const type = ["hauteur", "duree", "intensite"][Math.floor(Math.random() * 3)], bon = Math.random() < .5 ? 1 : 2;
+    const a = { f: 330, d: .7, v: .3 }, b = { ...a };
+    if (type === "hauteur") { const x = 1 + .12 + Math.random() * .5; b.f = a.f * x; O.q = "Lequel est le plus aigu ?"; }
+    if (type === "duree") { b.d = 1.3; a.d = .45; O.q = "Lequel est le plus long ?"; }
+    if (type === "intensite") { b.v = .5; a.v = .1; O.q = "Lequel est le plus fort ?"; }
+    O.sons = bon === 2 ? [a, b] : [b, a]; O.bon = bon;
+  }
+  async function ecouter() {
+    if (!O.sons) { if (O.manche >= 10) { O.manche = 0; O.points = 0; } nouvelle(); }
+    $("jo-q").textContent = `Manche ${O.manche + 1} sur 10 : ${O.q}`; $("jo-fb").textContent = "";
+    jouer(O.sons[0].f, O.sons[0].d, O.sons[0].v, "triangle"); jouer(O.sons[1].f, O.sons[1].d, O.sons[1].v, "triangle", O.sons[0].d + .45);
+    $("jo-1").disabled = $("jo-2").disabled = false; $("jo-play").textContent = "Réécouter";
+  }
+  function repondre(r) {
+    if (!O.sons) return;
+    const ok = r === O.bon; O.manche++; if (ok) O.points++;
+    $("jo-fb").textContent = (ok ? "Bien entendu. " : `Non, c'était le ${O.bon === 1 ? "premier" : "second"}. `) + (O.manche >= 10 ? `Résultat : ${O.points} sur 10.` : `${O.points} sur ${O.manche}.`);
+    O.sons = null; $("jo-1").disabled = $("jo-2").disabled = true; $("jo-play").textContent = O.manche >= 10 ? "Rejouer" : "Manche suivante";
+  }
+  $("jo-play").onclick = ecouter; $("jo-1").onclick = () => repondre(1); $("jo-2").onclick = () => repondre(2);
+  /* Clavier */
+  const C = JEU.c = { cible: null };
+  document.querySelectorAll(".piano button").forEach((b, i) => b.onclick = () => {
+    jouer(+b.dataset.f, .8, .3, "triangle"); b.classList.add("on"); setTimeout(() => b.classList.remove("on"), 250);
+    if (C.cible !== null) { const ok = i === C.cible; $("jc-fb").textContent = ok ? `Oui, c'était ${NOTES[i][0]}.` : `Ce n'est pas ${NOTES[i][0]}. Réécoute avec « Défi » ou cherche encore.`; if (ok) C.cible = null; }
+    else $("jc-fb").textContent = NOTES[i][0];
+  });
+  $("jc-gamme").onclick = () => { C.cible = null; NOTES.filter(n => !n[2]).forEach(([n, f], j) => jouer(f, .4, .3, "triangle", j * .42)); $("jc-fb").textContent = "do, ré, mi, fa, sol, la, si, do"; };
+  $("jc-defi").onclick = () => { if (C.cible === null) { const b = NOTES.map((n, i) => i).filter(i => !NOTES[i][2] && i < 12); C.cible = b[Math.floor(Math.random() * b.length)]; }
+    jouer(NOTES[0][1], .6, .3, "triangle"); jouer(NOTES[C.cible][1], .8, .3, "triangle", .8); $("jc-fb").textContent = "Le premier son est do. Quelle est la seconde note ? Touche-la sur le clavier."; };
+  /* Rythme */
+  const sels = [...document.querySelectorAll(".mes select")];
+  function verifier() {
+    sels.forEach(s => s.disabled = false);
+    sels.forEach((s, i) => { if (+s.value === 2 && i < 3) sels[i + 1].disabled = true; });
+    if (+sels[3].value === 2) sels[3].value = "0";
+    $("jr-info").textContent = sels.map((s, i) => s.disabled ? "(suite de la blanche)" : FIGURES[+s.value][0]).join(", ");
+  }
+  sels.forEach(s => s.onchange = verifier); verifier();
+  $("jr-tempo").oninput = () => $("jr-o").textContent = $("jr-tempo").value;
+  $("jr-play").onclick = () => { const t = 60 / +$("jr-tempo").value; let x = 0;
+    for (let i = 0; i < 4; i++) jouer(i === 0 ? 1320 : 880, .04, .12, "square", i * t);
+    sels.forEach(s => { if (s.disabled) return; FIGURES[+s.value][2].forEach(d => { if (d > 0) jouer(523.25, Math.max(.08, d * t * .8), .32, "triangle", x); x += Math.abs(d) * t; }); }); };
+  $("jr-hasard").onclick = () => { sels.forEach(s => { s.disabled = false; s.value = String(Math.floor(Math.random() * FIGURES.length)); }); verifier(); };
+  /* Instruments */
+  const I = JEU.i = { reste: melange(INSTR), points: 0, total: 0 };
+  const poser = () => { if (!I.reste.length) I.reste = melange(INSTR); I.cur = I.reste.pop(); $("ji-q").textContent = I.cur[0]; };
+  document.querySelectorAll("[data-fam]").forEach(b => b.onclick = () => { const ok = b.dataset.fam === I.cur[1]; I.total++; if (ok) I.points++;
+    $("ji-fb").textContent = `${ok ? "Oui" : "Non"} : ${I.cur[0].toLowerCase()}, famille des ${I.cur[1]}. ${I.cur[2]} (${I.points} sur ${I.total})`; poser(); });
+  poser();
+  /* Frise */
+  const F = JEU.f = {};
+  function serie() { F.l = melange(FRISE).slice(0, 5); dessiner(); $("jf-fb").textContent = ""; }
+  function dessiner(fini) {
+    $("jf-l").innerHTML = F.l.map(([n, , d], i) => `<li><span class="fn">${esc(n)}${fini ? ` <span class="meta">${d}</span>` : ""}</span>
+      <button type="button" class="mv" data-i="${i}" data-d="-1" aria-label="Monter ${esc(n)}"${i === 0 ? " disabled" : ""}>&#8593;</button><button type="button" class="mv" data-i="${i}" data-d="1" aria-label="Descendre ${esc(n)}"${i === F.l.length - 1 ? " disabled" : ""}>&#8595;</button></li>`).join("");
+    document.querySelectorAll("#jf-l .mv").forEach(b => b.onclick = () => { const i = +b.dataset.i, j = i + +b.dataset.d; [F.l[i], F.l[j]] = [F.l[j], F.l[i]]; dessiner();
+      const nb = document.querySelector(`#jf-l .mv[data-i="${j}"][data-d="${b.dataset.d}"]`) || document.querySelector(`#jf-l .mv[data-i="${j}"]`); if (nb) nb.focus(); });
+  }
+  $("jf-ok").onclick = () => { const bons = F.l.filter((x, i) => [...F.l].sort((a, b) => a[1] - b[1])[i] === x).length;
+    $("jf-fb").textContent = bons === F.l.length ? "Tout est dans l'ordre. Les dates sont affichées." : `${bons} sur ${F.l.length} à la bonne place. Les dates sont affichées : corrige, puis vérifie encore.`; dessiner(true); };
+  $("jf-new").onclick = serie; serie();
 }
 
 /* ---------- Réviser : critères, fiches, quiz ---------- */
@@ -709,13 +880,14 @@ function rendre() {
   else if (/^seance-\w+-\d+-\d+$/.test(v) && D.niveaux[v.split("-")[1]]) { const [, k, a, b] = v.split("-"); app.innerHTML = vueSeance(k, +a, +b); tab = "cours"; }
   else if (/^semaine-\d+$/.test(v)) app.innerHTML = vueSemaine(+v.split("-")[1]);
   else if (/^proj-\w+-\d+-\d+$/.test(v) && D.niveaux[v.split("-")[1]]) { const [, k, a, b] = v.split("-"); app.innerHTML = vueSeance(k, +a, +b); tab = "cours"; ouvrirProj(diaposSeance(k, +a, +b), `${k}, séquence ${a}, séance ${b}`, `seance-${k}-${a}-${b}`); }
-  else if (v === "proj-accueil") { app.innerHTML = vueSemaine(0); ouvrirProj(D.diapos.accueil, "Séance d'accueil", "semaine"); }
+  else if (v === "seance-accueil") { app.innerHTML = vueAccueil(); tab = "cours"; }
+  else if (v === "proj-accueil") { app.innerHTML = vueAccueil(); tab = "cours"; ouvrirProj(D.diapos.accueil, "Séance d'accueil", "seance-accueil"); }
   else app.innerHTML = vueSemaine();
   document.querySelectorAll("nav.tabs a").forEach(a => { if (a.dataset.t === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   ["eleve", "prof"].forEach(x => { const b = document.getElementById("m-" + x); if (b) b.onclick = () => { set("mode", x); rendre(); }; });
   document.querySelectorAll(".pick-b").forEach(b => b.onclick = () => { set("classe", b.dataset.classe); set("niv", b.dataset.classe); rendre(); });
   const oth = document.getElementById("others"); if (oth) oth.addEventListener("toggle", () => set("tout", oth.open ? "1" : ""));
-  brancherAtelier(); brancherQuiz();
+  brancherAtelier(); brancherJeux(); brancherQuiz();
   if (!PROJ) { window.scrollTo(0, 0); const h1 = app.querySelector("h1"); if (h1 && document.activeElement && document.activeElement !== document.body) { h1.tabIndex = -1; h1.focus({ preventScroll: true }); } }
   const st = document.getElementById("strip"), on = st && st.querySelector(".on");
   if (on) st.scrollLeft = on.offsetLeft - st.clientWidth / 2 + on.clientWidth / 2;
