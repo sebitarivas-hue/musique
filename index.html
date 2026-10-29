@@ -435,110 +435,93 @@ details.labo-code > summary { grid-template-columns: 1fr 18px; }
 @media (min-width: 720px) { .tools { grid-template-columns: 1fr 1fr; } .tools .tool:last-child { grid-column: 1 / -1; } }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .opt.right { border-color: #6fcf97; } :root:not([data-theme="light"]) fieldset.good .fb { color: #6fcf97; } :root:not([data-theme="light"]) fieldset.bad .fb { color: #f28b82; } }
 
-/* ================= Design noir et blanc (novembre 2026) : grande grotesque, filets fins, étiquettes machine ================= */
-:root { --bg: #ffffff; --surface: #ffffff; --ink: #0b0b0b; --muted: #555b63; --line: #d6d6d6; --rule: #0b0b0b; --navy: #0b0b0b; --navy-soft: #f1f1f0;
-  --gold: #0b0b0b; --gold-text: #0b0b0b; --gold-soft: #f4f4f2; --on-navy: #ffffff; --f-display: "Inter Tight", "Helvetica Neue", Arial, sans-serif; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0b0b0b; --surface: #0b0b0b; --ink: #f2f2f0; --muted: #a7abb2; --line: #333; --rule: #f2f2f0;
-  --navy: #f2f2f0; --navy-soft: #1b1b1b; --gold: #f2f2f0; --gold-text: #f2f2f0; --gold-soft: #171717; --on-navy: #0b0b0b; } }
-:root[data-theme="dark"] { --bg: #0b0b0b; --surface: #0b0b0b; --ink: #f2f2f0; --muted: #a7abb2; --line: #333; --rule: #f2f2f0; --navy: #f2f2f0; --navy-soft: #1b1b1b; --gold: #f2f2f0; --gold-text: #f2f2f0; --gold-soft: #171717; --on-navy: #0b0b0b; }
+/* ================= Design pédagogique (novembre 2026) : clair, coloré, lisible ================= */
+:root { --bg: #f4f6fb; --surface: #ffffff; --ink: #1d2433; --muted: #586174; --line: #e1e5ee; --rule: #e1e5ee; --navy: #243b6b; --navy-soft: #e8eefb;
+  --gold: #d98a1c; --gold-text: #8a4f00; --gold-soft: #fff3df; --on-navy: #ffffff; --f-display: "Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif; --ombre: 0 2px 10px rgba(30, 45, 80, .07); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #10141c; --surface: #19202c; --ink: #edf0f6; --muted: #a9b2c3; --line: #2b3546; --rule: #2b3546;
+  --navy: #9db8ef; --navy-soft: #1f2a3d; --gold: #f0b25a; --gold-text: #f5c27a; --gold-soft: #2a2215; --on-navy: #10141c; --ombre: none; } }
+:root[data-theme="dark"] { --bg: #10141c; --surface: #19202c; --ink: #edf0f6; --muted: #a9b2c3; --line: #2b3546; --rule: #2b3546; --navy: #9db8ef; --navy-soft: #1f2a3d; --gold: #f0b25a; --gold-text: #f5c27a; --gold-soft: #2a2215; --on-navy: #10141c; --ombre: none; }
 main { max-width: 760px; }
-h1, h2, h3, .q, .home-title, .wlabel b, .age b, .labo-tuile b, .echo-c b { font-family: var(--f-display); letter-spacing: -.025em; }
-h1 { font-size: clamp(2.2rem, 7vw, 3.2rem); font-weight: 700; line-height: 1; }
-h2 { font-weight: 700; } h3 { font-weight: 600; letter-spacing: -.015em; }
-.q { font-style: normal; font-weight: 500; font-size: 1.25rem; }
-.label, .meta, .blk-t, .brand, .chip, .tag, .strip a, .levels a, nav.tabs a, .fil, .s-q-t { font-family: var(--f-mono); }
-.label { color: var(--ink); letter-spacing: .06em; font-size: 11px; }
-.blk-t { font-weight: 500; font-size: 11px; letter-spacing: .08em; color: var(--muted); }
-header.top { padding-block: 26px 6px; }
+h1, h2, h3, .q, .wlabel b, .age b, .labo-tuile b, .echo-c b { font-family: var(--f-display); letter-spacing: 0; color: var(--ink); }
+h1 { font-size: clamp(1.8rem, 6vw, 2.4rem); font-weight: 700; line-height: 1.12; }
+h2 { font-size: 1.35rem; } h3 { font-size: 1.15rem; }
+.q { font-style: normal; font-weight: 700; font-size: 1.15rem; color: var(--navy); background: var(--navy-soft); padding: 10px 14px; border-radius: 12px; }
+.label { color: var(--navy); font-family: var(--f-body); font-weight: 700; letter-spacing: .03em; font-size: 12px; }
+.blk-t { font-family: var(--f-body); font-weight: 700; font-size: 1rem; letter-spacing: 0; text-transform: none; color: var(--ink); margin-bottom: 4px; }
 .brand { display: none; }
-.lead { color: var(--muted); }
-/* Blocs : des filets plutôt que des boîtes */
-.card, details.seq, .tile, .tool, .mine, .partition, fieldset.qq, .labo, .note, .due, .echo-c, .consigne, .trace {
-  border: 0; border-top: 1px solid var(--rule); border-radius: 0; background: transparent; box-shadow: none; }
-.card, .tool, .mine { padding: 16px 0; } details.seq > summary { padding: 16px 0; } details.seq .body { padding: 0 0 18px; }
-.mine { border-top: 3px solid var(--c); } .labo { border-top: 3px solid var(--c); padding: 18px 0; }
-.note { padding: 14px 0; background: transparent; } .due { padding: 12px 0; }
-.echo-c { padding: 14px 0; border-left: 0; } .trace { border-left: 3px solid var(--ink); border-top: 0; padding-left: 14px; }
-.consigne { border-left: 0; padding: 10px 0 0; }
-.stack { gap: 0; } .stack > * + * { margin-top: 0; }
-.age { border: 0; border-top: 1px solid var(--rule); border-radius: 0; padding: 14px 0; }
-.age-img { margin: 0 0 10px; border-radius: 0; height: 110px; }
-.listen { border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 10px 0; background: transparent; }
-.listen .play, .play { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); width: 34px; height: 34px; }
-.play.img { background: transparent; }
-.chip, .tag { border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; }
-.btn, .btn2 { border-radius: 999px; border: 1px solid var(--ink); background: transparent; color: var(--ink); }
-.btn::before { color: var(--ink); }
-.btn-main { border-radius: 999px; background: var(--ink); color: var(--bg); }
-.levels a { border-radius: 999px; border-color: var(--ink); background: transparent; color: var(--ink); font-weight: 500; font-size: 1rem; }
-.levels a[aria-current="page"] { background: var(--ink); color: var(--bg); }
-.wbtn { border-radius: 50%; background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
-.strip a { border-color: var(--ink); background: transparent; } .strip a.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.lvlbadge { border-radius: 50%; font-family: var(--f-display); font-weight: 700; font-size: 1.05rem; }
-.ico { border-radius: 50%; } .ico.vign { border-radius: 4px; }
-.sonbtn { border-color: var(--ink); color: var(--ink); background: transparent; } .sonbtn .sp { background: var(--ink); } .sonbtn .sp::after { border-color: transparent transparent transparent var(--bg); }
-.sonbtn[aria-pressed="true"] { background: var(--ink); color: var(--bg); } .sonbtn[aria-pressed="true"] .sp { background: var(--bg); } .sonbtn[aria-pressed="true"] .sp::after { background: var(--ink); }
-.rel { background: transparent; border-color: var(--ink); color: var(--ink); }
-.gimg { border: 0; border-radius: 0; } .gimg img { border-radius: 0; } .gph { background: var(--navy-soft); color: var(--ink); }
-.barre { background: color-mix(in srgb, var(--bg) 94%, transparent); border-bottom: 1px solid var(--rule); }
-.retour { border-radius: 999px; border-color: var(--ink); color: var(--ink); background: transparent; }
-.fil a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-nav.tabs { border-top: 1px solid var(--rule); }
+header.top { padding-block: 22px 4px; }
+.card, details.seq, .tool, .mine, .partition, fieldset.qq, .labo, .echo-c, .tile, .age { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--ombre); }
+.card, .tool, .mine { padding: 16px; } details.seq > summary { padding: 14px 16px; } details.seq .body { padding: 0 16px 16px; }
+.stack { gap: 12px; }
+.mine { border-top: 6px solid var(--c); } .labo { border: 2px solid var(--c); padding: 16px; }
+.note { background: var(--navy-soft); border-radius: 14px; padding: 12px 14px; border: 0; }
+.due { background: var(--gold-soft); border: 1px solid var(--gold); border-radius: 14px; padding: 12px 14px; }
+.echo-c { padding: 14px; border-left: 6px solid var(--gold); }
+.trace { background: #fffdf3; border: 1px solid #efe3b5; border-left: 5px solid #e2b93b; border-radius: 12px; padding: 12px 14px; color: #2b2b2b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .trace { background: #252214; border-color: #4a4224; color: var(--ink); } }
+.consigne { border-left: 4px solid var(--navy); padding-left: 12px; }
+.age { padding: 12px; } .age-img { margin: -12px -12px 8px; border-radius: 18px 18px 0 0; height: 110px; }
+.listen { border: 1px solid var(--line); border-radius: 14px; padding: 8px 10px; background: var(--surface); }
+.listen .play, .play { background: #d93025; color: #fff; border: 0; }
+.play.img { background: var(--navy); }
+.chip { border-radius: 999px; background: var(--navy-soft); color: var(--navy); border: 1px solid transparent; font-family: var(--f-body); font-weight: 700; }
+.tag { border-radius: 999px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); font-family: var(--f-body); }
+.btn { border-radius: 12px; } .btn2 { border-radius: 12px; border: 2px solid var(--navy); color: var(--navy); background: var(--surface); font-weight: 700; }
+.btn-main { border-radius: 14px; background: var(--navy); color: var(--on-navy); font-size: 1.02rem; padding: 12px 18px; }
+.levels a { border-radius: 12px; font-family: var(--f-display); } .levels a[aria-current="page"] { background: var(--navy); color: var(--on-navy); }
+.wbtn { border-radius: 14px; background: var(--navy); color: var(--on-navy); }
+.strip a { font-family: var(--f-body); } .strip a.on { background: var(--navy); }
+.lvlbadge { border-radius: 14px; } .ico { border-radius: 14px; } .ico.vign { border-radius: 14px; }
+.sonbtn { border: 2px solid var(--navy); color: var(--navy); background: var(--surface); font-weight: 700; }
+.rel { background: var(--gold-soft); color: var(--gold-text); border: 1px solid var(--gold); font-family: var(--f-body); font-weight: 700; }
+.gimg { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
+.barre { background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: var(--ombre); }
+.retour { border-radius: 12px; border: 2px solid var(--navy); color: var(--navy); background: var(--surface); }
+.fil a { color: var(--navy); text-decoration: none; }
+nav.tabs { border-top: 1px solid var(--line); box-shadow: 0 -2px 10px rgba(30,45,80,.06); }
 nav.tabs ul { grid-template-columns: repeat(6, 1fr); }
-nav.tabs a { color: var(--muted); font-size: 10px; letter-spacing: 0; white-space: nowrap; }
-nav.tabs a[aria-current="page"] { color: var(--ink); } nav.tabs a[aria-current="page"] svg { color: var(--ink); }
-nav.tabs a[aria-current="page"] span { border-bottom: 2px solid var(--ink); }
-.sig { border-top: 1px solid var(--rule); text-align: left; display: flex; flex-direction: column; gap: 4px; }
-.sig a.faust { color: var(--ink); }
-.timeline .tl-bar div { border-radius: 0; background: transparent; border: 1px solid var(--rule); } .timeline .tl-bar div.on { background: var(--ink); color: var(--bg); }
-.tl-mark { background: var(--ink); }
-.pick-b { border-radius: 999px; border-width: 1.5px; font-family: var(--f-display); font-weight: 700; }
-.labo-tuile { border-radius: 0; } .labo-jouer, .labo-tenir { box-shadow: none; }
-/* Motif de points (anneaux), comme une grille de haut-parleur */
-.points { height: calc(var(--rangs) * 16px); margin: 22px 0; background-image: radial-gradient(circle, transparent 3.4px, var(--ink) 3.5px 4.6px, transparent 4.8px); background-size: 16px 16px; opacity: .85; }
-/* Accueil : choix de l'espace */
-.choix, .accueil { padding-top: 22px; }
-.choix-haut { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 34px; }
-.hexa { width: 104px; height: 96px; flex: none; color: var(--ink); }
-.choix-liens { list-style: none; margin: 0; padding: 0; min-width: 0; width: min(220px, 55%); font: 400 12px/1 var(--f-mono); }
-.choix-liens li { border-top: 1px solid var(--rule); padding: 9px 0 9px 22px; position: relative; } .choix-liens li:last-child { border-bottom: 1px solid var(--rule); }
-.choix-liens li::before { content: "\2192"; position: absolute; left: 0; }
-.choix-liens a { color: var(--ink); text-decoration: none; }
-.choix-titre { font-size: clamp(2.4rem, 9vw, 4.4rem); line-height: .98; margin-top: 8px; max-width: 14ch; }
-.choix-grille { display: grid; grid-template-columns: 1fr; gap: 0; margin-top: 8px; }
-@media (min-width: 640px) { .choix-grille { grid-template-columns: 1fr 1fr; gap: 24px; } }
-.choix-b { position: relative; text-align: left; display: flex; flex-direction: column; gap: 8px; padding: 22px 0 26px 92px; border: 0; border-top: 1px solid var(--rule); background: transparent; color: var(--ink); font: inherit; cursor: pointer; min-height: 120px; }
-.choix-b b { font: 700 clamp(1.7rem, 5vw, 2.2rem)/1 var(--f-display); letter-spacing: -.03em; }
-.choix-b .small { color: var(--muted); }
-.rond { display: grid; place-items: center; width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--ink); color: var(--ink); flex: none; }
-.choix-b .rond { position: absolute; left: 0; top: 24px; } .rond svg { width: 26px; height: 26px; margin-left: 4px; }
-.choix-b:hover .rond, .choix-b:focus-visible .rond { background: var(--ink); color: var(--bg); }
-.rond.petit { width: 40px; height: 40px; border-width: 1.5px; } .rond.petit svg { width: 16px; height: 16px; }
-.pied-choix { display: flex; justify-content: space-between; gap: 10px; margin-top: 26px; padding-top: 10px; border-top: 1px solid var(--rule); font: 400 11px var(--f-mono); text-transform: uppercase; letter-spacing: .04em; }
-/* Listes de projection */
-.liste-proj { display: flex; flex-direction: column; }
-.ligne-proj { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; }
-.ligne-proj b { display: block; font: 600 1.05rem/1.25 var(--f-display); letter-spacing: -.01em; } .ligne-proj.vide { opacity: .5; pointer-events: none; }
-.ligne-prof { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; border-top: 1px solid var(--line); } .ligne-prof .ligne-proj { border-top: 0; grid-template-columns: auto 1fr; }
-/* Partitions en tête de séance */
-.part-seance { border-top: 3px solid var(--ink); padding-top: 14px; margin-top: 16px; }
-.part-seance .partition { border-top: 1px solid var(--line); }
-/* Diaporama : blanc, noir, la couleur du niveau en accent */
-.proj2 { background: #fff; color: #0b0b0b; }
-.proj2 .s-h { font-family: "Inter Tight", Arial, sans-serif; font-weight: 700; letter-spacing: -.035em; line-height: 1; }
-.proj2 .s-pill { border-radius: 999px; background: transparent; color: #0b0b0b; border: 1.5px solid #0b0b0b; font-family: var(--f-mono); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; font-size: clamp(12px, 1.2vw, 16px); }
-.proj2 .s-pill svg { color: var(--c); }
-.proj2 .s-q li { border-radius: 0; box-shadow: none; background: transparent; border-top: 1px solid #0b0b0b; padding-left: 58px; }
-.proj2 .s-q li::before { border-radius: 50%; background: transparent; border: 1.5px solid #0b0b0b; color: #0b0b0b; }
-.proj2 .s-l li::before { background: transparent; border: 1.5px solid var(--c); }
-.proj2 .s-yt a, .proj2 .s-son .sonbtn { box-shadow: none; border: 1.5px solid #0b0b0b; border-radius: 999px; background: #fff; }
-.proj2 .s-svg, .proj2 .s-part .partition, .proj2 .s-gal .gimg { box-shadow: none; border-radius: 0; border-top: 1px solid #0b0b0b; background: #fff; }
-.proj2.est-titre { background: #0b0b0b; } .proj2.est-titre .p-prog span, .proj2.est-titre .p-dots span.on { background: var(--c); }
-.proj2 .t-titre .s-h { font-size: clamp(40px, 7vw, 104px); } .proj2 .t-titre .s-eyebrow { font-family: var(--f-mono); text-transform: uppercase; color: var(--c); filter: brightness(1.6); }
-.proj2 .t-titre .s-question { font-family: "Inter Tight", Arial, sans-serif; font-style: normal; font-weight: 500; border-left: 4px solid var(--c); }
-.proj2 .t-echo .s-texte { box-shadow: none; border-radius: 0; border-top: 6px solid var(--c); }
-.proj2 .p-bar button:not(:disabled) { background: #0b0b0b; } .proj2 .p-top button { box-shadow: none; border: 1px solid #0b0b0b; }
-
+nav.tabs a { color: var(--muted); font: 700 10px/1.1 var(--f-body); white-space: nowrap; gap: 4px; }
+nav.tabs a svg { width: 24px; height: 24px; padding: 3px 12px; box-sizing: content-box; border-radius: 999px; }
+nav.tabs a[aria-current="page"] { color: var(--navy); } nav.tabs a[aria-current="page"] svg { background: var(--navy-soft); color: var(--navy); }
+.sig { text-align: left; }
+.pick-b { border-radius: 14px; }
+.points { display: none; }
+/* Accueil : choisir son espace */
+.choix, .accueil { padding-top: 24px; }
+.choix-haut { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 18px; }
+.hexa { display: none; }
+.choix-haut::before { content: ""; width: 64px; height: 64px; flex: none; border-radius: 18px; background: var(--navy) center / 70% no-repeat url("icon-192.png"); box-shadow: var(--ombre); }
+.choix-liens { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; font: 700 12px var(--f-body); }
+.choix-liens li { padding: 6px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
+.choix-liens a { color: var(--navy); text-decoration: none; }
+.choix-titre { font-size: clamp(1.9rem, 7vw, 2.8rem); line-height: 1.1; margin: 6px 0 18px; }
+.choix-grille { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 640px) { .choix-grille { grid-template-columns: 1fr 1fr; } }
+.choix-b { position: relative; text-align: left; display: flex; flex-direction: column; gap: 6px; padding: 22px 20px 22px 108px; border: 0; border-radius: 22px; color: #fff; font: inherit; cursor: pointer; min-height: 132px; box-shadow: 0 6px 18px rgba(30,45,80,.18); }
+.choix-b[data-role="eleve"] { background: #2f6f7a; } .choix-b[data-role="prof"] { background: #243b6b; }
+.choix-b b { font: 700 1.6rem/1.1 var(--f-display); } .choix-b .small, .choix-b .label { color: rgba(255,255,255,.9); }
+.rond { display: grid; place-items: center; width: 70px; height: 70px; border-radius: 50%; background: #fff; color: var(--navy); flex: none; }
+.choix-b .rond { position: absolute; left: 20px; top: 30px; } .choix-b[data-role="eleve"] .rond { color: #2f6f7a; }
+.rond svg { width: 28px; height: 28px; margin-left: 4px; }
+.rond.petit { width: 40px; height: 40px; background: var(--navy); color: var(--on-navy); } .rond.petit svg { width: 16px; height: 16px; }
+.pied-choix { display: none; }
+/* Listes de projection (enseignant) */
+.liste-proj { display: flex; flex-direction: column; gap: 8px; }
+.ligne-proj { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); text-decoration: none; }
+.ligne-proj b { display: block; font: 700 1rem/1.25 var(--f-display); } .ligne-proj.vide { opacity: .5; pointer-events: none; }
+.ligne-prof-bloc { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 4px 12px 8px; }
+.ligne-prof { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; } .ligne-prof .ligne-proj { border: 0; padding-left: 0; grid-template-columns: auto 1fr; }
+.part-seance { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; box-shadow: var(--ombre); }
+.part-seance .partition { box-shadow: none; }
+/* Les quatre étapes de la séance (élève) */
+.etapes { position: sticky; top: 58px; z-index: 4; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 16px 0 12px; padding: 6px; background: var(--surface); border-radius: 16px; box-shadow: var(--ombre); border: 1px solid var(--line); }
+.etapes button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 2px; border: 0; border-radius: 12px; background: transparent; color: var(--muted); font: 700 .8rem var(--f-body); cursor: pointer; min-height: 56px; }
+.et-n { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 2px solid currentColor; font-size: .9rem; }
+.etapes button[aria-selected="true"] { background: var(--c); color: #fff; } .etapes button[aria-selected="true"] .et-n { background: #fff; color: var(--c); border-color: #fff; }
+.suite { display: flex; justify-content: flex-end; margin-top: 6px; }
+.gros-liens { display: grid; gap: 10px; margin-top: 6px; }
+.gros-lien { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 12px; align-items: center; padding: 12px; border-radius: 16px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); text-decoration: none; }
+.gros-lien .medaille { grid-row: 1 / 3; } .gros-lien b { font: 700 1.05rem var(--f-display); } .gros-lien .small { grid-column: 2; }
 /* Jeu : puce de niveau, célébrations, parcours */
 .puce-jeu { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1.5px solid var(--ink); border-radius: 999px; color: var(--ink); text-decoration: none; flex: none; min-height: 40px; }
 .accueil .puce-jeu { margin-top: 12px; }
@@ -577,6 +560,10 @@ nav.tabs a[aria-current="page"] span { border-bottom: 2px solid var(--ink); }
 .niveaux-l { list-style: none; margin: 0; padding: 0; } .niveaux-l li { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
 .niveaux-l li span:last-child { display: flex; flex-direction: column; } .niveaux-l li:not(.atteint) b { color: var(--muted); }
 .lien-btn { background: none; border: 0; padding: 0; color: var(--ink); text-decoration: underline; cursor: pointer; font: inherit; }
+.etapes-carte { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.etapes-carte a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px; border-radius: 14px; background: var(--bg); border: 2px solid var(--c); color: var(--ink); text-decoration: none; font: 700 .8rem var(--f-body); }
+.etapes-carte .et-n { background: var(--c); color: #fff; border-color: var(--c); }
+details.autres-semaines { margin-top: 12px; } details.autres-semaines > summary { cursor: pointer; font-weight: 700; color: var(--navy); padding: 8px 0; }
 </style>
 </head>
 <body>
@@ -626,7 +613,7 @@ const HEXA = `<svg class="hexa" viewBox="0 0 120 110" aria-hidden="true"><path d
 const POINTS = n => `<div class="points" aria-hidden="true" style="--rangs:${n || 4}"></div>`;
 function vueChoix() {
   return `<section class="choix"><div class="choix-haut">${HEXA}<ul class="choix-liens"><li><span>${esc(D.etablissement)}</span></li><li><span>${esc(D.annee)}</span></li><li><span>De la 6e à la 3e</span></li></ul></div>
-    <div class="label">Éducation musicale</div><h1 class="choix-titre">Une histoire de la musique, des flûtes en os à la K-pop.</h1>${POINTS(4)}
+    <div class="label">Éducation musicale, Sebastian Rivas</div><h1 class="choix-titre">Bienvenue ! Qui es-tu ?</h1>
     <div class="choix-grille">
       <button type="button" class="choix-b" data-role="eleve"><span class="rond" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l9 6-9 6z" fill="currentColor"/></svg></span><span class="label">Espace</span><b>Je suis élève</b><span class="small">Ma séance de la semaine, écouter, réviser, jouer avec le son.</span></button>
       <button type="button" class="choix-b" data-role="prof"><span class="rond" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l9 6-9 6z" fill="currentColor"/></svg></span><span class="label">Espace</span><b>Je suis enseignant</b><span class="small">Progression, déroulés, projection en classe, évaluations, ressources.</span></button>
@@ -706,6 +693,8 @@ function carteEleve(k, idx) {
   } else {
     const s = n.sequences[e.seq - 1], c = n.contenus[e.seq - 1];
     h += `<p class="meta">Séquence ${e.seq} : ${esc(s.titre)}, séance ${e.num} sur ${c.seances.length}</p><p class="q">${esc(s.question)}</p>`;
+    h += `<p class="small" style="margin:2px 0 -4px"><b>Ta séance en quatre étapes :</b></p>` + `<div class="etapes-carte" style="--c:${D.couleurs[k]}">${[["decouvrir", "1", "Découvrir"], ["ecouter", "2", "Écouter"], ["retenir", "3", "Retenir"], ["entrainer", "4", "S'entraîner"]].map(([id, n, lib]) =>
+      `<a href="#${seanceId(k, e)}" data-aller-etape="${id}" data-seance="${k}-${e.seq}-${e.num}"><span class="et-n">${n}</span>${lib}</a>`).join("")}</div>`;
     const imgs = ((D.diapos[k] && D.diapos[k][e.seq + "-" + e.num]) || []).flatMap(v => v.img || []).slice(0, 3);
     if (imgs.length) h += galerieHtml(imgs);
     h += `<div class="blk"><h3 class="blk-t">Ce que j'apprends</h3><ul class="plain">${c.objectifs.map(o => `<li>${esc(o)}</li>`).join("")}</ul></div>`;
@@ -733,7 +722,7 @@ function vueSemaine(idx) {
     const AGES = { "6e": ["Aux origines", "De la flûte d'os à Ut queant laxis"], "5e": ["Moyen Âge et Renaissance", "De Notre-Dame à Monteverdi"],
                    "4e": ["De Versailles au phonographe", "De Lully à Edison"], "3e": ["Modernité et présent", "Du Sacre à la K-pop"] };
     h += `<section class="accueil"><div class="choix-haut">${HEXA}<ul class="choix-liens"><li><a href="#accueil">Changer d'espace</a></li><li><span>${role() === "prof" ? "Espace enseignant" : "Espace élève"}</span></li><li><span>${esc(D.annee)}</span></li></ul></div>
-      <div class="label">${esc(D.etablissement)}</div><h1 class="choix-titre">Éducation musicale</h1>${puceHtml()}${POINTS(3)}</section>`;
+      <div class="label">${esc(D.etablissement)}</div><h1 class="choix-titre">${role() === "prof" ? "Bonjour ! Voici vos classes." : "Bonjour ! Prêt pour la musique ?"}</h1>${puceHtml()}</section>`;
     if (role() !== "prof") { h += choixClasse(k);
     if (!k) h += `<p class="small" style="margin-top:6px">Choisis ta classe : le site affichera ta séance, ton travail et ta prochaine évaluation.</p>`; }
     h += `<h2 class="sec">${avant ? `Première séance, <span class="gt">lundi 2 novembre</span>` : "Cette semaine"}</h2>`;
@@ -741,10 +730,13 @@ function vueSemaine(idx) {
     h += head("Agenda de l'année", `Semaine du ${w.semaine}`, idx < courant ? "Semaine passée." : "Semaine à venir.");
     if (!k) h += choixClasse(k);
   }
+  const replier = role() !== "prof" && k && idx === courant;
+  if (replier) h += `<details class="autres-semaines"><summary>Voir une autre semaine</summary>`;
   h += `<div class="weeknav"><a class="wbtn" href="#semaine-${Math.max(0, idx - 1)}" aria-label="Semaine précédente"${idx === 0 ? ' aria-disabled="true" tabindex="-1"' : ""}>&#8249;</a>
     <div class="wlabel"><span class="meta">Semaine ${idx + 1} sur ${WEEKS.length}</span><b>du ${esc(w.semaine)}</b></div>
     <a class="wbtn" href="#semaine-${Math.min(WEEKS.length - 1, idx + 1)}" aria-label="Semaine suivante"${idx === WEEKS.length - 1 ? ' aria-disabled="true" tabindex="-1"' : ""}>&#8250;</a></div>
     <nav class="strip" id="strip" aria-label="Toutes les semaines">${WEEKS.map((x, i) => `<a href="#semaine-${i}" class="${i === idx ? "on" : ""}${i === courant ? " today" : ""}"${i === idx ? ' aria-current="page"' : ""}>${x.semaine}</a>`).join("")}</nav>`;
+  if (replier) h += `</details>`;
   if (idx !== courant) h += `<p class="small" style="margin-top:8px"><a href="#semaine">Revenir à cette semaine</a></p>`;
   if (k && role() !== "prof") h += carteEleve(k, idx);
   if (idx === courant) h += `<a class="card jeuxcard" href="#pratiquer-${k || defautNiv()}"><span class="ico" style="background:var(--navy)" aria-hidden="true">${D.ficheIcons.parametres}</span><div><h3>Jeux sonores</h3><p class="small">L'oreille fine, le clavier, compose un rythme, l'orchestre, la frise. Et tous les exemples sonores du cours.</p></div></a>`;
@@ -798,28 +790,42 @@ function vueSeance(k, seq, num) {
   let h = `<header class="top"><div class="brand"><span class="lvlbadge sm" style="background:${D.couleurs[k]}">${k}</span><span>Séquence ${seq}, ${esc(s.titre)}</span></div>
     <div class="label">Séance ${num}, semaine du ${esc(e.semaine)}</div><h1>${esc(se.objectif)}</h1><p class="lead">${esc(s.question)}</p></header>`;
   h += `<div class="pager"><a class="wbtn" href="${prev ? "#" + seanceId(k, prev) : "#cours-" + k}" aria-label="Séance précédente">&#8249;</a>
-    <a class="btn-main" href="#proj-${k}-${seq}-${num}">Projeter</a><a class="wbtn" href="${next ? "#" + seanceId(k, next) : "#cours-" + k}" aria-label="Séance suivante">&#8250;</a></div>`;
+    <a class="btn-main" href="#proj-${k}-${seq}-${num}">${role() === "prof" ? "Projeter" : "Voir le diaporama"}</a><a class="wbtn" href="${next ? "#" + seanceId(k, next) : "#cours-" + k}" aria-label="Séance suivante">&#8250;</a></div>`;
   const ec = ecoutesSeance(k, seq, num);
   const qs = [...new Set(ec.flatMap(x => x.questions))];
-  h += `<div class="stack" style="margin-top:16px">`;
-  h += `<section class="card"><h2 class="blk-t">Ce que j'apprends</h2><ul class="plain">${c.objectifs.map(o => `<li>${esc(o)}</li>`).join("")}</ul></section>`;
-  h += `<section class="card"><h2 class="blk-t">Déroulé de la séance, 55 minutes</h2><ul class="steps">${se.etapes.map(([m, t]) => `<li><span class="min">${m} min</span><span>${esc(t)}</span></li>`).join("")}</ul></section>`;
+  const P = {};
+  P.apprends = (P.apprends || "") + `<section class="card"><h2 class="blk-t">Ce que j'apprends</h2><ul class="plain">${c.objectifs.map(o => `<li>${esc(o)}</li>`).join("")}</ul></section>`;
+  P.deroule = (P.deroule || "") + `<section class="card"><h2 class="blk-t">Déroulé de la séance, 55 minutes</h2><ul class="steps">${se.etapes.map(([m, t]) => `<li><span class="min">${m} min</span><span>${esc(t)}</span></li>`).join("")}</ul></section>`;
   const dv = D.diapos[k] && D.diapos[k][seq + "-" + num];
   const parts = [...new Set((dv || []).map(v => v.partition).filter(Boolean))], imslp = (D.imslp[k] || {})[seq] || [];
-  if (parts.length || imslp.length) h += `<section class="part-seance"><h2 class="blk-t">Partitions de la séance</h2>${parts.map(partitionHtml).join("")}${imslp.length ? `<div style="margin-top:10px"><div class="label">Partitions complètes (domaine public, IMSLP)</div>${liensHtml(imslp.map(([l, q]) => [l, "https://imslp.org/index.php?title=Special:Search&search=" + encodeURIComponent(q)]))}</div>` : ""}</section>`;
-  if (dv) h += `<section class="card"><h2 class="blk-t">Le cours</h2>${coursEcrit(dv.filter(v => !v.echo && !(v.partition && v.k === "Lire et écouter")))}</section>`;
+  if (parts.length || imslp.length) P.partitions = (P.partitions || "") + `<section class="part-seance"><h2 class="blk-t">Partitions de la séance</h2>${parts.map(partitionHtml).join("")}${imslp.length ? `<div style="margin-top:10px"><div class="label">Partitions complètes (domaine public, IMSLP)</div>${liensHtml(imslp.map(([l, q]) => [l, "https://imslp.org/index.php?title=Special:Search&search=" + encodeURIComponent(q)]))}</div>` : ""}</section>`;
+  if (dv) P.cours = (P.cours || "") + `<section class="card"><h2 class="blk-t">Le cours</h2>${coursEcrit(dv.filter(v => !v.echo && !(v.partition && v.k === "Lire et écouter")))}</section>`;
   const ech = echosDe(k, seq, num);
-  if (ech.length) h += `<section class="card echo-s"><h2 class="blk-t">Écho d'aujourd'hui</h2><p class="small">Une musique populaire des XXe ou XXIe siècles qui répond à la séance.</p>${ech.map(echoHtml).join("")}</section>`;
-  else if (num === 1 && s.accroche) h += `<section class="card"><h2 class="blk-t">Accroche</h2><p>${esc(s.accroche)}</p></section>`;
+  if (ech.length) P.echo = (P.echo || "") + `<section class="card echo-s"><h2 class="blk-t">Écho d'aujourd'hui</h2><p class="small">Une musique populaire des XXe ou XXIe siècles qui répond à la séance.</p>${ech.map(echoHtml).join("")}</section>`;
+  else if (num === 1 && s.accroche) P.echo = (P.echo || "") + `<section class="card"><h2 class="blk-t">Accroche</h2><p>${esc(s.accroche)}</p></section>`;
   const sonsSeance = [...new Set([...(dv || []).flatMap(v => v.son || []), ...c.fiches.flatMap(f => D.ficheSons[f] || [])])];
-  if (sonsSeance.length) h += `<section class="card"><h2 class="blk-t">Exemples sonores</h2><p class="small">Fabriqués par le navigateur. Touche un bouton pour écouter, touche-le encore pour arrêter.</p>${sonsHtml(sonsSeance)}</section>`;
-  h += `<section class="card"><h2 class="blk-t">À écouter</h2><div class="listens">${ec.map(x => ecoute(x.lib, x.q)).join("")}</div>
+  if (sonsSeance.length) P.sons = (P.sons || "") + `<section class="card"><h2 class="blk-t">Exemples sonores</h2><p class="small">Fabriqués par le navigateur. Touche un bouton pour écouter, touche-le encore pour arrêter.</p>${sonsHtml(sonsSeance)}</section>`;
+  P.ecoute = (P.ecoute || "") + `<section class="card"><h2 class="blk-t">À écouter</h2><div class="listens">${ec.map(x => ecoute(x.lib, x.q)).join("")}</div>
     ${qs.length ? `<div class="consigne"><span class="label">En écoutant, je cherche</span><ol>${qs.map(q => `<li>${esc(q)}</li>`).join("")}</ol></div>` : `<p class="small">En écoutant, je repère les instruments ou les voix, le tempo et le caractère.</p>`}</section>`;
-  h += `<section class="card"><h2 class="blk-t">Le chant</h2><p>${esc(s.chant)}</p></section>`;
-  h += `<section class="card"><h2 class="blk-t">Je retiens</h2><div class="trace">${c.trace.map(t => `<p>${esc(t)}</p>`).join("")}</div></section>`;
-  h += `<section class="card"><h2 class="blk-t">Pour la prochaine fois</h2><p>${esc(c.devoirs)}</p><div class="chips" style="margin-top:8px">${c.fiches.map(f => `<a class="chip" href="#fiche-${f}">${esc(D.fiches[f].titre)}</a>`).join("")}</div></section>`;
-  h += `<section class="card"><h2 class="blk-t">Évaluation de la séquence</h2><p>${esc(c.eval.consigne)}</p><p class="small"><a href="#reviser-${k}">Critères de réussite</a></p></section>`;
-  h += ressources(k, c.fiches, seq);
+  P.chant = (P.chant || "") + `<section class="card"><h2 class="blk-t">Le chant</h2><p>${esc(s.chant)}</p></section>`;
+  P.retiens = (P.retiens || "") + `<section class="card"><h2 class="blk-t">Je retiens</h2><div class="trace">${c.trace.map(t => `<p>${esc(t)}</p>`).join("")}</div></section>`;
+  P.devoirs = (P.devoirs || "") + `<section class="card"><h2 class="blk-t">Pour la prochaine fois</h2><p>${esc(c.devoirs)}</p><div class="chips" style="margin-top:8px">${c.fiches.map(f => `<a class="chip" href="#fiche-${f}">${esc(D.fiches[f].titre)}</a>`).join("")}</div></section>`;
+  P.eval = (P.eval || "") + `<section class="card"><h2 class="blk-t">Évaluation de la séquence</h2><p>${esc(c.eval.consigne)}</p><p class="small"><a href="#reviser-${k}">Critères de réussite</a></p></section>`;
+  P.ressources = (P.ressources || "") + ressources(k, c.fiches, seq);
+  const tout = ["apprends", "deroule", "partitions", "cours", "echo", "sons", "ecoute", "chant", "retiens", "devoirs", "eval", "ressources"].map(x => P[x] || "").join("");
+  if (role() === "prof") h += `<div class="stack" style="margin-top:16px">${tout}`;
+  else {
+    /* Pour l'élève : la même séance, rangée en quatre étapes. Rien n'est retiré. */
+    const ETAPES = [["decouvrir", "1", "Découvrir", "regarder", (P.apprends || "") + (P.cours || "")],
+      ["ecouter", "2", "Écouter", "ecoute", (P.ecoute || "") + (P.partitions || "") + (P.sons || "") + (P.echo || "") + (P.chant || "")],
+      ["retenir", "3", "Retenir", "notion", (P.retiens || "") + (P.devoirs || "") + (P.eval || "")],
+      ["entrainer", "4", "S'entraîner", "eval", `<section class="card entr"><h2 class="blk-t">Je m'entraîne</h2><div class="gros-liens"><a class="gros-lien" href="#quiz-${k}-${seq}">${medaille("eval", true, D.couleurs[k])}<b>Le quiz de la séquence</b><span class="small">4 questions, correction immédiate</span></a><a class="gros-lien" href="#pratiquer-${k}">${medaille("oreille", true, D.couleurs[k])}<b>Les jeux d'écoute</b><span class="small">L'oreille fine, le clavier, le rythme…</span></a><a class="gros-lien" href="#faust">${medaille("code", true, D.couleurs[k])}<b>Le laboratoire du son</b><span class="small">Fabriquer des sons avec Faust</span></a></div></section>` + (P.ressources || "") + `<details class="seq"><summary><span class="seqhead"><span class="meta">Pour les curieux</span><h3>Comment se déroule la séance en classe</h3></span><span class="chev" aria-hidden="true">&#8250;</span></summary><div class="body">${P.deroule || ""}</div></details>`]];
+    const ouverte = get("etape:" + k + "-" + seq + "-" + num, "decouvrir");
+    h += `<nav class="etapes" role="tablist" aria-label="Les étapes de la séance" style="--c:${D.couleurs[k]}">${ETAPES.map(([id, n, lib, pic]) => `<button type="button" role="tab" id="et-${id}" aria-controls="pa-${id}" aria-selected="${id === ouverte}" data-etape="${id}"><span class="et-n">${n}</span><span class="et-l">${lib}</span></button>`).join("")}</nav>`;
+    h += ETAPES.map(([id, , lib, , contenu], x) => `<div class="stack panneau" role="tabpanel" id="pa-${id}" aria-labelledby="et-${id}"${id === ouverte ? "" : " hidden"}>${contenu}
+      <div class="suite">${x < 3 ? `<button type="button" class="btn-main" data-etape="${ETAPES[x + 1][0]}">Étape suivante : ${ETAPES[x + 1][2]} &#8250;</button>` : `<a class="btn-main" href="#parcours">Voir mon parcours</a>`}</div></div>`).join("");
+    h += `<div>`;
+  }
   h += `</div><p class="small" style="margin-top:12px;text-align:center"><a href="#semaine-${widx}">Toute la semaine</a></p>`;
   h += `<div class="pager" style="margin-top:12px">${prev ? `<a class="btn2" href="#${seanceId(k, prev)}">&#8249; Séance précédente</a>` : "<span></span>"}${next ? `<a class="btn2" href="#${seanceId(k, next)}">Séance suivante &#8250;</a>` : "<span></span>"}</div>`;
   return h;
@@ -1945,6 +1951,11 @@ function rendre() {
   document.querySelectorAll(".pick-b").forEach(b => b.onclick = () => { set("classe", b.dataset.classe); set("niv", b.dataset.classe); rendre(); });
   const oth = document.getElementById("others"); if (oth) oth.addEventListener("toggle", () => set("tout", oth.open ? "1" : ""));
   journee(); majPuce();
+  app.querySelectorAll("[data-aller-etape]").forEach(a => a.addEventListener("click", () => set("etape:" + a.dataset.seance, a.dataset.allerEtape)));
+  app.querySelectorAll("[data-etape]").forEach(b => b.onclick = () => { const id = b.dataset.etape; set("etape:" + location.hash.replace("#seance-", ""), id);
+    app.querySelectorAll(".etapes [role=tab]").forEach(t => t.setAttribute("aria-selected", t.dataset.etape === id));
+    app.querySelectorAll(".panneau").forEach(p => p.hidden = p.id !== "pa-" + id);
+    if (b.closest(".suite")) { const nav = app.querySelector(".etapes"); nav.scrollIntoView({ block: "start" }); document.getElementById("et-" + id).focus({ preventScroll: true }); } });
   { const z = document.getElementById("raz-jeu"); if (z) z.onclick = () => { if (confirm("Effacer tout ton parcours (XP, badges) sur cet appareil ?")) { PARC = JEU_VIDE(); sauverJeu(); rendre(); } }; }
   { let m; if ((m = v.match(/^seance-(\w+)-(\d+)-(\d+)$/))) { gagner(`seance:${m[1]}-${m[2]}-${m[3]}`, 10, "seances"); verifierSemaine(); }
     if (v.startsWith("fiche-")) gagner("fiche:" + v.slice(6), 5, "fiches");
