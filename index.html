@@ -41,7 +41,7 @@
   --bg: #0f1621; --surface: #172131; --ink: #e8edf4; --muted: #9eabbb; --line: #2a3749;
   --navy: #a9c1de; --navy-soft: #1d2c40; --gold: #d8b46c; --gold-text: #d8b46c; --gold-soft: #2d2618; --on-navy: #0f1621; color-scheme: dark }
 
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 16px); }
 body {
   background: var(--bg); color: var(--ink); font: 16px/1.55 var(--f-body);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -144,6 +144,9 @@ nav.tabs a[aria-current="page"] svg { color: var(--gold); }
 .tl-bar div.on { background: var(--navy); color: var(--on-navy); }
 .tl-mark { position: absolute; top: -6px; bottom: -6px; width: 3px; border-radius: 2px; background: var(--gold); }
 .tl-leg { display: flex; justify-content: space-between; font: 400 11px var(--f-mono); color: var(--muted); }
+.tl-bar { height: auto; min-height: 44px; } .tl-bar div { flex-direction: column; gap: 1px; padding: 5px 2px; text-align: center; line-height: 1.15; min-width: 0; }
+.tl-bar div b { font: 700 12px var(--f-mono); } .tl-bar div span { font-size: 10.5px; overflow-wrap: anywhere; }
+.tl-bar div.on { box-shadow: 0 0 0 2px var(--gold); } .timeline .tl-mark { top: -9px; bottom: auto; height: 9px; width: 3px; } .timeline .tl-bar { margin-top: 9px; } .tl-etat { margin: 2px 0 0; font-size: .9rem; color: var(--navy); font-weight: 600; }
 .ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: #fff; flex: none; }
 .lvlcard { display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: start; }
 .lvlbadge { font: 700 1.35rem/1 var(--f-display); color: #fff; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; }
@@ -334,6 +337,9 @@ details.seq > summary { grid-template-columns: 56px 1fr 18px; } details.seq > su
 .lvlcard .ico.vign { width: 56px; height: 56px; } .card .lvlcard:has(.vign) { grid-template-columns: 56px 1fr; }
 .age-img { display: block; margin: -14px -14px 6px; height: 92px; background: var(--navy-soft) center / cover; border-radius: 8px 8px 0 0; }
 .age .age-ico { top: 108px; }
+/* Visuel de secours tant que l'image n'est pas chargée (ou si aucune image libre n'est trouvée) : l'icône du niveau sur sa couleur. */
+.age-img { display: grid; place-items: center; color: var(--c); background-color: var(--navy-soft); background-image: linear-gradient(135deg, color-mix(in srgb, var(--c) 26%, transparent), color-mix(in srgb, var(--c) 8%, transparent)); }
+.age-img svg { width: 46px; height: 46px; opacity: .6; } .age-img:not(.pleine) ~ .age-ico { display: none; } .age-img.pleine { background-size: cover; background-position: center; } .age-img.pleine svg { display: none; }
 .rel { display: inline-block; align-self: flex-start; font: 500 11.5px/1.2 var(--f-mono); letter-spacing: .04em; padding: 4px 8px; border-radius: 999px; background: var(--gold-soft); color: var(--gold-text); border: 1px solid var(--gold); }
 .echo-c { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 10px; border: 1px solid var(--line); border-left: 4px solid var(--gold); background: var(--surface); }
 .echo-c b { font-family: var(--f-display); font-size: 1.12rem; color: var(--navy); }
@@ -496,6 +502,12 @@ nav.tabs a[aria-current="page"] { color: var(--navy); } nav.tabs a[aria-current=
 .choix-liens li { padding: 6px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
 .choix-liens a { color: var(--navy); text-decoration: none; }
 .choix-titre { font-size: clamp(1.9rem, 7vw, 2.8rem); line-height: 1.1; margin: 6px 0 18px; }
+@media (max-width: 600px) {
+  .choix, .accueil { padding-top: 14px; } .choix-haut { margin-bottom: 10px; } .choix-haut::before { width: 52px; height: 52px; border-radius: 15px; }
+  .choix-titre { margin: 4px 0 8px; } h2.sec { margin-top: 14px; } .weeknav { margin-top: 8px; }
+  .ligne-prof-bloc details.others { margin-top: 2px; } .ligne-prof-bloc details.others > summary { padding: 8px 0; font-size: .92rem; line-height: 1.3; }
+  .ages-t { margin-top: 18px !important; } .ages { gap: 8px; } .age-img { height: 96px !important; } .age .age-ico { top: 94px; }
+}
 .choix-grille { display: grid; grid-template-columns: 1fr; gap: 14px; }
 @media (min-width: 640px) { .choix-grille { grid-template-columns: 1fr 1fr; } }
 .choix-b { position: relative; text-align: left; display: flex; flex-direction: column; gap: 6px; padding: 22px 20px 22px 108px; border: 0; border-radius: 22px; color: #fff; font: inherit; cursor: pointer; min-height: 132px; box-shadow: 0 6px 18px rgba(30,45,80,.18); }
@@ -627,6 +639,159 @@ span.case-s { cursor: default; border: 0; } button.case-s:focus-visible { outlin
 .case-s:not([class*="niv"]) b { color: var(--muted); }
 table.voc td { font-size: .85rem; } table.voc th[scope=row] { white-space: nowrap; }
 .s-texte .grille .tag { font-size: clamp(13px, 1.3vw, 17px); } .s-texte .g-ligne b { font-size: clamp(14px, 1.4vw, 18px); }
+/* ================= Direction SIGNAL (essai, octobre 2026) : le son comme matière =================
+   Noir et papier, vert acide en accent ; rouge et bleu secondaires. Archivo Black pour l'affichage,
+   Instrument Sans pour le texte et la navigation, IBM Plex Mono pour les données. Aplats, filets, pas d'ombre.
+   Active seulement sur html.signal (adresse ?signal, ou interrupteur dans Plus) : le reste du site n'est pas touché.
+   Contrastes : le vert acide n'est jamais du texte sur papier, seulement un aplat sous du noir ou du texte sur noir. */
+@font-face { font-family: "Archivo Black"; src: url("polices/archivo-black-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Archivo"; src: url("polices/archivo-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Instrument Sans"; src: url("polices/instrument-sans-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Instrument Sans"; src: url("polices/instrument-sans-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Plex Mono Local"; src: url("polices/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Plex Mono Local"; src: url("polices/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+html.signal { color-scheme: light; background: #F0EFE8; }
+html.signal body { --noir: #11110F; --papier: #F0EFE8; --acide: #D6FF00; --rouge: #FF5638; --bleu: #4658FF; --gris: #4B4A44; --filet: #11110F; --tint: #E3E2D9;
+  --bg: var(--papier); --surface: var(--papier); --ink: var(--noir); --muted: var(--gris); --line: var(--filet); --rule: var(--filet);
+  --navy: var(--noir); --navy-soft: var(--tint); --gold: var(--acide); --gold-text: var(--noir); --gold-soft: var(--acide); --on-navy: var(--papier); --ombre: none;
+  --f-display: "Archivo Black", "Arial Black", Arial, sans-serif; --f-titre: "Archivo", Arial, sans-serif; --f-body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif; --f-mono: "Plex Mono Local", "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  background: var(--papier); color: var(--noir); font-family: var(--f-body); }
+html.signal ::selection { background: var(--acide); color: var(--noir); }
+html.signal a { color: var(--noir); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+html.signal :focus-visible { outline: 3px solid var(--bleu) !important; outline-offset: 2px; }
+/* Typographie : l'affichage est monumental, serré, asymétrique ; les données sont en mono. */
+html.signal h1 { font: 400 clamp(2.5rem, 11.5vw, 5.2rem)/.9 var(--f-display); letter-spacing: -.035em; color: var(--noir); text-wrap: balance; }
+html.signal h2, html.signal .h3 { font: 400 1.45rem/1.05 var(--f-display); letter-spacing: -.02em; color: var(--noir); }
+html.signal h3, html.signal h4, html.signal h5, html.signal .blk-t { font-family: var(--f-titre); font-weight: 700; letter-spacing: -.01em; color: var(--noir); }
+html.signal .label, html.signal .meta, html.signal .small.meta { font: 500 11px/1.35 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--noir); }
+html.signal .meta { color: var(--gris); font-weight: 400; }
+html.signal .lead { font-size: 1.05rem; max-width: 46ch; color: var(--noir); }
+html.signal header.top { padding-block: 26px 10px; border-bottom: 2px solid var(--noir); margin-bottom: 14px; }
+html.signal header.top .label { display: inline-block; background: var(--noir); color: var(--acide); padding: 3px 7px; align-self: flex-start; }
+html.signal .q { background: none; border-left: 8px solid var(--acide); border-radius: 0; padding: 2px 0 2px 12px; font: 700 1.3rem/1.2 var(--f-titre); color: var(--noir); box-shadow: inset 8px 0 0 var(--noir); padding-left: 22px; border-left: 0; background: linear-gradient(90deg, var(--noir) 0 4px, var(--acide) 4px 12px, transparent 12px); }
+/* Les cartes deviennent des blocs éditoriaux : filet noir en tête, pas de coin arrondi ni d'ombre. */
+html.signal .card, html.signal details.seq, html.signal .tool, html.signal .mine, html.signal .partition, html.signal fieldset.qq, html.signal .echo-c, html.signal .tile, html.signal .listen, html.signal .ligne-prof-bloc {
+  background: transparent; border: 0; border-top: 2px solid var(--noir); border-radius: 0; box-shadow: none; }
+html.signal .card, html.signal .tool, html.signal .mine { padding: 14px 0 16px; }
+html.signal details.seq > summary { padding: 14px 0; } html.signal details.seq .body { padding: 0 0 18px; }
+html.signal .stack { gap: 0; } html.signal .stack > * + * { margin-top: 0; }
+html.signal .note { background: var(--acide); color: var(--noir); border-radius: 0; border: 0; }
+html.signal .due { background: transparent; border: 0; border-left: 8px solid var(--rouge); border-radius: 0; }
+html.signal .trace { background: var(--tint); border: 0; border-left: 4px solid var(--noir); border-radius: 0; color: var(--noir); }
+html.signal .echo-c { border-left: 0; padding: 12px 0; } html.signal .echo-c .rel { font-family: var(--f-mono); background: var(--noir); color: var(--acide); padding: 2px 6px; }
+/* Commandes : aplats, angles droits. */
+html.signal .btn-main { background: var(--noir); color: var(--papier); border-radius: 0; font: 600 1rem var(--f-body); letter-spacing: .01em; border: 2px solid var(--noir); }
+html.signal .btn-main:hover { background: var(--acide); color: var(--noir); }
+html.signal .btn2, html.signal .sonbtn, html.signal .retour, html.signal .btn { border-radius: 0; border: 2px solid var(--noir); background: transparent; color: var(--noir); }
+html.signal .btn::before { color: var(--noir); background: var(--acide); padding: 2px 4px; }
+html.signal .chip, html.signal .tag { border-radius: 0; border: 1px solid var(--noir); background: transparent; color: var(--noir); font: 500 12px/1.2 var(--f-mono); }
+html.signal .chip[aria-pressed="true"], html.signal .chip[aria-selected="true"] { background: var(--noir); color: var(--acide); }
+html.signal .play, html.signal .listen .play { background: var(--noir); color: var(--acide); border-radius: 0; }
+html.signal .lvlbadge { background: var(--noir) !important; color: var(--acide); border-radius: 0; font-family: var(--f-display); font-weight: 400; letter-spacing: -.03em; }
+html.signal .ico, html.signal .ico.vign { border-radius: 0; }
+html.signal .ico.vign.pleine, html.signal .age-img.pleine, html.signal .gimg img { filter: grayscale(1) contrast(1.12); }
+html.signal .levels a { border-radius: 0; border: 2px solid var(--noir); background: transparent; font: 400 1.25rem/1 var(--f-display); color: var(--noir); }
+html.signal .levels a[aria-current="page"] { background: var(--noir); color: var(--acide); }
+html.signal .sous-onglets a { border-radius: 0; border: 2px solid var(--noir); background: transparent; font: 500 12px var(--f-mono); text-transform: uppercase; letter-spacing: .05em; }
+html.signal .sous-onglets a[aria-current="page"] { background: var(--noir); color: var(--acide); }
+/* Barre du haut et navigation du bas : noir mat, l'onglet actif en vert acide. */
+html.signal .barre { background: var(--papier); border-bottom: 2px solid var(--noir); box-shadow: none; }
+html.signal .fil a { color: var(--noir); } html.signal .fil { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+html.signal nav.tabs { background: var(--noir); border-top: 0; box-shadow: none; }
+html.signal nav.tabs a { color: #BEBDB4; font: 600 10.5px/1.1 var(--f-body); letter-spacing: .02em; border-radius: 0; }
+html.signal nav.tabs a svg { color: currentColor; }
+html.signal nav.tabs a[aria-current="page"] { color: var(--noir); background: var(--acide); }
+html.signal nav.tabs a[aria-current="page"] svg { color: var(--noir); background: none; }
+html.signal footer.sig { font-family: var(--f-mono); color: var(--gris); border-top: 2px solid var(--noir); }
+html.signal footer.sig .faust { color: var(--noir); background: var(--acide); padding: 1px 5px; text-decoration: none; }
+
+/* ---------- Semaine : un calendrier éditorial ---------- */
+html.signal .accueil { padding-top: 14px; }
+html.signal .choix-haut::before { border-radius: 0; box-shadow: none; background-color: var(--noir); }
+html.signal .choix-liens li { border-radius: 0; border: 1px solid var(--noir); background: transparent; padding: 5px 8px; }
+html.signal .choix-liens span, html.signal .choix-liens a { border: 0 !important; background: transparent !important; font: 500 11px var(--f-mono) !important; text-transform: uppercase; letter-spacing: .06em; color: var(--noir) !important; }
+html.signal .choix-titre { font: 400 clamp(2.9rem, 14vw, 6rem)/.86 var(--f-display); letter-spacing: -.045em; margin: 8px 0 14px; max-width: 9ch; }
+html.signal h2.sec { font: 500 11px/1.3 var(--f-mono); text-transform: uppercase; letter-spacing: .1em; border-top: 2px solid var(--noir); padding-top: 8px; margin-top: 18px; }
+html.signal h2.sec .gt { display: block; font: 400 clamp(1.9rem, 9vw, 3rem)/.95 var(--f-display); text-transform: none; letter-spacing: -.03em; color: var(--noir); background: var(--acide); width: fit-content; padding: 2px 6px 4px; margin-top: 6px; }
+html.signal .weeknav { align-items: stretch; border-bottom: 2px solid var(--noir); padding-bottom: 10px; }
+html.signal .wbtn { border-radius: 0; background: var(--noir); color: var(--acide); }
+html.signal .wlabel { text-align: left; flex: 1; } html.signal .wlabel .meta { order: -1; }
+html.signal .wlabel b { font: 400 clamp(2.2rem, 12vw, 4rem)/.9 var(--f-display); letter-spacing: -.04em; color: var(--noir); font-variant-numeric: tabular-nums; }
+html.signal .strip a { border-radius: 0; border: 1px solid var(--noir); background: transparent; font: 500 12px/1 var(--f-mono); color: var(--noir); }
+html.signal .strip a.today { box-shadow: inset 0 -4px 0 var(--rouge), inset 0 -6px 0 var(--noir); }
+html.signal .strip a.on { background: var(--noir); color: var(--acide); border-color: var(--noir); }
+html.signal .liste-proj { gap: 0; }
+html.signal .ligne-prof-bloc { padding: 10px 0 4px; }
+html.signal .ligne-prof .lvlbadge { width: 64px; height: 64px; font-size: 1.9rem; }
+html.signal .ligne-proj b { font: 700 1.05rem/1.2 var(--f-titre); }
+html.signal .ligne-prof-bloc details.others > summary { font: 500 11.5px/1.3 var(--f-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--noir); }
+/* Les quatre années : composition asymétrique, numéros monumentaux, images documentaires en noir et blanc. */
+html.signal .ages { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; border-top: 2px solid var(--noir); }
+html.signal .age { grid-column: span 3; border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: 0 10px 16px 0; border-bottom: 1px solid var(--noir); }
+html.signal .age:nth-child(1) { grid-column: span 4; } html.signal .age:nth-child(2) { grid-column: span 2; } html.signal .age:nth-child(3) { grid-column: span 2; } html.signal .age:nth-child(4) { grid-column: span 4; }
+html.signal .age:nth-child(even) { padding: 0 0 16px 10px; border-left: 1px solid var(--noir); }
+html.signal .age-img { margin: 0 0 8px !important; border-radius: 0 !important; height: 120px !important; background: var(--noir) !important; color: var(--acide); }
+html.signal .age-img svg { opacity: 1; }
+html.signal .age-n { font: 400 clamp(3rem, 13vw, 5rem)/.85 var(--f-display); letter-spacing: -.05em; color: var(--noir) !important; }
+html.signal .age b { font: 700 1.05rem/1.15 var(--f-titre); } html.signal .age .small { font-family: var(--f-mono); font-size: 11.5px; color: var(--gris); }
+html.signal .age-ico { display: none; }
+@media (max-width: 520px) { html.signal .age:nth-child(1), html.signal .age:nth-child(4) { grid-column: span 6; padding: 0 0 14px; border-left: 0; }
+  html.signal .age:nth-child(2) { grid-column: span 3; padding: 0 8px 14px 0; border-left: 0; } html.signal .age:nth-child(3) { grid-column: span 3; padding: 0 0 14px 8px; border-left: 1px solid var(--noir); }
+  html.signal .age:nth-child(2) .age-img, html.signal .age:nth-child(3) .age-img { height: 84px !important; } html.signal .age:nth-child(4) { margin-top: 0; }
+  html.signal .age:nth-child(2) .age-n, html.signal .age:nth-child(3) .age-n { font-size: 3rem; } }
+/* La frise : cinq aplats, la période en cours en vert acide, les dates en mono. */
+html.signal .tl-bar { gap: 0; border: 2px solid var(--noir); }
+html.signal .tl-bar div { border-radius: 0; background: transparent; color: var(--noir); border-right: 1px solid var(--noir); }
+html.signal .tl-bar div:last-of-type { border-right: 0; }
+html.signal .tl-bar div b { font-family: var(--f-display); font-weight: 400; font-size: 15px; }
+html.signal .tl-bar div.on { background: var(--acide); color: var(--noir); box-shadow: none; }
+html.signal .timeline .tl-mark { background: var(--rouge); width: 6px; border: 1px solid var(--noir); }
+html.signal .tl-etat { color: var(--noir); font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+
+/* ---------- Cours : une publication ---------- */
+html.signal details.seq > summary { grid-template-columns: 64px 1fr 18px; }
+html.signal details.seq > summary .ico.vign { width: 64px; height: 64px; background-color: var(--noir) !important; color: var(--acide); }
+html.signal details.seq .seqhead h3 { font: 400 1.35rem/1.02 var(--f-display); letter-spacing: -.02em; }
+html.signal details.seq[open] > summary { border-bottom: 1px solid var(--noir); margin-bottom: 12px; }
+html.signal .chev { color: var(--noir); }
+html.signal .seance { border-left: 0; border-top: 1px solid var(--noir); padding: 10px 0 0; border-radius: 0; background: transparent; }
+html.signal .seance.now { box-shadow: inset 6px 0 0 var(--acide); padding-left: 12px; }
+html.signal .steps .min { font-family: var(--f-mono); color: var(--noir); background: var(--tint); padding: 0 4px; }
+html.signal .seg { border-radius: 0; border: 2px solid var(--noir); background: transparent; padding: 0; }
+html.signal .seg button { border-radius: 0; font-family: var(--f-body); color: var(--noir); }
+html.signal .seg button[aria-pressed="true"] { background: var(--noir); color: var(--acide); }
+html.signal .fil-r, html.signal .fils a { border-radius: 0 !important; }
+
+/* ---------- Faust : un laboratoire ---------- */
+html.signal .labo-grille { gap: 0; border-top: 2px solid var(--noir); border-left: 2px solid var(--noir); }
+html.signal .labo-tuile { --c: var(--noir) !important; background: var(--papier); color: var(--noir); border-radius: 0; border-right: 2px solid var(--noir); border-bottom: 2px solid var(--noir); min-height: 150px; }
+html.signal .labo-tuile::after { display: none; }
+html.signal .labo-tuile .labo-n { font: 400 2.6rem/.9 var(--f-display); letter-spacing: -.04em; color: var(--noir); background: none; width: auto; height: auto; }
+html.signal .labo-tuile b { font: 700 1.02rem/1.15 var(--f-titre); color: var(--noir); } html.signal .labo-tuile .small { color: var(--gris); font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; }
+html.signal .labo-tuile:hover, html.signal .labo-tuile:focus-visible { background: var(--acide); }
+html.signal .labo { --c: #D6FF00 !important; background: var(--noir); color: var(--papier); border: 0; border-radius: 0; padding: 14px; }
+html.signal .labo .label, html.signal .labo-etat { color: var(--acide); font-family: var(--f-mono); text-transform: uppercase; letter-spacing: .06em; font-size: 11.5px; }
+html.signal .labo-onde { background: #000; border-radius: 0; border: 1px solid #3A3A35; background-image: linear-gradient(#22221F 1px, transparent 1px), linear-gradient(90deg, #22221F 1px, transparent 1px); background-size: 100% 25%, 10% 100%; }
+html.signal .labo-jouer { background: var(--acide); color: var(--noir); border-radius: 0; font-family: var(--f-display); font-weight: 400; letter-spacing: -.01em; }
+html.signal .labo-jouer .ic { border-color: transparent transparent transparent var(--noir); } html.signal .labo-jouer[aria-pressed="true"] .ic { background: var(--noir); border-radius: 0; }
+html.signal .labo-tenir { background: var(--acide); color: var(--noir); border-radius: 0; box-shadow: none; font-family: var(--f-display); font-weight: 400; }
+html.signal .labo-tenir.on { background: var(--papier); }
+html.signal .labo-curseur, html.signal .labo-choix .label, html.signal .labo-barres .label { color: var(--papier); font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+html.signal .labo-curseur output { color: var(--acide); }
+html.signal .labo input[type=range] { accent-color: var(--acide); }
+html.signal .labo .chip { color: var(--papier); border-color: var(--papier); background: transparent; }
+html.signal .labo .chip[aria-pressed="true"] { background: var(--acide); color: var(--noir); border-color: var(--acide); }
+html.signal .labo-pas .case { border-radius: 0; background: transparent; color: var(--papier); border: 1px solid var(--papier); font-family: var(--f-mono); }
+html.signal .labo-pas .case[aria-pressed="true"] { background: var(--acide); color: var(--noir); border-color: var(--acide); }
+html.signal .labo-pas .case.ici { box-shadow: 0 0 0 3px var(--rouge); outline: 1px solid var(--papier); }
+html.signal .labo-clavier .blanche { border-radius: 0; background: var(--papier); color: var(--noir); } html.signal .labo-clavier .noire { border-radius: 0; background: var(--noir); border: 1px solid var(--papier); }
+html.signal .labo-clavier button.on { background: var(--acide) !important; }
+html.signal .labo-code .code-lignes code { font-family: var(--f-mono); background: var(--noir); color: var(--acide); padding: 1px 5px; }
+
+/* ---------- Projeter : interface de présentation sombre ---------- */
+html.signal .proj { background: var(--noir); }
+html.signal .proj .s-pill { background: var(--acide); color: var(--noir); border-radius: 0; font-family: var(--f-mono); text-transform: uppercase; letter-spacing: .06em; }
+
 </style>
 </head>
 <body>
@@ -647,6 +812,9 @@ const PER = {P1:"Novembre, décembre",P2:"Janvier, février",P3:"Mars",P4:"Avril
 const NIV = Object.keys(D.niveaux);
 const get = (k, d) => { try { return localStorage.getItem(k) || d; } catch (_) { return d; } };
 const set = (k, v) => { try { localStorage.setItem(k, v); } catch (_) {} };
+/* Direction graphique SIGNAL, à l'essai : ?signal l'active sur cet appareil, ?classique la retire. */
+if (/[?&]signal\b/.test(location.search)) set("signal", "1"); else if (/[?&]classique\b/.test(location.search)) set("signal", "0");
+document.documentElement.classList.toggle("signal", get("signal", "0") === "1");
 const YT = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
 const IMG = q => "https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&type=image&search=" + encodeURIComponent(q);
 const liensHtml = l => `<div class="listens">${l.map(([lib, u]) => `<a class="listen" href="${u}"${u.startsWith("#") ? "" : ' target="_blank" rel="noopener"'}><span class="play img" aria-hidden="true">&#8599;</span><span>${esc(lib)}</span><span class="sr"> (nouvel onglet)</span></a>`).join("")}</div>`;
@@ -670,7 +838,8 @@ const MENUS = {
 function menu(tab) {
   const nav = document.querySelector("nav.tabs"), r = role();
   nav.hidden = !r; if (!r) return;
-  nav.querySelector("ul").innerHTML = MENUS[r].map(([t, lib]) => `<li><a href="#${t}" data-t="${t}"${t === tab ? ' aria-current="page"' : ""}>${ICONES_NAV[t] || ""}<span>${esc(lib)}</span></a></li>`).join("");
+  const AIDE_NAV = { faust: "Laboratoire Faust : fabriquer et transformer le son", projeter: "Projeter les diaporamas des séances en classe", eval: "Grilles d'évaluation, saisie par élève et bilan" };
+  nav.querySelector("ul").innerHTML = MENUS[r].map(([t, lib]) => `<li><a href="#${t}" data-t="${t}"${AIDE_NAV[t] ? ` title="${AIDE_NAV[t]}"` : ""}${t === tab ? ' aria-current="page"' : ""}>${ICONES_NAV[t] || ""}<span>${esc(lib)}</span></a></li>`).join("");
 }
 const HEXA = `<svg class="hexa" viewBox="0 0 120 110" aria-hidden="true"><path d="M30 4 L90 4 L116 55 L90 106 L30 106 L4 55 Z" fill="none" stroke="currentColor" stroke-width="2"/><text x="60" y="50" text-anchor="middle" font-family="Inter Tight, Arial, sans-serif" font-weight="700" font-size="21" letter-spacing="-1" fill="currentColor">Sebastian</text><text x="60" y="72" text-anchor="middle" font-family="Inter Tight, Arial, sans-serif" font-weight="700" font-size="21" letter-spacing="-1" fill="currentColor">Rivas</text></svg>`;
 const POINTS = n => `<div class="points" aria-hidden="true" style="--rangs:${n || 4}"></div>`;
@@ -742,8 +911,11 @@ function frise() {
   const t0 = parse("2026-11-02"), t1 = parse("2027-07-03");
   const pct = Math.max(0, Math.min(100, (today - t0) / (t1 - t0) * 100));
   const on = per.find(p => today >= parse(p[2]) && today < parse(p[3]));
-  return `<div class="timeline"><div class="label">L'année en cinq périodes</div><div class="tl-bar">${per.map(p => `<div class="${on && on[0] === p[0] ? "on" : ""}">${p[1]}</div>`).join("")}
-    <span class="tl-mark" style="left:calc(${pct}% - 1px)" aria-hidden="true"></span></div><div class="tl-leg"><span>2 novembre</span><span>3 juillet</span></div></div>`;
+  const suivante = per.find(p => today < parse(p[2]));
+  const point = s => /\.$/.test(s) ? s : s + ".";
+  const etat = on ? `Période en cours : ${on[0]}, ${point(on[1])}` : today < t0 ? "La première période commence le 2 novembre." : suivante ? `Vacances. Prochaine période : ${suivante[0]}, ${point(suivante[1])}` : "L'année est terminée.";
+  return `<div class="timeline"><div class="label">L'année en cinq périodes</div><div class="tl-bar">${per.map(p => `<div class="${on && on[0] === p[0] ? "on" : ""}"${on && on[0] === p[0] ? ' aria-current="date"' : ""}><b>${p[0]}</b><span>${p[1]}</span></div>`).join("")}
+    <span class="tl-mark" style="left:calc(${pct}% - 1px)" aria-hidden="true"></span></div><div class="tl-leg"><span>2 novembre</span><span>3 juillet</span></div><p class="tl-etat">${etat}</p></div>`;
 }
 
 /* ---------- Cette semaine ---------- */
@@ -820,10 +992,10 @@ function vueSemaine(idx) {
       return `<div class="ligne-prof-bloc"><div class="ligne-prof"><a class="ligne-proj" href="${e.type === "seance" ? "#" + seanceId(n, e) : e.type === "accueil" ? "#seance-accueil" : "#cours-" + n}"><span class="lvlbadge" style="background:${D.couleurs[n]}">${n}</span><span><span class="meta">${e.type === "seance" ? `Séquence ${e.seq}, séance ${e.num}` : ""}</span><b>${esc(libelle(D.niveaux[n], e))}</b></span></a>${pr ? `<a class="btn-main" href="${pr}">Projeter</a>` : ""}</div><details class="others"><summary>Écoutes, échos, images et travail de la ${n}</summary>${carteEleve(n, idx)}</details></div>`; }).join("")}</div>`;
   else if (k) h += `<details class="others"${tout ? " open" : ""} id="others"><summary>Les autres classes cette semaine</summary><div class="stack" style="margin-top:10px">${cartes}</div></details>`;
   else if (!prof) h += `<div class="stack" style="margin-top:14px">${cartes}</div>`;
-  if (idx === courant) h += `<div class="label" style="margin-top:26px">Quatre années, une histoire</div><div class="ages">${NIV.map(n => {
+  if (idx === courant) h += `<div class="label ages-t" style="margin-top:26px">Quatre années, une histoire</div><div class="ages">${NIV.map(n => {
       const A = { "6e": ["Aux origines", "De la flûte d'os à Ut queant laxis"], "5e": ["Moyen Âge et Renaissance", "De Notre-Dame à Monteverdi"], "4e": ["De Versailles au phonographe", "De Lully à Edison"], "3e": ["Modernité et présent", "Du Sacre à la K-pop"] }[n];
-      const im = ((D.imagesSeq[n] || [])[0] || [])[0];
-      return `<a class="age" href="#cours-${n}" style="--c:${D.couleurs[n]}"><span class="vign age-img"${im ? ` data-q="${esc(im[1])}"` : ""} aria-hidden="true"></span><span class="age-n">${n}</span><span class="age-ico" aria-hidden="true">${D.icones[n][0]}</span><b>${esc(A[0])}</b><span class="small">${esc(A[1])}</span></a>`; }).join("")}</div>` + frise();
+      const q = [requetesSeq(n, 0), requetesSeq(n, 1)].filter(Boolean).join("|");
+      return `<a class="age" href="#cours-${n}" style="--c:${D.couleurs[n]}"><span class="vign age-img"${q ? ` data-q="${esc(q)}"` : ""} aria-hidden="true">${D.icones[n][0]}</span><span class="age-n">${n}</span><span class="age-ico" aria-hidden="true">${D.icones[n][0]}</span><b>${esc(A[0])}</b><span class="small">${esc(A[1])}</span></a>`; }).join("")}</div>` + frise();
   return h;
 }
 
@@ -950,7 +1122,7 @@ function vueCours(k, seqOuverte) {
   h += `<p style="margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px"><a class="chip" href="#vocabulaire">Le vocabulaire pour classer</a><a class="chip" href="#fils">Les fils rouges : sacré, contestation, guerre, pouvoir</a></p>`;
   h += `<div class="seg" role="group" aria-label="Affichage"><button type="button" id="m-eleve" aria-pressed="${mode !== "prof"}">Vue élève : œuvres, chant, partitions, échos</button><button type="button" id="m-prof" aria-pressed="${mode === "prof"}">Vue professeur : déroulés</button></div>`;
   if (mode !== "prof") {
-    h += `<div class="dl">${pdf(`Plan_${k}_eleves_parents.pdf`, "Le plan de l'année (1 page)")}</div><div class="stack" style="margin-top:14px">`;
+    h += `<div class="dl">${pdf(`Plan_${k}_eleves_parents.pdf`, "Le plan de l'année")}</div><div class="stack" style="margin-top:14px">`;
     n.sequences.forEach((s, i) => {
       const c = n.contenus[i], ouvert = seqOuverte ? seqOuverte === i + 1 : cur && cur.seq === i + 1;
       const evs = listeSeances(k).filter(e => e.seq === i + 1 && estEval(k, e.seq, e.num))[0];
@@ -977,7 +1149,7 @@ function vueCours(k, seqOuverte) {
   n.sequences.forEach((s, i) => {
     const c = n.contenus[i], ouvert = seqOuverte ? seqOuverte === i + 1 : cur && cur.seq === i + 1;
     h += `<details class="seq"${ouvert ? " open" : ""}><summary>${vignette(k, i)}<span class="seqhead"><span class="meta">Séquence ${i + 1}, ${esc(PER[s.periode])}</span><h3>${esc(s.titre)}</h3></span><span class="chev" aria-hidden="true">&#8250;</span></summary><div class="body"><p class="meta">Semaines du ${esc(s.semaines)}</p>
-      <p class="q">${esc(s.question)}</p>${filsHtml(filsDe(k, i + 1))}
+      <p class="q">${esc(s.question)}</p>${c.objectifs && c.objectifs.length ? `<div><h4 class="blk-t">Objectifs de la séquence</h4><ul class="plain">${c.objectifs.map(o => `<li>${esc(o)}</li>`).join("")}</ul></div>` : ""}${filsHtml(filsDe(k, i + 1))}
       <div class="chips">${s.competences.map(x => `<span class="tag">${x} ${esc(comp[x])}</span>`).join("")}</div>
       <div><h4 class="blk-t">Accroche</h4><p>${esc(s.accroche || "")}</p></div>
       <div class="stack" style="gap:8px"><h4 class="blk-t">Séances</h4>${c.seances.map((se, j) => {
@@ -998,7 +1170,7 @@ const texteSeul = h => { const d = document.createElement("div"); d.innerHTML = 
 const IMG_EN_COURS = {};
 function chercherImages(q) {
   const cle = "img2:" + q;
-  try { const c = JSON.parse(localStorage.getItem(cle) || "null"); if (c && Date.now() - c.t < 14 * 864e5) return Promise.resolve(c.r); } catch (_) {}
+  try { const c = JSON.parse(localStorage.getItem(cle) || "null"); if (c && c.r && c.r.length && Date.now() - c.t < 14 * 864e5) return Promise.resolve(c.r); } catch (_) {}
   if (IMG_EN_COURS[q]) return IMG_EN_COURS[q];
   const url = "https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=10&gsrsearch="
     + encodeURIComponent("filetype:bitmap " + q) + "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=640&iiextmetadatafilter=LicenseShortName%7CArtist%7CObjectName";
@@ -1008,7 +1180,9 @@ function chercherImages(q) {
       return { src: ii.thumburl, page: ii.descriptionurl, titre: texteSeul(m.ObjectName && m.ObjectName.value) || p.title.replace(/^File:|\.[a-z0-9]+$/gi, "").replace(/_/g, " "),
                auteur: texteSeul(m.Artist && m.Artist.value).slice(0, 80), licence: texteSeul(m.LicenseShortName && m.LicenseShortName.value) }; })
       .filter(x => x.src && LICENCES_LIBRES.test(x.licence)).slice(0, 3);
-    try { localStorage.setItem(cle, JSON.stringify({ t: Date.now(), r })); } catch (_) {}
+    /* Une recherche vide n'est pas gardée : un échec passager ne doit pas laisser la carte vide pendant deux semaines. */
+    if (r.length) try { localStorage.setItem(cle, JSON.stringify({ t: Date.now(), r })); } catch (_) {}
+    else delete IMG_EN_COURS[q];
     return r;
   }));
 }
@@ -1029,16 +1203,26 @@ function sonothequeHtml() {
 }
 const echosListe = l => l.length <= 2 ? l.map(echoHtml).join("") : l.slice(0, 2).map(echoHtml).join("") + `<details class="plus-echos"><summary>Encore ${l.length - 2} écho${l.length > 3 ? "s" : ""}</summary>${l.slice(2).map(echoHtml).join("")}</details>`;
 const echoHtml = ([rel, titre, pays, texte, q]) => `<div class="echo-c"><span class="rel">${esc(rel)}, ${esc(pays)}</span><b>${esc(titre)}</b><p>${esc(texte)}</p>${ecoute(titre, q)}</div>`;
-const vignette = (k, i) => { const im = (D.imagesSeq[k] || [])[i] || []; return `<span class="ico vign" style="background:${D.couleurs[k]}"${im[0] ? ` data-q="${esc(im[0][1])}"` : ""} aria-hidden="true">${D.icones[k][i]}</span>`; };
+/* Les recherches d'images d'une séquence, dans l'ordre : si la première ne donne rien, on essaie les suivantes. */
+const requetesSeq = (k, i) => ((D.imagesSeq[k] || [])[i] || []).map(x => x[1]).join("|");
+const vignette = (k, i) => { const q = requetesSeq(k, i); return `<span class="ico vign" style="background:${D.couleurs[k]}"${q ? ` data-q="${esc(q)}"` : ""} aria-hidden="true">${D.icones[k][i]}</span>`; };
+/* Pose la première image qui se charge vraiment ; sinon la vignette garde son visuel de secours (icône sur la couleur du niveau). */
+function poserVignette(v, requetes) {
+  const q = requetes.shift(); if (!q) return;
+  chercherImages(q).then(r => {
+    const essayer = j => { if (j >= r.length) return poserVignette(v, requetes);
+      const im = new Image(); im.onload = () => { v.style.backgroundImage = `url("${r[j].src.replace(/"/g, "%22")}")`; v.classList.add("pleine"); }; im.onerror = () => essayer(j + 1); im.src = r[j].src; };
+    essayer(0);
+  }).catch(() => poserVignette(v, requetes));
+}
 function remplirGaleries(racine) {
-  (racine || document).querySelectorAll(".vign[data-q]:not([data-fait])").forEach(v => { v.dataset.fait = "1";
-    chercherImages(v.dataset.q).then(r => { if (r[0]) { v.style.backgroundImage = `url("${r[0].src.replace(/"/g, "%22")}")`; v.classList.add("pleine"); } }).catch(() => {}); });
+  (racine || document).querySelectorAll(".vign[data-q]:not([data-fait])").forEach(v => { v.dataset.fait = "1"; poserVignette(v, v.dataset.q.split("|").filter(Boolean)); });
   (racine || document).querySelectorAll(".gimg:not([data-fait])").forEach(f => {
     f.dataset.fait = "1";
     chercherImages(f.dataset.q).then(r => {
       if (!r.length) { f.querySelector(".gph .small").textContent = "Voir les images sur Wikimedia Commons"; return; }
       const x = r[0];
-      f.innerHTML = `<a href="${esc(x.page)}" target="_blank" rel="noopener" class="gl"><img src="${esc(x.src)}" alt="${esc(f.dataset.l)} : ${esc(x.titre)}" loading="lazy" decoding="async"></a>
+      f.innerHTML = `<a href="${esc(x.page)}" target="_blank" rel="noopener" class="gl"><img src="${esc(x.src)}" alt="${esc(f.dataset.l)} : ${esc(x.titre)}" loading="lazy" decoding="async" onerror="this.closest('.gl').outerHTML='<a class=&quot;gph&quot; href=&quot;${IMG(f.dataset.q)}&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;><span>Image indisponible</span><span class=&quot;small&quot;>Voir sur Wikimedia Commons</span></a>'"></a>
         <figcaption><b>${esc(f.dataset.l)}</b><span>${esc(x.titre)}${x.auteur ? ", " + esc(x.auteur) : ""}. ${esc(x.licence)}, Wikimedia Commons. <a href="${IMG(f.dataset.q)}" target="_blank" rel="noopener">Autres images</a></span></figcaption>`;
     }).catch(() => { const s = f.querySelector(".gph .small"); if (s) s.textContent = "Hors ligne : voir les images sur Wikimedia Commons"; });
   });
@@ -1953,6 +2137,7 @@ function vuePlus() {
     <a class="card" href="#reviser"><h2 class="h3">Évaluations et quiz</h2><p class="small">Critères de réussite, fiches d'évaluation à imprimer, quiz d'entraînement.</p></a>
     <a class="card" href="#vocabulaire"><h2 class="h3">Le vocabulaire pour classer</h2><p class="small">Timbre, intensité, plan sonore, tempo, hauteur, texture : les mots de la 6e à la 3e, et le chant choral.</p></a>
     <a class="card" href="#fils"><h2 class="h3">Les fils rouges</h2><p class="small">Le sacré, la contestation, la guerre, le pouvoir : de la 6e à la 3e.</p></a>
+    <div class="card"><h2 class="h3">Direction graphique</h2><p class="small">SIGNAL est une direction à l'essai : noir, papier, vert acide. Le choix reste sur cet appareil.</p><p><button type="button" class="btn2" id="b-signal">${document.documentElement.classList.contains("signal") ? "Revenir à l'apparence actuelle" : "Essayer SIGNAL"}</button></p></div>
     <a class="card" href="#faust"><h2 class="h3">Laboratoire Faust</h2><p class="small">Dix ateliers pour fabriquer le son : boutons, clavier, boîte à rythmes, et le programme expliqué.</p></a>
     ${D.eleves || D.prof ? "" : `<a class="card" href="#accueil"><h2 class="h3">Changer d'espace</h2><p class="small">Espace élève ou espace enseignant.</p></a>`}</div>
     ${D.prive ? `<p class="small" style="margin-top:14px"><a href="${D.depot.replace("/blob/main/", "")}" target="_blank" rel="noopener">Le dépôt complet sur GitHub</a></p>` : ""}`;
@@ -2297,6 +2482,7 @@ function rendre() {
   else if (v === "proj-accueil") { app.innerHTML = vueAccueil(); tab = "cours"; ouvrirProj(D.diapos.accueil, "Séance d'accueil", "seance-accueil"); }
   else app.innerHTML = vueSemaine();
   menu(tab);
+  { const b = document.getElementById("b-signal"); if (b) b.onclick = () => { const on = !document.documentElement.classList.contains("signal"); set("signal", on ? "1" : "0"); document.documentElement.classList.toggle("signal", on); rendre(); }; }
   ["eleve", "prof"].forEach(x => { const b = document.getElementById("m-" + x); if (b) b.onclick = () => { set("mode-" + (role() || "eleve"), x); rendre(); }; });
   document.querySelectorAll(".pick-b").forEach(b => b.onclick = () => { set("classe", b.dataset.classe); set("niv", b.dataset.classe); rendre(); });
   const oth = document.getElementById("others"); if (oth) oth.addEventListener("toggle", () => set("tout", oth.open ? "1" : ""));
