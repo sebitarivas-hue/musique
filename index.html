@@ -189,6 +189,20 @@ details.seq > summary { grid-template-columns: 44px 1fr 18px; }
 .p-dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25); }
 .p-dots span.on { background: #e0bd73; }
 .sig { max-width: 700px; margin: 28px auto 0; padding-top: 14px; border-top: 1px solid var(--line); font: 400 12px/1.5 var(--f-mono); color: var(--muted); text-align: center; }
+.home { padding-top: 34px; padding-bottom: 20px; text-align: center; }
+.home::before { display: none; }
+.home .hero-in { align-items: center; gap: 10px; }
+.home-mark svg { width: 84px; height: 84px; border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.home-name { font: 500 13px/1.3 var(--f-mono); letter-spacing: .22em; text-transform: uppercase; color: #e3c27c; margin-top: 6px; }
+.home-title { color: #fff; font-size: clamp(2.6rem, 11vw, 4rem); line-height: 1; }
+.home-sub { color: rgba(255,255,255,.85); max-width: 34ch; font-size: 1.05rem; }
+.home-school { font: 400 12px/1.4 var(--f-mono); color: rgba(255,255,255,.6); }
+.home-staff { width: 100%; height: 70px; margin-top: 8px; }
+.ages { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.age { position: relative; background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: inherit; min-width: 0; }
+.age-n { font: 700 1.6rem/1 var(--f-display); color: var(--c); }
+.age-ico { position: absolute; top: 14px; right: 14px; color: var(--c); }
+.age b { font: 700 1.12rem/1.2 var(--f-display); color: var(--navy); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -257,9 +271,24 @@ function vueSemaine(idx) {
   const w = WEEKS[idx], avant = today < parse(WEEKS[0].date), estCourant = idx === courant && !avant;
   let h = "";
   if (idx === courant) {
-    h += `<section class="hero"><div class="hero-in"><div class="id">${D.logo}<div><b>Éducation musicale, Sebastian Rivas</b><span>${esc(D.etablissement)}</span></div></div>
-      <h1>${avant ? `Première séance <span class="gold">lundi 2 novembre</span>` : `Cette <span class="gold">semaine</span>`}</h1>
-      <p>${avant ? "La séance d'accueil, la même pour tous les niveaux. Le plan de l'année est distribué aux élèves." : "Ce qui est prévu dans chaque niveau."}</p></div></section>` + frise();
+    const AGES = { "6e": ["Aux origines", "De la flûte d'os à Ut queant laxis"], "5e": ["Moyen Âge et Renaissance", "De Notre-Dame à Monteverdi"],
+                   "4e": ["De Versailles au phonographe", "De Lully à Edison"], "3e": ["Modernité et présent", "Du Sacre à la K-pop"] };
+    h += `<section class="hero home"><div class="hero-in">
+      <div class="home-mark">${D.logo}</div>
+      <div class="home-name">Sebastian Rivas</div>
+      <h1 class="home-title">Éducation <span class="gold">musicale</span></h1>
+      <p class="home-sub">Une histoire de la musique en quatre ans, des premières flûtes en os jusqu'aux musiques d'aujourd'hui.</p>
+      <p class="home-school">${esc(D.etablissement)}, ${esc(D.annee)}</p>
+      <svg class="home-staff" viewBox="0 0 600 70" preserveAspectRatio="none" aria-hidden="true">
+        <g stroke="rgba(255,255,255,.22)" stroke-width="1">${[10,22,34,46,58].map(y => `<line x1="0" y1="${y}" x2="600" y2="${y}"/>`).join("")}</g>
+        <g fill="#e3c27c">${[[60,52],[130,40],[200,46],[270,28],[340,34],[410,16],[480,22],[550,10]].map(([x,y]) => `<ellipse cx="${x}" cy="${y}" rx="7" ry="5" transform="rotate(-20 ${x} ${y})"/><line x1="${x+6}" y1="${y-1}" x2="${x+6}" y2="${y-30}" stroke="#e3c27c" stroke-width="2"/>`).join("")}</g>
+      </svg>
+    </div></section>`;
+    h += `<div class="label" style="margin-top:22px">Quatre années, une histoire</div><div class="ages">${NIV.map((k, j) => `<a class="age" href="#cours-${k}" style="--c:${D.couleurs[k]}">
+      <span class="age-n">${k}</span><span class="age-ico">${D.icones[k][0]}</span><b>${esc(AGES[k][0])}</b><span class="small">${esc(AGES[k][1])}</span></a>`).join("")}</div>`;
+    h += frise();
+    h += `<div class="staff"></div><h2>${avant ? `Première séance, <span style="color:var(--gold)">lundi 2 novembre</span>` : "Cette semaine"}</h2>
+      <p class="small" style="margin-top:4px">${avant ? "La séance d'accueil, la même pour tous les niveaux. Touchez-la pour la projeter." : "Ce qui est prévu dans chaque niveau."}</p>`;
   } else {
     h += head("Agenda de l'année", `Semaine du ${w.semaine}`, idx < courant ? "Semaine passée." : "Semaine à venir.");
   }
