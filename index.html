@@ -938,11 +938,62 @@ html.signal .hero-image { padding: 0 0 12px; gap: 0; background: #10100F; }
 html.signal .hs-maquette { display: block; width: 100%; height: auto; }
 html.signal .hero-image .hs-espace { margin: 0 var(--pad); }
 
+/* Sur téléphone, les quatre niveaux dessinés en bas de l'image sont des liens vers leur cours. */
+html.signal .hero-image { position: relative; }
+html.signal .hs-niveaux { display: none; }
+@media (max-width: 759px) { html.signal .hs-niveaux { display: block; position: absolute; left: 0; right: 0; top: 0; aspect-ratio: 941 / 1512; pointer-events: none; }
+  html.signal .hs-niveaux a { position: absolute; top: 86%; height: 8.4%; pointer-events: auto; color: transparent; font-size: 1px; overflow: hidden; }
+  html.signal .hs-niveaux a:focus-visible { outline: 3px solid #4658FF; outline-offset: -3px; } }
+
+html.signal .hs-zones { display: none; }
+@media (min-width: 760px) { html.signal .hs-zones { display: block; position: absolute; left: 0; right: 0; top: 0; aspect-ratio: 1672 / 820; pointer-events: none; }
+  html.signal .hs-zones a, html.signal .hs-niveaux a { position: absolute; pointer-events: auto; color: transparent !important; font-size: 1px; line-height: 1; overflow: hidden; text-decoration: none !important; background: none !important; border: 0 !important; box-shadow: none !important; }
+  html.signal .hs-zones a:hover { outline: 2px solid #D6FF00; outline-offset: 2px; } html.signal .hs-zones a:focus-visible { outline: 3px solid #4658FF; outline-offset: 2px; } }
+
+/* ================= Cohérence téléphone et ordinateur (SIGNAL) ================= */
+.entete { display: none; }
+html.signal .entete { display: block; background: var(--noir); color: var(--papier); margin: 0 calc(-1 * max(16px, env(safe-area-inset-right, 0px))) 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: calc(env(safe-area-inset-top, 0px) + 10px) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); }
+html.signal .entete[hidden] { display: none; }
+html.signal .entete-in { display: flex; align-items: center; gap: 12px; max-width: 1240px; margin: 0 auto; min-height: 44px; }
+html.signal .en-logo img { display: block; width: 40px; height: 40px; border: 1px solid #55554E; border-radius: 9px; padding: 3px; background: #000; }
+html.signal .en-bloc { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-right: 12px; border-right: 1px solid #3A3A35; }
+html.signal .en-bloc b { font: 600 11px/1.2 var(--f-body); text-transform: uppercase; letter-spacing: .06em; color: var(--papier); white-space: nowrap; }
+html.signal .en-bloc span { font: 400 10px/1.25 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: #BEBDB4; }
+html.signal .en-prof b { position: relative; } html.signal .en-prof { border-right: 0; }
+html.signal .en-an { margin-left: auto; display: flex; flex-direction: column; align-items: center; gap: 3px; font: 400 11px/1 var(--f-mono); letter-spacing: .08em; color: #D3D2CA; padding-left: 12px; border-left: 1px solid #3A3A35; }
+html.signal .en-an i { width: 12px; height: 1px; background: #D3D2CA; }
+html.signal .en-menu { display: none; }
+@media (max-width: 420px) { html.signal .en-bloc b { font-size: 10px; white-space: normal; } html.signal .en-bloc span { font-size: 9px; } html.signal .en-prof span { max-width: 15ch; } }
+@media (max-width: 340px) { html.signal .en-prof { display: none; } }
+/* Barre du bas (téléphone et tablette) : même code que le menu de l'ordinateur, la rubrique ouverte en vert, soulignée. */
+html.signal nav.tabs a[aria-current="page"] { background: transparent; color: var(--acide); box-shadow: inset 0 3px 0 var(--acide); }
+html.signal nav.tabs a[aria-current="page"] svg { color: var(--acide); }
+/* Ordinateur et vidéoprojecteur : le menu est dans l'en-tête, qui reste en haut de l'écran ; plus de colonne ni de barre en bas. */
+@media (min-width: 1100px) {
+  html.signal body { padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: 32px; padding-bottom: 40px; }
+  html.signal nav.tabs { display: none !important; }
+  html.signal .entete { position: sticky; top: 0; z-index: 8; margin: 0 -32px 0 calc(-1 * max(24px, env(safe-area-inset-left, 0px))); padding: 14px 32px 14px max(24px, env(safe-area-inset-left, 0px)); }
+  html.signal .entete-in { gap: 18px; }
+  html.signal .en-logo img { width: 48px; height: 48px; }
+  html.signal .en-bloc { padding-right: 18px; } html.signal .en-bloc b { font-size: 13px; } html.signal .en-bloc span { font-size: 11.5px; }
+  html.signal .en-menu { display: block; margin-left: auto; }
+  html.signal .en-menu ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 4px; }
+  html.signal .en-menu a { display: block; padding: 12px 10px 9px; font: 600 12.5px/1 var(--f-body); text-transform: uppercase; letter-spacing: .05em; color: var(--papier); text-decoration: none; border-bottom: 3px solid transparent; }
+  html.signal .en-menu a:hover { color: var(--acide); }
+  html.signal .en-menu a[aria-current="page"] { color: var(--acide); border-bottom-color: var(--acide); }
+  html.signal .en-an { margin-left: 8px; }
+  html.signal .barre { top: 76px; margin-left: calc(-1 * max(24px, env(safe-area-inset-left, 0px))); margin-right: -32px; }
+  html.signal #toasts { left: 50%; }
+  html.signal .hero-signal { margin-top: 0; }
+}
+@media (min-width: 1100px) and (max-width: 1360px) { html.signal .en-prof span { display: none; } html.signal .en-menu a { padding-inline: 7px; font-size: 12px; } }
+
 </style>
 </head>
 <body>
 
 
+<header id="entete" class="entete" hidden></header>
 <div id="barre" class="barre" hidden></div>
 <main id="app"></main>
 <footer class="sig">Cours d'éducation musicale conçu et rédigé par Sebastian Rivas. © 2026 Sebastian Rivas, tous droits réservés.<br><a class="faust" href="https://faust.grame.fr" target="_blank" rel="noopener">Powered by Faust</a><br>Sons de synthèse calculés avec Faust, langage du GRAME, Centre national de création musicale.</footer>
@@ -981,8 +1032,21 @@ const MENUS = {
   eleve: [["semaine", "Ma semaine"], ["cours", "Mes cours"], ["pratiquer", "Écouter"], ["reviser", "Réviser"], ["faust", "Faust"], ["parcours", "Parcours"]],
   prof: [["semaine", "Semaine"], ["cours", "Cours"], ["projeter", "Projeter"], ["eval", "Évaluer"], ["pratiquer", "Écouter"], ["faust", "Faust"], ["plus", "Plus"]],
 };
+/* En-tête commun (direction SIGNAL), repris des maquettes de Sébastien : identité à gauche, l'année à droite ;
+   sur ordinateur, le menu s'y place, la rubrique ouverte soulignée en vert. Sur téléphone, le menu reste en bas. */
+function entete(tab, r) {
+  const el = document.getElementById("entete"); if (!el) return;
+  const [ecole, ville] = D.etablissement.split(",").map(x => x.trim()), [a1, a2] = D.annee.split(/[-–]/).map(x => x.trim());
+  el.hidden = false;
+  el.innerHTML = `<div class="entete-in"><a class="en-logo" href="#semaine" aria-label="Accueil"><img src="icon-192.png" alt="" width="44" height="44"></a>
+    <div class="en-bloc en-ecole"><b>${esc(ecole.replace(/Coeur/, "Cœur"))}</b><span>${esc(ville || "")}</span></div>
+    <div class="en-bloc en-prof"><b>${esc(D.professeur || "")}</b><span>Professeur d'éducation musicale</span></div>
+    ${r ? `<nav class="en-menu" aria-label="Rubriques"><ul>${MENUS[r].map(([t, lib]) => `<li><a href="#${t}"${t === tab ? ' aria-current="page"' : ""}>${esc(lib)}</a></li>`).join("")}</ul></nav>` : ""}
+    <div class="en-an" aria-label="Année ${esc(D.annee)}"><span>${esc(a1 || "")}</span><i aria-hidden="true"></i><span>${esc(a2 || "")}</span></div></div>`;
+}
 function menu(tab) {
   const nav = document.querySelector("nav.tabs"), r = role();
+  entete(tab, r);
   nav.hidden = !r; if (!r) return;
   const AIDE_NAV = { faust: "Laboratoire Faust : fabriquer et transformer le son", projeter: "Projeter les diaporamas des séances en classe", eval: "Grilles d'évaluation, saisie par élève et bilan" };
   nav.querySelector("ul").innerHTML = MENUS[r].map(([t, lib]) => `<li><a href="#${t}" data-t="${t}"${AIDE_NAV[t] ? ` title="${AIDE_NAV[t]}"` : ""}${t === tab ? ' aria-current="page"' : ""}>${ICONES_NAV[t] || ""}<span>${esc(lib)}</span></a></li>`).join("");
@@ -1136,8 +1200,13 @@ function ondeSignal() {
    forme d'onde, et le collage de sa maquette (images/accueil-collage.jpg, côté droit de l'image qu'il a fournie). */
 function heroSignal() {
   return `<section class="hero-signal hero-image" aria-labelledby="hs-t"><h1 id="hs-t" class="sr">Éducation musicale. Le son est une matière.</h1>
-    <img class="hs-maquette" src="images/accueil.jpg" srcset="images/accueil-768.jpg 768w, images/accueil.jpg 1536w" sizes="(min-width: 1100px) 1240px, 100vw" width="1536" height="1024" decoding="async" fetchpriority="high"
-      alt="Éducation musicale. Le son est une matière. ${esc(D.etablissement)}, ${esc(D.professeur || "")}, professeur d'éducation musicale, ${esc(D.annee)}. Écouter, comprendre, identifier, analyser, situer, pratiquer, explorer. Une forme d'onde, une tête de statue antique, la volute d'un violoncelle et une partition.">
+    <picture><source media="(max-width: 759px)" srcset="images/accueil-mobile.jpg" width="941" height="1512">
+    <img class="hs-maquette" src="images/accueil.jpg" srcset="images/accueil-900.jpg 900w, images/accueil.jpg 1672w" sizes="(min-width: 1100px) 1240px, 100vw" width="1672" height="820" decoding="async" fetchpriority="high"
+      alt="Éducation musicale. Le son est une matière. ${esc(D.etablissement)}, ${esc(D.professeur || "")}, professeur d'éducation musicale, ${esc(D.annee)}. Écouter, comprendre, analyser, situer, pratiquer, explorer. Une forme d'onde, une tête de statue antique, la volute d'un violoncelle et une partition."></picture>
+    <nav class="hs-zones" aria-label="Les quatre niveaux">${[["6e", "aux origines", 55, 405], ["5e", "Moyen Âge et Renaissance", 475, 810], ["4e", "de Versailles au phonographe", 880, 1222], ["3e", "modernité et présent", 1295, 1645]].map(([n, t, a, b]) =>
+        `<a href="#cours-${n}" style="left:${(a / 16.72).toFixed(2)}%;width:${((b - a) / 16.72).toFixed(2)}%;top:79%;height:18.5%">${n} : ${t}</a>`).join("")}</nav>
+    <nav class="hs-niveaux" aria-label="Les quatre niveaux">${[["6e", "aux origines", 35.6], ["5e", "Moyen Âge et Renaissance", 49.6], ["4e", "de Versailles au phonographe", 67], ["3e", "modernité et présent", 84.8]].map(([n, t, x], i, l) =>
+      `<a href="#cours-${n}" style="left:${x}%;width:${(l[i + 1] ? l[i + 1][2] : 100) - x}%">${n} : ${t}</a>`).join("")}</nav>
     <p class="hs-espace"><span>${role() === "prof" ? "Espace enseignant" : "Espace élève"}</span>${D.eleves || D.prof ? "" : ` <a href="#accueil">Changer d'espace</a>`}</p></section>${puceHtml()}${maClasse() ? carteMission() : ""}`;
 }
 const niveauxSignal = () => `<div class="niv-signal">${NIV.map(n => { const [num, t, s] = NIV_SIGNAL[n], A = { "6e": "de la flûte d'os à Ut queant laxis", "5e": "de Notre-Dame à Monteverdi", "4e": "de Lully à Edison", "3e": "du Sacre à la K-pop" }[n];
