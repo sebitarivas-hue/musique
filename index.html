@@ -800,19 +800,55 @@ html.signal .proj2 .s-q li, html.signal .proj2 .s-yt a, html.signal .proj2 .t-ec
 html.signal .proj2 .p-top button, html.signal .proj2 .p-bar button { border-radius: 0; box-shadow: none; }
 html.signal .proj .s-pill { background: var(--acide); color: var(--noir); border-radius: 0; font-family: var(--f-mono); text-transform: uppercase; letter-spacing: .06em; }
 
-/* Bloc d'accueil SIGNAL : noir, titre en capitales, onde en barres. */
-html.signal .hero-signal { background: var(--noir); color: var(--papier); border-radius: 18px; padding: 20px 18px 16px; margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
-html.signal .hs-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
-html.signal .hs-eyebrow { font: 600 clamp(.95rem, 4.4vw, 1.35rem)/1.25 var(--f-body); text-transform: uppercase; color: var(--acide); max-width: 15ch; letter-spacing: .01em; }
-html.signal .hs-lieu { font: 500 12px/1.5 var(--f-mono); text-transform: uppercase; letter-spacing: .04em; text-align: right; color: var(--papier); display: flex; flex-direction: column; } html.signal .hs-lieu span { white-space: nowrap; }
-html.signal .hs-espace span:first-child { color: var(--papier); }
-html.signal .hs-titre { font: 700 clamp(2.4rem, 11.5vw, 4.6rem)/.98 var(--f-titre); text-transform: uppercase; letter-spacing: -.01em; color: var(--papier); margin-top: 18px; max-width: none; }
-html.signal .hs-acide { color: var(--acide); }
-html.signal .hs-sous { margin: 2px 0 0; font: 700 clamp(1.15rem, 5.4vw, 2rem)/1.1 var(--f-titre); text-transform: uppercase; color: var(--papier); }
-html.signal .hs-onde { width: 100%; height: clamp(110px, 30vw, 190px); margin: 22px 0 18px; display: block; }
-html.signal .hs-bas { display: flex; justify-content: space-between; gap: 10px; font: 600 clamp(.85rem, 3.6vw, 1.05rem)/1.2 var(--f-body); text-transform: uppercase; color: var(--papier); }
-html.signal .hs-espace { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid #3A3A35; font: 500 11px var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: #BEBDB4; display: flex; gap: 12px; }
-html.signal .hs-espace a { color: var(--acide); }
+/* Bloc d'accueil SIGNAL, d'après la maquette « Sound as matter ». */
+@font-face { font-family: "Archivo Variable"; src: url("polices/archivo-variable-latin.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
+html.signal .hero-signal { --pad: clamp(16px, 3vw, 40px); background: var(--noir); color: var(--papier); border-radius: 0; padding: var(--pad); margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); display: flex; flex-direction: column; gap: 18px; overflow: hidden; }
+html.signal .hs-id { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px 18px; }
+html.signal .hs-id img { width: 52px; height: 52px; border: 1px solid #55554E; border-radius: 10px; padding: 4px; background: #000; }
+html.signal .hs-ecole, html.signal .hs-prof { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+html.signal .hs-ecole b, html.signal .hs-prof b { font: 600 13px/1.2 var(--f-body); text-transform: uppercase; letter-spacing: .06em; color: var(--papier); }
+html.signal .hs-ecole span, html.signal .hs-prof span { font: 400 12px/1.3 var(--f-mono); text-transform: uppercase; letter-spacing: .08em; color: #BEBDB4; }
+html.signal .hs-prof { grid-column: 1 / -1; padding-top: 10px; border-top: 1px solid #3A3A35; }
+html.signal .hs-an { grid-column: 1 / -1; font: 400 12px var(--f-mono); letter-spacing: .1em; color: #D3D2CA; display: flex; align-items: center; gap: 12px; }
+html.signal .hs-an i { width: 28px; height: 1px; background: #D3D2CA; }
+html.signal .hs-titre { font-family: "Archivo Variable", var(--f-titre); font-weight: 900; font-stretch: 62%; font-size: clamp(3.6rem, 21vw, 10rem); line-height: .86; letter-spacing: -.01em; text-transform: uppercase; color: var(--papier); margin: 6px 0 0; }
+html.signal .hs-titre span { display: block; } html.signal .hs-acide { color: var(--acide); }
+html.signal .hs-sous { margin: 14px 0 0; font: 400 clamp(1rem, 4.6vw, 2rem)/1.2 var(--f-mono); letter-spacing: .22em; text-transform: uppercase; color: var(--papier); }
+html.signal .hs-bas { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 18px; }
+html.signal .hs-verbes { list-style: none; margin: 0; padding: 12px 0; display: flex; flex-wrap: wrap; gap: 4px 14px; border-top: 2px solid var(--papier); border-bottom: 2px solid var(--papier); width: fit-content; font: 400 13px/1.55 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--papier); }
+html.signal .hs-onde { position: relative; padding-bottom: 22px; } html.signal .hs-onde svg { width: 100%; height: clamp(110px, 26vw, 200px); display: block; }
+html.signal .hs-traits rect { fill: #E9E8E0; } html.signal .hs-axe { stroke: #E9E8E0; stroke-width: 1; }
+html.signal .hs-onde::after { content: ""; position: absolute; left: 0; right: 0; bottom: 22px; height: 1px; background: #6B6A63; }
+html.signal .hs-tete { position: absolute; top: 0; bottom: 22px; left: 62%; width: 3px; background: var(--rouge); animation: tete-lecture 26s linear infinite; }
+@keyframes tete-lecture { from { left: 0%; } to { left: 100%; } }
+@media (prefers-reduced-motion: reduce) { html.signal .hs-tete { animation: none; left: 62%; } }
+html.signal .hs-temps { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; font: 400 11px var(--f-mono); letter-spacing: .08em; color: #BEBDB4; }
+/* Collage : trois images documentaires en noir et blanc, et trois aplats (vert, papier, rouge). */
+html.signal .hs-collage { position: relative; display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: 1fr 1fr; gap: 0; height: clamp(240px, 70vw, 560px); margin-top: 8px; }
+html.signal .hs-img { position: relative; display: block; background: #2A2A26 center / cover no-repeat; filter: grayscale(1) contrast(1.15); }
+html.signal .hs-img em { position: absolute; left: 10px; bottom: 8px; font: 400 10.5px var(--f-mono); text-transform: uppercase; letter-spacing: .08em; color: #BEBDB4; font-style: normal; }
+html.signal .hs-img.pleine em { display: none; }
+html.signal .hs-img1 { grid-row: 1 / 3; margin-top: 12%; } html.signal .hs-img2 { grid-column: 2; } html.signal .hs-img3 { grid-column: 2; background-color: #DAD8CE; }
+html.signal .hs-bloc { position: absolute; z-index: 1; display: block; }
+html.signal .hs-bloc.acide { background: var(--acide); width: 30%; height: 14%; left: 22%; top: 0; }
+html.signal .hs-bloc.papier { background: var(--papier); width: 6%; height: 22%; right: 0; top: 3%; }
+html.signal .hs-bloc.rouge { background: var(--rouge); width: 4%; height: 10%; right: 0; top: 62%; }
+html.signal .hs-espace { margin: 0; padding-top: 12px; border-top: 1px solid #3A3A35; font: 500 11px var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: #BEBDB4; display: flex; flex-wrap: wrap; gap: 6px 16px; }
+html.signal .hs-espace a { color: #D3D2CA; }
+@media (min-width: 760px) {
+  html.signal .hs-id { grid-template-columns: auto auto 1px auto 1fr; }
+  html.signal .hs-id::before { content: ""; grid-column: 3; grid-row: 1; width: 1px; height: 46px; background: #55554E; }
+  html.signal .hs-prof { grid-column: 4; grid-row: 1; border-top: 0; padding-top: 0; } html.signal .hs-an { grid-column: 5; grid-row: 1; justify-self: end; }
+  html.signal .hs-grille { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: stretch; }
+  html.signal .hs-titre { font-size: clamp(4.5rem, 9.5vw, 10rem); }
+  html.signal .hs-bas { grid-template-columns: auto 1fr; align-items: center; gap: 22px; }
+  html.signal .hs-verbes { flex-direction: column; flex-wrap: nowrap; gap: 0; border: 0; padding: 0; position: relative; }
+  html.signal .hs-verbes::before, html.signal .hs-verbes::after { content: ""; display: block; width: 46px; height: 2px; background: var(--papier); margin: 14px 0; }
+  html.signal .hs-collage { height: auto; min-height: 520px; margin-top: 0; }
+}
+/* L'accueil prend toute la largeur ; le reste de la page Semaine garde sa colonne de lecture. */
+@media (min-width: 1100px) { html.signal #app:has(> .hero-signal) { max-width: 1240px; } html.signal #app:has(> .hero-signal) > :not(.hero-signal) { max-width: 760px; margin-left: auto; margin-right: auto; }
+  html.signal .hero-signal { margin: 0; } }
 /* Les quatre niveaux en bandeaux : numéro en couleur, point de couleur, et toujours le libellé. */
 html.signal .niv-signal { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
 html.signal .niv-s { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; background: var(--noir); color: var(--papier); border-radius: 12px; padding: 16px 18px; text-decoration: none; }
@@ -878,6 +914,29 @@ html.signal :is(h1, h2, h3, h4, .h3, .choix-titre, .hs-titre, .ns-t b, .labo-tui
 }
 
 html.signal .tile :is(h2, h3, .h3, b) { font: 700 1.08rem/1.15 var(--f-titre); letter-spacing: -.005em; }
+
+html.signal .hs-titre { padding-top: .14em; overflow: visible; }
+@media (min-width: 760px) { html.signal .hs-sous { font-size: clamp(1rem, 1.9vw, 1.9rem); letter-spacing: .2em; white-space: nowrap; } }
+
+/* Le titre se règle sur la largeur de son bloc (et non de l'écran) : « Éducation » tient toujours sur une ligne. */
+html.signal .hs-gauche { container-type: inline-size; min-width: 0; }
+html.signal .hs-titre { font-size: clamp(3rem, 21vw, 10rem); }
+@supports (font-size: 1cqi) { html.signal .hs-titre { font-size: min(10rem, 20.5cqi); } }
+
+.p-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.choix-son { display: inline-flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--muted); }
+.choix-son select { min-height: 40px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; }
+html.signal .choix-son { font: 500 11px var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--noir); }
+html.signal .choix-son select { border: 2px solid var(--noir); border-radius: 0; background: var(--papier); font: 600 14px var(--f-body); text-transform: none; letter-spacing: 0; }
+
+html.signal .hs-collage { display: block; height: auto; min-height: 0; }
+html.signal .hs-collage img { display: block; width: 100%; height: 100%; max-height: 560px; object-fit: cover; object-position: center top; }
+@media (max-width: 759px) { html.signal .hs-collage img { aspect-ratio: 4 / 3; height: auto; object-position: center 30%; } }
+
+/* L'accueil est l'image de la maquette de Sébastien, telle quelle. */
+html.signal .hero-image { padding: 0 0 12px; gap: 0; background: #10100F; }
+html.signal .hs-maquette { display: block; width: 100%; height: auto; }
+html.signal .hero-image .hs-espace { margin: 0 var(--pad); }
 
 </style>
 </head>
@@ -1063,23 +1122,23 @@ function carteEleve(k, idx) {
 const SIGNAL = () => document.documentElement.classList.contains("signal");
 const NIV_SIGNAL = { "6e": ["06", "Origines", "Découvrir les matières sonores"], "5e": ["05", "Patrimoine", "Comprendre les langages musicaux"],
                      "4e": ["04", "Histoire", "Observer les transformations"], "3e": ["03", "Modernité", "Expérimenter les cultures contemporaines"] };
-/* Une onde dessinée en barres : groupes forts et faibles qui alternent, quelques crêtes en rouge. Toujours la même. */
+/* Une forme d'onde dense, comme un enregistrement : trois bouffées sonores, une tête de lecture rouge, un temps en mono. Toujours la même. */
 function ondeSignal() {
-  const n = 72, W = 720, H = 160; let x = 0, s = 7, bars = "";
+  const n = 260, W = 780, H = 220; let s = 11, traits = "";
   const alea = () => (s = (s * 9301 + 49297) % 233280) / 233280;
-  for (let i = 0; i < n; i++) {
-    const groupe = Math.floor(i / 9) % 2 === 0, a = groupe ? .55 + .45 * alea() : .08 + .22 * alea();
-    const h = Math.max(6, a * H), rouge = groupe && alea() > .8;
-    bars += `<rect x="${x}" y="${(H - h) / 2}" width="3" height="${h}" fill="${rouge ? "#FF5638" : "#D6FF00"}"/>`; x += W / n;
-  }
-  return `<svg class="hs-onde" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${bars}</svg>`;
+  const enveloppe = t => Math.max(.04, .95 * Math.exp(-Math.pow((t - .3) / .07, 2)) + .85 * Math.exp(-Math.pow((t - .55) / .06, 2)) + .7 * Math.exp(-Math.pow((t - .8) / .09, 2)) + .12);
+  for (let i = 0; i < n; i++) { const t = i / n, h = Math.max(2, enveloppe(t) * (.35 + .65 * alea()) * H * .92), x = (t * W).toFixed(1);
+    traits += `<rect x="${x}" y="${((H - h) / 2).toFixed(1)}" width="1.4" height="${h.toFixed(1)}"/>`; }
+  return `<div class="hs-onde"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="${H / 2}" x2="${W}" y2="${H / 2}" class="hs-axe"/><g class="hs-traits">${traits}</g></svg>
+    <span class="hs-tete" aria-hidden="true"></span><div class="hs-temps" aria-hidden="true"><span>00:00</span><span>01:20</span><span>03:40</span></div></div>`;
 }
+/* Le bloc d'accueil, d'après la maquette « Sound as matter » de Sébastien : bandeau d'identité, titre condensé monumental, verbes en mono,
+   forme d'onde, et le collage de sa maquette (images/accueil-collage.jpg, côté droit de l'image qu'il a fournie). */
 function heroSignal() {
-  const an = (D.annee.match(/\d{4}/g) || []).map(a => a.slice(2)).join("/");
-  return `<section class="hero-signal" aria-labelledby="hs-t"><div class="hs-top"><span class="hs-eyebrow">Musique / recherche / création</span><span class="hs-lieu">${D.etablissement.split(",").map(x => `<span>${esc(x.trim())}</span>`).join("")}<span>${esc(an)}</span></span></div>
-    <h1 id="hs-t" class="hs-titre">Éducation <span class="hs-acide">musicale.</span></h1><p class="hs-sous">Le son est une matière.</p>${ondeSignal()}
-    <div class="hs-bas"><span>Écouter / analyser / composer</span><span class="hs-acide">01-04</span></div>
-    <p class="hs-espace"><span>${esc(D.professeur || "")}</span><span>${role() === "prof" ? "Espace enseignant" : "Espace élève"}</span>${D.eleves || D.prof ? "" : ` <a href="#accueil">Changer d'espace</a>`}</p></section>${puceHtml()}${maClasse() ? carteMission() : ""}`;
+  return `<section class="hero-signal hero-image" aria-labelledby="hs-t"><h1 id="hs-t" class="sr">Éducation musicale. Le son est une matière.</h1>
+    <img class="hs-maquette" src="images/accueil.jpg" srcset="images/accueil-768.jpg 768w, images/accueil.jpg 1536w" sizes="(min-width: 1100px) 1240px, 100vw" width="1536" height="1024" decoding="async" fetchpriority="high"
+      alt="Éducation musicale. Le son est une matière. ${esc(D.etablissement)}, ${esc(D.professeur || "")}, professeur d'éducation musicale, ${esc(D.annee)}. Écouter, comprendre, identifier, analyser, situer, pratiquer, explorer. Une forme d'onde, une tête de statue antique, la volute d'un violoncelle et une partition.">
+    <p class="hs-espace"><span>${role() === "prof" ? "Espace enseignant" : "Espace élève"}</span>${D.eleves || D.prof ? "" : ` <a href="#accueil">Changer d'espace</a>`}</p></section>${puceHtml()}${maClasse() ? carteMission() : ""}`;
 }
 const niveauxSignal = () => `<div class="niv-signal">${NIV.map(n => { const [num, t, s] = NIV_SIGNAL[n], A = { "6e": "de la flûte d'os à Ut queant laxis", "5e": "de Notre-Dame à Monteverdi", "4e": "de Lully à Edison", "3e": "du Sacre à la K-pop" }[n];
   return `<a class="niv-s" data-n="${n}" href="#cours-${n}"><span class="ns-num">${num}</span><span class="ns-t"><b>${t}</b><span>${s}</span><span class="ns-meta">${n}, ${A}</span></span><i class="ns-pt" aria-hidden="true"></i></a>`; }).join("")}</div>`;
@@ -1441,19 +1500,32 @@ function dessinerPartition(id) {
     : `<path d="M${cx + 2} ${y0 + 5.4 * s} C${cx - 4} ${y0 + 5.8 * s} ${cx - 7} ${y0 + 4.8 * s} ${cx - 1} ${y0 + 4.6 * s} L${cx + 3} ${y0 - 1.4 * s} C${cx + 10} ${y0 - .6 * s} ${cx + 7} ${y0 + .9 * s} ${cx - 4} ${y0 + 2 * s} C${cx - 11} ${y0 + 2.8 * s} ${cx - 7} ${y0 + 4.3 * s} ${cx + 2} ${y0 + 4.1 * s} C${cx + 10} ${y0 + 3.9 * s} ${cx + 9} ${y0 + 2.4 * s} ${cx + 1} ${y0 + 2.6 * s} C${cx - 4} ${y0 + 2.8 * s} ${cx - 3} ${y0 + 3.5 * s} ${cx + 1} ${y0 + 3.4 * s}" stroke="currentColor" stroke-width="2" fill="none"/>`;
   return `<svg viewBox="0 0 ${W} ${y0 + 4 * s + 40}" width="${W}" height="${y0 + 4 * s + 40}" role="img" aria-label="Partition : ${esc(P.titre)}">${portee}${cle}${c}${notes}</svg>`;
 }
+/* Les sons au choix (échantillons calculés par Faust) pour le clavier et les partitions ; le choix est gardé sur l'appareil. */
+const SONS_MELODIE = [["guitare", "Guitare"], ["clavier", "Piano électrique"], ["marimba", "Marimba"], ["clavecin", "Clavecin"], ["orgue", "Orgue"], ["souffle", "Flûte"],
+  ["cordes", "Cordes"], ["violon", "Violon"], ["anche", "Clarinette"], ["trompette", "Trompette"], ["cloche", "Métallophone"], ["voix", "Chœur"]];
+const SONS_RYTHME = [["bois", "Bois"], ["tambour", "Tambour"], ["mains", "Claquements de mains"]];
+const FORME_DE = { clavier: "triangle", souffle: "sine", anche: "square", cordes: "sawtooth" };
+const formeDe = i => FORME_DE[i] || i;
+const sonChoisi = (cle, defaut, liste) => { const v = get(cle, defaut); return liste.some(([x]) => x === v) ? v : defaut; };
+const menuSon = (cle, defaut, liste, lib) => `<label class="choix-son"><span>${lib}</span><select data-son="${cle}" data-defaut="${defaut}">${liste.map(([v, n]) => `<option value="${v}"${v === sonChoisi(cle, defaut, liste) ? " selected" : ""}>${n}</option>`).join("")}</select></label>`;
+document.addEventListener("change", e => { const s = e.target.closest && e.target.closest("select[data-son]"); if (!s) return;
+  set(s.dataset.son, s.value); document.querySelectorAll(`select[data-son="${s.dataset.son}"]`).forEach(x => x.value = s.value);
+  if (SONS_MELODIE.some(([x]) => x === s.value)) chargerInstruments([s.value]); else chargerInstruments(["percu", "djembe"]); });
 const partitionHtml = id => D.partitions[id] ? `<figure class="partition" data-p="${id}"><figcaption>${esc(D.partitions[id].titre)}</figcaption><div class="pscroll">${dessinerPartition(id)}</div>
-  <button type="button" class="sonbtn" data-partition="${id}" aria-pressed="false"><span class="sp" aria-hidden="true"></span>Écouter en suivant la partition</button></figure>` : "";
+  <div class="p-actions"><button type="button" class="sonbtn" data-partition="${id}" aria-pressed="false"><span class="sp" aria-hidden="true"></span>Écouter en suivant la partition</button>${D.partitions[id].instr === "percu" ? menuSon("son-rythme", "bois", SONS_RYTHME, "Son") : menuSon("son-partition", "guitare", SONS_MELODIE, "Son")}</div></figure>` : "";
 async function jouerPartition(id, bouton) {
   deverrouiller();
   const enCours = SON_EN_COURS && SON_EN_COURS.b === bouton;
   toutArreter(); if (enCours || !audio()) return;
-  const P = D.partitions[id], fig = bouton.closest(".partition"), tps = 60 / P.tempo;
-  if (P.instr !== "percu" && !pret(P.instr)) { bouton.setAttribute("aria-busy", "true"); await Promise.race([chargerInstruments([P.instr]), attendre(6000)]); bouton.removeAttribute("aria-busy"); }
-  if (P.instr === "percu" && !pret("percu")) await Promise.race([chargerInstruments(["percu"]), attendre(4000)]);
+  const P = D.partitions[id], fig = bouton.closest(".partition"), tps = 60 / P.tempo, rythme = P.instr === "percu";
+  const instr = rythme ? null : sonChoisi("son-partition", "guitare", SONS_MELODIE), frappe = rythme ? sonChoisi("son-rythme", "bois", SONS_RYTHME) : null;
+  const besoin = rythme ? (frappe === "tambour" ? "djembe" : "percu") : instr;
+  if (!pret(besoin)) { bouton.setAttribute("aria-busy", "true"); await Promise.race([chargerInstruments([besoin]), attendre(6000)]); bouton.removeAttribute("aria-busy"); }
   let t = .15;
   const notesEl = fig.querySelectorAll(".pn");
   P.notes.forEach(([m, d], i) => {
-    if (m) { if (P.instr === "percu") claque(t); else jouer(M(m), d * tps * .95, P.instr === "voix" ? .35 : .32, P.instr, t, P.instr === "voix" ? { type: 0, voyelle: 0 } : {}); }
+    if (m) { if (rythme) { if (frappe === "mains") claque(t); else if (frappe === "tambour") jouer(M(52), .3, .45, "djembe", t); else percuEch(4, t, .55, 1500); }
+      else jouer(M(m), d * tps * .95, instr === "voix" ? .35 : .32, formeDe(instr), t, instr === "voix" ? { type: 0, voyelle: 0 } : {}); }
     PARTI.push(setTimeout(() => { notesEl.forEach(n => n.classList.remove("on")); const n = notesEl[i]; n.classList.add("on");
       const sc = fig.querySelector(".pscroll"), b = n.getBBox ? n.getBBox() : null; if (b && sc) sc.scrollLeft = Math.max(0, b.x - sc.clientWidth / 3); }, t * 1000));
     t += d * tps;
@@ -1844,6 +1916,7 @@ function htmlJeux() {
     <section class="tool" id="j-clavier" aria-labelledby="jc-t"><h3 id="jc-t">Le clavier</h3>
       <p class="small">Touche les notes. Les noms do, ré, mi viennent de l'hymne <i>Ut queant laxis</i> : ut est devenu do.</p>
       <div class="piano" role="group" aria-label="Clavier d'une octave">${NOTES.map(([n, f, noire], i) => `<button type="button" class="${noire ? "k-n" : "k-b"}" data-f="${f}" aria-label="${n}${i === 12 ? " aigu" : ""}"><span aria-hidden="true">${noire ? "" : n}</span></button>`).join("")}</div>
+      <div class="actions">${menuSon("son-clavier", "clavier", SONS_MELODIE, "Son du clavier")}</div>
       <div class="actions"><button type="button" class="btn2" id="jc-gamme">Jouer la gamme de do</button><button type="button" class="btn2" id="jc-defi">Défi : retrouve la note</button></div>
       <p class="fb2" id="jc-fb" aria-live="polite"></p></section>
     <section class="tool" id="j-rythme" aria-labelledby="jr-t"><h3 id="jr-t">Compose un rythme</h3>
@@ -1894,14 +1967,16 @@ function brancherJeux() {
   $("jo-play").onclick = ecouter; $("jo-1").onclick = () => repondre(1); $("jo-2").onclick = () => repondre(2);
   /* Clavier */
   const C = JEU.c = { cible: null };
+  const sonClavier = () => formeDe(sonChoisi("son-clavier", "clavier", SONS_MELODIE)), voixOpt = () => sonChoisi("son-clavier", "clavier", SONS_MELODIE) === "voix" ? { type: 0, voyelle: 0 } : {};
+  chargerInstruments([sonChoisi("son-clavier", "clavier", SONS_MELODIE)]);
   document.querySelectorAll(".piano button").forEach((b, i) => b.onclick = () => {
-    jouer(+b.dataset.f, .8, .3, "triangle"); b.classList.add("on"); setTimeout(() => b.classList.remove("on"), 250);
+    jouer(+b.dataset.f, .8, .3, sonClavier(), 0, voixOpt()); b.classList.add("on"); setTimeout(() => b.classList.remove("on"), 250);
     if (C.cible !== null) { const ok = i === C.cible; if (ok) gagner(null, 5, "clavier"); $("jc-fb").textContent = ok ? `Oui, c'était ${NOTES[i][0]}.` : `Ce n'est pas ${NOTES[i][0]}. Réécoute avec « Défi » ou cherche encore.`; if (ok) C.cible = null; }
     else $("jc-fb").textContent = NOTES[i][0];
   });
-  $("jc-gamme").onclick = () => { C.cible = null; NOTES.filter(n => !n[2]).forEach(([n, f], j) => jouer(f, .4, .3, "triangle", j * .42)); $("jc-fb").textContent = "do, ré, mi, fa, sol, la, si, do"; };
+  $("jc-gamme").onclick = () => { C.cible = null; NOTES.filter(n => !n[2]).forEach(([n, f], j) => jouer(f, .4, .3, sonClavier(), j * .42, voixOpt())); $("jc-fb").textContent = "do, ré, mi, fa, sol, la, si, do"; };
   $("jc-defi").onclick = () => { if (C.cible === null) { const b = NOTES.map((n, i) => i).filter(i => !NOTES[i][2] && i < 12); C.cible = b[Math.floor(Math.random() * b.length)]; }
-    jouer(NOTES[0][1], .6, .3, "triangle"); jouer(NOTES[C.cible][1], .8, .3, "triangle", .8); $("jc-fb").textContent = "Le premier son est do. Quelle est la seconde note ? Touche-la sur le clavier."; };
+    jouer(NOTES[0][1], .6, .3, sonClavier(), 0, voixOpt()); jouer(NOTES[C.cible][1], .8, .3, sonClavier(), .8, voixOpt()); $("jc-fb").textContent = "Le premier son est do. Quelle est la seconde note ? Touche-la sur le clavier."; };
   /* Rythme */
   const sels = [...document.querySelectorAll(".mes select")];
   function verifier() {
