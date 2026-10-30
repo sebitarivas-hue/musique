@@ -964,7 +964,7 @@ html.signal .en-an { margin-left: auto; display: flex; flex-direction: column; a
 html.signal .en-an i { width: 12px; height: 1px; background: #D3D2CA; }
 html.signal .en-menu { display: none; }
 @media (max-width: 420px) { html.signal .en-bloc b { font-size: 10px; white-space: normal; } html.signal .en-bloc span { font-size: 9px; } html.signal .en-prof span { max-width: 15ch; } }
-@media (max-width: 340px) { html.signal .en-prof { display: none; } }
+@media (max-width: 340px) { html.signal .en-prof { display: none; } html.signal .en-ecole { border-right: 0; } }
 /* Barre du bas (téléphone et tablette) : même code que le menu de l'ordinateur, la rubrique ouverte en vert, soulignée. */
 html.signal nav.tabs a[aria-current="page"] { background: transparent; color: var(--acide); box-shadow: inset 0 3px 0 var(--acide); }
 html.signal nav.tabs a[aria-current="page"] svg { color: var(--acide); }
@@ -987,6 +987,19 @@ html.signal nav.tabs a[aria-current="page"] svg { color: var(--acide); }
   html.signal .hero-signal { margin-top: 0; }
 }
 @media (min-width: 1100px) and (max-width: 1360px) { html.signal .en-prof span { display: none; } html.signal .en-menu a { padding-inline: 7px; font-size: 12px; } }
+
+/* Téléphone : les blocs d'identité passent à la ligne au lieu de déborder l'un sur l'autre (constaté sur iPhone, 430 px). */
+@media (max-width: 1099px) {
+  html.signal .entete-in { gap: 10px; }
+  html.signal .en-bloc { flex: 1 1 0; min-width: 0; padding-right: 10px; }
+  html.signal .en-bloc b, html.signal .en-bloc span { white-space: normal; overflow-wrap: break-word; }
+  html.signal .en-bloc b { font-size: 10.5px; } html.signal .en-bloc span { font-size: 9.5px; }
+  html.signal .en-logo, html.signal .en-an { flex: none; }
+}
+@media (min-width: 760px) and (max-width: 1099px) { html.signal .en-bloc { flex: 0 1 auto; } html.signal .en-bloc b { font-size: 12px; } html.signal .en-bloc span { font-size: 10.5px; } }
+
+.oeuvres-q { gap: 10px; } .oeuvre-q .consigne { margin-top: 6px; } .oeuvre-q .consigne ol { margin: 4px 0 0; }
+html.signal .oeuvre-q { border-top: 1px solid var(--noir); padding-top: 8px; } html.signal .oeuvre-q .listen { border-top: 0; }
 
 </style>
 </head>
@@ -1039,7 +1052,7 @@ function entete(tab, r) {
   const [ecole, ville] = D.etablissement.split(",").map(x => x.trim()), [a1, a2] = D.annee.split(/[-–]/).map(x => x.trim());
   el.hidden = false;
   el.innerHTML = `<div class="entete-in"><a class="en-logo" href="#semaine" aria-label="Accueil"><img src="icon-192.png" alt="" width="44" height="44"></a>
-    <div class="en-bloc en-ecole"><b>${esc(ecole.replace(/Coeur/, "Cœur"))}</b><span>${esc(ville || "")}</span></div>
+    <div class="en-bloc en-ecole"><b>${esc(ecole.replace(/Coeur/, "Cœur")).replace(/-/g, "\u2011")}</b><span>${esc(ville || "").replace(/-/g, "\u2011")}</span></div>
     <div class="en-bloc en-prof"><b>${esc(D.professeur || "")}</b><span>Professeur d'éducation musicale</span></div>
     ${r ? `<nav class="en-menu" aria-label="Rubriques"><ul>${MENUS[r].map(([t, lib]) => `<li><a href="#${t}"${t === tab ? ' aria-current="page"' : ""}>${esc(lib)}</a></li>`).join("")}</ul></nav>` : ""}
     <div class="en-an" aria-label="Année ${esc(D.annee)}"><span>${esc(a1 || "")}</span><i aria-hidden="true"></i><span>${esc(a2 || "")}</span></div></div>`;
@@ -1913,11 +1926,27 @@ function vuePratiquer(k, sec) {
   const C_parts = `<h2 class="sec" id="j-partitions" tabindex="-1">Partitions à suivre</h2><p class="small">La note jouée s'allume. Mélodies du domaine public ou de tradition orale.</p>${Object.keys(D.partitions).map(partitionHtml).join("")}`;
   let C_oeuvres = `<h2 class="sec" id="j-ecoutes" tabindex="-1">Les écoutes de la ${k}</h2><p class="small">Les liens ouvrent une recherche sur YouTube dans un nouvel onglet. Écoute d'abord sans lire, puis avec les questions.</p><div class="stack">`;
   n.sequences.forEach((s, i) => {
-    const qs = []; Object.entries(D.diapos[k] || {}).forEach(([key, vues]) => { if (key.startsWith((i + 1) + "-")) vues.forEach(v => (v.q || []).forEach(q => qs.push(q))); });
+    /* Chaque œuvre avec ses propres questions, celles de la diapositive où elle est écoutée (et non un mélange de toute la séquence). */
+    const vus = new Set(), ecs = [];
+    /* (on écarte le repli d'ecoutesSeance, qui reprend la liste officielle quand une séance n'a pas de diapositive d'écoute) */
+    n.contenus[i].seances.forEach((_, j) => ecoutesSeance(k, i + 1, j + 1).forEach(x => { if (s.oeuvres.includes(x.q)) return;
+      /* même lien, ou même œuvre sous un libellé plus court ou plus long (« Épitaphe de Seikilos » et « Épitaphe de Seikilos, interprétation ») : une seule ligne, questions réunies */
+      const norme = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      const d = ecs.find(y => y.q === x.q || norme(y.lib).startsWith(norme(x.lib)) || norme(x.lib).startsWith(norme(y.lib)));
+      if (d) { d.questions = [...new Set([...(d.questions || []), ...(x.questions || [])])].slice(0, 6); return; }
+      vus.add(x.q); ecs.push(x); }));
+    /* Une œuvre officielle déjà écoutée sous un autre libellé (« Sergueï Prokofiev, Pierre et le loup (…) » et « Prokofiev, Pierre et le loup ») n'est pas répétée :
+       on compare les mots significatifs, sans accents ni majuscules. */
+    const mots = t => (t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().match(/[a-z0-9]{4,}/g) || []).filter(m => !["pour", "aller", "plus", "loin", "extrait", "vers", "avec", "dans"].includes(m));
+    const dejaLa = o => { const m = mots(o); return ecs.some(x => { const t = mots(x.lib + " " + x.q); const c = m.filter(w => t.includes(w)).length; return c >= Math.min(2, m.length); }); };
+    const restantes = s.oeuvres.filter(o => !dejaLa(o));
+    const uneEcoute = x => `<div class="oeuvre-q">${ecoute(x.lib, x.q)}${x.questions && x.questions.length ? `<div class="consigne"><span class="label">Questions</span><ol>${x.questions.map(q => `<li>${esc(q)}</li>`).join("")}</ol></div>` : ""}</div>`;
+    const principales = ecs.filter(x => !x.ext), plusLoin = ecs.filter(x => x.ext);
     C_oeuvres += `<details class="seq"><summary>${vignette(k, i)}<span class="seqhead"><span class="meta">Séquence ${i + 1}</span><h3>${esc(s.titre)}</h3></span><span class="chev" aria-hidden="true">&#8250;</span></summary><div class="body">
       <div><h4 class="blk-t">1. Découvrir</h4><p>${esc(s.accroche || "")}</p>${galerieHtml((D.imagesSeq[k][i] || []).slice(0, 2))}</div>
-      <div><h4 class="blk-t">2. Analyser</h4><div class="listens">${s.oeuvres.map(o => ecoute(o, o)).join("")}</div>
-        <div class="consigne"><span class="label">Questions</span><ol>${(qs.length ? [...new Set(qs)].slice(0, 5) : ["Quels instruments ou quelles voix entends-tu ?", "Le tempo est-il lent, modéré ou rapide ?", "Quel caractère, et par quels moyens musicaux ?"]).map(q => `<li>${esc(q)}</li>`).join("")}</ol></div></div>
+      <div><h4 class="blk-t">2. Analyser</h4><div class="stack oeuvres-q">${principales.map(uneEcoute).join("")}${restantes.map(o => uneEcoute({ lib: o.replace(/^Pour aller plus loin : /, ""), q: o.replace(/^Pour aller plus loin : /, ""), questions: [] })).join("")}</div>
+        ${plusLoin.length ? `<details class="plus-echos"><summary>Pour aller plus loin (${plusLoin.length})</summary><div class="stack oeuvres-q">${plusLoin.map(uneEcoute).join("")}</div></details>` : ""}
+        ${!ecs.some(x => x.questions && x.questions.length) ? `<div class="consigne"><span class="label">Pour chaque écoute</span><ol>${["Quels instruments ou quelles voix entends-tu ?", "Le tempo est-il lent, modéré ou rapide ?", "Quel caractère, et par quels moyens musicaux ?"].map(q => `<li>${esc(q)}</li>`).join("")}</ol></div>` : ""}</div>
       <div><h4 class="blk-t">3. Retenir</h4><div class="chips">${s.vocabulaire.map(v => `<span class="tag">${esc(v)}</span>`).join("")}</div></div>
     </div></details>`;
   });
