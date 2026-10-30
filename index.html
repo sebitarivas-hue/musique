@@ -1926,11 +1926,13 @@ async function jouerPolyphonie(id, bouton) {
   const besoins = [...new Set([instr, ...P.voix.map(v => /^Piano/.test(v.nom) ? "clavier" : instr)])].filter(x => !pret(x));
   if (besoins.length) { bouton.setAttribute("aria-busy", "true"); await Promise.race([chargerInstruments(besoins), attendre(6000)]); bouton.removeAttribute("aria-busy"); }
   const ac = audio(), debut = .2;
-  P.voix.forEach((v, iv) => { if (!actives[iv]) return; const f = formeDe(/^Piano/.test(v.nom) ? "clavier" : instr), vol = (/^Piano/.test(v.nom) ? .16 : .26) / Math.sqrt(P.voix.length / 2);
-    v.notes.forEach(e => e.n.forEach(xn => jouer(M(xn[3]), e.d * spb * .95, vol, f, debut + e.t * spb))); });
+  /* Chaque voix a son propre volume : couper une voix pendant l'écoute la fait taire aussitôt, la rétablir la fait revenir. */
+  const gains = P.voix.map((v, iv) => { const g = ac.createGain(); g.gain.value = actives[iv] ? 1 : 0; g.connect(MASTER); return g; });
+  P.voix.forEach((v, iv) => { const f = formeDe(/^Piano/.test(v.nom) ? "clavier" : instr), vol = (/^Piano/.test(v.nom) ? .16 : .26) / Math.sqrt(P.voix.length / 2);
+    v.notes.forEach(e => e.n.forEach(xn => jouer(M(xn[3]), e.d * spb * .95, vol, f, debut + e.t * spb, { dest: gains[iv] }))); });
   FIN_SONS = Math.max(FIN_SONS, ac.currentTime + debut + P.fin * spb);
   const t0 = ac.currentTime + debut, sc = fig.querySelector(".pscroll"), px = PX_POLY[id] || 40, groupes = P.voix.map((v, iv) => [...fig.querySelectorAll(`.pv[data-v="${iv}"] .pn`)]);
-  const etat = POLY_EN_COURS = { b: bouton, fig, raf: 0 };
+  const etat = POLY_EN_COURS = { b: bouton, fig, raf: 0, gains };
   bouton.setAttribute("aria-pressed", "true");
   (function suivre() {
     if (POLY_EN_COURS !== etat) return;
@@ -1944,7 +1946,8 @@ async function jouerPolyphonie(id, bouton) {
 document.addEventListener("click", e => {
   const b = e.target.closest && e.target.closest("[data-jouer-poly]"); if (b) { jouerPolyphonie(b.dataset.jouerPoly, b); return; }
   const v = e.target.closest && e.target.closest(".p-voix [data-voix]"); if (v) { const fig = v.closest(".partition"), on = v.getAttribute("aria-pressed") !== "true"; v.setAttribute("aria-pressed", on);
-    fig.querySelector(`.pv[data-v="${v.dataset.voix}"]`).style.opacity = on ? "" : ".35"; }
+    fig.querySelector(`.pv[data-v="${v.dataset.voix}"]`).style.opacity = on ? "" : ".35";
+    if (POLY_EN_COURS && POLY_EN_COURS.fig === fig && POLY_EN_COURS.gains && AC) POLY_EN_COURS.gains[+v.dataset.voix].gain.setTargetAtTime(on ? 1 : 0, AC.currentTime, .03); }
 });
 
 /* Les sons au choix (échantillons calculés par Faust) pour le clavier et les partitions ; le choix est gardé sur l'appareil. */
@@ -1971,10 +1974,10 @@ async function jouerPartition(id, bouton) {
   const besoin = rythme ? (frappe === "tambour" ? "djembe" : "percu") : instr;
   if (!pret(besoin)) { bouton.setAttribute("aria-busy", "true"); await Promise.race([chargerInstruments([besoin]), attendre(6000)]); bouton.removeAttribute("aria-busy"); }
   let t = .15;
-  const notesEl = fig.querySelectorAll(".pn");
+  const notesEl = fig.querySelectorAll(".pn"), voixMel = voixPour(M(Math.min(...P.notes.map(([m]) => m || 127))));  // une seule voix pour toute la mélodie
   P.notes.forEach(([m, d], i) => {
     if (m) { if (rythme) { if (frappe === "mains") claque(t); else if (frappe === "tambour") jouer(M(52), .3, .45, "djembe", t); else percuEch(4, t, .55, 1500); }
-      else jouer(M(m), d * tps * .95, instr === "voix" ? .35 : .32, formeDe(instr), t, instr === "voix" ? { type: 0, voyelle: 0 } : {}); }
+      else jouer(M(m), d * tps * .95, instr === "voix" ? .35 : .32, formeDe(instr), t, instr === "voix" ? { type: voixMel, voyelle: 0 } : {}); }
     PARTI.push(setTimeout(() => { notesEl.forEach(n => n.classList.remove("on")); const n = notesEl[i]; n.classList.add("on");
       const sc = fig.querySelector(".pscroll"), b = n.getBBox ? n.getBBox() : null; if (b && sc) sc.scrollLeft = Math.max(0, b.x - sc.clientWidth / 3); }, t * 1000));
     t += d * tps;
@@ -2024,11 +2027,14 @@ function chargerInstruments(noms) {
   })));
 }
 const pret = n => BANQUE.cat && BANQUE.cat.some(e => e.i === n && BANQUE.tampons[e.id]);
+const voixPour = f => f >= 290 ? 3 : f >= 220 ? 0 : f >= 140 ? 4 : 1;
 function choisir(n, freq, opt) {
   let c = BANQUE.cat.filter(e => e.i === n && BANQUE.tampons[e.id]);
   if (n === "percu") return c.find(e => e.p === opt.p);
   if (n === "voix") {
-    const t = opt.type === undefined ? 0 : opt.type, v = opt.voyelle || 0;
+    /* Sans type demandé, la voix qui chante naturellement à cette hauteur : un échantillon transposé loin de sa
+       tessiture déplace aussi ses formants, et la voix devient nasillarde. Soprano 3, alto 0, ténor 4, basse 1. */
+    const t = opt.type === undefined ? voixPour(freq) : opt.type, v = opt.voyelle || 0;
     const a = c.filter(e => e.t === t && e.v === v), b = c.filter(e => e.t === t), d = c.filter(e => e.v === v);
     c = a.length ? a : b.length ? b : d.length ? d : c;
   }
@@ -2056,7 +2062,7 @@ function lecture(n, freq, duree, vol, debut, opt) {
   let sortie = g;
   if (opt.distorsion) { const ws = ac.createWaveShaper(), c = new Float32Array(1024); for (let i = 0; i < 1024; i++) c[i] = Math.tanh((i / 512 - 1) * 8) * .8; ws.curve = c; g.connect(ws); sortie = ws; }
   if (opt.pan !== undefined && ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = opt.pan; sortie.connect(p); sortie = p; }
-  src.connect(g); sortie.connect(MASTER);
+  src.connect(g); sortie.connect(opt.dest || MASTER);  // opt.dest : une voix d'une polyphonie, qu'on peut couper en direct
   src.start(t, T.off); const arret = (n === "percu" ? fin : fin + rel * 1.5) + .05; src.stop(arret);
   FIN_SONS = Math.max(FIN_SONS, arret);
   return true;
@@ -2124,7 +2130,7 @@ function jouer(freq, duree, vol, forme, debut, opt) {
     o2.type = o.type; o2.frequency.setValueAtTime(freq * 1.004, t); g2.gain.value = .5; o.connect(f); o2.connect(g2).connect(f); f.connect(g); o2.start(t); o2.stop(t + duree + 0.05);
   }
   else o.connect(g);
-  sortie.connect(MASTER); o.start(t); o.stop(t + duree + 0.05);
+  sortie.connect(opt.dest || MASTER); o.start(t); o.stop(t + duree + 0.05);
 }
 let BRUIT = null;
 function bruit(debut, duree, vol, filtre, freq, pan) {
@@ -3716,14 +3722,15 @@ function brancherChorale() {
   const z = document.querySelector(".ch-liste"); if (!z) return;
   /* La voix de chœur est un échantillon calculé par Faust : on attend qu'il soit chargé plutôt que de jouer un son de secours. */
   const pretVoix = async () => { if (!pret("voix")) await Promise.race([chargerInstruments(["voix"]), attendre(6000)]); };
-  const voix = (f, d, t) => jouer(f, d, .32, "voix", t || 0, { type: 1, voyelle: 0 });
+  /* Chaque note est chantée par la voix dont c'est la tessiture ; une vocalise garde la même voix, choisie sur sa note la plus grave. */
+  const voix = (f, d, t, type, voyelle) => jouer(f, d, .34, "voix", t || 0, { type: type === undefined ? voixPour(f) : type, voyelle: voyelle || 0, attaque: .18 });
   document.querySelectorAll("[data-ton]").forEach(b => b.onclick = async () => { deverrouiller(); await pretVoix(); voix(+b.dataset.ton, 2.5); });
   document.getElementById("ch-stop").onclick = () => toutArreter();
   let pas = 0;
   document.querySelectorAll("[data-ch]").forEach(b => b.onclick = async () => { deverrouiller(); await pretVoix(); const q = b.dataset.ch;
-    if (q === "bourdon") voix(130.81, 12);
+    if (q === "bourdon") voix(130.81, 12, 0, 1, 3);
     if (q === "accord") [261.63, 329.63, 392].forEach((f, i) => voix(f, 4, i * .6));
-    if (q === "vocalise") { const base = 261.63 * Math.pow(2, pas / 12); [0, 2, 4, 5, 7, 5, 4, 2, 0].forEach((d, i) => voix(base * Math.pow(2, d / 12), .42, i * .4));
+    if (q === "vocalise") { const base = 261.63 * Math.pow(2, pas / 12), ty = voixPour(base); [0, 2, 4, 5, 7, 5, 4, 2, 0].forEach((d, i) => voix(base * Math.pow(2, d / 12), .46, i * .4, ty));
       const o = document.getElementById("ch-voc"); if (o) o.textContent = `Départ sur ${["do", "do♯", "ré", "ré♯", "mi", "fa", "fa♯", "sol"][pas]} ; la prochaine monte d'un demi-ton.`; pas = (pas + 1) % 8; } });
   document.querySelectorAll("[data-chcat]").forEach(b => b.onclick = () => { document.querySelectorAll("[data-chcat]").forEach(x => x.setAttribute("aria-pressed", x === b));
     z.querySelectorAll(".ch-r").forEach(r => r.hidden = b.dataset.chcat === "programme" ? !r.dataset.prog : !!b.dataset.chcat && r.dataset.cat !== b.dataset.chcat); });
