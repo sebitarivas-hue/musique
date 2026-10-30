@@ -702,6 +702,8 @@ html.signal .fil a { color: var(--noir); } html.signal .fil { font-family: var(-
 html.signal nav.tabs { background: var(--noir); border-top: 0; box-shadow: none; }
 html.signal nav.tabs a { color: #BEBDB4; font: 600 10.5px/1.1 var(--f-body); letter-spacing: .02em; border-radius: 0; }
 html.signal nav.tabs a svg { color: currentColor; }
+/* Huit rubriques sur un téléphone : les étiquettes en Archivo étroit, pour que « Expérimenter » tienne dans sa case. */
+@media (max-width: 560px) { html.signal nav.tabs a span { font-family: "Archivo Variable", var(--f-body); font-stretch: 70%; font-weight: 600; letter-spacing: 0; max-width: 100%; } }
 html.signal nav.tabs a[aria-current="page"] { color: var(--noir); background: var(--acide); }
 html.signal nav.tabs a[aria-current="page"] svg { color: var(--noir); background: none; }
 html.signal footer.sig { font-family: var(--f-mono); color: var(--gris); border-top: 2px solid var(--noir); }
@@ -1260,8 +1262,8 @@ const ICONES_NAV = {"chorale": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=
 /* ---------- Deux espaces : élève et enseignant ---------- */
 const role = () => { if (D.prof) return "prof"; if (D.eleves) return "eleve"; const r = get("role", ""); return r === "prof" || r === "eleve" ? r : ""; };
 const MENUS = {
-  eleve: [["semaine", "Ma semaine"], ["cours", "Mes cours"], ["pratiquer", "Écouter"], ["chorale", "Chorale"], ["reviser", "Réviser"], ["faust", "Faust"], ["parcours", "Parcours"]],
-  prof: [["semaine", "Semaine"], ["cours", "Cours"], ["projeter", "Projeter"], ["eval", "Évaluer"], ["pratiquer", "Écouter"], ["chorale", "Chorale"], ["faust", "Faust"], ["plus", "Plus"]],
+  eleve: [["semaine", "Ma semaine"], ["cours", "Mes cours"], ["pratiquer", "Écouter"], ["chorale", "Chorale"], ["reviser", "Réviser"], ["faust", "Expérimenter"], ["parcours", "Parcours"]],
+  prof: [["semaine", "Semaine"], ["cours", "Cours"], ["projeter", "Projeter"], ["eval", "Évaluer"], ["pratiquer", "Écouter"], ["chorale", "Chorale"], ["faust", "Expérimenter"], ["plus", "Plus"]],
 };
 /* En-tête commun (direction SIGNAL), repris des maquettes de Sébastien : identité à gauche, l'année à droite ;
    sur ordinateur, le menu s'y place, la rubrique ouverte soulignée en vert. Sur téléphone, le menu reste en bas. */
@@ -1279,7 +1281,7 @@ function menu(tab) {
   const nav = document.querySelector("nav.tabs"), r = role();
   entete(tab, r);
   nav.hidden = !r; if (!r) return;
-  const AIDE_NAV = { faust: "Laboratoire Faust : fabriquer et transformer le son", projeter: "Projeter les diaporamas des séances en classe", eval: "Grilles d'évaluation, saisie par élève et bilan" };
+  const AIDE_NAV = { faust: "Expérimenter : fabriquer et transformer le son avec Faust", projeter: "Projeter les diaporamas des séances en classe", eval: "Grilles d'évaluation, saisie par élève et bilan" };
   nav.querySelector("ul").innerHTML = MENUS[r].map(([t, lib]) => `<li><a href="#${t}" data-t="${t}"${AIDE_NAV[t] ? ` title="${AIDE_NAV[t]}"` : ""}${t === tab ? ' aria-current="page"' : ""}>${ICONES_NAV[t] || ""}<span>${esc(lib)}</span></a></li>`).join("");
 }
 const HEXA = `<svg class="hexa" viewBox="0 0 120 110" aria-hidden="true"><path d="M30 4 L90 4 L116 55 L90 106 L30 106 L4 55 Z" fill="none" stroke="currentColor" stroke-width="2"/><text x="60" y="50" text-anchor="middle" font-family="Inter Tight, Arial, sans-serif" font-weight="700" font-size="21" letter-spacing="-1" fill="currentColor">Sebastian</text><text x="60" y="72" text-anchor="middle" font-family="Inter Tight, Arial, sans-serif" font-weight="700" font-size="21" letter-spacing="-1" fill="currentColor">Rivas</text></svg>`;
@@ -1778,8 +1780,8 @@ function filAriane(v) {
   else if (v === "vocabulaire") A.push(["#cours", "Mes cours"], ["#vocabulaire", "Vocabulaire"]);
   else if (v === "fils" || v.startsWith("fils-")) { A.push(["#cours", "Mes cours"], ["#fils", "Fils rouges"]); if (D.fils.defs[v.slice(5)]) A.push(["#" + v, D.fils.defs[v.slice(5)].nom]); }
   else if (v === "parcours") A.push(["#parcours", "Mon parcours"]);
-  else if (v === "faust") A.push(["#faust", "Laboratoire Faust"]);
-  else if (v.startsWith("faust-")) { const at = atelierDe(v.slice(6)), page = NAV_FAUST.find(x => x[0] === v || (v.startsWith(x[0] + "-") && x[0] !== "faust")); A.push(["#faust", "Laboratoire Faust"]);
+  else if (v === "faust") A.push(["#faust", "Expérimenter"]);
+  else if (v.startsWith("faust-")) { const at = atelierDe(v.slice(6)), page = NAV_FAUST.find(x => x[0] === v || (v.startsWith(x[0] + "-") && x[0] !== "faust")); A.push(["#faust", "Expérimenter"]);
     if (at) A.push(["#faust-ateliers", "Ateliers"], ["#" + v, at.titre]); else if (page) A.push(["#" + page[0], page[1]]); }
   else if (v === "plus") A.push(["#plus", "Plus"]);
   else if (v === "chorale") A.push(["#chorale", "Chorale"]);
@@ -2411,7 +2413,7 @@ function htmlJeux(k) {
   return `<section class="jfaust"><h2 class="sec">Les jeux Faust de la ${k}</h2><p class="small">Des sons calculés en direct par Faust, accordés aux séquences de l'année. Chaque jeu montre aussi son programme.</p>
     <div class="labo-grille">${J.map(a => { const n = (Object.entries(D.liens[k] || {}).find(([, L]) => L.jeux.includes(a.id)) || [""])[0], seq = n && D.niveaux[k].sequences[+n - 1];
       return `<a class="labo-tuile" href="#${a.id}" style="--c:${a.couleur}"><span class="labo-n">${esc(n)}</span><b>${esc(a.titre)}</b><span class="small">${seq ? `Séquence ${n} : ${esc(seq.titre)}` : esc(a.seq)}${a.mysteres ? ". Avec un son mystère." : ""}</span></a>`; }).join("")}</div>
-    <p class="small">Les jeux des autres niveaux : ${Object.keys(D.jeuxFaust.niveaux).filter(x => x !== k).map(x => `<a href="#pratiquer-${x}-jeux">${x}</a>`).join(", ")}. Et tout le laboratoire : <a href="#faust">Faust</a>.</p></section>
+    <p class="small">Les jeux des autres niveaux : ${Object.keys(D.jeuxFaust.niveaux).filter(x => x !== k).map(x => `<a href="#pratiquer-${x}-jeux">${x}</a>`).join(", ")}. Et tout le laboratoire : <a href="#faust">Expérimenter</a>.</p></section>
   <h2 class="sec" id="j-jeux" tabindex="-1">Jeux sonores</h2><p class="small">Pour s'entraîner seul ou à deux. Rien n'est noté, rien n'est enregistré.</p>
   <div class="chips jump">${[["j-oreille", "Oreille"], ["j-clavier", "Clavier"], ["j-rythme", "Rythme"], ["j-instr", "Instruments"], ["j-frise", "Frise"]].map(([id, t]) => `<button type="button" class="chip" data-go="${id}">${t}</button>`).join("")}</div>
   <div class="tools">
@@ -3285,7 +3287,7 @@ function vuePlus() {
     <a class="card" href="#sortie"><h2 class="h3">La sortie de l'année</h2><p class="small">Où aller, comment la financer (ADAGE), les étapes, la séquence qu'elle prolonge.</p></a>
     <a class="card" href="#fils"><h2 class="h3">Les fils rouges</h2><p class="small">Le sacré, la contestation, la guerre, le pouvoir : de la 6e à la 3e.</p></a>
     <div class="card"><h2 class="h3">Direction graphique</h2><p class="small">SIGNAL est l'apparence du site : noir, papier, vert acide. L'ancienne apparence reste disponible ; le choix est gardé sur cet appareil.</p><p><button type="button" class="btn2" id="b-signal">${document.documentElement.classList.contains("signal") ? "Passer à l'ancienne apparence" : "Revenir à SIGNAL"}</button></p></div>
-    <a class="card" href="#faust"><h2 class="h3">Laboratoire Faust</h2><p class="small">Dix ateliers pour fabriquer le son : boutons, clavier, boîte à rythmes, et le programme expliqué.</p></a>
+    <a class="card" href="#faust"><h2 class="h3">Expérimenter</h2><p class="small">Dix ateliers pour fabriquer le son : boutons, clavier, boîte à rythmes, et le programme expliqué.</p></a>
     ${D.eleves || D.prof ? "" : `<a class="card" href="#accueil"><h2 class="h3">Changer d'espace</h2><p class="small">Espace élève ou espace enseignant.</p></a>`}</div>
     ${D.prive ? `<p class="small" style="margin-top:14px"><a href="${D.depot.replace("/blob/main/", "")}" target="_blank" rel="noopener">Le dépôt complet sur GitHub</a></p>` : ""}`;
 }
