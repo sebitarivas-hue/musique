@@ -3396,7 +3396,7 @@ function brancherMonde(idDepart) {
     cx = Math.max(0, Math.min(M.w, cx)); cy = Math.max(Math.min(M.h / 2, h / 2 - 20), Math.min(Math.max(M.h / 2, M.h - h / 2 + 20), cy));
     vb = { x: cx - w / 2, y: cy - h / 2, w, h }; svg.setAttribute("viewBox", `${vb.x.toFixed(2)} ${vb.y.toFixed(2)} ${vb.w.toFixed(2)} ${vb.h.toFixed(2)}`);
     /* Les points et leurs noms gardent la même taille à l'écran quel que soit le zoom. */
-    const e = vb.w / cadre.getBoundingClientRect().width || 1;
+    const lc = cadre.getBoundingClientRect().width, e = lc > 0 ? vb.w / lc : M.w / 1000;
     pts.forEach((p, i) => p.setAttribute("transform", `translate(${L[i].x} ${L[i].y}) scale(${(e * 1.25).toFixed(4)})`));
     svg.classList.toggle("zoome", M.w / vb.w >= 6);
   };
