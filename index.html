@@ -920,6 +920,12 @@ html.signal .notion { border-top: 2px solid var(--noir); } html.signal .notion h
 html.signal .labo-myst .label, html.signal .labo-compteur { color: var(--acide); } html.signal .labo-myst-fb { color: var(--papier); } html.signal .labo-compteur output { color: var(--papier); }
 html.signal .labo .labo-myst .btn2 { color: var(--papier); border-color: var(--papier); background: transparent; } html.signal .labo .labo-myst .btn-main { background: var(--acide); color: var(--noir); border-color: var(--acide); }
 .jfaust { margin-bottom: 18px; }
+/* Page de la séquence */
+.pseq { margin-top: 6px; } .pseq-p { margin-top: 22px; scroll-margin-top: 110px; } .pseq-p > .sec { margin-bottom: 6px; } .pseq-p .blk-t { margin-top: 14px; }
+.pseq-lieux, .pseq-chants { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.pseq-lieu, .pseq-chant { display: grid; gap: 4px; align-content: start; padding: 12px; border: 1px solid var(--line); border-radius: 12px; text-decoration: none; color: var(--ink); }
+.pseq-p > .sec { font-size: 1.5rem; } html.signal .pseq-p > .sec { font: 400 clamp(1.7rem, 4.5vw, 2.6rem)/1 var(--f-titre); text-transform: uppercase; letter-spacing: -.01em; color: var(--noir); border-top: 3px solid var(--noir); padding-top: 10px; }
+html.signal .pseq-lieu, html.signal .pseq-chant { border-radius: 0; border: 2px solid var(--noir); } html.signal .pseq-lieu:hover, html.signal .pseq-chant:hover { background: var(--acide); }
 /* Chorale */
 .ch-outils { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0 12px; } .ch-outils .label { margin-right: 6px; }
 .ch-etapes { padding-left: 1.3em; display: grid; gap: 10px; } .ch-etapes li { display: grid; gap: 4px; justify-items: start; } .ch-etapes span { max-width: 66ch; }
@@ -1610,7 +1616,7 @@ function vueCours(k, seqOuverte) {
         <div><h4 class="blk-t">Je retiens</h4><div class="trace">${c.trace.map(t => `<p>${esc(t)}</p>`).join("")}</div></div>
         <div><h4 class="blk-t">Les séances</h4><ol class="sl">${c.seances.map((se, j) => `<li><a href="#seance-${k}-${i + 1}-${j + 1}"><span class="meta">${esc(dates[(i + 1) + "-" + (j + 1)] || "")}</span><span>${esc(se.objectif)}</span></a></li>`).join("")}</ol></div>
         <div class="due"><h4 class="blk-t">Évaluation${evs ? ` : semaine du ${esc(evs.semaine)}` : ""}</h4><p>${esc(c.eval.consigne)}</p></div>
-        <div class="actions"><a class="btn2" href="#${role() === "prof" ? "eval" : "reviser"}-${k}">${role() === "prof" ? "Grille d'évaluation" : "Critères de réussite"}</a><a class="btn2" href="#quiz-${k}-${i + 1}">S'entraîner</a></div>
+        <div class="actions"><a class="btn-main" href="#seq-${k}-${i + 1}">Toute la séquence : écouter, situer, expérimenter, chanter, retenir</a><a class="btn2" href="#${role() === "prof" ? "eval" : "reviser"}-${k}">${role() === "prof" ? "Grille d'évaluation" : "Critères de réussite"}</a><a class="btn2" href="#quiz-${k}-${i + 1}">S'entraîner</a></div>
       </div></details>`;
     });
     return h + `</div>`;
@@ -1726,6 +1732,7 @@ function filAriane(v) {
     if (at) A.push(["#faust-ateliers", "Ateliers"], ["#" + v, at.titre]); else if (page) A.push(["#" + page[0], page[1]]); }
   else if (v === "plus") A.push(["#plus", "Plus"]);
   else if (v === "chorale") A.push(["#chorale", "Chorale"]);
+  else if ((m = v.match(/^seq-(\w+)-(\d+)$/)) && D.niveaux[m[1]]) A.push(["#cours", "Cours"], [`#cours-${m[1]}`, m[1]], ["#" + v, `Séquence ${m[2]}`]);
   else if (D.pages[v]) A.push(["#plus", "Plus"], ["#" + v, (PLUS.find(x => x[0] === v) || [, v])[1]]);
   else if ((m = v.match(/^semaine-(\d+)$/))) A.push(["#" + v, `Semaine du ${WEEKS[+m[1]].semaine}`]);
   return A;
@@ -2208,6 +2215,33 @@ const TEMPI = [[60, "Largo"], [76, "Adagio"], [108, "Andante"], [120, "Moderato"
 const nomTempo = b => TEMPI.find(([m]) => b < m)[1];
 const nomHauteur = f => f < 200 ? "grave" : f < 600 ? "médium" : "aigu";
 const nomNuance = v => v < 0.12 ? "pianissimo (pp)" : v < 0.25 ? "piano (p)" : v < 0.45 ? "mezzo forte (mf)" : "forte (f)";
+/* Les écoutes d'une séquence avec leurs questions : utilisées par la page Œuvres et par la page de la séquence. */
+function ecoutesSeq(k, i) {
+  const n = D.niveaux[k], s = n.sequences[i];
+  /* Chaque œuvre avec ses propres questions, celles de la diapositive où elle est écoutée (et non un mélange de toute la séquence). */
+  const vus = new Set(), ecs = [];
+  /* (on écarte le repli d'ecoutesSeance, qui reprend la liste officielle quand une séance n'a pas de diapositive d'écoute) */
+  n.contenus[i].seances.forEach((_, j) => ecoutesSeance(k, i + 1, j + 1).forEach(x => { if (s.oeuvres.includes(x.q)) return;
+    /* même lien, ou même œuvre sous un libellé plus court ou plus long (« Épitaphe de Seikilos » et « Épitaphe de Seikilos, interprétation ») : une seule ligne, questions réunies */
+    const norme = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const d = ecs.find(y => y.q === x.q || norme(y.lib).startsWith(norme(x.lib)) || norme(x.lib).startsWith(norme(y.lib)));
+    if (d) { d.questions = [...new Set([...(d.questions || []), ...(x.questions || [])])].slice(0, 6); return; }
+    vus.add(x.q); ecs.push(x); }));
+  /* Une œuvre officielle déjà écoutée sous un autre libellé (« Sergueï Prokofiev, Pierre et le loup (…) » et « Prokofiev, Pierre et le loup ») n'est pas répétée :
+     on compare les mots significatifs, sans accents ni majuscules. */
+  const mots = t => (t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().match(/[a-z0-9]{4,}/g) || []).filter(m => !["pour", "aller", "plus", "loin", "extrait", "vers", "avec", "dans"].includes(m));
+  const dejaLa = o => { const m = mots(o); return ecs.some(x => { const t = mots(x.lib + " " + x.q); const c = m.filter(w => t.includes(w)).length; return c >= Math.min(2, m.length); }); };
+  const restantes = s.oeuvres.filter(o => !dejaLa(o));
+  const uneEcoute = x => `<div class="oeuvre-q">${ecoute(x.lib, x.q)}${x.questions && x.questions.length ? `<div class="consigne"><span class="label">Questions</span><ol>${x.questions.map(q => `<li>${esc(q)}</li>`).join("")}</ol></div>` : ""}</div>`;
+  const principales = ecs.filter(x => !x.ext), plusLoin = ecs.filter(x => x.ext);
+  return { ecs, restantes, principales, plusLoin, uneEcoute };
+}
+function analyserHtml(k, i) {
+  const { ecs, restantes, principales, plusLoin, uneEcoute } = ecoutesSeq(k, i);
+  return `<div class="stack oeuvres-q">${principales.map(uneEcoute).join("")}${restantes.map(o => uneEcoute({ lib: o.replace(/^Pour aller plus loin : /, ""), q: o.replace(/^Pour aller plus loin : /, ""), questions: [] })).join("")}</div>
+        ${plusLoin.length ? `<details class="plus-echos"><summary>Pour aller plus loin (${plusLoin.length})</summary><div class="stack oeuvres-q">${plusLoin.map(uneEcoute).join("")}</div></details>` : ""}
+        ${!ecs.some(x => x.questions && x.questions.length) ? `<div class="consigne"><span class="label">Pour chaque écoute</span><ol>${["Quels instruments ou quelles voix entends-tu ?", "Le tempo est-il lent, modéré ou rapide ?", "Quel caractère, et par quels moyens musicaux ?"].map(q => `<li>${esc(q)}</li>`).join("")}</ol></div>` : ""}`;
+}
 function vuePratiquer(k, sec) {
   const n = D.niveaux[k];
   let h = head("Écouter et pratiquer", `Écouter, ${k}`, "Choisis une rubrique.") + levels("pratiquer", k);
@@ -2252,27 +2286,11 @@ function vuePratiquer(k, sec) {
       return autres.length ? `<details class="plus-echos"><summary>Les autres partitions du site (${autres.length})</summary>${autres.map(partitionHtml).join("")}</details>` : ""; })()}`;
   let C_oeuvres = `<h2 class="sec" id="j-ecoutes" tabindex="-1">Les écoutes de la ${k}</h2><p class="small">Les liens ouvrent une recherche sur YouTube dans un nouvel onglet. Écoute d'abord sans lire, puis avec les questions.</p><div class="stack">`;
   n.sequences.forEach((s, i) => {
-    /* Chaque œuvre avec ses propres questions, celles de la diapositive où elle est écoutée (et non un mélange de toute la séquence). */
-    const vus = new Set(), ecs = [];
-    /* (on écarte le repli d'ecoutesSeance, qui reprend la liste officielle quand une séance n'a pas de diapositive d'écoute) */
-    n.contenus[i].seances.forEach((_, j) => ecoutesSeance(k, i + 1, j + 1).forEach(x => { if (s.oeuvres.includes(x.q)) return;
-      /* même lien, ou même œuvre sous un libellé plus court ou plus long (« Épitaphe de Seikilos » et « Épitaphe de Seikilos, interprétation ») : une seule ligne, questions réunies */
-      const norme = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-      const d = ecs.find(y => y.q === x.q || norme(y.lib).startsWith(norme(x.lib)) || norme(x.lib).startsWith(norme(y.lib)));
-      if (d) { d.questions = [...new Set([...(d.questions || []), ...(x.questions || [])])].slice(0, 6); return; }
-      vus.add(x.q); ecs.push(x); }));
-    /* Une œuvre officielle déjà écoutée sous un autre libellé (« Sergueï Prokofiev, Pierre et le loup (…) » et « Prokofiev, Pierre et le loup ») n'est pas répétée :
-       on compare les mots significatifs, sans accents ni majuscules. */
-    const mots = t => (t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().match(/[a-z0-9]{4,}/g) || []).filter(m => !["pour", "aller", "plus", "loin", "extrait", "vers", "avec", "dans"].includes(m));
-    const dejaLa = o => { const m = mots(o); return ecs.some(x => { const t = mots(x.lib + " " + x.q); const c = m.filter(w => t.includes(w)).length; return c >= Math.min(2, m.length); }); };
-    const restantes = s.oeuvres.filter(o => !dejaLa(o));
-    const uneEcoute = x => `<div class="oeuvre-q">${ecoute(x.lib, x.q)}${x.questions && x.questions.length ? `<div class="consigne"><span class="label">Questions</span><ol>${x.questions.map(q => `<li>${esc(q)}</li>`).join("")}</ol></div>` : ""}</div>`;
-    const principales = ecs.filter(x => !x.ext), plusLoin = ecs.filter(x => x.ext);
+    const { ecs, restantes, principales, plusLoin, uneEcoute } = ecoutesSeq(k, i);
     C_oeuvres += `<details class="seq"><summary>${vignette(k, i)}<span class="seqhead"><span class="meta">Séquence ${i + 1}</span><h3>${esc(s.titre)}</h3></span><span class="chev" aria-hidden="true">&#8250;</span></summary><div class="body">
       <div><h4 class="blk-t">1. Découvrir</h4><p>${esc(s.accroche || "")}</p>${galerieHtml((D.imagesSeq[k][i] || []).slice(0, 2))}</div>
-      <div><h4 class="blk-t">2. Analyser</h4><div class="stack oeuvres-q">${principales.map(uneEcoute).join("")}${restantes.map(o => uneEcoute({ lib: o.replace(/^Pour aller plus loin : /, ""), q: o.replace(/^Pour aller plus loin : /, ""), questions: [] })).join("")}</div>
-        ${plusLoin.length ? `<details class="plus-echos"><summary>Pour aller plus loin (${plusLoin.length})</summary><div class="stack oeuvres-q">${plusLoin.map(uneEcoute).join("")}</div></details>` : ""}
-        ${!ecs.some(x => x.questions && x.questions.length) ? `<div class="consigne"><span class="label">Pour chaque écoute</span><ol>${["Quels instruments ou quelles voix entends-tu ?", "Le tempo est-il lent, modéré ou rapide ?", "Quel caractère, et par quels moyens musicaux ?"].map(q => `<li>${esc(q)}</li>`).join("")}</ol></div>` : ""}</div>
+      <div><h4 class="blk-t">2. Analyser</h4>${analyserHtml(k, i)}</div>
+      <p><a class="btn2" href="#seq-${k}-${i + 1}">Toute la séquence : la carte, Faust, le chant, le quiz &#8250;</a></p>
       <div><h4 class="blk-t">3. Retenir</h4><div class="chips">${s.vocabulaire.map(v => `<span class="tag">${esc(v)}</span>`).join("")}</div></div>
     </div></details>`;
   });
@@ -3653,6 +3671,47 @@ function brancherChorale() {
   document.querySelectorAll("[data-niv]").forEach(a => a.onclick = e => { e.preventDefault(); set("niv", a.dataset.niv); rendre(); });
 }
 
+/* ---------- La page de la séquence : le pivot ----------
+   Tout ce qui sert une séquence, en cinq parties : Écouter, Situer, Expérimenter, Chanter, Retenir.
+   Les liens viennent de D.liens (outils/sequences_liens.py) ; les rubriques transversales restent intactes. */
+const PARTIES_SEQ = [["p-ecouter", "Écouter"], ["p-situer", "Situer"], ["p-experimenter", "Expérimenter"], ["p-chanter", "Chanter"], ["p-retenir", "Retenir"]];
+function vueSequence(k, a) {
+  const n = D.niveaux[k], s = n.sequences[a - 1], c = n.contenus[a - 1], L = (D.liens[k] || {})[String(a)] || {}, i = a - 1;
+  const lieux = (L.lieux || []).map(id => D.monde.lieux.find(l => l.id === id)).filter(Boolean);
+  const ateliers = (D.grille.faust[k] || {})[String(a)] || [], jeux = (L.jeux || []).map(atelierDe).filter(Boolean);
+  const notions = (L.notions || []).map(id => D.centre.notions.find(x => x.id === id)).filter(Boolean), studio = (L.studio || []).map(exempleDe).filter(Boolean);
+  const chants = (L.chorale || []).map(id => D.chorale.repertoire.find(r => r.id === id)).filter(Boolean);
+  const parts = ((D.partitionsSeq || {})[k] || {})[String(a)] || [], imslp = ((D.imslp[k] || {})[a] || []);
+  const estNotion = id => D.partitions[id] && D.partitions[id].genre !== "piece";
+  const tuile = (href, num, titre, sous, coul) => `<a class="labo-tuile" href="${href}" style="--c:${coul || "#55669f"}"><span class="labo-n">${esc(num)}</span><b>${esc(titre)}</b><span class="small">${esc(sous)}</span></a>`;
+  const prev = a > 1 ? `<a class="btn2" href="#seq-${k}-${a - 1}">&#8249; Séquence ${a - 1}</a>` : `<a class="btn2" href="#cours-${k}">Toutes les séquences</a>`;
+  const next = a < n.sequences.length ? `<a class="btn2" href="#seq-${k}-${a + 1}">Séquence ${a + 1} &#8250;</a>` : `<a class="btn2" href="#cours-${k}">Toutes les séquences</a>`;
+  let h = head(`${k}, séquence ${a}, ${PER[s.periode]}`, s.titre, s.question) + `<nav class="chips jump pseq" aria-label="Parties de la séquence">${PARTIES_SEQ.map(([id, t]) => `<a class="chip" href="#seq-${k}-${a}" data-ancre="${id}">${t}</a>`).join("")}</nav>`
+    + filsHtml(filsDe(k, a)) + galerieHtml((D.imagesSeq[k][i] || []).slice(0, 3));
+  h += `<section class="pseq-p" id="p-ecouter"><h2 class="sec">Écouter</h2><p class="small">${esc(s.accroche || "")} Écoute d'abord sans lire, puis avec les questions.</p>${analyserHtml(k, i)}
+    ${echosDe(k, a).length ? `<h3 class="blk-t">Échos d'aujourd'hui</h3><div class="stack" style="gap:8px">${echosListe(echosDe(k, a))}</div>` : ""}</section>`;
+  h += `<section class="pseq-p" id="p-situer"><h2 class="sec">Situer</h2>${lieux.length ? `<div class="pseq-lieux">${lieux.map(l => `<a class="pseq-lieu" href="#monde-${l.id}"><span class="label">${esc(l.lieu)}</span><b>${esc(l.nom)}</b><span class="small">${esc(l.texte)}</span></a>`).join("")}</div>`
+      : `<p class="small">Pas de lieu de la carte pour cette séquence.</p>`}<p class="small"><a href="#monde">Toute la carte des musiques du monde</a></p></section>`;
+  h += `<section class="pseq-p" id="p-experimenter"><h2 class="sec">Expérimenter</h2>
+    ${ateliers.length || jeux.length ? `<div class="labo-grille">${ateliers.map((id, j) => { const x = atelierDe(id); return x ? tuile(`#faust-${id}`, String(j + 1), x.titre, "Atelier Faust", x.couleur) : ""; }).join("")}${jeux.map((x, j) => tuile(`#${x.id}`, String(ateliers.length + j + 1), x.titre, x.mysteres ? "Jeu Faust, avec un son mystère" : "Jeu Faust", x.couleur)).join("")}</div>` : ""}
+    ${notions.length ? `<h3 class="blk-t">Comprendre</h3><div class="chips">${notions.map(notionLien).join("")}</div>` : ""}
+    ${studio.length ? `<h3 class="blk-t">Programmer dans le studio</h3><div class="fliens">${studio.map(x => `<a class="fl" href="#faust-studio-ex-${x.id}"><span class="fl-t">Programme</span>${esc(x.titre)}</a>`).join("")}</div>` : ""}</section>`;
+  h += `<section class="pseq-p" id="p-chanter"><h2 class="sec">Chanter</h2><p class="q">${esc(s.chant)}</p>
+    ${parts.filter(id => D.polyphonies && D.polyphonies[id]).map(partitionHtml).join("")}${parts.filter(id => D.partitions[id] && !estNotion(id)).map(partitionHtml).join("")}
+    ${imslp.length ? `<div class="chips">${imslp.map(([l, q]) => `<a class="chip" href="https://imslp.org/index.php?title=Special:Search&search=${encodeURIComponent(q)}" target="_blank" rel="noopener">IMSLP : ${esc(l)}</a>`).join("")}</div>` : ""}
+    ${parts.some(estNotion) ? `<details class="plus-echos"><summary>Exemples de notions (${parts.filter(estNotion).length})</summary>${parts.filter(estNotion).map(partitionHtml).join("")}</details>` : ""}
+    ${chants.length ? `<h3 class="blk-t">Dans le répertoire de la chorale</h3><div class="pseq-chants">${chants.map(r => `<a class="pseq-chant" href="#chorale" data-ancre="ch-${r.id}"><b>${esc(r.titre)}</b><span class="small">${esc(r.voix)}. ${esc(r.salle)}</span></a>`).join("")}</div>` : ""}
+    <p class="small"><span class="label">Les instruments de la salle</span> ${D.chorale.instruments.map(x => esc(x[0].toLowerCase())).join(", ")}. <a href="#chorale" data-ancre="ch-salle">Leur rôle</a>.</p></section>`;
+  h += `<section class="pseq-p" id="p-retenir"><h2 class="sec">Retenir</h2>
+    <h3 class="blk-t">Je dois savoir</h3><div class="chips">${s.vocabulaire.map(v => `<span class="tag">${esc(v)}</span>`).join("")}</div>
+    <h3 class="blk-t">Je retiens</h3><div class="trace">${c.trace.map(t => `<p>${esc(t)}</p>`).join("")}</div>
+    ${(c.fiches || []).length ? `<h3 class="blk-t">Les fiches</h3><div class="chips">${c.fiches.filter(f => D.fiches[f]).map(f => `<a class="chip" href="#fiche-${f}">${esc(D.fiches[f].titre)}</a>`).join("")}</div>` : ""}
+    <div class="actions"><a class="btn-main" href="#quiz-${k}-${a}">Le quiz de la séquence</a><a class="btn2" href="#${role() === "prof" ? "eval" : "reviser"}-${k}">${role() === "prof" ? "Grille d'évaluation" : "Critères de réussite"}</a></div>
+    <div class="due"><h3 class="blk-t">Évaluation</h3><p>${esc(c.eval.consigne)}</p></div></section>`;
+  h += `<section class="pseq-p"><h2 class="sec">Les séances</h2><ol class="sl">${c.seances.map((se, j) => `<li><a href="#seance-${k}-${a}-${j + 1}"><span class="meta">Séance ${j + 1}</span><span>${esc(se.objectif)}</span></a></li>`).join("")}</ol></section>`;
+  return h + `<div class="pager" style="margin-top:14px">${prev}${next}</div>`;
+}
+
 /* ---------- Routage ---------- */
 /* Transition d'une page à l'autre : la nouvelle page éclot en cercle depuis l'endroit touché, puis ses blocs montent l'un après l'autre.
    Seulement quand l'adresse change (pas quand on coche une case), et jamais si l'appareil demande moins d'animations. */
@@ -3687,6 +3746,7 @@ function rendre() {
   if ((m = v.match(/^pratiquer-(\w+)-(oeuvres|jeux|partitions|sons|playlist|atelier)$/)) && D.niveaux[m[1]]) { set("niv", m[1]); app.innerHTML = vuePratiquer(m[1], m[2]); tab = "pratiquer"; }
   else if ((m = v.match(/^(saisie|bilan)-(\w+)$/)) && D.niveaux[m[2]] && role() === "prof") { set("niv", m[2]); tab = "eval";
     if (m[1] === "saisie") { app.innerHTML = vueSaisie(m[2]); brancherSaisie(m[2]); } else { app.innerHTML = vueBilan(m[2]); brancherBilan(m[2]); } }
+  else if ((m = v.match(/^seq-(\w+)-(\d+)$/)) && D.niveaux[m[1]] && D.niveaux[m[1]].sequences[+m[2] - 1]) { set("niv", m[1]); app.innerHTML = vueSequence(m[1], +m[2]); tab = "cours"; }
   else if ((m = v.match(/^cours-(\w+)-(\d+)$/)) && D.niveaux[m[1]] && D.niveaux[m[1]].sequences[+m[2] - 1]) { set("niv", m[1]); app.innerHTML = vueCours(m[1], +m[2]); tab = "cours"; }
   else if ((m = v.match(/^(cours|eval|pratiquer|reviser)-(\w+)$/)) && D.niveaux[m[2]]) {
     set("niv", m[2]);
