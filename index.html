@@ -1825,8 +1825,8 @@ function filAriane(v) {
   else if (v.startsWith("faust-")) { const at = atelierDe(v.slice(6)), page = NAV_FAUST.find(x => x[0] === v || (v.startsWith(x[0] + "-") && x[0] !== "faust")); A.push(["#faust", "Expérimenter"]);
     if (at) A.push(["#faust-ateliers", "Ateliers"], ["#" + v, at.titre]); else if (page) A.push(["#" + page[0], page[1]]); }
   else if (v === "plus") A.push(["#plus", "Plus"]);
-  else if (v === "chorale") A.push(["#chorale", "Chorale"]);
-  else if (v === "projets") A.push(["#cours", "Cours"], ["#projets", "Projets de l'année"]);
+  else if (/^chorale(-\w+)?$/.test(v)) A.push(["#chorale", "Chorale"]);
+  else if (/^projets(-\w+)?$/.test(v)) A.push(["#cours", "Cours"], ["#projets", "Projets de l'année"]);
   else if (v === "sortie") A.push(["#cours", "Cours"], ["#sortie", "La sortie de l'année"]);
   else if ((m = v.match(/^seq-(\w+)-(\d+)$/)) && D.niveaux[m[1]]) A.push(["#cours", "Cours"], [`#cours-${m[1]}`, m[1]], ["#" + v, `Séquence ${m[2]}`]);
   else if (D.pages[v]) A.push(["#plus", "Plus"], ["#" + v, (PLUS.find(x => x[0] === v) || [, v])[1]]);
@@ -3759,7 +3759,7 @@ function brancherMonde(idDepart) {
    Données : D.chorale (outils/chorale.py). Partition affichée seulement pour les œuvres libres dont la source est sur le site. */
 const BADGE_PART = { site: "Partition sur le site", imslp: "Partition libre (IMSLP)", trad: "Chant traditionnel", droits: "Sous droits" };
 function vueChorale() {
-  const C = D.chorale, k = maClasse() || get("niv", "6e");
+  const C = D.chorale, k = CHOIX_NIV || maClasse() || get("niv", "6e");
   const seqsDe = id => Object.entries(D.liens).flatMap(([niv, L]) => Object.entries(L).filter(([, x]) => (x.chorale || []).includes(id)).map(([a]) => [niv, a]));
   const carte = r => { const [type, val] = r.partition, seqs = seqsDe(r.id);
     return `<article class="ch-r" data-cat="${r.cat}"${seqs.length ? ' data-prog="1"' : ""} id="ch-${r.id}"><div class="ch-tete"><span class="etq etq-${type}">${BADGE_PART[type]}</span><span class="ch-voix">${esc(r.voix)}</span></div>
@@ -3780,7 +3780,7 @@ function vueChorale() {
       <div class="chips" role="group" aria-label="Filtrer le répertoire"><button type="button" class="chip" data-chcat="" aria-pressed="true">Tout (${C.repertoire.length})</button><button type="button" class="chip" data-chcat="programme" aria-pressed="false">Les chants des séquences</button>${C.categories.map(([id, n]) => `<button type="button" class="chip" data-chcat="${id}" aria-pressed="false">${esc(n)}</button>`).join("")}</div>
       <div class="ch-liste">${C.repertoire.map(carte).join("")}</div></section>
     <section id="ch-salle"><h2 class="sec">Les instruments de la salle</h2><div class="ch-salle">${C.instruments.map(([n, d]) => `<div><b>${esc(n)}</b><span class="small">${esc(d)}</span></div>`).join("")}</div></section>
-    <section id="ch-progression"><h2 class="sec">La progression vocale, ${k}</h2>${levels("chorale", k).replace(/href="#chorale-(\w+)"/g, 'href="#chorale" data-niv="$1"')}${choralHtml(k)}</section>`;
+    <section id="ch-progression"><h2 class="sec">La progression vocale, ${k}</h2>${levels("chorale", k)}${choralHtml(k)}</section>`;
 }
 function brancherChorale() {
   const z = document.querySelector(".ch-liste"); if (!z) return;
@@ -3798,7 +3798,6 @@ function brancherChorale() {
       const o = document.getElementById("ch-voc"); if (o) o.textContent = `Départ sur ${["do", "do♯", "ré", "ré♯", "mi", "fa", "fa♯", "sol"][pas]} ; la prochaine monte d'un demi-ton.`; pas = (pas + 1) % 8; } });
   document.querySelectorAll("[data-chcat]").forEach(b => b.onclick = () => { document.querySelectorAll("[data-chcat]").forEach(x => x.setAttribute("aria-pressed", x === b));
     z.querySelectorAll(".ch-r").forEach(r => r.hidden = b.dataset.chcat === "programme" ? !r.dataset.prog : !!b.dataset.chcat && r.dataset.cat !== b.dataset.chcat); });
-  document.querySelectorAll("[data-niv]").forEach(a => a.onclick = e => { e.preventDefault(); set("niv", a.dataset.niv); rendre(); });
 }
 
 /* ---------- La page de la séquence : le pivot ----------
@@ -3845,10 +3844,10 @@ function vueSequence(k, a) {
 /* ---------- Les projets de l'année : la planche en groupe (et la sortie) ----------
    Données : D.projets (outils/projets.py). Placement dans une séquence, sans date. */
 function vueProjets() {
-  const P = D.projets, k = maClasse() || get("niv", "6e"), N = P.niveaux[k], seq = D.niveaux[k].sequences[N.seq - 1], cyc = D.competences[D.niveaux[k].cycle];
+  const P = D.projets, k = CHOIX_NIV || maClasse() || get("niv", "6e"), N = P.niveaux[k], seq = D.niveaux[k].sequences[N.seq - 1], cyc = D.competences[D.niveaux[k].cycle];
   const lieu = id => id && D.monde.lieux.find(l => l.id === id);
   return head("Projets de l'année", "La planche en groupe", "Une fois dans l'année, chaque élève fait un exposé en groupe, avec une planche pour support, sur un sujet choisi librement par le groupe : cinq minutes, avec un extrait d'une minute.")
-    + levels("projets", k).replace(/href="#projets-(\w+)"/g, 'href="#projets" data-pniv="$1"')
+    + levels("projets", k)
     + `<section class="pj"><h2 class="sec">En ${k}</h2><p>Pendant la <a href="#seq-${k}-${N.seq}">séquence ${N.seq}, ${esc(seq.titre)}</a> : on choisit en séance ${Object.keys(N.etapes).find(n => N.etapes[n] === "choisir")}, on fait le point en séance ${Object.keys(N.etapes).find(n => N.etapes[n] === "point")}, on présente en séance ${Object.keys(N.etapes).find(n => N.etapes[n] === "presenter")}. Groupes de trois ou quatre.</p>
       <h3 class="blk-t">Des idées de sujets : ${esc(N.theme.toLowerCase())}</h3><p class="small">Le sujet est libre : chaque groupe choisit le sien, dans cette liste ou ailleurs.</p><ul class="pj-sujets">${N.sujets.map(([t, id]) => { const l = lieu(id); return `<li>${esc(t)}${l ? ` <a class="small" href="#monde-${l.id}">sur la carte</a>` : ""}</li>`; }).join("")}</ul>
       <p><a class="btn2" href="#sortie">Et la sortie de l'année</a></p></section>
@@ -3869,7 +3868,6 @@ function vueSortie() {
     <section class="pj"><h2 class="sec">Les étapes</h2><ol class="pj-etapes">${S.etapes.map(([t, d]) => `<li><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join("")}</ol></section>
     <p class="small"><a href="#partenariats">Les lieux de musique autour du collège</a> ; <a href="#projets">la planche en groupe</a>.</p>`;
 }
-function brancherProjets() { document.querySelectorAll("[data-pniv]").forEach(a => a.onclick = e => { e.preventDefault(); set("niv", a.dataset.pniv); rendre(); }); }
 /* L'encart qui annonce la planche dans la séquence où elle est placée. */
 const encartSortie = (k, a) => { const L = D.projets.sortie.lieux.filter(l => l[4].some(([n, x]) => n === k && x === a)); return L.length ? `<p class="small pj-sortie"><span class="label">Une sortie possible</span> ${L.map(l => esc(l[0])).join(", ")}. <a href="#sortie">Préparer la sortie</a></p>` : ""; };
 const encartPlanche = (k, a) => { const N = D.projets.niveaux[k]; return N && N.seq === a ? `<aside class="rappel pj-encart"><b>Projet de l'année : la planche en groupe</b><p>L'exposé de groupe de l'année, avec la planche pour support. Sujet libre, choisi par le groupe. Présentation en cinq minutes avec un extrait d'une minute, en séance ${Object.keys(N.etapes).find(n => N.etapes[n] === "presenter")}.</p><p><a class="btn2" href="#projets">Consignes, rôles et grille</a></p></aside>` : ""; };
@@ -3877,7 +3875,7 @@ const encartPlanche = (k, a) => { const N = D.projets.niveaux[k]; return N && N.
 /* ---------- Routage ---------- */
 /* Transition d'une page à l'autre : la nouvelle page éclot en cercle depuis l'endroit touché, puis ses blocs montent l'un après l'autre.
    Seulement quand l'adresse change (pas quand on coche une case), et jamais si l'appareil demande moins d'animations. */
-let DERNIERE_ADRESSE = null, POINT_TOUCHE = null;
+let DERNIERE_ADRESSE = null, POINT_TOUCHE = null, CHOIX_NIV = "";
 document.addEventListener("pointerdown", e => { POINT_TOUCHE = [e.clientX, e.clientY]; }, { passive: true, capture: true });
 function eclore(app) {
   const nouvelle = location.hash.split("?")[0]; if (nouvelle === DERNIERE_ADRESSE) return; const premiere = DERNIERE_ADRESSE === null; DERNIERE_ADRESSE = nouvelle;
@@ -3940,8 +3938,9 @@ function rendre() {
   else if (v.startsWith("jeu-") && atelierDe(v)) { app.innerHTML = vueAtelier(v); tab = "pratiquer"; }
   else if (v.startsWith("faust-") && D.ateliers.some(a => a.id === v.slice(6))) { app.innerHTML = vueAtelier(v.slice(6)); tab = "faust"; }
   else if (v === "plus") { app.innerHTML = vuePlus(); tab = "plus"; }
-  else if (v === "chorale") { app.innerHTML = vueChorale(); tab = "chorale"; brancherChorale(); }
-  else if (v === "projets") { app.innerHTML = vueProjets(); tab = "cours"; brancherProjets(); }
+  /* Chorale et projets : le niveau choisi est dans l'adresse (#projets-5e), sinon la classe de l'élève. */
+  else if ((m = v.match(/^(chorale|projets)(?:-(6e|5e|4e|3e))?$/))) { CHOIX_NIV = m[2] || ""; if (m[2]) set("niv", m[2]);
+    if (m[1] === "chorale") { app.innerHTML = vueChorale(); tab = "chorale"; brancherChorale(); } else { app.innerHTML = vueProjets(); tab = "cours"; } CHOIX_NIV = ""; }
   else if (v === "sortie") { app.innerHTML = vueSortie(); tab = "cours"; }
   else if (v === "monde" || /^monde-[\w]+$/.test(v)) { app.innerHTML = vueMonde(); tab = "pratiquer"; brancherMonde(v.slice(6)); }
   else if (D.pages[v]) { app.innerHTML = vuePage(v); tab = "plus"; }
