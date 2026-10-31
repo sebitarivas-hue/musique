@@ -1367,6 +1367,21 @@ a.en-ecole { color: inherit; text-decoration: none; } a.en-ecole:hover b, a.en-e
 .sy-clavier { display: grid; grid-template-columns: repeat(16, 1fr); gap: 3px; margin-top: 12px; } .sy-touche { min-height: 76px; border: 2px solid var(--ink); border-radius: 10px; background: var(--surface); color: var(--ink); font: 600 .72rem var(--f-body); padding: 0 0 6px; display: flex; align-items: flex-end; justify-content: center; cursor: pointer; touch-action: manipulation; } .sy-touche:active { background: #D6FF00; color: #11110F; }
 .lj-visu { width: 100%; max-width: 480px; height: auto; border-radius: 18px; margin-top: 10px; display: block; } .lj-visu[hidden] { display: none; }
 @media (max-width: 640px) { .sy-clavier { grid-template-columns: repeat(8, 1fr); } .bl-ligne, .lj-grille .bl-ligne { grid-template-columns: 1fr; } .bl-pas { min-height: 24px; } }
+/* La progression : carte des séquences, jeux verrouillés, niveaux */
+.prog { margin-top: 18px; } .prog-liste { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.prog-seq { border: 2px solid var(--ink); border-radius: 22px; padding: 12px 14px; background: var(--surface); } .prog-seq.fermee { opacity: .62; border-style: dashed; }
+.prog-seq.validee { background: #D6FF00; color: #11110F; } .prog-seq.maitrisee { background: #11110F; color: #D6FF00; } .prog-seq.prochaine { box-shadow: 0 0 0 4px #4658FF; }
+.prog-t { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } .prog-t b { flex: 1; min-width: 12rem; }
+.prog-n { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--bg); font: 400 1.1rem var(--f-display); } .prog-seq.maitrisee .prog-n { background: #D6FF00; color: #11110F; } .prog-seq.validee .prog-n { background: #11110F; color: #D6FF00; }
+.prog-etat { font: 500 11px/1 ui-monospace, Menlo, monospace; letter-spacing: .05em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; border: 1.5px solid currentColor; }
+.prog-b { height: 8px; border-radius: 4px; background: rgba(128,128,128,.28); margin: 10px 0 8px; overflow: hidden; } .prog-b span { display: block; height: 100%; background: #ff5a36; border-radius: 4px; } .prog-seq.validee .prog-b span { background: #11110F; } .prog-seq.maitrisee .prog-b span { background: #D6FF00; }
+.prog-jeux { display: flex; flex-wrap: wrap; gap: 6px; } .prog-jeu { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 6px; border-radius: 999px; background: var(--c, #555); color: #fff !important; text-decoration: none; font: 700 .85rem var(--f-body); } .prog-jeu svg { width: 18px; height: 18px; } .prog-jeu.verrou { background: transparent; color: inherit !important; border: 1.5px dashed currentColor; padding: 4px 8px; }
+.prog-suite { margin: 12px 0 0; }
+.ludo-carte.verrou { opacity: .6; border-style: dashed; background: transparent; } .ludo-carte.verrou .ludo-ic { background: transparent; color: var(--ink); border: 2px dashed var(--ink); }
+.ludo-carte.neuf { box-shadow: 0 0 0 3px #D6FF00, 0 0 0 5px #11110F; } .ludo-et .on { color: #ffb000; }
+.chip.verrou { opacity: .5; border-style: dashed; cursor: not-allowed; }
+.prog-suite .pastille { white-space: normal; text-align: left; margin-top: 6px; }
+.prog-seq.maitrisee .prog-jeu { color: #fff !important; }
 </style>
 </head>
 <body>
@@ -2882,10 +2897,11 @@ const ELECTRO = ["quel-genre-rythme", "reconstitue-rythme", "quelle-onde", "filt
 const ATLAS_NIV = { "6e": ["gamelan", "hindustani", "african-traditions", "blues"], "5e": ["minimalism", "sampling", "hip-hop", "house"], "4e": ["blues", "jazz", "funk", "james-brown"], "3e": ["detroit-techno", "kraftwerk", "vaporwave", "spectral", "kpop", "techno"] };
 /* Le haut de la page Jeux : le défi du jour, les jeux électro et rythme de la classe, tous les jeux. */
 function heroJeux(k) {
-  const J = D.ludo.jeux.filter(j => j.seances.some(s => s[0] === k)), mot = J.filter(j => j.moteur), jour = Math.floor(Date.now() / 864e5), jj = mot[jour % Math.max(1, mot.length)], fj = jj && ludoFam(jj.famille);
+  NIV_CARTE = k; const J = D.ludo.jeux.filter(j => j.seances.some(s => s[0] === k)), mot = J.filter(j => j.moteur), ouv = mot.filter(j => jeuOuvert(j, k)), jour = Math.floor(Date.now() / 864e5), jj = (ouv.length ? ouv : mot)[jour % Math.max(1, ouv.length || mot.length)], fj = jj && ludoFam(jj.famille);
   const el = ELECTRO.map(id => mot.find(j => j.id === id)).filter(Boolean).slice(0, 9), etoiles = mot.reduce((a, j) => a + ludoEtoiles(j.id), 0);
   return `${jj ? `<a class="jouer-jour" href="#ludo-${jj.id}" style="--c:${fj[2]}"><span class="label">Le défi du jour, ${k}</span><span class="jj-ic">${famIco(jj.famille)}</span><b>${insec(jj.titre)}</b><span>${insec(jj.consigne)}</span><span class="jj-go">Jouer maintenant &#8250;</span></a>` : ""}
-    <div class="jouer-stats"><a href="#ludo-${k}"><b>${J.length}</b><span>jeux pour la ${k}</span></a><a href="#parcours"><b>${etoiles}</b><span>étoiles sur ${mot.length * 3}</span></a><a href="#ludo-${k}"><b>${D.ludo.familles.length}</b><span>familles de jeux</span></a></div>
+    <div class="jouer-stats"><a href="#ludo-${k}"><b>${J.length}</b><span>jeux pour la ${k}</span></a><a href="#parcours"><b>${etoiles}</b><span>étoiles sur ${mot.length * 9}</span></a><a href="#ludo-${k}"><b>${D.ludo.familles.length}</b><span>familles de jeux</span></a></div>
+    ${carteProgression(k)}
     <h2 class="sec">Rythme, machines et synthèse</h2><p class="small">Fabrique, reconnais, compare. Chaque jeu est relié à une séance de ta classe.</p>
     <div class="ludo-grille">${el.map(ludoCarte).join("")}</div><p><a class="btn2" href="#ludo-${k}">Les ${J.length} jeux de la ${k}, par famille</a></p>`;
 }
@@ -3917,7 +3933,7 @@ function gagner(cle, xp, compteur, plus) {
   if (compteur) j.c[compteur] = (j.c[compteur] || 0) + (plus || 1);
   const avant = niveauDe(j.xp); j.xp += xp || 0;
   if (xp) { XP_ATTENTE += xp; clearTimeout(XP_T); XP_T = setTimeout(() => { toast(`+${XP_ATTENTE} XP`, "xp"); XP_ATTENTE = 0; }, 300); }
-  BADGES.forEach(([id, nom, , g, test]) => { if (!j.badges[id] && test(j)) { j.badges[id] = Date.now(); setTimeout(() => celebrer("badge", nom, g), 400); } });
+  BADGES.concat(BADGES_SEQ).forEach(([id, nom, , g, test]) => { if (!j.badges[id] && test(j)) { j.badges[id] = Date.now(); setTimeout(() => celebrer("badge", nom, g), 400); } });
   const apres = niveauDe(j.xp);
   if (apres > avant) setTimeout(() => celebrer("niveau", NIVEAUX_JEU[apres][1], "etoile", apres + 1), 900);
   sauverJeu(); majPuce();
@@ -3945,7 +3961,7 @@ function feteSuivante() {
   const [type, nom, g, n] = f;
   const el = document.createElement("div"); el.className = "fete"; el.setAttribute("role", "status");
   el.innerHTML = `<div class="fete-carte">${medaille(g, true, type === "niveau" ? "#0b0b0b" : "#a9802f")}<div class="label">${type === "niveau" ? `Niveau ${n}` : "Nouveau badge"}</div><b>${esc(nom)}</b>
-    <p>${esc(type === "niveau" ? NIVEAUX_JEU[n - 1][2] : (BADGES.find(x => x[1] === nom) || [])[2] || "")}</p><button type="button" class="btn-main">Continuer</button></div>${Array.from({ length: 36 }, (_, i) => `<i style="--x:${Math.random() * 100}vw;--d:${(Math.random() * .8).toFixed(2)}s;--r:${Math.round(Math.random() * 360)}deg;--h:${[0, 40, 200, 330][i % 4]}"></i>`).join("")}`;
+    <p>${esc(type === "niveau" ? NIVEAUX_JEU[n - 1][2] : (BADGES.concat(BADGES_SEQ).find(x => x[1] === nom) || [])[2] || "")}</p><button type="button" class="btn-main">Continuer</button></div>${Array.from({ length: 36 }, (_, i) => `<i style="--x:${Math.random() * 100}vw;--d:${(Math.random() * .8).toFixed(2)}s;--r:${Math.round(Math.random() * 360)}deg;--h:${[0, 40, 200, 330][i % 4]}"></i>`).join("")}`;
   document.body.appendChild(el);
   let ferme = false; const fermer = () => { if (ferme) return; ferme = true; el.remove(); setTimeout(feteSuivante, 200); };
   el.querySelector("button").onclick = fermer; el.addEventListener("click", e => { if (e.target === el) fermer(); });
@@ -3995,6 +4011,7 @@ function quetes() {
     ["Ouvrir ta séance de la semaine", 10, !!j.faits["seance:" + id], "#" + seanceId(k, e)],
     ["Écouter une œuvre de la séance", 10, !!j.faits["q-ecoute:" + id], "#" + seanceId(k, e)],
     ["Faire le quiz de la séquence", 20, !!j.faits["q-quiz:" + id], `#quiz-${k}-${e.seq}`],
+    ...(jeuxDeSeq(k, e.seq).length ? [["Jouer à un jeu de la séquence", 15, !!j.faits["q-jeu:" + id], "#ludo-" + jeuxDeSeq(k, e.seq)[0].id]] : []),
     parts.length ? ["Suivre une partition", 15, parts.some(p => j.faits["part:" + p]), "#" + seanceId(k, e)] : ["Écouter un exemple sonore", 10, !!j.faits["q-son:" + id], "#" + seanceId(k, e)],
     ...(ech.length ? [["Écouter l'écho d'aujourd'hui", 10, !!j.faits["q-echo:" + id], "#" + seanceId(k, e)]] : []),
   ].map(q => q.concat(id));
@@ -4059,20 +4076,67 @@ const FAM_ICO = {
   creation: '<path d="M2 12h3l2-6 3 12 3-9 2 5 2-2h5"/>' };
 const insec = t => esc(t).replace(/ ([?!:;»])/g, "&nbsp;$1");
 const famIco = id => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${FAM_ICO[id] || ""}</svg>`;
-/* Les étoiles gagnées à un jeu (la meilleure partie, sur cet appareil). */
-const ludoEtoiles = id => +get("ludo-best:" + id, "0");
-const etoilesHtml = n => `<span class="ludo-et" aria-label="${n} étoile${n > 1 ? "s" : ""} sur 3">${[1, 2, 3].map(i => `<span class="${i <= n ? "on" : ""}">&#9733;</span>`).join("")}</span>`;
-const ludoCarte = j => { const f = ludoFam(j.famille), et = j.moteur ? ludoEtoiles(j.id) : 0;
-  return `<a class="ludo-carte" ${ludoLien(j)} style="--c:${f[2]}"><span class="ludo-ic">${famIco(j.famille)}</span><span class="ludo-tx"><b>${insec(j.titre)}</b><span class="small">${insec(j.consigne)}</span>
-    <span class="ludo-s">${j.seances.map(ludoSeance).map(esc).join(" ; ")}</span></span><span class="ludo-go">${j.moteur ? (et ? etoilesHtml(et) : "Jouer") : "Ouvrir"} &#8250;</span></a>`; };
+/* ---------- La progression : les jeux suivent l'année ----------
+   Un jeu se débloque à la séance du cours à laquelle il est relié (la séquence 1 est ouverte dès le début ; ouvrir une séance débloque aussitôt ses jeux).
+   Chaque jeu a trois niveaux : deux étoiles à un niveau ouvrent le suivant. Une séquence est validée quand tous ses jeux ont deux étoiles au premier niveau,
+   maîtrisée quand ils ont trois étoiles au premier niveau et deux au deuxième. Tout reste sur l'appareil. L'enseignant voit tout ouvert. */
+let NIV_CARTE = "";
+const niveauCarte = () => NIV_CARTE || maClasse() || defautNiv();
+const ETOILES_DE = (score, manches) => score >= manches - 1 ? 3 : score >= Math.ceil(manches * .75) ? 2 : score >= Math.ceil(manches * .5) ? 1 : 0;
+const etoilesNiv = (id, niv) => ((jeu().etoiles || {})[id + ":" + niv]) || 0;
+const ludoEtoiles = id => [0, 1, 2].reduce((a, n) => a + etoilesNiv(id, n), 0);
+function noterEtoiles(id, niv, et) { const j = jeu(); j.etoiles = j.etoiles || {}; const c = id + ":" + niv; if (et > (j.etoiles[c] || 0)) { j.etoiles[c] = et; sauverJeu(); return true; } return false; }
+const niveauOuvert = (id, niv) => !jeuActif() || niv === 0 || etoilesNiv(id, niv - 1) >= 2;
+const nivMaxOuvert = id => [2, 1, 0].find(n => niveauOuvert(id, n));
+const calSeance = (k, a, b) => D.niveaux[k].calendrier.find(e => e.type === "seance" && e.seq === a && e.num === b);
+const seanceAtteinte = (k, a, b) => { if (!jeuActif() || a === 1) return true; const e = calSeance(k, a, b); return !!jeu().faits[`seance:${k}-${a}-${b}`] || !!(e && parse(e.date) <= today); };
+const jeuOuvert = (j, k) => { const S = j.seances.filter(s => s[0] === k); return !jeuActif() || !S.length || S.some(([, a, b]) => seanceAtteinte(k, a, b)); };
+function ouvertureDe(j, k) { const S = j.seances.filter(s => s[0] === k).map(([, a, b]) => calSeance(k, a, b)).filter(Boolean).sort((x, y) => parse(x.date) - parse(y.date)); return S[0] ? { date: S[0].semaine, seq: S[0].seq, num: S[0].num } : null; }
+const jeuxDeSeq = (k, a) => D.ludo.jeux.filter(j => j.moteur && j.seances.some(s => s[0] === k && s[1] === a));
+function etatSeq(k, a) { const L = jeuxDeSeq(k, a), n = L.length;
+  return { L, n, valide: n > 0 && L.every(j => etoilesNiv(j.id, 0) >= 2), maitrise: n > 0 && L.every(j => etoilesNiv(j.id, 0) >= 3 && etoilesNiv(j.id, 1) >= 2),
+    ouverts: L.filter(j => jeuOuvert(j, k)).length, etoiles: L.reduce((x, j) => x + ludoEtoiles(j.id), 0), max: n * 9 }; }
+/* Les badges de séquence (ils s'ajoutent à ceux du parcours, sans les mêler à la grille des badges). */
+const BADGES_SEQ = [];
+NIV.forEach(k => D.niveaux[k].sequences.forEach((sq, i) => { const a = i + 1;
+  BADGES_SEQ.push([`seq-${k}-${a}`, `${k}, séquence ${a} validée`, `Deux étoiles au premier niveau de chaque jeu de la séquence « ${sq.titre} ».`, "coupe", () => etatSeq(k, a).valide]);
+  BADGES_SEQ.push([`seqor-${k}-${a}`, `${k}, séquence ${a} maîtrisée`, `Trois étoiles au premier niveau et deux au deuxième niveau de chaque jeu de « ${sq.titre} ».`, "etoile", () => etatSeq(k, a).maitrise]); }));
+function verifierSeqs(k) { D.niveaux[k].sequences.forEach((sq, i) => { const a = i + 1, e = etatSeq(k, a); if (e.valide) gagner(`seqval:${k}-${a}`, 40, "sequences"); if (e.maitrise) gagner(`seqor:${k}-${a}`, 80, "sequences"); }); }
+const CADENAS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+const etoilesHtml = (n, niv) => `<span class="ludo-et" aria-label="${n} étoile${n > 1 ? "s" : ""} sur 9"><span class="on">&#9733;</span> ${n} sur 9${niv ? `, niveau ${niv}` : ""}</span>`;
+/* Une carte de jeu : verrouillée avec sa date, ou ouverte avec ses étoiles et son niveau. */
+function carteJeu(j, force) {
+  const k = niveauCarte(), f = ludoFam(j.famille), ouvert = force || !j.moteur || jeuOuvert(j, k), o = !ouvert && ouvertureDe(j, k);
+  if (!ouvert && o) return `<a class="ludo-carte verrou" href="#seance-${k}-${o.seq}-${o.num}" style="--c:${f[2]}"><span class="ludo-ic">${CADENAS}</span><span class="ludo-tx"><b>${insec(j.titre)}</b><span class="small">Se débloque à la séance du ${esc(o.date)} (séquence ${o.seq}). Ouvre la séance pour jouer tout de suite.</span></span><span class="ludo-go">Séance du ${esc(o.date)} &#8250;</span></a>`;
+  const et = j.moteur ? ludoEtoiles(j.id) : 0, niv = j.moteur ? nivMaxOuvert(j.id) + 1 : 0;
+  return `<a class="ludo-carte${j.moteur && !et ? " neuf" : ""}" ${ludoLien(j)} style="--c:${f[2]}"><span class="ludo-ic">${famIco(j.famille)}</span><span class="ludo-tx"><b>${insec(j.titre)}</b><span class="small">${insec(j.consigne)}</span>
+    <span class="ludo-s">${j.seances.map(ludoSeance).map(esc).join(" ; ")}</span></span><span class="ludo-go">${j.moteur ? (et ? etoilesHtml(et, niv) : "Nouveau : jouer") : "Ouvrir"} &#8250;</span></a>`;
+}
+const ludoCarte = j => carteJeu(j);
+/* La carte de progression de la classe : où on en est, ce qui s'ouvre ensuite, quoi faire maintenant. */
+function carteProgression(k) {
+  const n = D.niveaux[k], X = n.sequences.map((s, i) => Object.assign({ a: i + 1, s }, etatSeq(k, i + 1))), total = X.reduce((a, x) => a + x.etoiles, 0), max = X.reduce((a, x) => a + x.max, 0);
+  const sec = a => n.calendrier.find(e => e.type === "seance" && e.seq === a), cible = X.find(x => x.n && !x.valide && x.ouverts), fermee = X.find(x => x.n && !x.ouverts);
+  const prochainJeu = cible && cible.L.find(j => jeuOuvert(j, k) && etoilesNiv(j.id, 0) < 2);
+  return `<section class="prog"><h2 class="sec">Ta progression en ${k}</h2><p class="small">Chaque séquence débloque ses jeux à sa séance. Gagne deux étoiles au premier niveau de chaque jeu pour valider la séquence, puis ouvre les niveaux suivants pour la maîtriser. ${total} étoiles sur ${max}.</p>
+    <ol class="prog-liste">${X.map(x => { const o = x.ouverts > 0, etat = x.maitrise ? "maitrisee" : x.valide ? "validee" : o ? "ouverte" : "fermee", s0 = sec(x.a);
+      const lib = x.maitrise ? "Maîtrisée" : x.valide ? "Validée" : o ? `${x.ouverts} jeu${x.ouverts > 1 ? "x" : ""} à jouer` : `S'ouvre le ${s0 ? s0.semaine : "bientôt"}`;
+      return `<li class="prog-seq ${etat}${x === cible ? " prochaine" : ""}"><div class="prog-t"><span class="prog-n">${x.a}</span><b>${esc(x.s.titre)}</b><span class="prog-etat">${esc(lib)}</span></div>
+        <div class="prog-b" role="img" aria-label="${x.etoiles} étoiles sur ${x.max}"><span style="width:${x.max ? Math.round(x.etoiles / x.max * 100) : 0}%"></span></div>
+        <div class="prog-jeux">${x.L.map(j => jeuOuvert(j, k) ? `<a class="prog-jeu" href="#ludo-${j.id}" style="--c:${ludoFam(j.famille)[2]}" title="${esc(j.titre)}, ${ludoEtoiles(j.id)} sur 9">${famIco(j.famille)}<span>${ludoEtoiles(j.id)}</span></a>` : `<span class="prog-jeu verrou" title="${esc(j.titre)} : pas encore ouvert">${CADENAS}</span>`).join("")}</div></li>`; }).join("")}</ol>
+    ${prochainJeu ? `<p class="prog-suite"><b>Prochain objectif :</b> valider la séquence ${cible.a}. <a class="pastille" style="--c:${ludoFam(prochainJeu.famille)[2]}" href="#ludo-${prochainJeu.id}">Jouer à « ${esc(prochainJeu.titre)} »</a></p>` : (X.every(x => !x.n || x.valide) ? `<p class="prog-suite">Toutes les séquences ouvertes sont validées. Ouvre les niveaux suivants pour les maîtriser.</p>` : "")}
+    ${fermee ? `<p class="small">Prochain déblocage : la séquence ${fermee.a}, ${sec(fermee.a) ? "séance du " + esc(sec(fermee.a).semaine) : "bientôt"}.</p>` : ""}</section>`;
+}
 /* Les jeux d'une séance (sinon ceux de sa séquence), pour l'étape « S'entraîner ». */
 function ludoDeSeance(k, a, b) {
   let L = D.ludo.jeux.filter(j => j.seances.some(s => s[0] === k && s[1] === a && s[2] === b));
   if (!L.length) L = D.ludo.jeux.filter(j => j.seances.some(s => s[0] === k && s[1] === a));
-  return L.length ? `<section class="card"><h2 class="blk-t">Les jeux de la ludothèque</h2><div class="ludo-grille">${L.map(ludoCarte).join("")}</div>
-    <p class="small"><a href="#ludo-${k}">Tous les jeux de la ${k}</a></p></section>` : "";
+  NIV_CARTE = k;
+  return L.length ? `<section class="card"><h2 class="blk-t">Les jeux de cette séance</h2><p class="small">Ils s'ouvrent avec la séance. Deux étoiles à un niveau ouvrent le suivant ; les séquences se valident jeu après jeu.</p><div class="ludo-grille">${L.map(j => carteJeu(j, true)).join("")}</div>
+    <p class="small"><a href="#jouer">Ta progression</a> · <a href="#ludo-${k}">Tous les jeux de la ${k}</a></p></section>` : "";
 }
 function vueLudo(niv) {
+  NIV_CARTE = niv || "";
   const J = D.ludo.jeux.filter(j => !niv || j.seances.some(s => s[0] === niv));
   return head("Jouer", "La ludothèque", `${J.length} jeux${niv ? ` pour la ${niv}` : ""}, en cinq familles. Chacun est relié à une séance du cours : tu le retrouves aussi dans l'étape « S'entraîner ».`)
     + `<nav class="levels" aria-label="Niveau"><a href="#ludo" aria-current="${niv ? "false" : "page"}">Tous</a>${NIV.map(n => `<a href="#ludo-${n}" aria-current="${n === niv ? "page" : "false"}">${n}</a>`).join("")}</nav>`
@@ -4083,13 +4147,14 @@ function vueLudo(niv) {
 }
 /* La page Jouer : le jeu du jour, les cinq familles, les jeux de son et le parcours. */
 function vueJouer() {
-  const k = maClasse() || defautNiv(), J = D.ludo.jeux.filter(j => j.seances.some(s => s[0] === k)), mot = J.filter(j => j.moteur);
-  const jour = Math.floor(Date.now() / 864e5), jj = mot[jour % Math.max(1, mot.length)], fj = jj && ludoFam(jj.famille);
+  const k = maClasse() || defautNiv(), J = D.ludo.jeux.filter(j => j.seances.some(s => s[0] === k)), mot = J.filter(j => j.moteur); NIV_CARTE = k;
+  const ouv = mot.filter(j => jeuOuvert(j, k)), jour = Math.floor(Date.now() / 864e5), jj = (ouv.length ? ouv : mot)[jour % Math.max(1, ouv.length || mot.length)], fj = jj && ludoFam(jj.famille);
   const etoiles = mot.reduce((a, j) => a + ludoEtoiles(j.id), 0), x = jeu(), n = niveauDe(x.xp);
   let h = head("Jouer", "Apprendre en jouant", "Des jeux courts, reliés à tes séances. Écoute, réponds, gagne des étoiles et des points.");
   h += `<nav class="levels" aria-label="Classe">${NIV.map(c => `<a href="#jouer" data-niv="${c}" aria-current="${c === k ? "page" : "false"}">${c}</a>`).join("")}</nav>`;
   if (jj) h += `<a class="jouer-jour" href="#ludo-${jj.id}" style="--c:${fj[2]}"><span class="label">Le jeu du jour, ${k}</span><span class="jj-ic">${famIco(jj.famille)}</span><b>${insec(jj.titre)}</b><span>${esc(jj.consigne)}</span><span class="jj-go">Jouer maintenant &#8250;</span></a>`;
-  h += `<div class="jouer-stats"><a href="#parcours"><b>${x.xp}</b><span>points</span></a><a href="#parcours"><b>${n + 1}</b><span>niveau, ${esc(NIVEAUX_JEU[n][1])}</span></a><a href="#ludo-${k}"><b>${etoiles}</b><span>étoiles sur ${mot.length * 3}</span></a></div>`;
+  h += carteProgression(k);
+  h += `<div class="jouer-stats"><a href="#parcours"><b>${x.xp}</b><span>points</span></a><a href="#parcours"><b>${n + 1}</b><span>niveau, ${esc(NIVEAUX_JEU[n][1])}</span></a><a href="#ludo-${k}"><b>${etoiles}</b><span>étoiles sur ${mot.length * 9}</span></a></div>`;
   h += `<h2 class="sec">La ludothèque de la ${k} : ${J.length} jeux</h2><div class="jouer-fams">${D.ludo.familles.map(([id, nom, c]) => { const L = J.filter(j => j.famille === id);
     return `<a class="jouer-fam" href="#ludo-${k}" data-ancre="fam-${id}" style="--c:${c}">${famIco(id)}<b>${esc(nom.split(",")[0])}</b><span>${L.length} jeu${L.length > 1 ? "x" : ""}</span></a>`; }).join("")}</div>`;
   h += `<h2 class="sec">Et aussi</h2><div class="jouer-plus"><a class="jouer-fam" href="#pratiquer-${k}-jeux" style="--c:#11110F">${famIco("creation")}<b>Les jeux de son</b><span>L'oreille fine, le clavier, compose un rythme, l'orchestre, la frise</span></a>`
@@ -4097,10 +4162,11 @@ function vueJouer() {
   return h;
 }
 function vueJeuLudo(id) {
-  const j = D.ludo.jeux.find(x => x.id === id), f = ludoFam(j.famille), M = j.moteur, niv = +get("ludo-niv:" + id, "0");
+  const j = D.ludo.jeux.find(x => x.id === id), f = ludoFam(j.famille), M = j.moteur, niv = Math.min(+get("ludo-niv:" + id, "0"), nivMaxOuvert(id)), kc = maClasse();
+  if (kc && j.seances.some(s => s[0] === kc) && !jeuOuvert(j, kc)) { NIV_CARTE = kc; return head("Pas encore", j.titre, "Ce jeu se débloque à sa séance.") + `<div class="ludo-grille">${carteJeu(j)}</div><p class="small"><a href="#jouer">Ta progression</a></p>`; }
   return head(`Ludothèque, ${f[1]}`, j.titre, j.consigne)
     + `<p class="small">Relié au cours : ${j.seances.map(s => `<a href="#seance-${s[0]}-${s[1]}-${s[2]}">${esc(ludoSeance(s))}</a>`).join(", ")}. Notion : ${esc(j.notion)}.</p>
-    <section class="tool ludo-jeu" style="--c:${f[2]}"><div class="themes" role="group" aria-label="Niveau du jeu">${M.niveaux.map(([t], i) => `<button type="button" class="chip" data-lvl="${i}" aria-pressed="${i === niv}">${i + 1}. ${esc(t)}</button>`).join("")}</div>
+    <section class="tool ludo-jeu" style="--c:${f[2]}"><div class="themes" role="group" aria-label="Niveau du jeu">${M.niveaux.map(([t], i) => niveauOuvert(id, i) ? `<button type="button" class="chip" data-lvl="${i}" aria-pressed="${i === niv}">${i + 1}. ${esc(t)}${etoilesNiv(id, i) ? " " + "&#9733;".repeat(etoilesNiv(id, i)) : ""}</button>` : `<button type="button" class="chip verrou" disabled title="Gagne deux étoiles au niveau ${i} pour l'ouvrir">${i + 1}. verrouillé</button>`).join("")}</div>
       <p class="small" id="lj-aide">${esc(M.niveaux[niv][1])}</p>
       <p class="jq" id="lj-q" aria-live="polite">Manche 1 sur ${M.manches}. Appuie sur «&nbsp;Écouter&nbsp;».</p>
       <div class="actions"><button type="button" class="btn-main" id="lj-play">Écouter</button><button type="button" class="btn2" id="lj-encore" hidden>Réécouter</button></div>
@@ -4577,7 +4643,7 @@ Object.assign(LUDO_INSTR, { "quel-genre-rythme": ["machine"], "reconstitue-rythm
 
 function brancherJeuLudo(id) {
   const j = D.ludo.jeux.find(x => x.id === id), M = j.moteur, $ = x => document.getElementById(x); if (!$("lj-play")) return;
-  const E = { niv: +get("ludo-niv:" + id, "0"), manche: 0, score: 0, cur: null, repondu: false };
+  const E = { niv: Math.min(+get("ludo-niv:" + id, "0"), nivMaxOuvert(id)), manche: 0, score: 0, cur: null, repondu: false };
   window.LUDO_ETAT = E;  // lu par les tests (outils/tests/faust.js)
   const instrBrut = LUDO_INSTR[id] || ["voix"], avecMachine = instrBrut.includes("machine"), instr = instrBrut.filter(x => x !== "machine");
   /* Les instruments se chargent dès l'ouverture du jeu ; « Écouter » attend qu'ils soient tous là (jamais de son de secours). */
@@ -4627,11 +4693,16 @@ function brancherJeuLudo(id) {
     $("lj-fb").textContent = texte; if (E.cur.visu) { $("lj-visu").hidden = false; dessinerOnde($("lj-visu"), E.cur.visu); }
     E.manche++;
     if (E.manche < M.manches) { $("lj-suite").hidden = false; return; }
-    const msg = E.score >= M.manches - 1 ? "Excellent : tu peux passer au niveau suivant." : E.score >= M.manches / 2 ? "Bien : refais une partie pour consolider." : "Réécoute la séance, puis recommence : ça vient en écoutant.";
-    $("lj-fin").hidden = false; $("lj-fin").innerHTML = `<b>${E.score} sur ${M.manches}.</b> ${msg} <button type="button" class="btn2" id="lj-rejouer">Rejouer</button>`;
-    $("lj-rejouer").onclick = () => rendre();
-    const et = E.score >= M.manches - 1 ? 3 : E.score >= M.manches / 2 ? 2 : E.score > 0 ? 1 : 0; if (et > ludoEtoiles(id)) set("ludo-best:" + id, String(et));
+    const et = ETOILES_DE(E.score, M.manches), avant = etoilesNiv(id, E.niv); noterEtoiles(id, E.niv, et);
+    const debloque = jeuActif() && et >= 2 && avant < 2 && E.niv < 2, suivant = E.niv < 2 && niveauOuvert(id, E.niv + 1);
+    const msg = et === 3 ? "Trois étoiles : niveau maîtrisé." : et === 2 ? "Deux étoiles : bien joué." : et === 1 ? "Une étoile : il en faut deux pour ouvrir le niveau suivant. Réécoute la séance, puis recommence." : "Aucune étoile : réécoute la séance, puis recommence, ça vient en écoutant.";
+    $("lj-fin").hidden = false; $("lj-fin").innerHTML = `<b>${E.score} sur ${M.manches}, ${et} étoile${et > 1 ? "s" : ""}.</b> ${msg}${debloque ? ` <b>Niveau ${E.niv + 2} débloqué !</b>` : ""} <button type="button" class="btn2" id="lj-rejouer">Rejouer</button>${suivant ? ` <button type="button" class="btn-main" id="lj-suivant">Niveau suivant</button>` : ""}`;
+    $("lj-rejouer").onclick = () => rendre(); if ($("lj-suivant")) $("lj-suivant").onclick = () => { set("ludo-niv:" + id, String(E.niv + 1)); rendre(); };
     gagner(`ludo:${id}:${E.niv}:${new Date().toDateString()}`, 5 + E.score * 2, "ludo");
+    for (let t = 1; t <= et; t++) gagner(`ludo-etoile:${id}:${E.niv}:${t}`, 10 * t);
+    if (debloque) toast(`Niveau ${E.niv + 2} débloqué`, "xp");
+    [...new Set(j.seances.map(x => x[0]))].forEach(verifierSeqs);
+    const cl = maClasse(); if (cl && et >= 1) { const ev = D.niveaux[cl].calendrier[indexDuJour()]; if (ev && ev.type === "seance" && j.seances.some(x => x[0] === cl && x[1] === ev.seq)) { gagner(`q-jeu:${cl}-${ev.seq}-${ev.num}`, 15); verifierSemaine(); } }
   }
   $("lj-play").onclick = () => ecouter(true);
   $("lj-encore").onclick = () => ecouter(false);
@@ -4671,6 +4742,7 @@ function vueParcours() {
   h += `<section class="niveau-carte"><div class="nc-n">${n + 1}</div><div class="nc-t"><div class="label">${j.xp} XP${NIVEAUX_JEU[n + 1] ? `, encore ${haut - j.xp} pour le niveau ${n + 2} (${esc(NIVEAUX_JEU[n + 1][1])})` : ", niveau maximum"}</div>
     <div class="nc-b"><span style="width:${Math.min(100, (j.xp - bas) / (haut - bas) * 100)}%"></span></div><div class="nc-s"><span>${medaille("flamme", j.serie > 0, "#c2410c")} ${j.serie} jour${j.serie > 1 ? "s" : ""} d'affilée</span><span>${medaille("coupe", true)} ${Object.keys(j.badges).length} badge${Object.keys(j.badges).length > 1 ? "s" : ""} sur ${BADGES.length}</span></div></div></section>`;
   h += carteMission();
+  if (maClasse()) h += carteProgression(maClasse());
   h += `<h2 class="sec" id="quetes" tabindex="-1">Quêtes de la semaine</h2>`;
   if (!maClasse()) h += `<p class="small">Choisis ta classe sur la page <a href="#semaine">Ma semaine</a> pour recevoir tes quêtes.</p>`;
   else if (!q.length) h += `<p class="small">Pas de séance cette semaine. Voici tes missions de départ : touche une mission pour y aller.</p><ol class="quetes">${missions(4).map(m => `<li>${lienCible(m.cible, `<span class="qc" aria-hidden="true"></span><span>${esc(m.cond)}</span><span class="qx">Vas-y &#8250;</span>`, "")}</li>`).join("")}</ol>`;
