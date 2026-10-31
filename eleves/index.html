@@ -1314,6 +1314,34 @@ html.signal .ludo-carte { border-width: 2px; } html.signal .ludo-carte:hover { b
 .entete .puce-jeu { color: #fff; border-color: rgba(255,255,255,.35); } .entete .pn-n { background: #D6FF00; color: #11110F; } .entete .pn-b { background: rgba(255,255,255,.2); } .entete .pn-b span { background: #D6FF00; }
 /* Fil d'Ariane sur téléphone : le dernier niveau se raccourcit avec des points de suspension au lieu de pousser le premier hors de l'écran. */
 .fil { overflow: hidden; } .fil li { flex: none; } .fil li[aria-current] { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* L'atelier sonore */
+.at-son, .at-tempo, .at-mono { margin-top: 18px; }
+.at-ecran { position: relative; } #at-onde { width: 100%; height: auto; aspect-ratio: 720 / 220; display: block; border-radius: 22px; }
+.at-leg { position: absolute; top: 10px; left: 16px; right: 16px; display: flex; justify-content: space-between; font: 500 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: #D6FF00; pointer-events: none; } .at-leg b:last-child { margin-right: 40%; }
+.at-params { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.at-p { display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: 22px; background: var(--c); color: #fff; box-shadow: inset 0 -5px 0 rgba(0,0,0,.18); min-width: 0; }
+.at-p .label, html.signal .at-p .label { color: #fff; opacity: .9; } .at-p b { font: 400 clamp(1.25rem, 5vw, 1.9rem)/1 var(--f-display); white-space: nowrap; } .at-p .small { color: #fff; opacity: .92; }
+.at-p input[type=range] { width: 100%; margin-top: 8px; accent-color: #fff; }
+.at-timbres { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.at-t { border: 2px solid var(--ink); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 8px 14px; font: 600 .95rem var(--f-body); cursor: pointer; }
+.at-t[aria-pressed=true] { background: #5a2bd6; border-color: #5a2bd6; color: #fff; }
+.at-play { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; margin-top: 12px; padding: 16px; border: 0; border-radius: 999px; background: #11110F; color: #D6FF00; font: 700 1.2rem var(--f-body); cursor: pointer; box-shadow: inset 0 -5px 0 rgba(255,255,255,.08); }
+.at-play svg { width: 28px; height: 28px; } .at-play:active { transform: scale(.98); }
+.at-defis { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+.at-d { padding: 6px 12px; border-radius: 999px; border: 1.5px dashed var(--muted); font-size: .88rem; color: var(--muted); } .at-d.ok { border: 1.5px solid #19b58a; background: #19b58a; color: #fff; } .at-d.ok::before { content: "\2713  "; }
+.at-pouls { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; margin-top: 8px; }
+.at-rond { --per: .66s; width: 150px; height: 150px; border-radius: 50%; border: 0; background: #ff5a36; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: inset 0 -6px 0 rgba(0,0,0,.2); }
+.at-rond b { font: 400 3rem/1 var(--f-display); } .at-rond span { font-size: .75rem; max-width: 9em; text-align: center; }
+.at-rond[aria-pressed=true] { background: #11110F; color: #D6FF00; } .at-rond.bat { animation: bat .18s ease-out; } @keyframes bat { from { transform: scale(1.09); } to { transform: scale(1); } }
+.at-nom { display: block; font: 400 1.6rem/1 var(--f-display); margin-bottom: 6px; } .at-pouls input[type=range] { width: 100%; accent-color: #ff5a36; } .at-pouls .beats { justify-content: flex-start; margin: 10px 0; }
+.at-pouls .beats span { border-color: #ff5a36; background: transparent; } .at-pouls .beats span.on { background: #ff5a36; }
+@media (max-width: 520px) { .at-pouls { grid-template-columns: 1fr; justify-items: center; } .at-pouls > div { width: 100%; } .at-params { grid-template-columns: 1fr 1fr; } .at-params .at-p:last-child { grid-column: 1 / -1; } }
+#at-corde { width: 100%; height: auto; margin-top: 8px; touch-action: none; cursor: pointer; }
+.mc-caisse { fill: #ffb000; } .mc-chev { fill: var(--ink); } .mc-pont { fill: #ff5a36; } .mc-ombre { stroke: rgba(0,0,0,.08); stroke-width: 8; }
+.mc-corde { fill: none; stroke: var(--ink); stroke-width: 2.5; } .mc-corde.vibre { animation: corde .6s ease-out 3; stroke: #4658FF; }
+@keyframes corde { 0% { transform: translateY(0); } 25% { transform: translateY(-3px); } 50% { transform: translateY(3px); } 75% { transform: translateY(-1.5px); } 100% { transform: translateY(0); } }
+.mc-rep line { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 3 3; } .mc-rep text { font: 700 13px var(--f-body); text-anchor: middle; fill: var(--ink); } .mc-rep .mc-n { font: 500 10px var(--f-mono); fill: var(--muted); }
+.at-ratios { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -2452,25 +2480,7 @@ function vuePratiquer(k, sec) {
   const C_playlist = `<h2 class="sec" id="j-playlist" tabindex="-1">Playlist du monde</h2><p class="small">Pop, rock, rap, électro et musiques du monde qui répondent au cours de ${k} : par la forme, la mélodie, le rythme, le timbre ou le sujet.</p>${POINTS(2)}
     ${pl.map(([s, l], i) => `<div class="pl-seq"><div class="label">Séquence ${n.sequences.indexOf(s) + 1}, ${esc(s.titre)}</div>${echosListe(l)}</div>`).join("")}`;
   const C_jeux = htmlJeux(k);
-  const C_atelier = `<h2 class="sec" id="j-atelier" tabindex="-1">Atelier sonore</h2><p class="small">Monte le volume doucement. Les sons sont fabriqués par ton navigateur : aucun enregistrement n'est utilisé.</p>
-  <div class="tools">
-    <section class="tool" aria-labelledby="t1"><h3 id="t1">Les paramètres du son</h3>
-      <label for="p-h">Hauteur : <output id="o-h">440 Hz, médium</output></label><input id="p-h" type="range" min="0" max="100" value="55">
-      <label for="p-d">Durée : <output id="o-d">1 s</output></label><input id="p-d" type="range" min="2" max="30" value="10">
-      <label for="p-i">Intensité : <output id="o-i">mezzo forte (mf)</output></label><input id="p-i" type="range" min="3" max="60" value="30">
-      <label for="p-t">Timbre</label><select id="p-t"><option value="pur">Son pur (sinusoïde)</option><option value="sine">Flûte</option><option value="square">Clarinette</option><option value="sawtooth">Cordes</option><option value="triangle">Piano électrique</option><option value="voix">Voix chantée</option><option value="cloche">Métallophone</option></select>
-      <button type="button" class="btn-main" id="b-son">Écouter le son</button>
-      <p class="small">Défi : fais entendre un son aigu, court et piano, puis un son grave, long et forte.</p></section>
-    <section class="tool" aria-labelledby="t2"><h3 id="t2">La pulsation et le tempo</h3>
-      <label for="m-t">Tempo : <output id="o-t">90 battements par minute, Andante</output></label><input id="m-t" type="range" min="40" max="200" value="90">
-      <div class="beats" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-      <button type="button" class="btn-main" id="b-metro" aria-pressed="false">Démarrer</button>
-      <p class="small">Frappe dans tes mains sur chaque battement. Le premier temps est accentué.</p></section>
-    <section class="tool" aria-labelledby="t3"><h3 id="t3">Le monocorde de Pythagore</h3>
-      <p class="small">Raccourcir la corde fait monter le son. Écoute chaque rapport seul, puis avec la corde entière.</p>
-      <div class="ratios">${[["1", "Corde entière", 1], ["1/2", "Octave", 2], ["2/3", "Quinte", 1.5], ["3/4", "Quarte", 4 / 3]].map(([r, nm, m]) =>
-        `<div class="ratio"><div class="bar" style="width:${100 / m}%"></div><b>${r}</b><span>${nm}</span><button type="button" class="btn2" data-m="${m}">Seul</button>${m > 1 ? `<button type="button" class="btn2" data-m="${m}" data-ens="1">Avec la corde entière</button>` : ""}</div>`).join("")}</div></section>
-  </div>`;
+  const C_atelier = atelierHtml();
   const C_sons = `<h2 class="sec" id="j-sonotheque" tabindex="-1">Sonothèque</h2><p class="small">Tous les exemples sonores du cours, rangés par thème. Touche un thème, puis un son. Touche encore pour arrêter. <a href="https://faust.grame.fr" target="_blank" rel="noopener">Powered by Faust</a>.</p>${sonothequeHtml()}`;
   /* Les chants et partitions de l'année, dans l'ordre des séquences : pour chacune, le chant prévu, les partitions à plusieurs voix,
      puis les thèmes et exemples de la séquence ; quand la partition n'est pas encore sur le site, le lien vers IMSLP. */
@@ -2506,24 +2516,97 @@ function vuePratiquer(k, sec) {
     ["playlist", "Échos d'aujourd'hui", "Chanson française, musiques d'Amérique latine et du monde, pop et rock qui répondent au cours.", "globe", C_playlist],
     ["atelier", "Atelier sonore", "Les paramètres du son, le métronome, le monocorde de Pythagore.", "activite", C_atelier]];
   const r = RUB.find(x => x[0] === sec);
-  if (r) return head("Écouter, " + k, r[1], r[2]) + levels("pratiquer", k).replace(/href="#pratiquer-(\w+)"/g, `href="#pratiquer-$1-${sec}"`) + NOTE + r[4]
+  if (r) return head((sec === "atelier" ? "Labo, " : sec === "jeux" ? "Jouer, " : "Écouter, ") + k, r[1], r[2]) + levels("pratiquer", k).replace(/href="#pratiquer-(\w+)"/g, `href="#pratiquer-$1-${sec}"`) + NOTE + r[4]
     + `<div class="suite" style="justify-content:space-between;margin-top:16px"><a class="btn2" href="#pratiquer-${k}">&#8249; Toutes les rubriques</a></div>`;
   return h + NOTE + `<div class="rubriques">${RUB.map(([id, t, d, gl]) => `<a class="rubrique" href="${id === "monde" ? "#monde" : id === "ludo" ? `#ludo-${k}` : `#pratiquer-${k}-${id}`}">${medaille(gl, true, D.couleurs[k])}<span><b>${esc(t)}</b><span class="small">${esc(d)}</span></span><span class="chev" aria-hidden="true">&#8250;</span></a>`).join("")}</div>`;
 }
+/* ---------- L'atelier sonore (refait le 31/10/2026) ----------
+   Le son en direct : forme d'onde et spectre ; hauteur, durée, intensité, et le timbre de vrais instruments enregistrés.
+   La pulsation : un métronome calé sur l'horloge audio, et le tempo que l'on tape soi-même. Le monocorde : une corde que l'on touche. */
+const AT_TIMBRES = [["pur", "Son pur", "sine", { pur: true }], ["flute", "Flûte", "flute"], ["clarinette", "Clarinette", "clarinette"], ["hautbois", "Hautbois", "hautbois"],
+  ["violon", "Violon", "violon"], ["violoncelle", "Violoncelle", "violoncelle"], ["trompette", "Trompette", "trompette"], ["cor", "Cor", "cor"],
+  ["harpe", "Harpe", "harpe"], ["piano", "Piano", "piano"], ["marimba", "Marimba", "marimba"], ["voix", "Voix", "voix"]];
+const AT_DEFIS = [["Un son aigu, court et piano", p => p.f >= 600 && p.d <= .6 && p.v < .25], ["Un son grave, long et forte", p => p.f < 200 && p.d >= 2 && p.v >= .45],
+  ["Le même la (440 Hz) avec deux timbres", p => Math.abs(p.f - 440) < 12 && (AT_LA[p.t] = 1) && Object.keys(AT_LA).length >= 2], ["Un son pur, puis un son de violon", p => (AT_SUITE.push(p.t), AT_SUITE.slice(-2).join() === "pur,violon")]];
+let AT_LA = {}, AT_SUITE = [], ANALYSEUR = null;
+function analyseur() { const ac = audio(); if (!ac) return null; if (!ANALYSEUR) { ANALYSEUR = ac.createAnalyser(); ANALYSEUR.fftSize = 2048; ANALYSEUR.smoothingTimeConstant = .75; MASTER.connect(ANALYSEUR); } return ANALYSEUR; }
+function atelierHtml() {
+  const fait = JSON.parse(get("at-defis", "[]") || "[]");
+  return `<section class="at-son"><div class="at-ecran"><canvas id="at-onde" width="720" height="220" role="img" aria-label="La forme d'onde et le spectre du son, en direct"></canvas><span class="at-leg"><b>Onde</b><b>Spectre</b></span></div>
+    <div class="at-params">
+      <label class="at-p" style="--c:#4658FF"><span class="label">Hauteur</span><b id="o-h">440 Hz</b><span class="small" id="o-h2">la, médium</span><input id="p-h" type="range" min="0" max="100" value="50" aria-label="Hauteur"></label>
+      <label class="at-p" style="--c:#19b58a"><span class="label">Durée</span><b id="o-d">1 s</b><span class="small" id="o-d2">moyen</span><input id="p-d" type="range" min="2" max="40" value="10" aria-label="Durée"></label>
+      <label class="at-p" style="--c:#ff5a36"><span class="label">Intensité</span><b id="o-i">mf</b><span class="small" id="o-i2">mezzo forte</span><input id="p-i" type="range" min="3" max="60" value="30" aria-label="Intensité"></label>
+    </div>
+    <div class="at-timbres" role="group" aria-label="Timbre">${AT_TIMBRES.map(([id, nom], i) => `<button type="button" class="at-t" data-t="${id}" aria-pressed="${i === 4}">${esc(nom)}</button>`).join("")}</div>
+    <button type="button" class="at-play" id="b-son" aria-label="Écouter le son"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg><span>Écouter</span></button>
+    <div class="at-defis"><span class="label">Défis</span>${AT_DEFIS.map(([t], i) => `<span class="at-d${fait.includes(i) ? " ok" : ""}" data-d="${i}">${esc(t)}</span>`).join("")}</div></section>
+  <section class="at-tempo"><h2 class="sec">La pulsation et le tempo</h2>
+    <div class="at-pouls"><button type="button" class="at-rond" id="b-metro" aria-pressed="false" aria-label="Démarrer le métronome"><b id="o-t">90</b><span>battements par minute</span></button>
+      <div><b class="at-nom" id="o-tn">Andante</b><input id="m-t" type="range" min="40" max="200" value="90" aria-label="Tempo"><div class="beats" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <button type="button" class="btn2" id="b-tap">Tape ton tempo ici</button><p class="small">Touche le rond pour démarrer. Tape au moins quatre fois sur le bouton : le métronome prend ton tempo.</p></div></div></section>
+  <section class="at-mono"><h2 class="sec">Le monocorde de Pythagore</h2><p class="small">Touche la corde : plus la partie qui vibre est courte, plus le son est aigu. Les repères donnent l'octave, la quinte et la quarte.</p>
+    <svg id="at-corde" viewBox="0 0 400 90" role="img" aria-label="Une corde tendue entre deux chevalets ; touche-la pour la faire sonner">
+      <rect x="0" y="62" width="400" height="18" rx="9" class="mc-caisse"/><path d="M14 40 H386" class="mc-ombre"/><path id="mc-vibre" d="M14 40 Q200 40 386 40" class="mc-corde"/>
+      <rect x="8" y="28" width="8" height="34" rx="3" class="mc-chev"/><rect x="384" y="28" width="8" height="34" rx="3" class="mc-chev"/><rect id="mc-pont" x="382" y="24" width="10" height="38" rx="4" class="mc-pont"/>
+      ${[[1 / 2, "1/2", "octave"], [2 / 3, "2/3", "quinte"], [3 / 4, "3/4", "quarte"]].map(([r, f, n]) => `<g class="mc-rep"><line x1="${14 + 372 * r}" x2="${14 + 372 * r}" y1="46" y2="60"/><text x="${14 + 372 * r}" y="22">${f}</text></g>`).join("")}</svg>
+    <div class="at-ratios">${[["1", "Corde entière", 1], ["1/2", "Octave", 2], ["2/3", "Quinte", 1.5], ["3/4", "Quarte", 4 / 3]].map(([r, nm, m]) => `<button type="button" class="btn2" data-m="${m}">${r} : ${nm}</button>`).join("")}<button type="button" class="btn2" id="mc-ens">Avec la corde entière : non</button></div></section>`;
+}
 function brancherAtelier() {
   const $ = id => document.getElementById(id); if (!$("b-son")) return;
-  const freq = () => Math.round(110 * Math.pow(16, $("p-h").value / 100));
-  const maj = () => { const f = freq(); $("o-h").textContent = `${f} Hz, ${nomHauteur(f)}`; $("o-d").textContent = `${($("p-d").value / 10).toFixed(1).replace(".", ",")} s`; $("o-i").textContent = nomNuance($("p-i").value / 100); };
+  let timbre = "violon";
+  const P = () => ({ f: Math.round(110 * Math.pow(16, $("p-h").value / 100)), d: $("p-d").value / 10, v: $("p-i").value / 100, t: timbre });
+  const NOMS = ["do", "do dièse", "ré", "mi bémol", "mi", "fa", "fa dièse", "sol", "sol dièse", "la", "si bémol", "si"];
+  const maj = () => { const p = P(), m = Math.round(69 + 12 * Math.log2(p.f / 440));
+    $("o-h").textContent = `${p.f} Hz`; $("o-h2").textContent = `${NOMS[(m % 12 + 12) % 12]}, ${nomHauteur(p.f)}`;
+    $("o-d").textContent = `${p.d.toFixed(1).replace(".", ",")} s`; $("o-d2").textContent = p.d <= .6 ? "court" : p.d >= 2 ? "long" : "moyen";
+    const nu = nomNuance(p.v); $("o-i").textContent = nu.match(/\((\w+)\)/)[1]; $("o-i2").textContent = nu.replace(/ \(.*/, ""); };
   ["p-h", "p-d", "p-i"].forEach(id => $(id).oninput = maj); maj();
-  $("b-son").onclick = async () => { deverrouiller(); audio(); const t = $("p-t").value; await Promise.race([chargerInstruments([FORME_INSTR[t] || "souffle"]), attendre(5000)]); jouer(freq(), $("p-d").value / 10, $("p-i").value / 100, t === "pur" ? "sine" : t, 0, t === "pur" ? { pur: true } : {}); };
-  const majT = () => { const b = +$("m-t").value; $("o-t").textContent = `${b} battements par minute, ${nomTempo(b)}`; }; $("m-t").oninput = () => { majT(); if (METRO) { arreter(); demarrer(); } }; majT();
-  const dots = [...document.querySelectorAll(".beats span")];
-  function demarrer() { let i = 0; const tick = () => { jouer(i % 4 === 0 ? 1320 : 880, 0.06, i % 4 === 0 ? 0.5 : 0.3, "square"); dots.forEach((d, j) => d.classList.toggle("on", j === i % 4)); i++; };
-    tick(); METRO = setInterval(tick, 60000 / +$("m-t").value); $("b-metro").textContent = "Arrêter"; $("b-metro").setAttribute("aria-pressed", "true"); }
-  function arreter() { clearInterval(METRO); METRO = null; dots.forEach(d => d.classList.remove("on")); if ($("b-metro")) { $("b-metro").textContent = "Démarrer"; $("b-metro").setAttribute("aria-pressed", "false"); } }
+  const instrDe = id => FORME_INSTR[(AT_TIMBRES.find(x => x[0] === id) || [])[2]];
+  setTimeout(() => { try { chargerInstruments(["violon", "percu", "harpe"]); } catch (_) {} }, 30);
+  async function sonner() { deverrouiller(); audio(); analyseur(); const p = P(), T = AT_TIMBRES.find(x => x[0] === timbre), n = instrDe(timbre);
+    if (n && !BANQUE.complet[n]) { $("b-son").setAttribute("aria-busy", "true"); await Promise.race([chargerInstruments([n]), attendre(20000)]); $("b-son").removeAttribute("aria-busy"); }
+    toutArreter(); jouer(p.f, p.d, p.v, T[2], 0, Object.assign({}, T[3] || {})); dessiner(p.d + 1.2);
+    const fait = JSON.parse(get("at-defis", "[]") || "[]");
+    AT_DEFIS.forEach(([t, ok], i) => { if (!fait.includes(i) && ok(p)) { fait.push(i); const el = document.querySelector(`[data-d="${i}"]`); if (el) el.classList.add("ok"); gagner("defi-atelier:" + i, 15, "atelier"); } });
+    set("at-defis", JSON.stringify(fait)); }
+  $("b-son").onclick = sonner;
+  document.querySelectorAll(".at-t").forEach(b => b.onclick = () => { timbre = b.dataset.t; document.querySelectorAll(".at-t").forEach(x => x.setAttribute("aria-pressed", String(x === b))); sonner(); });
+  /* L'écran : la forme d'onde à gauche, le spectre à droite, tant que le son dure. */
+  const cv = $("at-onde"), cx = cv.getContext("2d"); let jusqua = 0, anim = 0;
+  function dessiner(sec) { jusqua = performance.now() + sec * 1000; if (!anim) anim = requestAnimationFrame(trame); }
+  function trame() { anim = 0; if (!document.body.contains(cv)) return; const A = ANALYSEUR, W = cv.width, H = cv.height, coul = getComputedStyle(document.body).getPropertyValue("--ink") || "#111";
+    cx.clearRect(0, 0, W, H); cx.fillStyle = "rgba(17,17,15,.92)"; cx.beginPath(); cx.roundRect ? cx.roundRect(0, 0, W, H, 22) : cx.rect(0, 0, W, H); cx.fill();
+    if (A) { const t = new Float32Array(A.fftSize), f = new Uint8Array(A.frequencyBinCount); A.getFloatTimeDomainData(t); A.getByteFrequencyData(f);
+      let z = 0; for (let i = 1; i < t.length / 2; i++) if (t[i - 1] < 0 && t[i] >= 0) { z = i; break; }
+      cx.strokeStyle = "#D6FF00"; cx.lineWidth = 3; cx.beginPath(); for (let x = 0; x < W / 2 - 20; x++) { const y = H / 2 - t[z + Math.floor(x * 1.6)] * H * .9; x ? cx.lineTo(10 + x, y) : cx.moveTo(10, y); } cx.stroke();
+      const n = 64, bw = (W / 2 - 30) / n; for (let i = 0; i < n; i++) { const k = Math.floor(Math.pow(i / n, 1.8) * f.length * .5), v = f[k] / 255;
+        cx.fillStyle = `hsl(${250 - i * 3}, 95%, ${55 + v * 10}%)`; const h = Math.max(2, v * (H - 30)); cx.fillRect(W / 2 + 10 + i * bw, H - 12 - h, bw - 2, h); } }
+    if (performance.now() < jusqua) anim = requestAnimationFrame(trame); }
+  trame();
+  /* Le métronome : chaque battement est programmé sur l'horloge audio, 120 ms à l'avance (pas de décalage). */
+  const dots = [...document.querySelectorAll(".beats span")]; let prochain = 0, temps = 0, taps = [];
+  const majT = () => { const b = +$("m-t").value; $("o-t").textContent = b; $("o-tn").textContent = nomTempo(b); $("b-metro").style.setProperty("--per", (60 / b) + "s"); };
+  $("m-t").oninput = majT; majT();
+  function demarrer() { const ac = audio(); deverrouiller(); prochain = ac.currentTime + .08; temps = 0;
+    METRO = setInterval(() => { const b = +$("m-t").value; while (prochain < AC.currentTime + .12) { const fort = temps % 4 === 0, q = temps % 4, d = prochain - AC.currentTime;
+        tic(d, fort ? 2200 : 1500, fort ? .55 : .35); setTimeout(() => { dots.forEach((x, j) => x.classList.toggle("on", j === q)); const r = $("b-metro"); if (r) { r.classList.remove("bat"); void r.offsetWidth; r.classList.add("bat"); } }, d * 1000);
+        prochain += 60 / b; temps++; } }, 25);
+    $("b-metro").setAttribute("aria-pressed", "true"); $("b-metro").setAttribute("aria-label", "Arrêter le métronome"); }
+  function arreter() { clearInterval(METRO); METRO = null; dots.forEach(d => d.classList.remove("on")); const r = $("b-metro"); if (r) { r.setAttribute("aria-pressed", "false"); r.setAttribute("aria-label", "Démarrer le métronome"); } }
   $("b-metro").onclick = () => METRO ? arreter() : demarrer();
-  document.querySelectorAll(".ratio button").forEach(b => b.onclick = () => { const m = +b.dataset.m, base = 220;
-    if (b.dataset.ens) { jouer(base, 1.6, 0.25, "triangle"); jouer(base * m, 1.6, 0.25, "triangle"); } else jouer(base * m, 1.2, 0.35, "triangle"); });
+  $("b-tap").onclick = () => { const t = performance.now(); taps = taps.filter(x => t - x < 3000); taps.push(t); deverrouiller(); tic(0, 1800, .4);
+    if (taps.length >= 4) { const e = (taps[taps.length - 1] - taps[0]) / (taps.length - 1), b = Math.max(40, Math.min(200, Math.round(60000 / e))); $("m-t").value = b; majT(); $("b-tap").textContent = `Ton tempo : ${b}`; } };
+  /* Le monocorde : la partie qui vibre va du chevalet de gauche au point touché. */
+  const svg = $("at-corde"), base = 130.81; let ens = false;
+  function pincer(r) { deverrouiller(); audio(); analyseur(); const x = 14 + 372 * r; $("mc-pont").setAttribute("x", x - 5);
+    if (ens) jouer(base, 2.6, .3, "harpe", 0); jouer(base / r, 2.6, .34, "harpe", 0); dessiner(2.4);
+    const v = $("mc-vibre"); v.style.setProperty("--x", x); v.setAttribute("d", `M14 40 Q${(14 + x) / 2} 40 ${x} 40 L386 40`); v.classList.remove("vibre"); void v.getBBox(); v.classList.add("vibre");
+    v.setAttribute("data-r", r); }
+  svg.onpointerdown = e => { const b = svg.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * 400; let r = Math.max(.2, Math.min(1, (x - 14) / 372));
+    [1 / 2, 2 / 3, 3 / 4, 1].forEach(q => { if (Math.abs(r - q) < .025) r = q; }); setTimeout(() => { try { chargerInstruments(["harpe"]); } catch (_) {} }); pincer(r); };
+  document.querySelectorAll(".at-ratios [data-m]").forEach(b => b.onclick = () => pincer(1 / +b.dataset.m));
+  $("mc-ens").onclick = () => { ens = !ens; $("mc-ens").textContent = `Avec la corde entière : ${ens ? "oui" : "non"}`; };
 }
 
 /* ---------- Jeux : oreille, clavier, rythme, instruments, frise ---------- */
