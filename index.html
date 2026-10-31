@@ -1294,6 +1294,26 @@ html.signal .rappel .listen { border-top: 1px solid #3A3A35; } html.signal .rapp
 .lab-x .lab-num { font-size: 1.1rem; } .lab-x[aria-current="true"] { border-color: #D6FF00; background: #232A0A; }
 .lab-prog { height: 4px; background: #1C1C19; } .lab-prog i { display: block; height: 100%; width: 0; background: #D6FF00; }
 
+
+/* ================= Pastille (31/10/2026) : formes arrondies, demandées par Sébastien pour des collégiens =================
+   Les boutons deviennent des pilules, les blocs de couleur des cartes arrondies. Les filets éditoriaux restent. */
+html.signal .btn-main, html.signal .btn2, html.signal .chip, html.signal .ludo-go, html.signal .ludo-pills a, html.signal .jj-go, html.signal .toast, html.signal .seg button, html.signal .lien-btn.btn2 { border-radius: 999px; }
+html.signal .btn-main, html.signal .btn2 { padding-inline: 20px; }
+html.signal .levels a, html.signal .levels button { border-radius: 16px; }
+html.signal .ludo-carte, html.signal .jouer-fam, html.signal .jouer-jour, html.signal .ludo-band, html.signal .jouer-stats a, html.signal .gros-lien, html.signal .badge, html.signal .niveau-carte { border-radius: 22px; }
+html.signal .ludo-ic, html.signal .medaille { border-radius: 14px; }
+html.signal .note, html.signal .due, html.signal .trace, html.signal .rappel { border-radius: 16px; }
+html.signal input[type=text], html.signal input[type=search], html.signal select, html.signal textarea { border-radius: 12px; }
+html.signal .barre .retour, html.signal .fil .plie { border-radius: 12px; }
+html.signal .jouer-fam { box-shadow: inset 0 -5px 0 rgba(0,0,0,.18); transition: transform .12s; } html.signal .jouer-fam:hover { transform: translateY(-3px) rotate(-.4deg); }
+html.signal .jouer-jour { box-shadow: inset 0 -6px 0 rgba(0,0,0,.2); }
+html.signal .ludo-carte { border-width: 2px; } html.signal .ludo-carte:hover { box-shadow: 0 6px 0 var(--c); }
+.carrefour .jouer-fam { min-height: 150px; } .carrefour .jouer-fam span { margin-top: 6px; }
+@media (min-width: 700px) { .carrefour { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); } }
+/* La pastille de niveau dans l'en-tête noir : lisible. */
+.entete .puce-jeu { color: #fff; border-color: rgba(255,255,255,.35); } .entete .pn-n { background: #D6FF00; color: #11110F; } .entete .pn-b { background: rgba(255,255,255,.2); } .entete .pn-b span { background: #D6FF00; }
+/* Fil d'Ariane sur téléphone : le dernier niveau se raccourcit avec des points de suspension au lieu de pousser le premier hors de l'écran. */
+.fil { overflow: hidden; } .fil li { flex: none; } .fil li[aria-current] { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 </style>
 </head>
 <body>
@@ -1302,7 +1322,7 @@ html.signal .rappel .listen { border-top: 1px solid #3A3A35; } html.signal .rapp
 <header id="entete" class="entete" hidden></header>
 <div id="barre" class="barre" hidden></div>
 <main id="app"></main>
-<footer class="sig">Cours d'éducation musicale conçu et rédigé par <a href="https://sebastianrivas.art" target="_blank" rel="noopener">Sebastian Rivas</a>. © 2026 Sebastian Rivas, tous droits réservés.<br><a class="faust" href="https://faust.grame.fr" target="_blank" rel="noopener">Powered by Faust</a><br>Sons de synthèse calculés avec Faust, langage du GRAME, Centre national de création musicale.
+<footer class="sig">Cours d'éducation musicale conçu et rédigé par <a href="https://sebastianrivas.art" target="_blank" rel="noopener">Sebastian Rivas</a>. © 2026 Sebastian Rivas, tous droits réservés.<br><a class="faust" href="https://faust.grame.fr" target="_blank" rel="noopener">Powered by Faust</a><br>Instruments enregistrés : VS Chamber Orchestra (domaine public). Sons de synthèse calculés avec Faust, langage du GRAME, Centre national de création musicale.
 <details class="credits"><summary>Crédits et licences</summary>
 <dl>
 <dt>Conception, textes, cours et diaporamas</dt><dd><a href="https://sebastianrivas.art" target="_blank" rel="noopener">Sebastian Rivas</a>. Image d'accueil d'après sa maquette.</dd>
@@ -3621,11 +3641,11 @@ function feteSuivante() {
 }
 /* La puce de niveau, en haut des pages de l'élève */
 function majPuce() {
-  const p = document.getElementById("puce-jeu"); if (!p) return;
+  const P = document.querySelectorAll(".puce-jeu"); if (!P.length) return;
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0];
-  p.innerHTML = `<span class="pn-n">${n + 1}</span><span class="pn-t"><b>${esc(NIVEAUX_JEU[n][1])}</b><span class="pn-b"><span style="width:${Math.min(100, (j.xp - bas) / (haut - bas) * 100)}%"></span></span></span><span class="pn-x">${j.xp} XP</span>`;
+  P.forEach(p => p.innerHTML = `<span class="pn-n">${n + 1}</span><span class="pn-t"><b>${esc(NIVEAUX_JEU[n][1])}</b><span class="pn-b"><span style="width:${Math.min(100, (j.xp - bas) / (haut - bas) * 100)}%"></span></span></span><span class="pn-x">${j.xp} XP</span>`);
 }
-const puceHtml = () => jeuActif() ? `<a class="puce-jeu" id="puce-jeu" href="#parcours" aria-label="Mon parcours"></a>` : "";
+const puceHtml = () => jeuActif() ? `<a class="puce-jeu" href="#parcours" aria-label="Mon parcours"></a>` : "";
 /* Les quêtes de la semaine, pour la classe choisie */
 function quetes() {
   const k = maClasse(); if (!k) return [];
@@ -3743,7 +3763,7 @@ function vueJeuLudo(id) {
     + `<p class="small">Relié au cours : ${j.seances.map(s => `<a href="#seance-${s[0]}-${s[1]}-${s[2]}">${esc(ludoSeance(s))}</a>`).join(", ")}. Notion : ${esc(j.notion)}.</p>
     <section class="tool ludo-jeu" style="--c:${f[2]}"><div class="themes" role="group" aria-label="Niveau du jeu">${M.niveaux.map(([t], i) => `<button type="button" class="chip" data-lvl="${i}" aria-pressed="${i === niv}">${i + 1}. ${esc(t)}</button>`).join("")}</div>
       <p class="small" id="lj-aide">${esc(M.niveaux[niv][1])}</p>
-      <p class="jq" id="lj-q" aria-live="polite">Manche 1 sur ${M.manches}. Appuie sur « Écouter ».</p>
+      <p class="jq" id="lj-q" aria-live="polite">Manche 1 sur ${M.manches}. Appuie sur «&nbsp;Écouter&nbsp;».</p>
       <div class="actions"><button type="button" class="btn-main" id="lj-play">Écouter</button><button type="button" class="btn2" id="lj-encore" hidden>Réécouter</button></div>
       <div class="actions" id="lj-rep"></div><p class="fb2" id="lj-fb" aria-live="polite"></p>
       <div class="actions"><button type="button" class="btn2" id="lj-suite" hidden>Manche suivante</button></div>
@@ -4214,10 +4234,14 @@ function vueGuide() {
       <p><a class="btn2" href="pdf/Guide_site_eleves_parents.pdf" target="_blank" rel="noopener">Le guide à imprimer (PDF)</a></p></section>`;
 }
 /* Les carrefours Écouter, Jouer et Labo (outils/navigation.py) : chaque entrée garde son adresse d'origine. */
+const COUL_CARREFOUR = ["#4658FF", "#19b58a", "#ff5a36", "#5a2bd6", "#ffb000", "#11110F"];
+const ICO_CARREFOUR = { "pratiquer-{k}": ICONES_NAV.pratiquer, monde: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
+  chorale: ICONES_NAV.chorale, plus: ICONES_NAV.plus, faust: ICONES_NAV.faust, "faust-matieres": famIco("creation"), "faust-ateliers": famIco("instruments"), "faust-studio": ICONES_NAV.faust, "pratiquer-{k}-atelier": famIco("theorie"),
+  "ludo-{k}": famIco("rythme"), "pratiquer-{k}-jeux": famIco("ecoute"), parcours: ICONES_NAV.parcours };
 function vueCarrefour(id) {
   const [titre, txt, L] = D.nav.carrefours[id], k = maClasse() || defautNiv(), r = role() === "prof" ? "prof" : "eleve", R = rubrique(id) || [id, titre, titre];
-  return head(R[2], titre, txt) + `<div class="ludo-grille carrefour">${L.filter(x => x[3] === "tous" || x[3] === r).map(([h, t, d]) =>
-    `<a class="ludo-carte" href="#${h.replace("{k}", k)}" style="--c:var(--ink)"><b>${esc(t)}</b><span class="small">${esc(d)}</span></a>`).join("")}</div>`;
+  return head(R[2], titre, txt) + `<div class="jouer-fams carrefour">${L.filter(x => x[3] === "tous" || x[3] === r).map(([h, t, d], i) =>
+    `<a class="jouer-fam" href="#${h.replace("{k}", k)}" style="--c:${COUL_CARREFOUR[i % COUL_CARREFOUR.length]}">${ICO_CARREFOUR[h] || ""}<b>${insec(t)}</b><span>${insec(d)}</span></a>`).join("")}</div>`;
 }
 function vueParcours() {
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], q = quetes();
