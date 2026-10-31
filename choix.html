@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Cours du Sacré-Cœur, éducation musicale</title>
+<link rel="icon" href="icon-192.png"><meta name="theme-color" content="#11110F">
+<style>
+@font-face { font-family: "Archivo Black"; src: url("polices/archivo-black-latin-400-normal.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Instrument Sans"; src: url("polices/instrument-sans-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+* { box-sizing: border-box; } html { background: #F0EFE8; }
+body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: #F0EFE8; color: #11110F; font: 600 1.05rem/1.4 "Instrument Sans", Arial, sans-serif; }
+main { flex: 1; width: min(980px, 100%); margin: 0 auto; padding: 36px 20px; display: flex; flex-direction: column; justify-content: center; }
+.etiq { align-self: flex-start; background: #11110F; color: #D6FF00; font: 500 12px/1 ui-monospace, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; padding: 6px 9px; }
+h1 { font: 400 clamp(2.6rem, 11vw, 6rem)/.92 "Archivo Black", Arial, sans-serif; letter-spacing: -.035em; margin: 14px 0 8px; }
+p { margin: 0 0 26px; max-width: 34rem; font-weight: 400; }
+.choix { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.choix a { display: flex; flex-direction: column; justify-content: space-between; gap: 30px; min-height: 230px; padding: 24px; border-radius: 28px; text-decoration: none; color: #fff; box-shadow: inset 0 -8px 0 rgba(0,0,0,.2); transition: transform .12s; }
+.choix a:hover, .choix a:focus-visible { transform: translateY(-4px) rotate(-.4deg); outline: 3px solid #4658FF; outline-offset: 3px; }
+.eleve { background: #ff5a36; } .prof { background: #11110F; color: #D6FF00 !important; }
+.choix b { font: 400 clamp(2rem, 7vw, 3.4rem)/1 "Archivo Black", Arial, sans-serif; } .choix span { font-weight: 400; max-width: 20rem; }
+.choix i { font-style: normal; font-weight: 700; }
+@media (max-width: 640px) { .choix { grid-template-columns: 1fr; } .choix a { min-height: 170px; } }
+</style></head><body><main>
+<span class="etiq">Cours du Sacré-Cœur</span><h1>Éducation musicale</h1><p>Chanter, écouter, jouer, fabriquer des sons. Qui es-tu ?</p>
+<div class="choix"><a class="eleve" href="eleves/"><b>Élève</b><span>Ta séance de la semaine, les écoutes, les jeux, le labo.</span><i>Entrer &#8250;</i></a>
+<a class="prof" href="index.html"><b>Enseignant</b><span>Les cours, les évaluations, les diaporamas à projeter.</span><i>Entrer &#8250;</i></a></div>
+</main></body></html>
