@@ -2349,6 +2349,9 @@ function toutArreter() { PARTI.forEach(clearTimeout); PARTI = []; document.query
 /* jouer(fréquence, durée, volume, forme, départ, options) : une note avec une enveloppe douce. */
 function jouer(freq, duree, vol, forme, debut, opt) {
   const ac = audio(); if (!ac) return; opt = opt || {};
+  /* La voix de synthèse est désagréable : une ligne « chantée » est jouée par un vrai instrument enregistré de la même tessiture
+     (violoncelle, clarinette, flûte). Seuls les jeux qui portent sur la voix elle-même gardent la synthèse (opt.vraiVoix, voyelles). */
+  if (forme === "voix" && !opt.voyelles && !opt.vraiVoix) forme = freq < 190 ? "violoncelle" : freq < 520 ? "anche" : "souffle";
   if (jouerEchantillon(freq, duree, vol, forme, debut, opt)) return;
   if (ENREG) return;
   if (["cloche", "marimba", "djembe", "timbale", "guitare", "clavecin"].includes(forme)) opt.sec = true;
@@ -4257,7 +4260,7 @@ Object.assign(LUDO_GEN, {
     const choix = niv === 0 ? [V[0], V[3]] : V, k = entre(0, choix.length - 1), v = choix[k];
     const notes = niv < 2 ? [[v[2] + entre(-2, 2), 0, 3]] : melodieModale(5).map(([m, t, d]) => [m - 62 + v[2] - 2, t, d]);
     return { reponses: choix.map(x => x[0]), bonne: k, retour: `C'était une voix de ${v[0].toLowerCase()} : ${v[3]}.`,
-      jouer: () => { notes.forEach(([m, t, d]) => jouer(M(m), d * .5 * .95, .42, "voix", .1 + t * .5, { type: v[1], voyelle: 0, attaque: .15 })); return (notes.reduce((a, x) => Math.max(a, x[1] + x[2]), 0) + 1) * .5; } };
+      jouer: () => { notes.forEach(([m, t, d]) => jouer(M(m), d * .5 * .95, .42, "voix", .1 + t * .5, { type: v[1], voyelle: 0, attaque: .15, vraiVoix: true })); return (notes.reduce((a, x) => Math.max(a, x[1] + x[2]), 0) + 1) * .5; } };
   },
   "nuances": niv => {
     const mel = melodieModale(7), R = niv === 0 ? ["piano", "forte"] : ["piano", "forte", "crescendo"], k = entre(0, R.length - 1), lo = niv === 2 ? .14 : .06, hi = niv === 2 ? .3 : .45;
