@@ -193,6 +193,8 @@ details.seq > summary { grid-template-columns: 44px 1fr 18px; }
 .p-dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
 .p-dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25); }
 .p-dots span.on { background: #e0bd73; }
+.credits { margin-top: 10px; text-align: left; } .credits summary { cursor: pointer; text-align: center; } .credits dl { margin: 10px 0 0; } .credits dt { font-weight: 600; margin-top: 8px; } .credits dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+.sig a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .sig { max-width: 700px; margin: 28px auto 0; padding-top: 14px; border-top: 1px solid var(--line); font: 400 12px/1.5 var(--f-mono); color: var(--muted); text-align: center; }
 .home { padding-top: 34px; padding-bottom: 20px; text-align: center; }
 .home::before { display: none; }
@@ -1003,7 +1005,7 @@ html.signal .labo .labo-myst .btn2 { color: var(--papier); border-color: var(--p
 .pseq-p > .sec { font-size: 1.5rem; } html.signal .pseq-p > .sec { font: 400 clamp(1.7rem, 4.5vw, 2.6rem)/1 var(--f-titre); text-transform: uppercase; letter-spacing: -.01em; color: var(--noir); border-top: 3px solid var(--noir); padding-top: 10px; }
 html.signal .pseq-lieu, html.signal .pseq-chant { border-radius: 0; border: 2px solid var(--noir); } html.signal .pseq-lieu:hover, html.signal .pseq-chant:hover { background: var(--acide); }
 /* Projets de l'année */
-.guide-s { margin-top: 14px; } .gd-l { padding-left: 1.2em; margin: 6px 0; } .gd-l li { margin: 6px 0; }
+.guide-s { margin-top: 14px; } .guide-s a { overflow-wrap: anywhere; } .guide-cl { margin-top: 6px; } .gd-l { padding-left: 1.2em; margin: 6px 0; } .gd-l li { margin: 6px 0; }
 .guide-rub { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin-top: 10px; }
 .guide-r { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; padding: 12px; border: 1px solid var(--line); text-decoration: none; color: inherit; min-width: 0; }
 .guide-r .guide-ic { grid-row: span 2; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--navy-soft); color: var(--navy); } .guide-r .guide-ic svg { width: 24px; height: 24px; }
@@ -1269,7 +1271,18 @@ html.signal .rappel .listen { border-top: 1px solid #3A3A35; } html.signal .rapp
 <header id="entete" class="entete" hidden></header>
 <div id="barre" class="barre" hidden></div>
 <main id="app"></main>
-<footer class="sig">Cours d'éducation musicale conçu et rédigé par Sebastian Rivas. © 2026 Sebastian Rivas, tous droits réservés.<br><a class="faust" href="https://faust.grame.fr" target="_blank" rel="noopener">Powered by Faust</a><br>Sons de synthèse calculés avec Faust, langage du GRAME, Centre national de création musicale.</footer>
+<footer class="sig">Cours d'éducation musicale conçu et rédigé par <a href="https://sebastianrivas.art" target="_blank" rel="noopener">Sebastian Rivas</a>. © 2026 Sebastian Rivas, tous droits réservés.<br><a class="faust" href="https://faust.grame.fr" target="_blank" rel="noopener">Powered by Faust</a><br>Sons de synthèse calculés avec Faust, langage du GRAME, Centre national de création musicale.
+<details class="credits"><summary>Crédits et licences</summary>
+<dl>
+<dt>Conception, textes, cours et diaporamas</dt><dd><a href="https://sebastianrivas.art" target="_blank" rel="noopener">Sebastian Rivas</a>. Image d'accueil d'après sa maquette.</dd>
+<dt>Sons</dt><dd>Calculés avec <a href="https://faust.grame.fr" target="_blank" rel="noopener">Faust</a>, langage du GRAME, Centre national de création musicale (Lyon). Moteur faustwasm et compilateur libfaust, GRAME, <a href="faust/LICENCE-faustwasm.txt">licence LGPL</a>. Bibliothèques Faust (<a href="https://faustlibraries.grame.fr" target="_blank" rel="noopener">faustlibraries.grame.fr</a>), dont la réverbération zita-rev1 et la voix par synthèse FOF.</dd>
+<dt>Partitions à plusieurs voix</dt><dd>Corpus <a href="https://web.mit.edu/music21/" target="_blank" rel="noopener">music21</a> (encodage de Mille regretz par Laura E. Conrad, licence GNU GPL) ; <a href="https://github.com/OpenScore/Lieder" target="_blank" rel="noopener">OpenScore Lieder</a>, d'après l'édition IMSLP, CC0. Mélodies traditionnelles : domaine public.</dd>
+<dt>Partitions complètes</dt><dd>Liens vers <a href="https://imslp.org" target="_blank" rel="noopener">IMSLP</a>, la bibliothèque de partitions du domaine public.</dd>
+<dt>Images</dt><dd><a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a>, sous licences libres : l'auteur et la licence sont indiqués sous chaque image.</dd>
+<dt>Écoutes</dt><dd>Recherches sur YouTube : les enregistrements appartiennent à leurs ayants droit.</dd>
+<dt>Carte des musiques du monde</dt><dd>Fond de carte <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a> (domaine public), via world-atlas ; projection Equal Earth calculée avec d3-geo.</dd>
+<dt>Polices (SIL Open Font License 1.1)</dt><dd>Archivo et Archivo Black (The Archivo Project Authors, Omnibus-Type) ; Instrument Sans (The Instrument Sans Project Authors) ; IBM Plex Mono (IBM Corp.) ; Bricolage Grotesque (The Bricolage Grotesque Project Authors) ; Atkinson Hyperlegible (Braille Institute of America) ; Patrick Hand (Patrick Wagesreiter).</dd>
+</dl></details></footer>
 <nav class="tabs" aria-label="Rubriques" hidden><ul></ul></nav>
 
 <script>
@@ -3610,7 +3623,8 @@ function vueGuide() {
   const G = D.guide, liste = l => `<ul class="gd-l">${l.map(t => `<li>${esc(t)}</li>`).join("")}</ul>`;
   return head("Pour les élèves et les parents", "Comment ça marche", "Le site du cours d'éducation musicale, en une page : l'ouvrir, s'y retrouver, s'en servir pour réviser.")
     + `<section class="card guide-s"><h2 class="blk-t">Ouvrir le site</h2>${liste(G.ouvrir)}
-      <p class="small">L'adresse : <b>${esc(G.adresse)}</b>. Le lien direct de chaque classe : ${NIV.map(n => `<a href="#classe-${n}">${n}</a>`).join(", ")}.</p></section>
+      <p class="small">L'adresse : <a href="${esc(G.adresse)}">${esc(G.adresse)}</a></p>
+      <p class="small">Ouvrir l'espace élèves, classe déjà choisie :</p><div class="levels guide-cl">${NIV.map(n => `<a href="${esc(G.adresse)}#classe-${n}">${n}</a>`).join("")}</div></section>
     <section class="card guide-s"><h2 class="blk-t">Les sept rubriques</h2><p class="small">Elles sont dans le menu, en bas de l'écran sur un téléphone.</p>
       <div class="guide-rub">${G.rubriques.map(([id, nom, txt]) => `<a class="guide-r" href="#${id}"><span class="guide-ic" aria-hidden="true">${ICONES_NAV[id] || ""}</span><b>${esc(nom)}</b><span class="small">${esc(txt)}</span></a>`).join("")}</div></section>
     <section class="card guide-s"><h2 class="blk-t">Une séance en quatre étapes</h2><p class="small">Dans Mes cours ou Ma semaine, chaque séance se découvre en quatre étapes, dans l'ordre.</p>
