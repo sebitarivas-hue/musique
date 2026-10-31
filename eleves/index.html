@@ -1418,11 +1418,11 @@ a.en-ecole { color: inherit; text-decoration: none; } a.en-ecole:hover b, a.en-e
 <header id="entete" class="entete" hidden></header>
 <div id="barre" class="barre" hidden></div>
 <main id="app"></main>
-<footer class="sig">Cours d'éducation musicale conçu et rédigé par <a href="https://sebastianrivas.art" target="_blank" rel="noopener">Sebastian Rivas</a>. © 2026 Sebastian Rivas, tous droits réservés.<br><a class="faust" href="https://faust.grame.fr" target="_blank" rel="noopener">Powered by Faust</a><br>Instruments enregistrés : VS Chamber Orchestra (domaine public). Sons de synthèse calculés avec Faust, langage du GRAME, Centre national de création musicale.
+<footer class="sig">Cours d'éducation musicale conçu et rédigé par <a href="https://sebastianrivas.art" target="_blank" rel="noopener">Sebastian Rivas</a>. © 2026 Sebastian Rivas, tous droits réservés.<br>Instruments enregistrés : VS Chamber Orchestra et Versilian Community Sample Library (domaine public).
 <details class="credits"><summary>Crédits et licences</summary>
 <dl>
 <dt>Conception, textes, cours et diaporamas</dt><dd><a href="https://sebastianrivas.art" target="_blank" rel="noopener">Sebastian Rivas</a>. Image d'accueil d'après sa maquette.</dd>
-<dt>Sons</dt><dd>Calculés avec <a href="https://faust.grame.fr" target="_blank" rel="noopener">Faust</a>, langage du GRAME, Centre national de création musicale (Lyon). Moteur faustwasm et compilateur libfaust, GRAME, <a href="faust/LICENCE-faustwasm.txt">licence LGPL</a>. Bibliothèques Faust (<a href="https://faustlibraries.grame.fr" target="_blank" rel="noopener">faustlibraries.grame.fr</a>), dont la réverbération zita-rev1 et la voix par synthèse FOF.</dd>
+<dt>Composants logiciels sous licence libre</dt><dd>Le moteur de synthèse en direct du laboratoire embarque des composants du GRAME sous licence LGPL, dont le texte est fourni : <a href="faust/LICENCE-faustwasm.txt">licence</a>.</dd>
 <dt>Instruments enregistrés</dt><dd><a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VS Chamber Orchestra, Community Edition</a> : cordes, bois, cuivres, harpe, orgue, piano droit, marimba et xylophone. Enregistré par Sam Gossner et Simon Dalzell, découpé par Elan Hickler (Soundemote), publié par Versilian Studios ; orgue échantillonné par Simon Dalzell (Ivy Audio). Licence CC0 1.0, domaine public.</dd><dt>Autres échantillons enregistrés</dt><dd><a href="https://github.com/sgossner/VCSL" target="_blank" rel="noopener">Versilian Community Sample Library</a> (Versilian Studios, CC0) : clavecin, cloches tubulaires, timbales, grosse caisse, caisse claire, charleston, claquements, bois, shaker, vibraphone, glockenspiel, kalimba, balafon.</dd>
 <dt>Partitions à plusieurs voix</dt><dd>Corpus <a href="https://web.mit.edu/music21/" target="_blank" rel="noopener">music21</a> (encodage de Mille regretz par Laura E. Conrad, licence GNU GPL) ; <a href="https://github.com/OpenScore/Lieder" target="_blank" rel="noopener">OpenScore Lieder</a>, d'après l'édition IMSLP, CC0. Mélodies traditionnelles : domaine public.</dd>
 <dt>Partitions complètes</dt><dd>Liens vers <a href="https://imslp.org" target="_blank" rel="noopener">IMSLP</a>, la bibliothèque de partitions du domaine public.</dd>
@@ -2554,7 +2554,7 @@ function vuePratiquer(k, sec) {
     ${pl.map(([s, l], i) => `<div class="pl-seq"><div class="label">Séquence ${n.sequences.indexOf(s) + 1}, ${esc(s.titre)}</div>${echosListe(l)}</div>`).join("")}`;
   const C_jeux = htmlJeux(k);
   const C_atelier = atelierHtml(k);
-  const C_sons = `<h2 class="sec" id="j-sonotheque" tabindex="-1">Sonothèque</h2><p class="small">Tous les exemples sonores du cours, rangés par thème. Touche un thème, puis un son. Touche encore pour arrêter. <a href="https://faust.grame.fr" target="_blank" rel="noopener">Powered by Faust</a>.</p>${sonothequeHtml()}`;
+  const C_sons = `<h2 class="sec" id="j-sonotheque" tabindex="-1">Sonothèque</h2><p class="small">Tous les exemples sonores du cours, rangés par thème. Touche un thème, puis un son. Touche encore pour arrêter.</p>${sonothequeHtml()}`;
   /* Les chants et partitions de l'année, dans l'ordre des séquences : pour chacune, le chant prévu, les partitions à plusieurs voix,
      puis les thèmes et exemples de la séquence ; quand la partition n'est pas encore sur le site, le lien vers IMSLP. */
   const parSeq = (D.partitionsSeq && D.partitionsSeq[k]) || {}, utilises = new Set(Object.values(parSeq).flat());
