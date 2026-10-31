@@ -875,6 +875,34 @@ html.signal .proj2 .s-media .gph > span:first-child { font: 800 clamp(20px, 2.4v
 html.signal .proj2 .s-media .gph .small { font-family: Atkinson, var(--f-body); color: var(--encre); opacity: .8; }
 html.signal .proj2[data-type="ecoute"] .s-media .gph { background: #fff; }
 html.signal .proj2 .s-media .gimg img { max-height: 52vh; object-fit: cover; }
+/* Une seule paire de polices dans tous les diaporamas : Bricolage pour les titres, Atkinson pour tout le reste.
+   Plus de manuscrite ni de chasse fixe. Et des fonds moins austères : papier teinté, grands disques doux, cartes arrondies. */
+html.signal .proj, html.signal .proj2 { font-family: Atkinson, var(--f-body); }
+html.signal .proj2 :is(.s-pill, .s-eyebrow, .s-q-t, .s-question, .s-rel, .p-top, .tag, .chip, code, .s-l li, .s-q li, .s-p, button, a) { font-family: Atkinson, var(--f-body) !important; }
+html.signal .proj2 :is(.s-h, .s-gal .gph > span:first-child) { font-family: Bricolage, var(--f-display) !important; }
+html.signal .proj .s-question, html.signal .proj2 .s-question, html.signal .proj2.est-titre .s-question { font: 600 clamp(24px, 2.9vw, 42px)/1.22 Bricolage, var(--f-display) !important; letter-spacing: -.01em; }
+html.signal .proj2 .s-pill, html.signal .proj .proj2 .s-pill { background: color-mix(in srgb, var(--a) 22%, #fff); color: var(--encre); padding: 8px 18px 8px 12px; border-radius: 999px; font: 700 clamp(15px, 1.5vw, 21px)/1 Atkinson, var(--f-body) !important; }
+html.signal .proj2 .s-pill svg { color: var(--a); }
+html.signal .proj2 .t-titre .s-eyebrow, html.signal .proj2.est-titre .s-eyebrow { font: 700 clamp(15px, 1.7vw, 24px)/1.2 Atkinson, var(--f-body) !important; text-transform: uppercase; letter-spacing: .12em; }
+html.signal .proj2 .s-q-t { font: 700 clamp(15px, 1.5vw, 21px)/1.2 Atkinson, var(--f-body) !important; text-transform: uppercase; letter-spacing: .1em; }
+html.signal .proj2 .s-p { font-size: clamp(19px, 2.3vw, 32px); max-width: 40ch; }
+html.signal .proj2 .s-tags .tag, html.signal .proj2 .tag { border: 0; background: color-mix(in srgb, var(--a) 24%, #fff); color: var(--encre); border-radius: 999px; padding: 6px 16px; font-size: clamp(15px, 1.6vw, 22px); }
+html.signal .proj2 .s-h::after { content: ""; display: block; width: 72px; height: 8px; border-radius: 4px; background: var(--a); margin-top: 1.4vh; }
+html.signal .proj2.est-titre .s-h::after, html.signal .proj2[data-type="ecoute"] .s-h::after { display: none; }
+html.signal .proj2:not(.est-titre):not([data-type="ecoute"]):not([data-type="chant"]):not([data-type="echo"]) {
+  background: radial-gradient(circle at 96% 8%, color-mix(in srgb, var(--a) 26%, transparent) 0 17vmin, transparent calc(17vmin + 1px)),
+    radial-gradient(circle at 90% 94%, color-mix(in srgb, var(--b) 16%, transparent) 0 11vmin, transparent calc(11vmin + 1px)),
+    color-mix(in srgb, var(--a) 7%, #fffdfa) var(--portee) no-repeat left 4vw bottom 76px / calc(100% - 8vw) 38px; }
+html.signal .proj2 .s-l li { background: #fff; border-radius: 16px; padding: 14px 20px; box-shadow: 0 3px 14px rgba(17,17,15,.07); }
+html.signal .proj2 .s-q li { border-radius: 16px; border-style: solid; border-width: 0 0 0 6px; border-color: var(--b); box-shadow: 0 3px 14px rgba(17,17,15,.07); }
+html.signal .proj2 .s-svg { border-radius: 24px; }
+.edito { margin: 22px 0 6px; } .edito h2 { font: 800 clamp(24px, 3.4vw, 38px)/1.1 Bricolage, var(--f-display); letter-spacing: -.015em; margin-bottom: 10px; }
+.edito-l { font-size: clamp(18px, 2vw, 22px); line-height: 1.55; max-width: 62ch; margin: 0 0 18px; }
+.edito-seq { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); }
+.edito-seq a { display: grid; grid-template-columns: auto 1fr; gap: 14px; padding: 16px 18px; border-radius: 18px; background: #fff; border: 1.5px solid var(--line); color: var(--ink); text-decoration: none; height: 100%; }
+.edito-seq a:hover { border-color: var(--ink); } .edito-seq b { display: block; font: 800 1.2rem/1.15 Bricolage, var(--f-display); margin-bottom: 4px; }
+.edito-n { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: #fff; font: 800 1.1rem Bricolage, var(--f-display); }
+.edito-q { display: block; font-style: italic; margin-bottom: 6px; } .edito-a { display: block; line-height: 1.5; margin-bottom: 6px; } .edito-m { display: block; font-size: .85rem; color: var(--muted); }
 /* Chaque vue entre en glissant ; rien ne bouge si l'élève a demandé moins d'animations */
 @keyframes entreeVue { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 html.signal .proj2 .p-stage > .slide { animation: entreeVue .35s ease-out both; }
@@ -1825,7 +1853,8 @@ function vueCours(k, seqOuverte) {
   h += `<p style="margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px"><a class="chip" href="#${role() === "prof" ? "eval" : "reviser"}-${k}">${role() === "prof" ? "Évaluer : grilles, saisie, bilan" : "Réviser : critères, quiz"}</a><a class="chip" href="#fiches">Les fiches</a><a class="chip" href="#projets">Projets de l'année : la planche en groupe</a><a class="chip" href="#sortie">La sortie de l'année</a><a class="chip" href="#vocabulaire">Le vocabulaire pour classer</a><a class="chip" href="#fils">Les passerelles : danse, cinéma, littérature, sciences</a></p>`;
   if (role() === "prof") h += `<div class="seg" role="group" aria-label="Affichage"><button type="button" id="m-eleve" aria-pressed="${mode !== "prof"}">Vue élève : œuvres, chant, partitions, échos</button><button type="button" id="m-prof" aria-pressed="${mode === "prof"}">Vue professeur : déroulés</button></div>`;
   if (mode !== "prof") {
-    h += `<div class="dl">${pdf(`Plan_${k}_eleves_parents.pdf`, "Le plan de l'année")}</div><div class="stack" style="margin-top:14px">`;
+    h += `<section class="edito"><h2>L'année de ${k}, séquence par séquence</h2><ol class="edito-seq">${n.sequences.map((s, i) => `<li><a href="#cours-${k}-${i + 1}"><span class="edito-n" style="background:${D.couleurs[k]}">${i + 1}</span><span><b>${esc(s.titre)}</b><span class="edito-q">${esc(s.question)}</span>${s.accroche ? `<span class="edito-a">${esc(s.accroche)}</span>` : ""}<span class="edito-m">${esc(PER[s.periode])}, ${n.contenus[i].seances.length} séances, un chant : ${esc(s.chant)}</span></span></a></li>`).join("")}</ol></section>
+      <div class="dl">${pdf(`Plan_${k}_eleves_parents.pdf`, "Le plan de l'année")}</div><div class="stack" style="margin-top:14px">`;
     n.sequences.forEach((s, i) => {
       const c = n.contenus[i], ouvert = seqOuverte ? seqOuverte === i + 1 : cur && cur.seq === i + 1;
       const evs = listeSeances(k).filter(e => e.seq === i + 1 && estEval(k, e.seq, e.num))[0];
