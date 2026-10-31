@@ -2124,8 +2124,9 @@ document.addEventListener("click", e => {
 });
 
 /* Les sons au choix (échantillons calculés par Faust) pour le clavier et les partitions ; le choix est gardé sur l'appareil. */
-const SONS_MELODIE = [["guitare", "Guitare"], ["clavier", "Piano électrique"], ["marimba", "Marimba"], ["clavecin", "Clavecin"], ["orgue", "Orgue"], ["souffle", "Flûte"],
-  ["cordes", "Cordes"], ["violon", "Violon"], ["anche", "Clarinette"], ["trompette", "Trompette"], ["cloche", "Métallophone"], ["voix", "Chœur"]];
+/* Les instruments enregistrés (VSCO 2 CE) portent leur vrai nom ; guitare, clavecin, métallophone et chœur sont encore calculés par Faust. */
+const SONS_MELODIE = [["clavier", "Piano"], ["violon", "Violon"], ["violoncelle", "Violoncelle"], ["cordes", "Cordes (violons)"], ["harpe", "Harpe"], ["souffle", "Flûte"], ["hautbois", "Hautbois"], ["anche", "Clarinette"],
+  ["basson", "Basson"], ["trompette", "Trompette"], ["cor", "Cor"], ["orgue", "Orgue"], ["marimba", "Marimba"], ["xylophone", "Xylophone"], ["guitare", "Guitare (synthèse)"], ["clavecin", "Clavecin (synthèse)"], ["cloche", "Métallophone (synthèse)"], ["voix", "Chœur (synthèse)"]];
 const SONS_RYTHME = [["bois", "Bois"], ["tambour", "Tambour"], ["mains", "Claquements de mains"]];
 const FORME_DE = { clavier: "triangle", souffle: "sine", anche: "square", cordes: "sawtooth" };
 const formeDe = i => FORME_DE[i] || i;
