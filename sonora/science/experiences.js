@@ -273,27 +273,36 @@ instrument Localisation {
 
   { id: "shepard-risset", domaine: "Psychoacoustique", titre: "Une illusion : le glissando de Shepard-Risset",
     question: "Un son peut-il monter sans jamais arriver plus haut ?",
-    explication: ["Six sinusoïdes espacées d'une octave montent en même temps. Chacune apparaît doucement dans le grave, monte, puis disparaît doucement dans l'aigu : quand la plus haute s'efface, une nouvelle naît en bas.",
+    explication: ["Dix sinusoïdes espacées d'une octave montent lentement, en même temps. Chacune apparaît doucement dans le grave, monte, puis disparaît doucement dans l'aigu : quand la plus haute s'efface, une nouvelle naît en bas.",
       "L'oreille suit la montée de chaque partiel mais le centre de gravité du spectre ne bouge pas : la hauteur semble monter sans fin. La mesure le confirme : les partiels montent, le centroïde reste stable."],
-    programme: `/// Glissando de Shepard-Risset : six partiels à l'octave qui montent (ou descendent) sans fin.
+    programme: `/// Glissando de Shepard-Risset : dix partiels à l'octave, de 20 Hz à 20 kHz, qui montent (ou descendent) lentement et sans fin.
+/// Chaque partiel naît dans le grave, passe au milieu à pleine force, s'éteint dans l'aigu : l'oreille entend une montée continue.
 instrument ShepardRisset {
-    reglage vitesse : Hz = 0.08 Hz dans 0.02 Hz .. 0.3 Hz courbe log etiquette "Vitesse (cycles par seconde)"
+    reglage montee : Ratio = 0.1 dans 0.02 .. 0.5 courbe log etiquette "Vitesse de montée (octave par seconde)"
     reglage sens : Entier = 0 dans 0 .. 1 pas 1 choix ["Montant", "Descendant"] etiquette "Sens"
-    soit x = (lfo(vitesse, "dent") + 1) / 2
+    soit x = (lfo(montee * 1 Hz / 10, "dent") + 1) / 2
     soit y = si sens == 0 alors x sinon 1 - x
     soit p0 = y - floor(y)
-    soit p1 = y + 1 / 6 - floor(y + 1 / 6)
-    soit p2 = y + 2 / 6 - floor(y + 2 / 6)
-    soit p3 = y + 3 / 6 - floor(y + 3 / 6)
-    soit p4 = y + 4 / 6 - floor(y + 4 / 6)
-    soit p5 = y + 5 / 6 - floor(y + 5 / 6)
-    soit son0 = sinus(55 Hz * 2 ^ (p0 * 6)) * (0.5 - 0.5 * cos(6.2832 * p0))
-    soit son1 = sinus(55 Hz * 2 ^ (p1 * 6)) * (0.5 - 0.5 * cos(6.2832 * p1))
-    soit son2 = sinus(55 Hz * 2 ^ (p2 * 6)) * (0.5 - 0.5 * cos(6.2832 * p2))
-    soit son3 = sinus(55 Hz * 2 ^ (p3 * 6)) * (0.5 - 0.5 * cos(6.2832 * p3))
-    soit son4 = sinus(55 Hz * 2 ^ (p4 * 6)) * (0.5 - 0.5 * cos(6.2832 * p4))
-    soit son5 = sinus(55 Hz * 2 ^ (p5 * 6)) * (0.5 - 0.5 * cos(6.2832 * p5))
-    sortie = (son0 + son1 + son2 + son3 + son4 + son5) * 0.12
+    soit p1 = y + 1 / 10 - floor(y + 1 / 10)
+    soit p2 = y + 2 / 10 - floor(y + 2 / 10)
+    soit p3 = y + 3 / 10 - floor(y + 3 / 10)
+    soit p4 = y + 4 / 10 - floor(y + 4 / 10)
+    soit p5 = y + 5 / 10 - floor(y + 5 / 10)
+    soit p6 = y + 6 / 10 - floor(y + 6 / 10)
+    soit p7 = y + 7 / 10 - floor(y + 7 / 10)
+    soit p8 = y + 8 / 10 - floor(y + 8 / 10)
+    soit p9 = y + 9 / 10 - floor(y + 9 / 10)
+    soit s0 = sinus(20 Hz * 2 ^ (p0 * 10)) * (0.5 - 0.5 * cos(6.2832 * p0))
+    soit s1 = sinus(20 Hz * 2 ^ (p1 * 10)) * (0.5 - 0.5 * cos(6.2832 * p1))
+    soit s2 = sinus(20 Hz * 2 ^ (p2 * 10)) * (0.5 - 0.5 * cos(6.2832 * p2))
+    soit s3 = sinus(20 Hz * 2 ^ (p3 * 10)) * (0.5 - 0.5 * cos(6.2832 * p3))
+    soit s4 = sinus(20 Hz * 2 ^ (p4 * 10)) * (0.5 - 0.5 * cos(6.2832 * p4))
+    soit s5 = sinus(20 Hz * 2 ^ (p5 * 10)) * (0.5 - 0.5 * cos(6.2832 * p5))
+    soit s6 = sinus(20 Hz * 2 ^ (p6 * 10)) * (0.5 - 0.5 * cos(6.2832 * p6))
+    soit s7 = sinus(20 Hz * 2 ^ (p7 * 10)) * (0.5 - 0.5 * cos(6.2832 * p7))
+    soit s8 = sinus(20 Hz * 2 ^ (p8 * 10)) * (0.5 - 0.5 * cos(6.2832 * p8))
+    soit s9 = sinus(20 Hz * 2 ^ (p9 * 10)) * (0.5 - 0.5 * cos(6.2832 * p9))
+    sortie = (s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * 0.075
 }
 `, duree: 16,
     mesurer(c) {
@@ -302,7 +311,7 @@ instrument ShepardRisset {
       const suivi = A.penteSuivie(sp), taux = suivi.pente, moy = cen.reduce((a, b) => a + b, 0) / cen.length, cv = Math.sqrt(cen.reduce((a, b) => a + (b - moy) ** 2, 0) / cen.length) / moy, sauts = suivi.segments;
       const sens = c.valeurs.sens === 0 ? 1 : -1;
       return { lignes: [
-        L("Vitesse de montée des partiels suivis (octaves par seconde, signée)", taux, sens * 6 * c.valeurs.vitesse, { tol: 0.06, tolAbs: 0.01, d: 3 }),
+        L("Vitesse de montée des partiels suivis (octaves par seconde, signée)", taux, sens * c.valeurs.montee, { tol: 0.06, tolAbs: 0.01, d: 3 }),
         L("Variation du centroïde spectral (écart type / moyenne ; critère : moins de 0,35)", cv, null, { info: true, d: 3 }),
         L("Partiels suivis sans interruption pendant la mesure", sauts, null, { info: true, d: 0 }),
       ].map((l, i) => i === 1 ? Object.assign(l, { ok: cv < 0.35, attendu: "< 0,35" }) : l), vues: ["spectrogramme"], serie: { sp, cen, dom, pas } };
