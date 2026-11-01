@@ -5,6 +5,7 @@ import { Clavier, brancher } from "./midi.js";
 import { euclide, arpege, motifDepuis, planDeNotes, Sequenceur } from "./sequence.js";
 import { rendre } from "../src/rendu.js";
 import { compiler } from "../src/index.js";
+import { creerProposition, slug } from "../library/classe.js";
 
 const GAMMES = { penta: [60, 62, 64, 67, 69, 72, 74, 76], mineur: [57, 59, 60, 62, 64, 65, 67, 69], accord: [48, 55, 59, 64, 67, 71, 76], chromatique: [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71] };
 const SR_EXPORT = 44100;
@@ -55,6 +56,18 @@ export function installerCreation({ etat, $, journal, esc, executer, titreCouran
     } catch (e) { zone.textContent = "Impossible de créer le lien : " + e.message; }
   };
   $("lien").onfocus = () => $("lien").select();
+
+  // ---------------------------------------------------------------- proposer à la classe
+  $("proposer").addEventListener("toggle", () => { if ($("proposer").open && !$("pr-titre").value) $("pr-titre").value = titreCourant() === "Sans titre" ? "" : titreCourant(); });
+  $("b-proposer").onclick = () => {
+    const z = $("pr-retour"), r = creerProposition({ titre: $("pr-titre").value, texte: $("pr-texte").value, pseudo: $("pr-pseudo").value, mots: $("pr-mots").value, code: ed.valeur });
+    const liste = (cls, l) => l.length ? `<ul class="${cls}">${l.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+    if (!r.ok) { z.innerHTML = `<p class="bilan non">Ce n'est pas encore prêt :</p>${liste("pr-err", r.erreurs)}`; return; }
+    const octets = new TextEncoder().encode(JSON.stringify(r.proposition, null, 1) + "\n"); telecharger(`proposition-${slug(r.proposition.titre)}.json`, octets, "application/json");
+    etat.dernierePropositionPrete = r.proposition;
+    z.innerHTML = `<p class="bilan ok">Fichier prêt : proposition-${esc(slug(r.proposition.titre))}.json (${octets.length} octets). Remets-le à ton professeur.</p>${r.avertissements.length ? `<p class="petit">À relire avant de le donner :</p>${liste("pr-av", r.avertissements)}` : ""}`;
+    journal("ok", "Proposition à la classe préparée : " + esc(r.proposition.titre));
+  };
 
   // ---------------------------------------------------------------- MIDI
   const sortieMoteur = { noteOn: (n, h, v) => { if (etat.moteur && etat.marche) etat.moteur.noteOn(n, h, v); }, noteOff: n => { if (etat.moteur && etat.marche) etat.moteur.noteOff(n); } };

@@ -17,7 +17,8 @@ Contenu de ce dossier
 - PHASE7.md : bibliothèque de modules DSP : 14 modules livrés (écho, chorus, flanger, phaser, saturation, écrêtage, réverbération, panoramique, table d'onde, additive, niveau, rampe, ar, corde pincée).
 - PHASE8.md : création avancée du Studio : export WAV, lien de partage, clavier MIDI, séquenceur euclidien.
 - PHASE9.md : SONORA Library, 33 programmes mesurés, recherche, modules, projets. La page est dans `library/`.
-- src/ et tests/ : le compilateur et le moteur (aucune dépendance) et leurs 426 tests : `npm test` (Node, 319 tests), `npm run test:navigateur` (moteur, 17 tests) et `npm run test:studio` (interface, 23 tests) et `npm run test:science` (Science, 20 tests) et `npm run test:academie` (Academy, 19 tests) et `npm run test:creation` (création avancée, 15 tests dans Chromium) et `npm run test:bibliotheque` (Library, 13 tests dans Chromium), les six derniers dans Chromium via Playwright.
+- CLASSE.md : le catalogue de la classe, des programmes d'élèves sans serveur ni compte (proposition, dépôt, classe.json).
+- src/ et tests/ : le compilateur et le moteur (aucune dépendance) et leurs 449 tests : `npm test` (Node, 330 tests), `npm run test:navigateur` (moteur, 17 tests) et `npm run test:studio` (interface, 23 tests) et `npm run test:science` (Science, 20 tests) et `npm run test:academie` (Academy, 19 tests) et `npm run test:creation` (création avancée, 15 tests dans Chromium) et `npm run test:bibliotheque` (Library, 13 tests dans Chromium) et `npm run test:classe` (catalogue de la classe, 12 tests dans Chromium), les sept derniers dans Chromium via Playwright.
 
 ## Rapport d'audit (phase 0)
 

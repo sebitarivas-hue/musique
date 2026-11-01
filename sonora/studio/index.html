@@ -10,13 +10,14 @@
 <body>
 <a class="saut" href="#editeur">Aller à l'éditeur</a>
 <header class="haut">
-  <div class="marque"><a href="../../" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Studio</span></div>
+  <div class="marque"><a href="../../choix.html" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Studio</span></div>
   <div class="actions" role="group" aria-label="Commandes">
     <button type="button" id="b-executer" class="principal" title="Compiler et jouer (Ctrl+Entrée)">&#9654; Exécuter</button>
     <button type="button" id="b-arreter" title="Arrêter (Ctrl+.)" disabled>&#9632; Arrêter</button>
     <button type="button" id="b-compiler" title="Compiler sans jouer">Compiler</button>
     <button type="button" id="b-reset" title="Remettre les réglages à leur valeur de départ">Réinitialiser</button>
   </div>
+  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" aria-current="page" href="index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../academy/index.html">Academy</a><a class="lien-bouton" href="../library/index.html">Library</a></nav>
   <div class="etat" id="etat" role="status" aria-live="polite">arrêté</div>
 </header>
 <nav class="onglets-mobiles" aria-label="Panneaux" id="onglets-mobiles">
@@ -97,6 +98,16 @@
       <div class="rang"><label class="champ" style="flex:1">Durée (s)<input type="number" id="wav-duree" min="1" max="60" step="1" value="4"></label><label class="champ" style="flex:1">Format<select id="wav-bits"><option value="16">16 bits</option><option value="24">24 bits</option><option value="32">32 bits flottant</option></select></label></div>
       <div class="rang"><button type="button" id="b-wav">Exporter en WAV</button><button type="button" id="b-partager">Copier un lien de partage</button></div>
       <label class="champ">Lien de partage<input type="text" id="lien" readonly placeholder="Le lien apparaît ici"></label>
+      <details id="proposer" class="proposer"><summary>Proposer ce programme à la classe</summary>
+        <p class="petit">Tu prépares un petit fichier que tu remets à ton professeur, comme un devoir. Rien n'est envoyé : c'est toi qui le donnes. Il relit, et s'il accepte, ton programme rejoint la Library de la classe.</p>
+        <label class="champ">Titre<input type="text" id="pr-titre" maxlength="60"></label>
+        <label class="champ">Description (ce que fait ton programme, en une ou deux phrases)<textarea id="pr-texte" rows="3" maxlength="300"></textarea></label>
+        <label class="champ">Pseudonyme ou prénom, facultatif<input type="text" id="pr-pseudo" maxlength="20" autocomplete="off"></label>
+        <p class="petit">Un prénom ou un pseudonyme, jamais ton nom de famille, ni une adresse, ni un numéro.</p>
+        <label class="champ">Mots-clés, séparés par des virgules (5 au plus)<input type="text" id="pr-mots" autocomplete="off"></label>
+        <div class="rang"><button type="button" id="b-proposer" class="principal">Préparer le fichier</button></div>
+        <div id="pr-retour" role="status" aria-live="polite"></div>
+      </details>
       <p class="petit" id="export-etat" role="status">Le WAV est calculé hors ligne, sans passer par les haut-parleurs. Le lien contient le programme lui-même : rien n'est envoyé à un serveur.</p>
     </div>
   </aside>
@@ -110,5 +121,6 @@
   </section>
 </main>
 <script type="module" src="studio.js"></script>
+<script src="../retour.js"></script>
 </body>
 </html>

@@ -86,3 +86,6 @@ select, input[type=text] { min-height: 38px; padding: 6px 8px; background: #fff;
 .seq-pas .pas-on { background: var(--noir); color: var(--acide); } .seq-pas .temps { border-width: 2px; } .seq-pas .joue { background: var(--acide); color: var(--noir); }
 #export-zone input[type=number], #export-zone select, #seq-zone select { width: 100%; min-height: 34px; } #lien { width: 100%; font: .75rem var(--f-mono); }
 .rg { margin: 0 0 12px; } .rg label { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; font-size: .85rem; } .rg input[type=range] { width: 100%; }
+
+.lien-bouton { display: inline-flex; align-items: center; min-height: 38px; padding: 6px 14px; border: 2px solid var(--papier); color: var(--papier); text-decoration: none; font: 600 .85rem var(--f-body); } .lien-bouton[aria-current=page] { background: var(--acide); color: var(--noir); border-color: var(--acide); }
+.proposer { margin: 10px 0; } .proposer summary { cursor: pointer; font-weight: 600; } .proposer textarea, .proposer input[type=text] { width: 100%; font: inherit; padding: 6px; border: 2px solid var(--noir); background: #fff; } .pr-err, .pr-av { margin: 4px 0 8px 18px; padding: 0; font-size: .85rem; }

@@ -7,3 +7,5 @@
 .zone-code { display: grid; grid-template-columns: 38px minmax(0, 1fr); height: 300px; background: var(--noir); color: var(--papier); font: 400 .85rem/22px var(--f-mono); border: 2px solid var(--noir); position: relative; }
 .mod-fiche code { font: 500 .85em var(--f-mono); background: var(--tint); padding: 1px 4px; }
 .sr-seul { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.depot-item { border: 2px solid var(--noir); background: #fff; padding: 12px; margin: 0 0 14px; } .depot-item textarea, .depot-item input[type=text], #v-depot input[type=file] { width: 100%; font: inherit; padding: 6px; border: 2px solid var(--noir); background: #fff; }
+.d-acc-l { display: flex; gap: 8px; align-items: center; font-weight: 600; margin-bottom: 8px; } .pr-av { margin: 4px 0 8px 18px; padding: 0; font-size: .85rem; } .depot-item pre { background: var(--noir); color: var(--papier); padding: 10px; overflow: auto; font: .8rem/1.5 var(--f-mono); max-height: 240px; }
