@@ -1,0 +1,9 @@
+.liste-cat { list-style: none; margin: 8px 0 0; padding: 0; } .liste-cat li { margin: 0 0 4px; }
+.liste-cat button { display: block; width: 100%; text-align: left; padding: 8px 10px; } .liste-cat button[aria-current=true] { background: var(--acide); }
+.liste-cat .meta { display: block; font: .72rem var(--f-mono); color: var(--gris); margin-top: 2px; } .liste-cat button[aria-current=true] .meta { color: var(--noir); }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; } .badge { font: 500 .75rem var(--f-mono); border: 2px solid var(--noir); padding: 1px 7px; background: #fff; } .badge.type { background: var(--noir); color: var(--acide); }
+.profil td.n { text-align: right; font-family: var(--f-mono); white-space: nowrap; }
+.actions-prog { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.zone-code { display: grid; grid-template-columns: 38px minmax(0, 1fr); height: 300px; background: var(--noir); color: var(--papier); font: 400 .85rem/22px var(--f-mono); border: 2px solid var(--noir); position: relative; }
+.mod-fiche code { font: 500 .85em var(--f-mono); background: var(--tint); padding: 1px 4px; }
+.sr-seul { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }

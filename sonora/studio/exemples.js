@@ -147,7 +147,7 @@ instrument Basse {
     voix (n : Note) {
         soit env = adsr(porte: n.porte, attaque: 5 ms, declin: 250 ms, soutien: 20%, relache: 200 ms)
         soit son = dent(n.hauteur / 2) -> passe_bas(coupure: 120 Hz + ouverture * env, q: resonance)
-        sortie = son * env * n.vitesse * 40%
+        sortie = son * env * n.vitesse * 25%
     }
     sortie = voix.somme
 }
