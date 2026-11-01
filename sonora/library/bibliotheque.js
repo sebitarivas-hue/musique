@@ -5,7 +5,7 @@ import { Editeur } from "../studio/editeur.js";
 import { Projets } from "../studio/projets.js";
 import { encoder } from "../studio/partage.js";
 import { ENTREES } from "./catalogue.js";
-import { profil, modulesEmployes, accordDeTest, bruitDeTest } from "./profil.js";
+import { profil, modulesEmployes, accordDeTest, bruitDeTest, melodieDeTest, sourceDe } from "./profil.js";
 import { trouver } from "./recherche.js";
 import { preparer } from "../science/executeur.js";
 import { heros, etatBouton } from "../studio/heros.js";
@@ -74,7 +74,7 @@ async function ecouter(e, bouton, msg) {
     const d = Moteur.diagnostic(); if (!d.ok) throw new ErreurMoteur(d.code, d.raison);
     if (!etat.moteur) etat.moteur = new Moteur().on("analyse", a => { etat.tampon = a.tampon; }); await etat.moteur.demarrer(); etat.moteur.activerAnalyse(true); await etat.moteur.charger(module);
     if (module.voix) etat.moteur.accord([[48, 220, 0.8], [49, 277.18, 0.8], [50, 329.63, 0.8]]);
-    if (module.entrees.some(x => x.genre === "audio")) { const ctx = etat.moteur.ctx, n = ctx.sampleRate * 2, buf = ctx.createBuffer(1, n, ctx.sampleRate); buf.getChannelData(0).set(bruitDeTest(n)); const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.connect(etat.moteur.noeud); s.start(); etat.source = s; }
+    if (module.entrees.some(x => x.genre === "audio")) brancherSource(e);
     etat.marche = true; etat.bouton = bouton; etatBouton(bouton, true); badge("en écoute", "marche");
   } catch (er) { msg.textContent = er instanceof ErreurMoteur ? er.message : String(er && er.message || er); badge("erreur", "erreur"); }
 }
@@ -87,13 +87,22 @@ function versStudio(source, titre, exemple) {
   try { localStorage.setItem("sonora:mode", "programmation"); } catch (_) {} location.href = "../studio/index.html";
 }
 
+// Source d'essai d'un effet : une mélodie par défaut (on entend ce que l'effet fait à un son identifiable), du bruit pour les effets qui le demandent.
+const sourceChoisie = e => etat.sources && etat.sources[e.id] || sourceDe(e);
+function brancherSource(e) {
+  if (etat.source) { try { etat.source.stop(); } catch (_) {} try { etat.source.disconnect(); } catch (_) {} etat.source = null; }
+  const ctx = etat.moteur.ctx, n = ctx.sampleRate * 2, buf = ctx.createBuffer(1, n, ctx.sampleRate);
+  buf.getChannelData(0).set(sourceChoisie(e) === "bruit" ? bruitDeTest(n) : melodieDeTest(n, ctx.sampleRate));
+  const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.connect(etat.moteur.noeud); s.start(); etat.source = s;
+}
 // ---------------------------------------------------------------- fiche d'un programme
 const f1 = (x, d = 1) => x.toFixed(d).replace(".", ",").replace(/^-0(,0+)?$/, "0$1");
 function tableProfil(p, e) {
   const m = p.mesures, l = [];
-  l.push(["Niveau de crête", f1(m.crete) + " dB", p.type === "effet" ? "sur un bruit blanc de 0,3 d'amplitude" : p.voix ? "sur un accord de trois notes" : ""]);
+  l.push(["Niveau de crête", f1(m.crete) + " dB", p.type === "effet" ? (p.source === "melodie" ? "sur la mélodie d'essai (quatre notes, 0,3 d'amplitude)" : "sur un bruit blanc de 0,3 d'amplitude") : p.voix ? "sur un accord de trois notes" : ""]);
   l.push(["Niveau efficace", f1(m.rms) + " dB", ""]);
-  if (m.gain !== null) l.push(["Niveau de sortie par rapport à l'entrée", (m.gain > 0 ? "+" : "") + f1(m.gain) + " dB", "mesuré sur le bruit de test"]);
+  if (m.gain !== null) l.push(["Niveau de sortie par rapport à l'entrée", (m.gain > 0 ? "+" : "") + f1(m.gain) + " dB", p.source === "melodie" ? "mesuré sur la mélodie d'essai" : "mesuré sur le bruit de test"]);
+  if (p.identite) { const i = p.identite; l.push(["La note reste identifiable", i.conserve ? "oui" : "non", "la fondamentale de 277 Hz reste un pic dominant"]); l.push(["Harmoniques 4 à 8 ajoutées", i.harmoniquesAjoutees < -80 ? "aucune" : f1(i.harmoniquesAjoutees, 0) + " dB", i.harmoniquesAjoutees < -80 ? "l'effet n'ajoute pas de harmoniques" : "sous la fondamentale ; la mélodie d'essai n'en contient pas"]); }
   if (p.type === "instrument" && m.f0) l.push(["Hauteur détectée", f1(m.f0, 0) + " Hz", ""]);
   l.push(["Centroïde spectral (brillance)", f1(m.centroide, 0) + " Hz", "autour du moment le plus fort"]);
   if (m.attaque !== null) l.push(["Montée de l'enveloppe (10 % à 90 %)", f1(m.attaque, 0) + " ms", ""]);
@@ -104,21 +113,23 @@ function ouvrir(id) {
   const e = par(id); if (!e) return; arreter(); etat.courant = e.id; afficherListe(); panneau("fiche"); window.scrollTo(0, 0); document.title = e.titre + ", SONORA Library";
   const mods = modulesDe(e);
   const origineTxt = e.origine === "Studio" ? "Exemple du Studio" : e.origine === "Classe" ? "Créé par la classe" + (e.pseudo ? " : " + e.pseudo : "") : "Library";
-  const aideTxt = e.type === "effet" ? "C'est un effet : pour l'écoute, il reçoit un bruit blanc." : /polyphonie/.test(e.code) ? "Tu entends un accord de trois notes. Dans le Studio, tu le joueras au clavier." : "Ouvre-le dans le Studio pour régler ses curseurs ou modifier son programme.";
+  const aideTxt = e.type === "effet" ? (sourceChoisie(e) === "bruit" ? "C'est un effet : pour l'écoute, il reçoit un bruit blanc, qui fait entendre ce qu'il enlève ou déplace." : "C'est un effet : pour l'écoute, il reçoit une mélodie de quatre notes, pour que tu entendes ce qu'il change à un son reconnaissable.") : /polyphonie/.test(e.code) ? "Tu entends un accord de trois notes. Dans le Studio, tu le joueras au clavier." : "Ouvre-le dans le Studio pour régler ses curseurs ou modifier son programme.";
   $("fiche").innerHTML = heros({ etiquette: origineTxt, titre: e.titre, texte: e.texte, aide: aideTxt }) + `
   <div class="badges"><span class="badge type">${e.type === "effet" ? "effet" : "instrument"}</span><span class="badge">${esc(e.niveau)}</span>${mods.map(m => `<button type="button" class="badge" data-module="${m}" title="Voir les programmes qui emploient ${m}">${m}</button>`).join("")}</div>
+  ${e.type === "effet" ? `<label class="champ source-essai">Source d'essai <select id="src-essai"><option value="melodie"${sourceChoisie(e) === "melodie" ? " selected" : ""}>Mélodie de quatre notes</option><option value="bruit"${sourceChoisie(e) === "bruit" ? " selected" : ""}>Bruit blanc</option></select></label>` : ""}
   <div class="actions-prog"><button type="button" class="principal" id="b-studio">Ouvrir dans le Studio</button><button type="button" id="b-enreg">Enregistrer dans mes projets</button><button type="button" id="b-copier">Copier le code</button><button type="button" id="b-lien">Copier un lien de partage</button></div>
   <p class="petit" id="msg" role="status"></p>
   <h2>Le programme</h2><div class="zone-code" id="zone-code"></div>
   <h2>Ce que mesure le son produit</h2><div id="profil"><p class="petit">Calcul sur le signal rendu…</p></div>`;
   const ed = new Editeur($("zone-code"), {}); ed.valeur = e.code; ed.ta.readOnly = true; ed.ta.setAttribute("aria-label", "Code de " + e.titre + ", en lecture seule");
   $("b-ecouter").onclick = () => ecouter(e, $("b-ecouter"), $("msg"));
+  if ($("src-essai")) $("src-essai").onchange = ev => { (etat.sources = etat.sources || {})[e.id] = ev.target.value; if (etat.marche && etat.moteur) brancherSource(e); const p = profil(e.code, { source: ev.target.value }); etat.profil = p; $("profil").innerHTML = p.ok ? tableProfil(p, e) : `<p class="bilan non">${esc(p.erreur)}</p>`; };
   $("b-studio").onclick = () => versStudio(e.code, e.titre, e.origine === "Studio" ? e.id : null);
   $("b-enreg").onclick = () => { const p = Projets.enregistrer({ titre: e.titre, source: e.code, reglages: {} }); $("msg").textContent = p ? `Enregistré dans tes projets sous « ${e.titre} ». Tu le retrouveras dans le Studio et dans l'onglet Mes projets.` : "Le navigateur refuse d'enregistrer (stockage plein ou bloqué)."; etat.dernierProjet = p && p.id; };
   $("b-copier").onclick = async () => { try { await navigator.clipboard.writeText(e.code); $("msg").textContent = "Code copié."; } catch (_) { $("msg").textContent = "Copie refusée par le navigateur : sélectionne le code et copie-le à la main."; } };
   $("b-lien").onclick = async () => { const lien = location.origin + location.pathname.replace(/library\/[^/]*$/, "studio/index.html") + "#p=" + await encoder({ source: e.code, titre: e.titre }); etat.dernierLien = lien; try { await navigator.clipboard.writeText(lien); $("msg").textContent = `Lien copié (${lien.length} caractères) : il ouvre ce programme dans le Studio.`; } catch (_) { $("msg").textContent = "Copie refusée par le navigateur. Lien : " + lien; } };
   $("fiche").querySelectorAll("button[data-module]").forEach(b => b.onclick = () => { vue("catalogue"); $("f-module").value = b.dataset.module; etat.filtres.module = b.dataset.module; afficherListe(); panneau("liste"); });
-  setTimeout(() => { if (etat.courant !== e.id) return; const p = profil(e.code); etat.profil = p; $("profil").innerHTML = p.ok ? tableProfil(p, e) : `<p class="bilan non">${esc(p.erreur)}</p>`; }, 20);
+  setTimeout(() => { if (etat.courant !== e.id) return; const p = profil(e.code, { source: e.type === "effet" ? sourceChoisie(e) : "bruit" }); etat.profil = p; $("profil").innerHTML = p.ok ? tableProfil(p, e) : `<p class="bilan non">${esc(p.erreur)}</p>`; }, 20);
 }
 
 // ---------------------------------------------------------------- catalogue de la classe : chargement du fichier publié
