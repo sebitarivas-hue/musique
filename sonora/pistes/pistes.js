@@ -29,21 +29,44 @@ function reponseSalle(ctx, duree) {
   for (let c = 0; c < 2; c++) { const x = ir.getChannelData(c); let s = 12345 + c * 777; for (let i = 0; i < n; i++) { s = (s * 1664525 + 1013904223) >>> 0; x[i] = (s / 4294967296 * 2 - 1) * Math.pow(10, -3 * i / n); } }
   return ir;
 }
-// La chaîne d'une piste : clips -> bus -> [filtre] -> son direct + [écho] + [réverbération] -> volume -> panoramique -> sortie.
-function chainePiste(ctx, pi, sortie) {
-  const e = P.effetsDe(pi), bus = ctx.createGain(), vol = ctx.createGain(); vol.gain.value = pi.volume;
+// La réverbération est un programme Faust (faust/reverb.dsp, zita_rev1), compilé à l'avance en WebAssembly et joué par faustwasm (licence LGPL).
+let FAUST = null, NREV = 0;
+async function usineReverb() {
+  if (!FAUST) FAUST = (async () => {
+    const fw = await import("./faust/faustwasm.js"), base = new URL("./faust/reverb/", import.meta.url);
+    const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
+    const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
+    return { fw, fac: { module, json, soundfiles: {} }, adresses };
+  })();
+  return FAUST;
+}
+async function reverbFaust(ctx, duree, aigus) {
+  const { fw, fac, adresses } = await usineReverb(), gen = new fw.FaustMonoDspGenerator();
+  const n = await gen.createNode(ctx, "sonora-reverb-" + (++NREV), fac); if (!n) throw new Error("nœud Faust indisponible");
+  n.setParamValue(adresses.duree, duree); n.setParamValue(adresses.aigus, aigus); return n;
+}
+// La chaîne d'une piste : clips -> bus -> [filtre] -> son direct + [écho] + [réverbération Faust] -> volume -> panoramique -> sortie.
+async function chainePiste(ctx, pi, sortie) {
+  const e = P.effetsDe(pi), bus = ctx.createGain(), vol = ctx.createGain(), veilles = []; vol.gain.value = pi.volume;
   let pre = bus;
   if (e.filtre.actif) { const f = ctx.createBiquadFilter(); f.type = e.filtre.type === "passe-haut" ? "highpass" : "lowpass"; f.frequency.value = e.filtre.frequence; f.Q.value = 0.707; bus.connect(f); pre = f; }
   pre.connect(vol);
   if (e.echo.actif) { const d = ctx.createDelay(2), fb = ctx.createGain(), w = ctx.createGain(); d.delayTime.value = e.echo.temps; fb.gain.value = e.echo.retour; w.gain.value = e.echo.melange; pre.connect(d); d.connect(fb); fb.connect(d); d.connect(w); w.connect(vol); }
-  if (e.reverb.actif) { const cv = ctx.createConvolver(), w = ctx.createGain(); cv.buffer = reponseSalle(ctx, e.reverb.duree); w.gain.value = e.reverb.melange; pre.connect(cv); cv.connect(w); w.connect(vol); }
+  if (e.reverb.actif) {
+    const w = ctx.createGain(); w.gain.value = e.reverb.melange; let rv = null;
+    try { rv = await reverbFaust(ctx, e.reverb.duree, e.reverb.aigus); etat.reverbMoteur = "faust"; }
+    catch (err) { rv = ctx.createConvolver(); rv.buffer = reponseSalle(ctx, e.reverb.duree); etat.reverbMoteur = "secours"; message("La réverbération Faust n'a pas pu démarrer dans ce navigateur : une réverbération de secours la remplace."); }
+    pre.connect(rv); rv.connect(w); w.connect(vol);
+    // Une source muette reste branchée sur la réverbération : sans elle, le navigateur coupe l'entrée du nœud quand les clips s'arrêtent, et la queue de la réverbération disparaît.
+    if (ctx.createConstantSource) { const veille = ctx.createConstantSource(); veille.offset.value = 0; veille.connect(rv); veille.start(); veilles.push(veille); }
+  }
   const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null; if (pan) { pan.pan.value = pi.pan; vol.connect(pan); pan.connect(sortie); } else vol.connect(sortie);
-  return { bus, vol, pan };
+  return { bus, vol, pan, veilles };
 }
-// Le graphe complet : un gain par clip (fondus de 5 ms), puis la chaîne de sa piste. Renvoie les sources (pour les arrêter) et les chaînes (pour régler en direct).
-function construire(ctx, projet, depuis, debut, sortie) {
-  const sources = [], chaines = {}, f = 0.005;
-  for (const pi of P.pistesAudibles(projet)) chaines[pi.id] = chainePiste(ctx, pi, sortie);
+async function chainesProjet(ctx, projet, sortie) { const ch = {}; for (const pi of P.pistesAudibles(projet)) ch[pi.id] = await chainePiste(ctx, pi, sortie); return ch; }
+// Les clips sont programmés sur les chaînes déjà prêtes : un gain par clip, avec des fondus de 5 ms.
+function planifier(ctx, projet, depuis, debut, chaines) {
+  const sources = [], f = 0.005;
   for (const e of P.planLecture(projet, depuis)) {
     const buf = bufferDe(ctx, e.son), ch = chaines[e.piste]; if (!buf || !ch) continue;
     const src = ctx.createBufferSource(); src.buffer = buf;
@@ -51,19 +74,22 @@ function construire(ctx, projet, depuis, debut, sortie) {
     g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(gc, t0 + Math.min(f, e.duree / 2)); g.gain.setValueAtTime(gc, Math.max(t0 + f, t1 - f)); g.gain.linearRampToValueAtTime(0, t1);
     src.connect(g); g.connect(ch.bus); src.start(t0, e.decalage, e.duree); sources.push(src);
   }
-  sources.chaines = chaines; return sources;
+  return sources;
 }
 
 // ---------------------------------------------------------------- lecture
-function lire() {
-  if (etat.lecture) return arreter();
-  const ctx = contexte(); etat.debutCtx = ctx.currentTime + 0.06; etat.debutTete = etat.tete;
-  etat.sources = construire(ctx, etat.projet, etat.tete, etat.debutCtx, ctx.destination); etat.chaines = etat.sources.chaines;
+async function lire() {
+  if (etat.lecture || etat.prepare) return arreter();
+  const ctx = contexte(); etat.prepare = true; let chaines;
+  try { chaines = await chainesProjet(ctx, etat.projet, ctx.destination); } finally { etat.prepare = false; }
+  etat.debutCtx = ctx.currentTime + 0.06; etat.debutTete = etat.tete;
+  etat.sources = planifier(ctx, etat.projet, etat.tete, etat.debutCtx, chaines); etat.chaines = chaines;
   if ($("metro").checked) etat.metro = metronome(ctx, etat.tete, etat.debutCtx);
   etat.lecture = true; $("b-lire").innerHTML = "&#9632; Arrêter"; badge(etat.enreg ? "enregistrement" : "lecture", etat.enreg ? "erreur" : "marche");
 }
 function arreter() {
   for (const s of etat.sources) { try { s.stop(); } catch (_) {} } etat.sources = [];
+  for (const ch of Object.values(etat.chaines || {})) { try { ch.vol.disconnect(); (ch.veilles || []).forEach(v => v.stop()); } catch (_) {} } etat.chaines = null;
   if (etat.metro) { etat.metro.stop(); etat.metro = null; }
   if (etat.enreg) finirEnregistrement();
   etat.lecture = false; $("b-lire").innerHTML = "&#9654; Lire"; badge("prêt");
@@ -219,13 +245,13 @@ function afficherEffets() {
     ${curseur("echo.temps", "Temps", e.echo.temps, L.temps[0], L.temps[1], 0.01, sec)}${curseur("echo.retour", "Retour", e.echo.retour, L.retour[0], L.retour[1], 0.01, pc)}${curseur("echo.melange", "Mélange", e.echo.melange, L.melange[0], L.melange[1], 0.01, pc)}
     <p class="fx-ex">${esc(P.EXPLICATIONS.echo)} <span id="fx-distance">Avec ${sec(e.echo.temps)}, la paroi serait à environ ${Math.round(P.distanceEcho(e.echo.temps))} m.</span></p></fieldset>
    <fieldset><legend><label><input type="checkbox" data-actif="reverb"${e.reverb.actif ? " checked" : ""}> Réverbération</label></legend>
-    ${curseur("reverb.duree", "Durée", e.reverb.duree, L.duree[0], L.duree[1], 0.1, sec)}${curseur("reverb.melange", "Mélange", e.reverb.melange, L.melange[0], L.melange[1], 0.01, pc)}<p class="fx-ex">${esc(P.EXPLICATIONS.reverb)}</p></fieldset>
+    ${curseur("reverb.duree", "Durée", e.reverb.duree, L.duree[0], L.duree[1], 0.1, sec)}${curseur("reverb.aigus", "Aigus", e.reverb.aigus, L.aigus[0], L.aigus[1], 100, hzf)}${curseur("reverb.melange", "Mélange", e.reverb.melange, L.melange[0], L.melange[1], 0.01, pc)}<p class="fx-ex">${esc(P.EXPLICATIONS.reverb)}</p></fieldset>
   </div>`;
   const regler = (chemin, v) => { const [k, c] = chemin.split("."); pi.effets = P.effetsDe(pi); pi.effets[k][c] = v; };
   z.querySelectorAll("[data-actif]").forEach(x => x.onchange = () => { pi.effets = P.effetsDe(pi); pi.effets[x.dataset.actif].actif = x.checked; changer(); });
   z.querySelectorAll("input[data-fxlog]").forEach(x => { x.oninput = () => { const v = Math.round(L.frequence[0] * Math.pow(L.frequence[1] / L.frequence[0], +x.value / 1000)); regler("filtre.frequence", v); z.querySelector('[data-o="filtre.frequence"]').textContent = hzf(v); ranger(); }; x.onchange = () => { if (etat.lecture) { arreter(); lire(); } }; });
   z.querySelectorAll("select[data-fx]").forEach(x => x.onchange = () => { regler(x.dataset.fx, x.value); changer(); });
-  z.querySelectorAll("input[data-fx]").forEach(x => { x.oninput = () => { const v = +x.value, fmt = /frequence/.test(x.dataset.fx) ? hzf : /temps|duree/.test(x.dataset.fx) ? sec : pc; regler(x.dataset.fx, v); z.querySelector(`[data-o="${x.dataset.fx}"]`).textContent = fmt(v); if (x.dataset.fx === "echo.temps") $("fx-distance").textContent = `Avec ${sec(v)}, la paroi serait à environ ${Math.round(P.distanceEcho(v))} m.`; ranger(); }; x.onchange = () => { if (etat.lecture) { arreter(); lire(); } }; });
+  z.querySelectorAll("input[data-fx]").forEach(x => { x.oninput = () => { const v = +x.value, fmt = /frequence|aigus/.test(x.dataset.fx) ? hzf : /temps|duree/.test(x.dataset.fx) ? sec : pc; regler(x.dataset.fx, v); z.querySelector(`[data-o="${x.dataset.fx}"]`).textContent = fmt(v); if (x.dataset.fx === "echo.temps") $("fx-distance").textContent = `Avec ${sec(v)}, la paroi serait à environ ${Math.round(P.distanceEcho(v))} m.`; ranger(); }; x.onchange = () => { if (etat.lecture) { arreter(); lire(); } }; });
 }
 
 // ---------------------------------------------------------------- export
@@ -233,7 +259,7 @@ async function exporter() {
   const p = etat.projet, duree = P.dureeTotale(p); if (!duree) { message("Rien à exporter : ajoute d'abord un son."); return; }
   const queue = Math.max(0.05, ...p.pistes.map(pi => { const e = P.effetsDe(pi); return Math.max(e.reverb.actif ? e.reverb.duree : 0, e.echo.actif ? Math.min(6, e.echo.temps * Math.ceil(Math.log(0.001) / Math.log(Math.max(0.01, e.echo.retour)))) : 0); }));
   const sr = 44100, ctx = new OfflineAudioContext(2, Math.ceil((duree + queue) * sr), sr), t0 = performance.now();
-  construire(ctx, p, 0, 0, ctx.destination); const buf = await ctx.startRendering(), canaux = [buf.getChannelData(0), buf.getChannelData(1)];
+  const chaines = await chainesProjet(ctx, p, ctx.destination); planifier(ctx, p, 0, 0, chaines); const buf = await ctx.startRendering(), canaux = [buf.getChannelData(0), buf.getChannelData(1)];
   const w = encoderWAV(canaux, sr, 16); etat.dernierExport = { octets: w.octets.length, ecretes: w.ecretes, duree };
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([w.octets], { type: "audio/wav" })); a.download = (p.titre || "pistes").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9_-]+/g, "-") + ".wav"; document.body.appendChild(a); a.click(); a.remove();
   message(`WAV exporté : ${duree.toFixed(1).replace(".", ",")} s, stéréo, 16 bits, calculé en ${Math.round(performance.now() - t0)} ms.${w.ecretes ? ` Attention : ${w.ecretes} échantillons dépassent 0 dB, baisse des volumes.` : ""}`);
