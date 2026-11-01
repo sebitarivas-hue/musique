@@ -123,13 +123,13 @@ function ouvrir(id) {
   <h2>Ce que mesure le son produit</h2><div id="profil"><p class="petit">Calcul sur le signal rendu…</p></div>`;
   const ed = new Editeur($("zone-code"), {}); ed.valeur = e.code; ed.ta.readOnly = true; ed.ta.setAttribute("aria-label", "Code de " + e.titre + ", en lecture seule");
   $("b-ecouter").onclick = () => ecouter(e, $("b-ecouter"), $("msg"));
-  if ($("src-essai")) $("src-essai").onchange = ev => { (etat.sources = etat.sources || {})[e.id] = ev.target.value; if (etat.marche && etat.moteur) brancherSource(e); const p = profil(e.code, { source: ev.target.value }); etat.profil = p; $("profil").innerHTML = p.ok ? tableProfil(p, e) : `<p class="bilan non">${esc(p.erreur)}</p>`; };
+  if ($("src-essai")) $("src-essai").onchange = ev => { (etat.sources = etat.sources || {})[e.id] = ev.target.value; if (etat.marche && etat.moteur) brancherSource(e); const p = profil(e.code, { source: ev.target.value, transpose: e.transpose || 1 }); etat.profil = p; $("profil").innerHTML = p.ok ? tableProfil(p, e) : `<p class="bilan non">${esc(p.erreur)}</p>`; };
   $("b-studio").onclick = () => versStudio(e.code, e.titre, e.origine === "Studio" ? e.id : null);
   $("b-enreg").onclick = () => { const p = Projets.enregistrer({ titre: e.titre, source: e.code, reglages: {} }); $("msg").textContent = p ? `Enregistré dans tes projets sous « ${e.titre} ». Tu le retrouveras dans le Studio et dans l'onglet Mes projets.` : "Le navigateur refuse d'enregistrer (stockage plein ou bloqué)."; etat.dernierProjet = p && p.id; };
   $("b-copier").onclick = async () => { try { await navigator.clipboard.writeText(e.code); $("msg").textContent = "Code copié."; } catch (_) { $("msg").textContent = "Copie refusée par le navigateur : sélectionne le code et copie-le à la main."; } };
   $("b-lien").onclick = async () => { const lien = location.origin + location.pathname.replace(/library\/[^/]*$/, "studio/index.html") + "#p=" + await encoder({ source: e.code, titre: e.titre }); etat.dernierLien = lien; try { await navigator.clipboard.writeText(lien); $("msg").textContent = `Lien copié (${lien.length} caractères) : il ouvre ce programme dans le Studio.`; } catch (_) { $("msg").textContent = "Copie refusée par le navigateur. Lien : " + lien; } };
   $("fiche").querySelectorAll("button[data-module]").forEach(b => b.onclick = () => { vue("catalogue"); $("f-module").value = b.dataset.module; etat.filtres.module = b.dataset.module; afficherListe(); panneau("liste"); });
-  setTimeout(() => { if (etat.courant !== e.id) return; const p = profil(e.code, { source: e.type === "effet" ? sourceChoisie(e) : "bruit" }); etat.profil = p; $("profil").innerHTML = p.ok ? tableProfil(p, e) : `<p class="bilan non">${esc(p.erreur)}</p>`; }, 20);
+  setTimeout(() => { if (etat.courant !== e.id) return; const p = profil(e.code, { source: e.type === "effet" ? sourceChoisie(e) : "bruit", transpose: e.transpose || 1 }); etat.profil = p; $("profil").innerHTML = p.ok ? tableProfil(p, e) : `<p class="bilan non">${esc(p.erreur)}</p>`; }, 20);
 }
 
 // ---------------------------------------------------------------- catalogue de la classe : chargement du fichier publié

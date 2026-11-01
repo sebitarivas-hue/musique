@@ -155,6 +155,16 @@ effet Jet {
     sortie = source -> flanger(vitesse: vitesse, profondeur: profondeur, melange: melange)
 }
 ` },
+  { id: "nuage-de-grains", niveau: "Programmation", titre: "Nuage de grains", mots: ["granulaire", "grains", "transposition", "synthèse"], transpose: 1.5, texte: "Le son entrant est découpé en petits grains, relus plus vite ou plus lentement, puis recollés par des fondus : la note change de hauteur sans changer de durée. Réduis la taille des grains pour entendre le grain devenir un timbre.",
+    code: `/// Synthèse granulaire : deux grains qui se chevauchent de moitié, relus à une autre vitesse.
+effet NuageDeGrains {
+    entree source : Audio
+    reglage taille : s = 80 ms dans 20 ms .. 190 ms courbe log etiquette "Taille des grains"
+    reglage hauteur : Ratio = 1.5 dans 0.5 .. 2 etiquette "Transposition (1 = inchangé, 2 = octave au-dessus)"
+    reglage melange : Ratio = 100% dans 0 .. 100% etiquette "Part de l'effet"
+    sortie = source -> nuage(taille: taille, hauteur: hauteur, melange: melange)
+}
+` },
 ];
 const typeDe = code => /(^|\n)\s*effet\s/.test(code) ? "effet" : "instrument";
 const motsDe = e => e.mots || [];

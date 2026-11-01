@@ -29,7 +29,7 @@ export function melodieDeTest(n, sr = SR, amplitude = 0.3) {
 export const sourceDe = e => e && e.type !== "instrument" && /\bsur (du|le) bruit/i.test(e.texte || "") ? "bruit" : "melodie";
 
 // Renvoie { ok, erreur?, type, voix, canaux, reglages, modules, mesures: { crete, rms, f0, centroide, attaque, gain, incidents, ecretages } }
-export function profil(code, { secondes = 3, source = "bruit" } = {}) {
+export function profil(code, { secondes = 3, source = "bruit", transpose = 1 } = {}) {
   const r = compiler(code);
   if (!r.ok || !r.module || !r.module.code) return { ok: false, erreur: r.diagnostics.filter(d => d.gravite === "erreur").map(d => `${d.code} ligne ${d.ligne} : ${d.message}`).join(" | ") || "ne se compile pas" };
   const m = r.module, effet = m.entrees.some(e => e.genre === "audio"), n = Math.round(secondes * SR), opts = { sr: SR, n };
@@ -46,7 +46,7 @@ export function profil(code, { secondes = 3, source = "bruit" } = {}) {
   // effet sur la mélodie d'essai : le son reste-t-il identifiable (même hauteur, même netteté), et quelles harmoniques l'effet ajoute-t-il ?
   let ident = null;
   if (effet && source === "melodie") {
-    const d = Math.round(0.62 * SR), nf_ = 8192, f0e = NOTES_DE_TEST[1], mg = A.spectre(x, d, nf_), fs = A.fondamentale(x, SR, { fmin: 100, fmax: 800, debut: d, duree: 0.25 });
+    const d = Math.round(0.62 * SR), nf_ = 8192, f0e = NOTES_DE_TEST[1] * transpose, mg = A.spectre(x, d, nf_), fs = A.fondamentale(x, SR, { fmin: 100, fmax: 800, debut: d, duree: 0.25 });
     const hs = A.harmoniques(x, SR, f0e, 8, { debut: d, n: nf_ }), he = A.harmoniques(entree, SR, f0e, 8, { debut: d, n: nf_ }), fort = Math.max(...mg), nouv = a => Math.sqrt(a.slice(3).reduce((s, v) => s + v * v, 0)) / Math.max(1e-12, a[0]);
     // identifiable : la note jouée (277 Hz) reste l'un des pics dominants (à moins de 20 dB du plus fort) et rien ne la noie
     ident = { f0Entree: f0e, f0Sortie: fs.f0, nettete: fs.nettete, fondamentale: A.versDB(hs[0] / fort), conserve: hs[0] >= 0.1 * fort,

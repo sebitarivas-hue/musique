@@ -52,6 +52,15 @@ export const COMPOSITES = {
     soit rec w = x + g * retarde(w, d, max: d)
     rend retarde(w, d, max: d) - g * w
 }`,
+  nuage: `fonction nuage(x : Audio, taille : s, hauteur : Ratio = 1, melange : Ratio = 1) : Audio {
+    soit h = clamp(hauteur, 0.25, 4)
+    soit t = clamp(taille, 20 ms, 190 ms)
+    soit a = (lfo(abs(1 - h) / t, "dent") + 1) * 0.5
+    soit q1 = si h > 1 alors 1 - a sinon a
+    soit q2 = si q1 >= 0.5 alors q1 - 0.5 sinon q1 + 0.5
+    soit g = retarde(x, 1 ms + q1 * t, max: 200 ms) * (1 - abs(2 * q1 - 1)) + retarde(x, 1 ms + q2 * t, max: 200 ms) * (1 - abs(2 * q2 - 1))
+    rend mix(x, g, melange)
+}`,
   reverberation: `fonction reverberation(x : Audio, duree : s, amortissement : Ratio = 0.5, melange : Ratio = 0.3) : Audio {
     soit t = max(duree, 0.1 s) * 1.14
     soit a = 0.1 + 0.8 * clamp(amortissement, 0, 1)
