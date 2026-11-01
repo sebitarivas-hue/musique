@@ -1,6 +1,7 @@
 @font-face { font-family: "Archivo Black"; src: url("polices/archivo-black-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Instrument Sans"; src: url("polices/instrument-sans-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Instrument Sans"; src: url("polices/instrument-sans-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Archivo Variable"; src: url("polices/archivo-variable-latin.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
 @font-face { font-family: "Plex Mono Local"; src: url("polices/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Plex Mono Local"; src: url("polices/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 :root { --noir: #11110F; --papier: #F0EFE8; --acide: #D6FF00; --rouge: #FF5638; --bleu: #4658FF; --gris: #4B4A44; --tint: #E3E2D9;
@@ -122,3 +123,20 @@ button.mode { border-style: dashed; } button.mode[aria-pressed="true"] { border-
 .jouer-pseudo::before { content: "\25B6"; display: block; font-size: 2.4rem; line-height: 1; margin-bottom: 2px; }
 .jouer-pseudo[aria-pressed="true"]::before { content: "\25A0"; }
 @media (max-width: 760px) { .heros { padding: 16px 10px 14px; } }
+
+/* Direction SIGNAL (maquette « Sound as matter ») pour tous les bandeaux : fond noir, titre condensé en deux lignes, vert acide, mono. */
+.heros { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "etiq etiq" "titre jouer" "texte jouer" "aide jouer" "onde onde"; align-items: center; justify-items: start; gap: 8px 28px; background: var(--noir); color: var(--papier); border: 0; padding: 22px 22px 14px; text-align: left; overflow: hidden; }
+.heros::before { content: ""; position: absolute; top: 0; right: 0; width: 56px; height: 64px; background: var(--acide); }
+.heros::after { content: ""; position: absolute; top: 64px; right: 0; width: 18px; height: 34px; background: var(--rouge); }
+.heros .scene-etiq { grid-area: etiq; background: var(--acide); color: var(--noir); }
+.heros h1, #fiche .heros h1 { grid-area: titre; max-width: none; margin: 6px 0 0; font-family: "Archivo Variable", "Archivo Black", Arial, sans-serif; font-weight: 900; font-size: clamp(2.2rem, 6vw, 4.4rem); line-height: .9; font-stretch: 62%; text-transform: uppercase; letter-spacing: -.005em; color: var(--papier); }
+.heros h1 .acide { color: var(--acide); }
+.heros .heros-texte { grid-area: texte; color: #D3D2CA; font: 400 clamp(.82rem, 1.4vw, .98rem)/1.55 var(--f-mono); letter-spacing: .04em; max-width: 58ch; }
+.heros .scene-aide { grid-area: aide; color: #BEBDB4; font: 400 .78rem/1.5 var(--f-mono); max-width: 58ch; }
+.heros .scene-jouer { grid-area: jouer; align-self: center; }
+.heros .scene-onde { grid-area: onde; width: 100%; height: 84px; margin-top: 8px; border-top: 1px solid #3A3A35; padding-top: 6px; }
+.heros .scene-jouer { box-shadow: 6px 6px 0 var(--rouge); }
+@media (max-width: 760px) { .heros { grid-template-columns: minmax(0, 1fr); grid-template-areas: "etiq" "titre" "texte" "jouer" "aide" "onde"; padding: 16px 14px 12px; } .heros .scene-jouer { justify-self: start; } .heros::before { width: 36px; height: 40px; } .heros::after { top: 40px; width: 12px; height: 22px; } }
+/* Le mode Découvrir du Studio : même titre condensé. */
+.scene h1, .scene h2 { font-family: "Archivo Variable", "Archivo Black", Arial, sans-serif; font-stretch: 62%; font-weight: 900; text-transform: uppercase; letter-spacing: -.005em; }
+.scene h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); line-height: .92; }
