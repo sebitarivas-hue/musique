@@ -29,3 +29,12 @@ body { height: auto; overflow: auto; }
 
 /* Les titres de l'Harmonie contiennent des chiffres romains où la casse compte (I, vi, IV) et des noms de notes : jamais de majuscules forcées. */
 #contenu .heros h1 { text-transform: none; font-stretch: 75%; letter-spacing: 0; }
+
+/* Ce que tu entends : clavier et partition en temps réel, toujours en bas de page */
+.vivant { max-width: 1180px; margin: 0 auto; padding: 0 16px 40px; border-top: 2px solid var(--noir); }
+.clavier-h.mini { height: 84px; } .clavier-h.mini .bl { font-size: .55rem; cursor: default; padding-bottom: 3px; } .clavier-h.mini .no { height: 58%; cursor: default; }
+.clavier-h .bl.sonne { background: var(--rouge); color: #fff; } .clavier-h .no.sonne { background: var(--rouge); }
+.viv-partition { overflow-x: auto; border: 2px solid var(--noir); background: #F0EFE8; min-height: 60px; max-width: 100%; } .viv-partition svg { display: block; max-width: none; }
+.viv-partition .petit { padding: 14px; margin: 0; }
+.carte-acc.grille { position: relative; min-width: 110px; gap: 4px; } .carte-acc.grille.choisi { outline: 4px solid var(--rouge); outline-offset: 2px; } .carte-acc.cible { background: var(--acide); }
+.carte-acc.grille .outils { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; } .carte-acc.grille .outils button { min-height: 28px; padding: 2px 6px; font: .65rem var(--f-mono); }
