@@ -1006,6 +1006,46 @@ html.signal .ludo-tx { gap: 6px; } html.signal .ludo-carte b { font-family: "Arc
 html.signal .ludo-carte .small { font-size: .86rem; line-height: 1.45; color: var(--gris); } html.signal .ludo-s { font: 400 11px/1.4 var(--f-mono); letter-spacing: .04em; color: var(--gris); }
 html.signal .ludo-go { border-radius: 0; background: transparent; color: var(--noir); padding: 0; font: 500 11px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; }
 html.signal .ludo-carte.neuf { box-shadow: inset 0 0 0 3px var(--acide); } html.signal .ludo-carte.verrou { background: transparent; border-top-style: solid !important; opacity: .7; } html.signal .ludo-carte.verrou .ludo-ic { background: #8a8a82; color: var(--papier); }
+/* ======== Diaporamas en direction SIGNAL (maquette « Sound as matter ») : fond noir, titre condensé, mono, angles droits, un trait de couleur par type ======== */
+html.signal #proj.proj2, html.signal #proj.proj2[data-type], html.signal #proj.proj2.est-titre, html.signal #proj.proj2:not(.est-titre):not([data-type="ecoute"]):not([data-type="chant"]):not([data-type="echo"]) { background: #11110F !important; background-image: none !important; color: #F0EFE8 !important; border-top: 10px solid var(--a); }
+html.signal #proj.proj2 :is(.s-h, .s-p, .s-l li, .s-q li, .s-q-t, .s-question, .s-eyebrow, .s-pill, .s-rel, .s-texte, figcaption) { color: #F0EFE8 !important; }
+html.signal #proj.proj2 .s-h { font-family: "Archivo Variable", "Archivo Black", Arial, sans-serif !important; font-weight: 900 !important; font-stretch: 62%; text-transform: uppercase; font-size: clamp(30px, 5vw, 76px) !important; line-height: .92 !important; letter-spacing: -.005em !important; max-width: 18ch; text-wrap: balance; }
+html.signal #proj.proj2 .s-h .deux { color: #D6FF00 !important; }
+html.signal #proj.proj2 .s-h::after { display: block !important; width: 72px; height: 8px; border-radius: 0; background: #D6FF00; margin-top: 1.2vh; }
+html.signal #proj.proj2 :is(.s-p, .s-l li, .s-q li, button, a, .tag, .chip) { font-family: "Instrument Sans", "Atkinson", Arial, sans-serif !important; }
+html.signal #proj.proj2 .s-p { font-size: clamp(17px, 1.8vw, 27px); line-height: 1.35; color: #E4E3DB !important; }
+html.signal #proj.proj2 :is(.s-pill, .s-eyebrow, .s-q-t, .s-rel, .p-top) { font-family: "Plex Mono Local", ui-monospace, Menlo, monospace !important; text-transform: uppercase; letter-spacing: .12em; }
+html.signal #proj.proj2 .s-pill, html.signal #proj.proj2 .s-pill { background: #D6FF00; color: #11110F !important; border-radius: 0; padding: 8px 14px; font-weight: 500; font-size: clamp(12px, 1.2vw, 16px); }
+html.signal #proj.proj2 .s-pill svg, html.signal #proj.proj2 .s-pill * { color: #11110F !important; }
+html.signal #proj.proj2 .s-rel { background: none; color: #11110F !important; opacity: .7; }
+html.signal #proj.proj2 .s-eyebrow { color: #D6FF00 !important; font-weight: 500; font-size: clamp(13px, 1.4vw, 20px) !important; }
+html.signal #proj.proj2 .s-question { font-family: "Instrument Sans", Arial, sans-serif !important; font-weight: 600 !important; border-left: 6px solid #D6FF00 !important; padding-left: 18px !important; color: #F0EFE8 !important; }
+html.signal #proj.proj2 .s-l li { background: #1c1c19; border: 0; border-left: 6px solid var(--a); border-radius: 0; box-shadow: none; }
+html.signal #proj.proj2 .s-l li::before { background: #D6FF00 !important; color: #11110F !important; border-radius: 0 !important; font-family: "Plex Mono Local", ui-monospace, monospace !important; font-weight: 500 !important; }
+html.signal #proj.proj2 .s-q-t { color: #D6FF00 !important; }
+html.signal #proj.proj2 .s-q li { background: #1c1c19; border: 0 !important; border-left: 6px solid var(--a) !important; border-radius: 0; box-shadow: none; }
+html.signal #proj.proj2 .s-q li::before { background: #D6FF00 !important; color: #11110F !important; border-radius: 0 !important; font-family: "Plex Mono Local", ui-monospace, monospace !important; }
+html.signal #proj.proj2 .s-yt a { background: #F0EFE8; color: #11110F !important; border: 2px solid #F0EFE8; border-radius: 0; box-shadow: none; font-weight: 600; }
+html.signal #proj.proj2 .s-yt a:hover, html.signal #proj.proj2 .s-yt a:focus-visible { background: #D6FF00; border-color: #D6FF00; outline: none; }
+html.signal #proj.proj2 .s-yt a * { color: #11110F !important; }
+html.signal #proj.proj2 .s-yt .play { background: #11110F; color: #D6FF00 !important; border-radius: 0; }
+html.signal #proj.proj2 .s-deco { border-radius: 0; background: #D6FF00 !important; color: #11110F; box-shadow: 14px 14px 0 var(--a); width: min(34vh, 26vw); }
+html.signal #proj.proj2 .s-deco svg { color: #11110F; }
+html.signal #proj.proj2 .s-media .gph { background: #1c1c19 !important; color: #F0EFE8; border: 2px solid #F0EFE8; }
+html.signal #proj.proj2 .s-media .gph > span:first-child, html.signal #proj.proj2 .s-media .gph .small { color: #F0EFE8 !important; font-family: "Archivo Variable", Arial, sans-serif !important; font-stretch: 75%; text-transform: uppercase; }
+html.signal #proj.proj2 .s-media .gimg img, html.signal #proj.proj2 .s-capts img, html.signal #proj.proj2 .s-svg { border-radius: 0 !important; }
+html.signal #proj.proj2 .s-capts img { border: 2px solid #F0EFE8; box-shadow: 10px 10px 0 #D6FF00; background: #fff; }
+html.signal #proj.proj2 .s-capts figcaption { font: 500 12px "Plex Mono Local", ui-monospace, monospace !important; letter-spacing: .1em; text-transform: uppercase; color: #BEBDB4 !important; }
+html.signal #proj.proj2 .t-echo .s-texte { background: #1c1c19 !important; border: 0 !important; border-left: 6px solid var(--a) !important; padding: 2vh 24px !important; }
+html.signal #proj.proj2 .p-top { color: #BEBDB4 !important; }
+html.signal #proj.proj2 .p-top button, html.signal #proj.proj2 .p-bar button { background: #F0EFE8; color: #11110F; border: 2px solid #F0EFE8; border-radius: 0; }
+html.signal #proj.proj2 .p-bar button:not(:disabled) { background: #D6FF00 !important; border-color: #D6FF00 !important; color: #11110F !important; }
+html.signal #proj.proj2 .p-bar button:disabled { background: transparent; color: #55554E; border-color: #3a3a35; }
+html.signal #proj.proj2 .p-prog span { background: #D6FF00 !important; } html.signal #proj.proj2 .p-dots span { background: #3a3a35 !important; border-radius: 0; } html.signal #proj.proj2 .p-dots span.on { background: #D6FF00 !important; }
+html.signal #proj.proj2.est-titre::after { content: ""; position: absolute; right: 0; top: 0; width: 18vw; height: 28vh; background: #D6FF00; z-index: 0; }
+html.signal #proj.proj2.est-titre::before { content: ""; position: absolute; right: 0; top: 28vh; width: 5vw; height: 12vh; background: #FF5638; z-index: 0; }
+html.signal #proj.proj2 .p-stage, html.signal #proj.proj2 .p-top { position: relative; z-index: 1; }
+html.signal #proj.proj2 .t-titre .s-h { font-size: clamp(44px, 8vw, 128px) !important; max-width: 12ch; }
 html.signal :is(.rappel, .pj-encart, .gimg) { border-radius: 0 !important; }
 /* Bloc « Atlas des musiques » : présent sur toutes les pages de séquence, de cours et de séance. */
 .atlas-bloc { margin: 14px 0; border: 2px solid #11110F; background: #F0EFE8; }
@@ -4003,6 +4043,8 @@ function typeVue(v) {
 }
 /* Des captures du site (téléphone) ou des images locales dans une vue : v.capt = [[fichier, légende], ...] */
 const captsHtml = c => c && c.length ? `<div class="s-capts${c.length === 1 ? " un" : ""}">${c.map(([f, l]) => `<figure><img src="${esc(f)}" alt="${esc(l)}" loading="lazy"><figcaption>${esc(l)}</figcaption></figure>`).join("")}</div>` : "";
+/* Titre de diapositive en deux tons : la première moitié en clair, la seconde en vert acide (même règle que les bandeaux). */
+const titreDeux = t => { const m = String(t).split(" "); if (m.length < 3) return esc(t); const k = Math.ceil(m.length / 2); return `<span>${esc(m.slice(0, k).join(" "))}</span> <span class="deux">${esc(m.slice(k).join(" "))}</span>`; };
 function vueVue(v) {
   const [type, etiq] = typeVue(v), picto = type === "titre" || type === "trace" ? "" : PICTO[type] || PICTO.activite;
   const media = (v.svg && D.svgs[v.svg] ? `<figure class="s-svg">${D.svgs[v.svg]}</figure>` : "") + (v.partition ? `<div class="s-part">${partitionHtml(v.partition)}</div>` : "") + (v.img ? `<div class="s-gal">${galerieHtml(v.img, true)}</div>` : "") + captsHtml(v.capt);
@@ -4012,7 +4054,7 @@ function vueVue(v) {
   let texte = "";
   if (type === "titre") texte += `<div class="s-eyebrow">${esc(v.k || "")}${PROJ && PROJ.fils && PROJ.fils.length ? `<span class="s-fils">${PROJ.fils.map(f => "Passerelle : " + esc(D.fils.defs[f].nom)).join(", ")}</span>` : ""}</div>`;
   else if (type !== "trace" && type !== "maison") texte += `<div class="s-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${picto}</svg>${esc(etiq)}${v.echo ? `<span class="s-rel">${esc(v.echo)}</span>` : ""}</div>`;
-  texte += `<h2 class="s-h" id="p-h">${esc(v.h || "")}</h2>`;
+  texte += `<h2 class="s-h" id="p-h">${SIGNAL() ? titreDeux(v.h || "") : esc(v.h || "")}</h2>`;
   (v.p || []).forEach((t, j) => texte += `<p class="s-p${type === "titre" && j === 0 ? " s-question" : ""}">${esc(t)}</p>`);
   if (v.l) texte += type === "trace" ? `<div class="s-cahier">${v.l.map(t => `<p>${esc(t)}</p>`).join("")}</div>` : `<ol class="s-l">${v.l.map(t => `<li><span>${esc(t)}</span></li>`).join("")}</ol>`;
   if (v.grille) texte += grilleHtml(v.grille);
