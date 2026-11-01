@@ -775,7 +775,7 @@ html.signal .fil-r, html.signal .fils a { border-radius: 999px !important; }
 
 /* ---------- Faust : un laboratoire ---------- */
 html.signal .labo-grille { gap: 0; border-top: 2px solid var(--noir); border-left: 2px solid var(--noir); }
-html.signal .labo-tuile { --c: var(--noir) !important; background: var(--papier); color: var(--noir); border-radius: 0; border-right: 2px solid var(--noir); border-bottom: 2px solid var(--noir); min-height: 150px; }
+html.signal .labo-tuile { background: var(--papier); color: var(--noir); border-radius: 0; border-right: 2px solid var(--noir); border-bottom: 2px solid var(--noir); border-top: 8px solid var(--c, var(--noir)); min-height: 150px; }
 html.signal .labo-tuile::after { display: none; }
 html.signal .labo-tuile .labo-n { font: 400 2.6rem/.9 var(--f-display); letter-spacing: -.04em; color: var(--noir); background: none; width: auto; height: auto; }
 html.signal .labo-tuile b { font: 700 1.02rem/1.15 var(--f-titre); color: var(--noir); } html.signal .labo-tuile .small { color: var(--gris); font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; }
@@ -1059,6 +1059,18 @@ html.signal :is(.rappel, .pj-encart, .gimg) { border-radius: 0 !important; }
 .ab-l { display: flex; align-items: baseline; gap: 8px; padding: 10px 14px; text-decoration: none; color: #11110F; border-right: 2px solid #11110F; border-top: 2px solid #11110F; font: 700 .95rem/1.2 "Archivo Variable", "Instrument Sans", Arial, sans-serif; font-stretch: 85%; flex: 1 1 auto; }
 .ab-k { font: 500 10px/1 ui-monospace, Menlo, monospace; letter-spacing: .12em; text-transform: uppercase; color: #4B4A44; } .ab-g { background: #E3E2D9; }
 .ab-l:hover, .ab-l:focus-visible { background: #D6FF00; outline: none; }
+/* Faust : le menu du laboratoire reprend les tuiles du Labo (pictogramme, numéro, trait de couleur), la ludothèque devient une barre, les questions des tuiles. */
+html.signal .faust-grille { margin-top: 18px; }
+html.signal .ludo-barre { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; padding: 12px 16px; margin: 6px 0 14px; background: var(--noir); color: var(--papier); text-decoration: none; border: 2px solid var(--noir); }
+html.signal .ludo-barre span:first-child { font: 900 1.25rem/1 "Archivo Variable", var(--f-titre); font-stretch: 75%; text-transform: uppercase; color: var(--acide); }
+html.signal .ludo-barre span:last-child { font: 400 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: #D3D2CA; flex: 1; }
+html.signal .ludo-barre i { font-style: normal; color: var(--acide); font-size: 1.4rem; } html.signal .ludo-barre:hover, html.signal .ludo-barre:focus-visible { background: var(--acide); outline: none; } html.signal .ludo-barre:hover :is(span, i) { color: var(--noir); }
+html.signal .fq { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 0; border-top: 2px solid var(--noir); border-left: 2px solid var(--noir); counter-reset: fq; }
+html.signal .fq .label { grid-column: 1 / -1; margin: 0; padding: 8px 12px; background: var(--noir); color: var(--acide); border: 0; font: 500 12px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; }
+html.signal .fq-q { counter-increment: fq; flex-direction: column; align-items: flex-start; justify-content: space-between; min-height: 130px; padding: 14px !important; border: 0; border-right: 2px solid var(--noir) !important; border-bottom: 2px solid var(--noir) !important; font: 900 1.25rem/1.05 "Archivo Variable", var(--f-titre); font-stretch: 75%; text-transform: uppercase; }
+html.signal .fq-q::before { content: "?" counter(fq); font: 500 12px var(--f-mono); letter-spacing: .12em; color: var(--gris); }
+html.signal .fq-q span[aria-hidden] { font: 500 11px var(--f-mono); letter-spacing: .1em; }
+html.signal .fnav { border-bottom: 2px solid var(--noir); padding-bottom: 10px; margin-bottom: 18px; gap: 0; } html.signal .fnav a { border-right-width: 0; } html.signal .fnav a:last-child { border-right-width: 2px; }
 /* Carrefours en direction SIGNAL */
 html.signal .car-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 18px 28px; align-items: end; }
 html.signal .car-eyebrow { display: inline-block; font: 500 12px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--noir); background: var(--acide); padding: 6px 9px; }
@@ -3470,8 +3482,8 @@ function vueFaust() {
     ["faust-ressources", "Ressources", "La documentation officielle, l'éditeur en ligne, les tutoriels, et ce que le site ne montre pas encore."]];
   const questions = [["Pourquoi deux sons de même hauteur sont-ils différents ?", "harmoniques"], ["Pourquoi une cloche ne sonne-t-elle pas comme une flûte ?", "inharmonique"], ["Comment la salle change-t-elle le son ?", "temps"]];
   return head("Laboratoire", "Programmer le son avec Faust", "Faust est un langage pour fabriquer des sons avec des mathématiques. Ici, on l'écoute, on le manipule, puis on l'écrit.") + navFaust("faust")
-    + `<p><a class="btn2" href="#ludo">La ludothèque : tous les jeux du site, en cinq familles</a></p><section class="fq"><span class="label">Partir d'une question</span>${questions.map(([q, n]) => `<a class="fq-q" href="#faust-comprendre" data-ancre="n-${n}">${esc(q)}<span aria-hidden="true">&#8250;</span></a>`).join("")}</section>
-    <div class="fhub">${entrees.map(([id, t, d], i) => `<a class="fhub-e" href="#${id}"><span class="fhub-n">${String(i + 1).padStart(2, "0")}</span><b>${esc(t)}</b><span class="small">${esc(d)}</span></a>`).join("")}</div>`;
+    + `<a class="ludo-barre" href="#ludo"><span>La ludothèque</span><span>Tous les jeux du site, en cinq familles</span><i aria-hidden="true">&#8250;</i></a><section class="fq"><span class="label">Partir d'une question</span>${questions.map(([q, n]) => `<a class="fq-q" href="#faust-comprendre" data-ancre="n-${n}">${esc(q)}<span aria-hidden="true">&#8250;</span></a>`).join("")}</section>
+    <div class="car-grille faust-grille">${entrees.map(([id, t, d], i) => `<a class="car-t${i === 0 ? " car-t1" : ""}" href="#${id}"><span class="car-n">${String(i + 1).padStart(2, "0")}</span><span class="car-g">${pictoTuile(id, i)}</span><b>${esc(t)}</b><span class="car-d">${esc(d)}</span><span class="car-go">Ouvrir</span></a>`).join("")}</div>`;
 }
 function vueMatieres() {
   return head("Laboratoire", "Matières sonores", "Choisis une matière, tiens le son, puis transforme-le avec les quatre gestes. Les expériences guidées font bouger un réglage pour toi.") + navFaust("faust-matieres") + vueLaboMatieres();
@@ -5024,6 +5036,9 @@ function pictoTuile(h, i) {
   if (cle === "faust") return svg('<path d="M6 30c10-24 14-24 24 0s14 24 24 0 14-24 24 0" stroke-width="3"/><path d="M6 54h108" stroke-width="1.2"/>');
   if (cle === "faust-matieres") return svg('<path d="M10 14h100M10 26h100M10 38h100M10 50h100" stroke-width="1"/><path d="M10 14h38M10 26h70M10 38h54M10 50h92" stroke-width="7"/>');
   if (cle === "faust-ateliers") return svg('<rect x="8" y="14" width="30" height="34"/><rect x="45" y="14" width="30" height="34"/><rect x="82" y="14" width="30" height="34" fill="currentColor"/><path d="M23 30h0M60 30h0" stroke-width="6"/>');
+  if (cle === "faust-comprendre") return svg('<circle cx="60" cy="22" r="12"/><path d="M54 36h12M56 42h8M60 34v-6" stroke-width="2.4"/><path d="M20 54h80" stroke-width="1.2"/>');
+  if (cle === "faust-bibliotheque") return svg('<path d="M12 10v44M26 10v44M40 10v44" stroke-width="7"/><path d="M60 14l16-4 10 40-16 4z" stroke-width="2.4"/><path d="M96 10v44" stroke-width="7"/>');
+  if (cle === "faust-ressources") return svg('<path d="M14 10h40v44H14zM54 10h40v44H54z" stroke-width="2.4"/><path d="M22 20h24M22 28h24M62 20h24M62 28h24" stroke-width="1.6"/>');
   if (cle === "faust-studio") return svg('<path d="M10 14h60M10 26h90M18 38h50M10 50h74" stroke-width="3"/><path d="M100 38l10 12M110 38l-10 12" stroke-width="3"/>');
   if (cle === "pratiquer-atelier" || cle === "pratiquer-{k}-atelier") return svg('<path d="M60 8v26M48 8v26M54 34a6 6 0 0 0 12 0M60 40v16" stroke-width="3"/>');
   if (cle === "atlas") return svg('<circle cx="22" cy="30" r="6"/><circle cx="62" cy="12" r="6"/><circle cx="62" cy="48" r="6"/><circle cx="102" cy="30" r="6" fill="currentColor"/><path d="M28 28l28-14M28 32l28 14M68 14l28 14M68 46l28-14"/>');
