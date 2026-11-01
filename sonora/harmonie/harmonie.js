@@ -258,6 +258,7 @@ if ($("viv-clavier")) $("viv-clavier").innerHTML = clavierVivant();
 { const [v, q] = decodeURIComponent(location.hash.slice(1)).split("?"), prm = new URLSearchParams(q || "");
   const ti = H.TONIQUES.findIndex(t => t.nom === prm.get("ton")); if (ti >= 0) { etat.tonique = ti; etat.tonP = ti; etat.tonC = ti; }
   if (H.MODES[prm.get("mode")]) etat.mode = prm.get("mode");
+  if (H.PROGRESSIONS.some(x => x.id === prm.get("prog"))) etat.prog = prm.get("prog");
   vue(VUES[v] ? v : "explorer"); }
 requestAnimationFrame(boucle);
 window.HARMONIE_PRET = true;
