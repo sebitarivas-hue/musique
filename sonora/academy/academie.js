@@ -4,6 +4,8 @@ import { Editeur } from "../studio/editeur.js";
 import { UNITES, LECONS, parId } from "./parcours.js";
 import { verifier } from "./correcteur.js";
 import { preparer } from "../science/executeur.js";
+import { heros, etatBouton } from "../studio/heros.js";
+import { dessinerOscillo } from "../studio/visuels.js";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -34,27 +36,27 @@ async function ecouter(code, bouton, msg) {
   msg.textContent = "";
   try {
     const d = Moteur.diagnostic(); if (!d.ok) throw new ErreurMoteur(d.code, d.raison);
-    etat.moteur = etat.moteur || new Moteur(); await etat.moteur.demarrer(); await etat.moteur.charger(module);
+    if (!etat.moteur) etat.moteur = new Moteur().on("analyse", a => { etat.tampon = a.tampon; }); await etat.moteur.demarrer(); etat.moteur.activerAnalyse(true); await etat.moteur.charger(module);
     if (module.voix) etat.moteur.accord([[48, 220, 0.8], [49, 277.18, 0.8], [50, 329.63, 0.8]]);
     if (module.entrees.some(e => e.genre === "audio")) { const ctx = etat.moteur.ctx, n = ctx.sampleRate, buf = ctx.createBuffer(1, n, ctx.sampleRate), x = buf.getChannelData(0); x[0] = 0.9; x[Math.floor(n / 2)] = 0.6; const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.connect(etat.moteur.noeud); s.start(); etat.source = s; }
-    etat.marche = true; etat.bouton = bouton; bouton.textContent = "Arrêter"; badge("en écoute", "marche");
+    etat.marche = true; etat.bouton = bouton; etatBouton(bouton, true); badge("en écoute", "marche");
   } catch (e) { msg.textContent = e instanceof ErreurMoteur ? e.message : String(e && e.message || e); badge("erreur", "erreur"); }
 }
 async function arreter(bouton) {
   if (etat.source) { try { etat.source.stop(); etat.source.disconnect(); } catch (_) {} etat.source = null; }
   if (etat.moteur && etat.marche) await etat.moteur.arreter(); etat.marche = false;
-  const b = bouton || etat.bouton; if (b) b.textContent = "Écouter"; badge("prêt");
+  const b = bouton || etat.bouton; if (b) etatBouton(b, false); badge("prêt");
 }
 
 // ---- leçon
 function ouvrir(id) {
   const l = parId(id) || LECONS[0]; arreter(); etat.lecon = l; etat.essais = 0; etat.dernier = null;
   document.querySelectorAll("#nav-exp button").forEach(b => b.setAttribute("aria-current", String(b.dataset.id === l.id)));
-  document.title = l.titre + " · SONORA Academy"; panneau("fiche"); window.scrollTo(0, 0);
+  document.title = l.titre + ", SONORA Academy"; panneau("fiche"); window.scrollTo(0, 0);
   const i = LECONS.indexOf(l), u = UNITES.find(x => x.id === l.unite), p = lire()[l.id], ex = l.exercice;
-  $("fiche").innerHTML = `<span class="etiq-domaine">${esc(u.titre)} · ${esc(l.duree)}</span><h1>${esc(l.titre)}</h1><p class="objectif">${esc(l.objectif)}</p>
+  $("fiche").innerHTML = heros({ etiquette: `${u.titre}, ${l.duree}`, titre: l.titre, texte: l.objectif, bouton: "b-ecouter-ex", libelle: "Écouter l'exemple", aide: "C'est l'exemple de la leçon. Lis le cours, puis fais l'exercice plus bas." }) + `<p class="petit" id="msg-ex"></p>
   <section class="cours"><h2>Le cours</h2>${l.cours.map(c => `<p>${md(c)}</p>`).join("")}</section>
-  <section><h2>Un exemple à écouter</h2><div class="bloc-exp"><div class="zone-code court" id="zone-exemple"></div><div class="commandes"><button type="button" class="principal" id="b-ecouter-ex">Écouter</button><button type="button" id="b-copier">Copier dans l'exercice</button><button type="button" id="b-studio-ex">Ouvrir dans le Studio</button></div><p class="petit" id="msg-ex"></p></div></section>
+  <section><h2>Le programme de l'exemple</h2><div class="bloc-exp"><div class="zone-code court" id="zone-exemple"></div><div class="commandes"><button type="button" id="b-copier">Copier dans l'exercice</button><button type="button" id="b-studio-ex">Ouvrir dans le Studio</button></div></div></section>
   <section><h2>L'exercice</h2><div class="consigne" id="consigne">${md(ex.consigne)}</div><div class="bloc-exp"><div class="zone-code" id="zone-ex"></div>
     <div class="commandes"><button type="button" class="principal" id="b-verifier">Vérifier</button><button type="button" id="b-ecouter">Écouter</button><button type="button" id="b-indice">Un indice</button><button type="button" id="b-solution" disabled title="Disponible après un premier essai">Voir une solution</button><button type="button" id="b-raz">Recommencer</button></div>
     <p class="petit" id="msg-ex2"></p><div id="indice" hidden class="consigne"></div><div id="resultat" aria-live="polite"></div></div>
@@ -63,7 +65,7 @@ function ouvrir(id) {
   const ro = new Editeur($("zone-exemple"), {}); ro.valeur = l.exemple; ro.ta.readOnly = true; ro.ta.setAttribute("aria-label", "Code de l'exemple, en lecture seule");
   const ed = new Editeur($("zone-ex"), { onChange: () => { $("resultat").innerHTML = ""; } }); ed.valeur = ex.depart; ed.ta.setAttribute("aria-label", "Ton code pour l'exercice"); etat.ed = ed;
   if (p && p.reussi) $("resultat").innerHTML = `<p class="verdict-global ok">Déjà réussi. Tu peux le refaire autrement.</p>`;
-  $("b-ecouter-ex").onclick = () => ecouter(l.exemple, $("b-ecouter-ex"), $("msg-ex"));
+  $("b-ecouter-ex").dataset.libelle = "Écouter l'exemple"; $("b-ecouter-ex").onclick = () => ecouter(l.exemple, $("b-ecouter-ex"), $("msg-ex"));
   $("b-copier").onclick = () => { ed.valeur = l.exemple; ed.maj && ed.maj(); $("resultat").innerHTML = ""; };
   $("b-studio-ex").onclick = () => { try { localStorage.setItem("sonora:brouillon", JSON.stringify({ source: l.exemple, titre: l.titre, exemple: null, projet: null })); } catch (_) {} try { localStorage.setItem("sonora:mode", "programmation"); } catch (_) {} location.href = "../studio/index.html"; };
   $("b-ecouter").onclick = () => ecouter(ed.valeur, $("b-ecouter"), $("msg-ex2"));
@@ -93,4 +95,5 @@ liste();
 const depart = () => ouvrir((location.hash || "#" + LECONS[0].id).slice(1));
 window.addEventListener("hashchange", depart); depart();
 document.addEventListener("visibilitychange", () => { if (document.hidden && etat.marche) arreter(); });
+(function boucle(t) { requestAnimationFrame(boucle); const c = document.getElementById("heros-onde"); if (c) dessinerOscillo(c, etat.marche ? etat.tampon : null); })(0);
 window.ACADEMIE_PRET = true;

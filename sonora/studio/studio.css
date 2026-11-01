@@ -115,3 +115,10 @@ button.mode { border-style: dashed; } button.mode[aria-pressed="true"] { border-
   .haut nav.actions { flex: 1 1 100%; order: 3; } .haut nav.actions .lien-bouton { flex: 1 1 0; justify-content: center; padding: 4px 4px; }
   .scene-jouer { width: 128px; height: 128px; }
 }
+/* ---------------------------------------------------------------- bandeau d'accueil des fiches (Science, Academy, Library) */
+.heros { display: flex; min-height: 0; justify-content: flex-start; margin: 0 0 8px; border: 2px solid var(--noir); padding: 22px 16px 18px; }
+.heros h1 { font: 400 clamp(1.6rem, 3.4vw, 2.5rem)/1.08 var(--f-display); margin: 0; max-width: 24ch; letter-spacing: -.01em; }
+.heros .heros-texte { font: 400 1.12rem/1.35 var(--f-body); max-width: 50ch; }
+.jouer-pseudo::before { content: "\25B6"; display: block; font-size: 2.4rem; line-height: 1; margin-bottom: 2px; }
+.jouer-pseudo[aria-pressed="true"]::before { content: "\25A0"; }
+@media (max-width: 760px) { .heros { padding: 16px 10px 14px; } }

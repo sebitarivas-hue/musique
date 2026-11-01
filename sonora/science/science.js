@@ -8,6 +8,7 @@ import { EXEMPLES } from "../studio/exemples.js";
 import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js";
 import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js";
 import { Escalier } from "./psychophysique.js";
+import { heros, etatBouton } from "../studio/heros.js";
 import * as A from "./analyse.js";
 
 const $ = id => document.getElementById(id);
@@ -61,13 +62,13 @@ async function demarrerMoteur() {
 async function ecouter(module, { accord } = {}) {
   try {
     const m = await demarrerMoteur(); await m.charger(module); for (const [n, v] of Object.entries(etat.valeurs)) m.regler(n, v);
-    etat.marche = true; badge("en écoute", "marche"); if ($("b-ecouter")) $("b-ecouter").textContent = "Arrêter l'écoute";
+    etat.marche = true; badge("en écoute", "marche"); if ($("b-ecouter")) etatBouton($("b-ecouter"), true);
     if (module.voix) { m.accord(accord || [[48, 220, 0.8], [49, 277.18, 0.8], [50, 329.63, 0.8]]); }
   } catch (e) { badge("erreur", "erreur"); const z = $("msg-exp"); if (z) z.textContent = e instanceof ErreurMoteur ? e.message : String(e && e.message || e); }
 }
-async function arreterEcoute() { if (!etat.moteur || !etat.marche) return; etat.marche = false; await etat.moteur.arreter(); badge("prêt"); if ($("b-ecouter")) $("b-ecouter").textContent = "Écouter"; }
+async function arreterEcoute() { if (!etat.moteur || !etat.marche) return; etat.marche = false; await etat.moteur.arreter(); badge("prêt"); if ($("b-ecouter")) etatBouton($("b-ecouter"), false); }
 let dernier = 0;
-(function boucle(t) { requestAnimationFrame(boucle); if (t - dernier < 33) return; dernier = t; const o = $("live-oscillo"), s = $("live-spectre"); if (!o || !s) return; const x = etat.marche ? etat.tampon : null; dessinerOscillo(o, x); dessinerSpectre(s, x, etat.sr); })(0);
+(function boucle(t) { requestAnimationFrame(boucle); if (t - dernier < 33) return; dernier = t; const o = $("live-oscillo"), s = $("live-spectre"); if (!o || !s) return; const x = etat.marche ? etat.tampon : null; dessinerOscillo(o, x); dessinerSpectre(s, x, etat.sr); const h = $("heros-onde"); if (h) dessinerOscillo(h, x); })(0);
 
 // ---------------------------------------------------------------- fiche d'une expérience
 const ligneHTML = l => {
@@ -102,13 +103,14 @@ const pied = (exp, programme) => bloc("Pour aller plus loin", `<p>${esc(exp.appr
 function ouvrir(id) {
   const exp = parId(id) || EXPERIENCES[0]; arreterEcoute(); etat.exp = exp; etat.valeurs = {}; etat.resultat = null;
   document.querySelectorAll("#nav-exp button").forEach(b => b.setAttribute("aria-current", String(b.dataset.id === exp.id)));
-  document.title = exp.titre + " · SONORA Science"; basculerPanneau("fiche"); window.scrollTo(0, 0);
+  document.title = exp.titre + ", SONORA Science"; basculerPanneau("fiche"); window.scrollTo(0, 0);
   if (exp.type === "auditeur") return exp.id === "masquage" ? ficheMasquage(exp) : ficheSeuil(exp);
   if (exp.type === "analyseur") return ficheAnalyseur(exp);
   const m = moduleDe(exp); etat.module = m;
-  $("fiche").innerHTML = entete(exp) + bloc("L'expérience", `<div class="bloc-exp"><div class="reglages-exp" id="reglages-exp"></div><div class="commandes"><button type="button" class="principal" id="b-ecouter">Écouter</button><button type="button" id="b-mesurer">Mesurer sur le signal</button></div><p class="petit" id="msg-exp"></p>
+  $("fiche").innerHTML = heros({ etiquette: exp.domaine, titre: exp.titre, texte: exp.question, aide: "Puis change les réglages juste en dessous : tu entends la différence, et tu la vois." })
+    + bloc("L'expérience", `<div class="bloc-exp"><div class="reglages-exp" id="reglages-exp"></div><div class="commandes"><button type="button" class="principal" id="b-mesurer">Mesurer sur le signal</button></div><p class="petit" id="msg-exp"></p>
     <div class="vues"><figure><canvas id="live-oscillo" role="img" aria-label="Oscilloscope en direct"></canvas><figcaption>Oscilloscope en direct</figcaption></figure><figure><canvas id="live-spectre" role="img" aria-label="Spectre en direct"></canvas><figcaption>Spectre en direct</figcaption></figure></div></div>`)
-    + `<div id="resultats"></div>` + pied(exp, exp.programme);
+    + `<div id="resultats"></div>` + bloc("L'idée", exp.explication.map(p => `<p>${esc(p)}</p>`).join(""), "explication") + pied(exp, exp.programme);
   construireControles($("reglages-exp"), m);
   $("b-ecouter").onclick = () => etat.marche ? arreterEcoute() : ecouter(m);
   $("b-mesurer").onclick = () => lancerMesure(exp, m);
