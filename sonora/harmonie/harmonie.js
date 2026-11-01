@@ -158,5 +158,10 @@ function vue(v) { stop(); etat.vue = v; for (const k of Object.keys(VUES)) $("v-
 document.querySelectorAll("#onglets button").forEach(b => b.onclick = () => vue(b.dataset.v));
 document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); });
 etat.tonique = lire("tonique", 0); etat.mode = H.MODES[lire("mode", "ionien")] ? lire("mode", "ionien") : "ionien"; etat.instrument = INSTRUMENTS[lire("instrument", "piano")] ? lire("instrument", "piano") : "piano"; etat.compo = (lire("compo", []) || []).filter(d => Number.isInteger(d) && d >= 0 && d < 7).slice(0, 16);
-vue(VUES[location.hash.slice(1)] ? location.hash.slice(1) : "explorer"); requestAnimationFrame(boucle);
+// Lien direct depuis un diaporama : #explorer?ton=fa♯&mode=pentaMajeure (tonique par son nom, mode par sa clé)
+{ const [v, q] = decodeURIComponent(location.hash.slice(1)).split("?"), prm = new URLSearchParams(q || "");
+  const ti = H.TONIQUES.findIndex(t => t.nom === prm.get("ton")); if (ti >= 0) { etat.tonique = ti; etat.tonP = ti; etat.tonC = ti; }
+  if (H.MODES[prm.get("mode")]) etat.mode = prm.get("mode");
+  vue(VUES[v] ? v : "explorer"); }
+requestAnimationFrame(boucle);
 window.HARMONIE_PRET = true;
