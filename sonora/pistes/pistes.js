@@ -54,7 +54,8 @@ async function chainePiste(ctx, pi, sortie) {
   if (e.echo.actif) { const d = ctx.createDelay(2), fb = ctx.createGain(), w = ctx.createGain(); d.delayTime.value = e.echo.temps; fb.gain.value = e.echo.retour; w.gain.value = e.echo.melange; pre.connect(d); d.connect(fb); fb.connect(d); d.connect(w); w.connect(vol); }
   if (e.reverb.actif) {
     const w = ctx.createGain(); w.gain.value = e.reverb.melange; let rv = null;
-    try { rv = await reverbFaust(ctx, e.reverb.duree, e.reverb.aigus); etat.reverbMoteur = "faust"; }
+    // Un délai maximum : si le navigateur (Safari en particulier) ne répond jamais à la création du nœud Faust, la lecture ne doit pas attendre pour toujours.
+    try { rv = await Promise.race([reverbFaust(ctx, e.reverb.duree, e.reverb.aigus), new Promise((_, ko) => setTimeout(() => ko(new Error("délai dépassé")), 4000))]); etat.reverbMoteur = "faust"; }
     catch (err) { rv = ctx.createConvolver(); rv.buffer = reponseSalle(ctx, e.reverb.duree); etat.reverbMoteur = "secours"; message("La réverbération Faust n'a pas pu démarrer dans ce navigateur : une réverbération de secours la remplace."); }
     pre.connect(rv); rv.connect(w); w.connect(vol);
     // Une source muette reste branchée sur la réverbération : sans elle, le navigateur coupe l'entrée du nœud quand les clips s'arrêtent, et la queue de la réverbération disparaît.
@@ -81,7 +82,10 @@ function planifier(ctx, projet, depuis, debut, chaines) {
 async function lire() {
   if (etat.lecture || etat.prepare) return arreter();
   const ctx = contexte(); etat.prepare = true; let chaines;
-  try { chaines = await chainesProjet(ctx, etat.projet, ctx.destination); } finally { etat.prepare = false; }
+  // Safari ne fait avancer l'horloge audio que si le contexte tourne vraiment : on attend la reprise (appelée dans le geste de l'utilisateur) et on le dit si elle n'a pas lieu.
+  try { await Promise.race([ctx.resume(), new Promise(ok => setTimeout(ok, 1500))]); } catch (_) {}
+  if (ctx.state !== "running") { etat.prepare = false; message("Le navigateur n'a pas démarré le son. Clique à nouveau sur Lire ; sur Safari, vérifie que le site n'est pas coupé dans Réglages pour ce site, Lecture automatique."); return; }
+  try { chaines = await chainesProjet(ctx, etat.projet, ctx.destination); } catch (e) { message("La lecture n'a pas pu démarrer : " + (e && e.message || e)); return; } finally { etat.prepare = false; }
   etat.debutCtx = ctx.currentTime + 0.06; etat.debutTete = etat.tete;
   etat.sources = planifier(ctx, etat.projet, etat.tete, etat.debutCtx, chaines); etat.chaines = chaines;
   if ($("metro").checked) etat.metro = metronome(ctx, etat.tete, etat.debutCtx);
@@ -290,8 +294,10 @@ document.addEventListener("visibilitychange", () => { if (document.hidden && eta
 // ---------------------------------------------------------------- démarrage : on reprend le projet rangé, avec ses sons
 async function demarrer() {
   let p = null;
-  try { const lu = await Stockage.lireProjet(); if (lu) p = P.verifierProjet(lu); } catch (_) { p = null; }
+  let rangement = true;
+  try { const lu = await Stockage.lireProjet(); if (lu) p = P.verifierProjet(lu); } catch (_) { p = null; rangement = false; }
   if (p) { for (const id of Object.keys(p.sons)) { try { const d = await Stockage.lireSon(id); if (d) etat.buffers[id] = d; } catch (_) {} } const perdus = Object.keys(p.sons).filter(id => !etat.buffers[id]); if (perdus.length) message(`${perdus.length} son${perdus.length > 1 ? "s" : ""} n'ont pas été retrouvés dans ce navigateur.`); }
+  if (!rangement) message("Le navigateur ne range pas le projet (stockage indisponible ou bloqué) : tu peux travailler, mais il ne sera pas conservé à la fermeture. Exporte en WAV pour garder ton travail.");
   etat.projet = p || P.nouveauProjet(); etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; afficher(); requestAnimationFrame(boucle); window.PISTES_PRET = true;
 }
 demarrer();
