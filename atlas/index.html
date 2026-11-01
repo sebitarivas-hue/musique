@@ -83,6 +83,32 @@ header.haut { flex-wrap: wrap; } header.haut nav { flex-wrap: wrap; }
 .comparaison { background: #fff; border: 2px solid var(--noir); border-radius: 24px; padding: 16px 18px; margin-top: 12px; } .comparaison h3 { font: 400 1.25rem/1.15 var(--f-aff); margin: 0 0 6px; }
 .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; } @media (max-width: 640px) { .duo { grid-template-columns: 1fr; } }
 .duo a { display: block; padding: 14px 16px; border-radius: 20px; background: var(--noir); color: var(--acide); text-decoration: none; font-weight: 600; } .duo a span { display: block; font-weight: 400; color: #fff; font-size: .85rem; margin-top: 4px; }
+@font-face { font-family: "Archivo Variable"; src: url("../polices/archivo-variable-latin.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
+@font-face { font-family: "Plex Mono Local"; src: url("../polices/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+/* Direction SIGNAL (même bandeau, mêmes tuiles que le Labo du site) : fond noir, titre condensé en deux lignes, vert acide, mono, angles droits. */
+:root { --rouge: #FF5638; --f-cond: "Archivo Variable", "Archivo Black", Arial, sans-serif; --f-mono: "Plex Mono Local", ui-monospace, Menlo, monospace; }
+header.haut nav a { border-radius: 0; font: 500 .8rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; }
+header.haut .titre { font-family: var(--f-cond); font-stretch: 62%; font-weight: 900; text-transform: uppercase; font-size: 1.3rem; }
+.bande, .fiche-tete { position: relative; background: var(--noir); color: var(--papier); margin: 0 -16px 20px; padding: clamp(18px, 3vw, 34px); padding-right: clamp(64px, 10vw, 120px); border-radius: 0; box-shadow: none; overflow: hidden; }
+.bande::before, .fiche-tete::before { content: ""; position: absolute; top: 0; right: 0; width: clamp(40px, 7vw, 76px); height: clamp(46px, 8vw, 88px); background: var(--c, var(--acide)); }
+.bande::after, .fiche-tete::after { content: ""; position: absolute; top: clamp(46px, 8vw, 88px); right: 0; width: clamp(12px, 2.2vw, 24px); height: clamp(22px, 4vw, 44px); background: var(--rouge); }
+.bande .etiq, .fiche-tete .etiq { background: var(--acide); color: var(--noir); }
+.bande h1, .fiche-tete h1 { font-family: var(--f-cond); font-weight: 900; font-stretch: 62%; font-size: clamp(2.4rem, 9vw, 5.6rem); line-height: .9; letter-spacing: -.005em; text-transform: uppercase; color: var(--papier); margin: 12px 0 10px; }
+.bande h1 .l2, .fiche-tete h1 .l2 { color: var(--acide); }
+.bande .lead, .fiche-tete p { color: #D3D2CA; font: 400 clamp(.84rem, 1.4vw, 1rem)/1.6 var(--f-mono); letter-spacing: .04em; max-width: 62ch; }
+.fiche-tete .meta span { background: transparent; border: 1px solid #55554E; border-radius: 0; color: var(--papier); font: 500 .75rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; padding: 4px 9px; }
+.recherche input { border-radius: 0; border-width: 2px; font-family: var(--f-mono); font-size: 1.05rem; letter-spacing: .02em; }
+.suggestions a, .liens li, details.concept, .carte-wrap { border-radius: 0; }
+.pastille { border-radius: 0; box-shadow: none; font: 500 .8rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; }
+.pastille:hover, .pastille:focus-visible { background: var(--acide); color: var(--noir); outline: none; }
+.liens .nat { border-radius: 0; }
+h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-transform: uppercase; font-size: 1.7rem; letter-spacing: 0; border-top-width: 3px; }
+.grille { gap: 0; border-top: 2px solid var(--noir); border-left: 2px solid var(--noir); }
+.carte { position: relative; background: var(--papier); color: var(--noir); border-radius: 0; box-shadow: none; border-right: 2px solid var(--noir); border-bottom: 2px solid var(--noir); border-top: 10px solid var(--c, var(--noir)); min-height: 170px; gap: 8px; }
+.carte:hover, .carte:focus-visible { transform: none; background: var(--acide); outline: none; }
+.carte b { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-transform: uppercase; font-size: 1.35rem; line-height: 1; }
+.carte span { opacity: .85; } .carte .suite { font: 500 .78rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; opacity: 1; }
+@media (max-width: 640px) { .bande, .fiche-tete { margin: 0 -16px 16px; } }
 </style>
 </head>
 <body>
@@ -421,6 +447,17 @@ function rendre() {
   const nom = r === "e" && E[a] ? E[a].name + ", " : ""; document.title = nom + "Atlas mondial des musiques";
   window.scrollTo(0, 0);
 }
+/* En-tête commun : les éléments de tête (étiquette, titre, phrase) sont rassemblés dans le bandeau noir, et le titre est coupé en deux lignes. */
+function habillerAtlas() {
+  const prem = app.firstElementChild; if (!prem || prem.classList.contains("bande") || prem.classList.contains("fiche-tete") && prem.querySelector("h1.ph")) return;
+  const sepH1 = h => { if (h.children.length || h.classList.contains("ph")) return; const m = h.textContent.trim().split(" "), k = m.length < 2 ? 1 : Math.ceil(m.length / 2); h.classList.add("ph"); h.innerHTML = `<span>${esc(m.slice(0, k).join(" "))}</span>${m.length > 1 ? ` <span class="l2">${esc(m.slice(k).join(" "))}</span>` : ""}`; };
+  if (prem.classList.contains("fiche-tete")) { const h = prem.querySelector("h1"); if (h) sepH1(h); return; }
+  if (!prem.classList.contains("etiq")) return;
+  const b = document.createElement("header"); b.className = "bande"; let n = prem;
+  while (n && (n.classList.contains("etiq") || n.tagName === "H1" || n.classList.contains("lead")) && b.children.length < 3) { const s = n.nextElementSibling; b.appendChild(n); n = s; }
+  const h = b.querySelector("h1"); if (h) sepH1(h); app.insertBefore(b, n);
+}
+new MutationObserver(habillerAtlas).observe(app, { childList: true });
 brancherRecherche(); window.addEventListener("hashchange", rendre); rendre();
 </script>
 </body>
