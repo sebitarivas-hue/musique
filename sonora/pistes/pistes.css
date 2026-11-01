@@ -10,20 +10,25 @@ button.enreg[aria-pressed="true"] { background: var(--rouge); color: #fff; borde
 .selection { border: 2px solid var(--noir); background: #fff; padding: 6px 10px; }
 .ligne { display: grid; grid-template-columns: 210px minmax(0, 1fr); border: 2px solid var(--noir); background: #fff; }
 .entetes { border-right: 2px solid var(--noir); } .entetes .ent-regle { height: 28px; border-bottom: 2px solid var(--noir); background: var(--tint); }
-.entete { height: 104px; overflow: hidden; border-bottom: 1px solid var(--gris); padding: 5px 8px; display: grid; grid-template-columns: auto auto auto; justify-content: start; gap: 3px 6px; align-content: start; font-size: .74rem; }
-.entete.armee { background: #fff1ee; box-shadow: inset 4px 0 0 var(--rouge); } .entete input[type=text] { grid-column: 1 / -1; font: 600 .85rem var(--f-body); border: 1px solid var(--tint); padding: 3px 4px; }
+.entete { height: 128px; overflow: hidden; border-bottom: 1px solid var(--gris); padding: 5px 8px; display: flex; flex-direction: column; gap: 4px; font-size: .74rem; }
+.ent-b { display: flex; gap: 4px; flex-wrap: wrap; } .ent-r { display: flex; align-items: center; gap: 6px; height: 20px; font-weight: 600; } .ent-r input { flex: 1; min-width: 40px; } .ent-r output { min-width: 3.5em; text-align: right; font: .7rem var(--f-mono); }
+.entete.armee { background: #fff1ee; box-shadow: inset 4px 0 0 var(--rouge); } .entete input[type=text] { font: 600 .85rem var(--f-body); border: 1px solid var(--tint); padding: 3px 4px; }
 .entete button { min-height: 28px; padding: 2px 8px; font-size: .75rem; } .entete button[aria-pressed="true"] { background: var(--noir); color: var(--acide); }
 .entete label { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; height: 16px; } .entete label input { flex: 1; height: 14px; margin: 0; }
 .defile { position: relative; overflow-x: auto; overflow-y: hidden; }
 .regle { position: relative; height: 28px; border-bottom: 2px solid var(--noir); background: var(--tint); cursor: pointer; }
 .regle span { position: absolute; top: 0; height: 100%; border-left: 1px solid var(--noir); padding-left: 3px; font: 500 .7rem/28px var(--f-mono); }
-.voie { position: relative; height: 104px; border-bottom: 1px solid var(--gris); background-image: linear-gradient(to right, rgba(0,0,0,.08) 1px, transparent 1px); }
+.voie { position: relative; height: 128px; border-bottom: 1px solid var(--gris); background-image: linear-gradient(to right, rgba(0,0,0,.08) 1px, transparent 1px); }
 .voie.survol { background-color: #fbffe0; }
-.clip { position: absolute; top: 6px; height: 92px; background: var(--acide); border: 2px solid var(--noir); cursor: grab; overflow: hidden; touch-action: none; }
-.clip.choisi { outline: 3px solid var(--bleu); outline-offset: 1px; z-index: 2; } .clip canvas { width: 100%; height: 70px; display: block; }
+.clip { position: absolute; top: 6px; height: 116px; background: var(--acide); border: 2px solid var(--noir); cursor: grab; overflow: hidden; touch-action: none; }
+.clip.choisi { outline: 3px solid var(--bleu); outline-offset: 1px; z-index: 2; } .clip canvas { width: 100%; height: 94px; display: block; }
 .clip .nom-clip { font: 600 .7rem/16px var(--f-body); padding: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--noir); color: var(--acide); }
 .clip.enreg-en-cours { background: #ffd9d1; }
 .curseur { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--rouge); pointer-events: none; z-index: 3; }
-@media (max-width: 760px) { .ligne { grid-template-columns: 120px minmax(0, 1fr); } .entete { grid-template-columns: 1fr; } .entete .vol-pan { display: none; } #pistes-app { padding: 8px; } }
+@media (max-width: 760px) { .ligne { grid-template-columns: 120px minmax(0, 1fr); } .entete { grid-template-columns: 1fr; } #pistes-app { padding: 8px; } }
 .selection[hidden] { display: none; }
 .entete .b-arme { min-width: 44px; }
+.effets { border: 2px solid var(--noir); background: #fff; padding: 10px 12px; } .effets[hidden] { display: none; } .effets h2 { margin: 0 0 4px; font-size: 1rem; }
+.fx-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; } .fx-grille fieldset { border: 2px solid var(--noir); margin: 0; padding: 8px 10px; } .fx-grille legend { font-weight: 700; padding: 0 4px; }
+.fx-r { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: .8rem; font-weight: 600; } .fx-r input[type=range] { flex: 1; } .fx-r output { min-width: 4.5em; text-align: right; font: .75rem var(--f-mono); } .fx-r select { flex: 1; min-height: 32px; }
+.fx-ex { font-size: .8rem; color: var(--gris); margin: 6px 0 0; } .entete .b-fx[aria-pressed="true"] { background: var(--acide); color: var(--noir); }

@@ -6,7 +6,19 @@ const nouvelId = p => p + Date.now().toString(36) + (compteur++).toString(36);
 export function nouveauProjet({ titre = "Sans titre", tempo = 100, temps = 4 } = {}) {
   return { format: "sonora-pistes", version: 1, titre, tempo, temps, pistes: [nouvellePiste("Piste 1"), nouvellePiste("Piste 2")], sons: {} };
 }
-export function nouvellePiste(nom) { return { id: nouvelId("p"), nom, volume: 0.8, pan: 0, muet: false, solo: false, clips: [] }; }
+export function nouvellePiste(nom) { return { id: nouvelId("p"), nom, volume: 0.8, pan: 0, muet: false, solo: false, clips: [], effets: effetsParDefaut() }; }
+// Effets d'une piste : filtre, écho, réverbération. Chacun a un interrupteur et des réglages ; ils s'appliquent à toute la piste, avant le volume.
+export const effetsParDefaut = () => ({ filtre: { actif: false, type: "passe-bas", frequence: 1500 }, echo: { actif: false, temps: 0.35, retour: 0.4, melange: 0.35 }, reverb: { actif: false, duree: 2, melange: 0.3 } });
+export function effetsDe(pi) { const d = effetsParDefaut(), e = pi.effets || {}; return { filtre: { ...d.filtre, ...(e.filtre || {}) }, echo: { ...d.echo, ...(e.echo || {}) }, reverb: { ...d.reverb, ...(e.reverb || {}) } }; }
+export const LIMITES_EFFETS = { frequence: [60, 12000], temps: [0.05, 1.5], retour: [0, 0.85], melange: [0, 1], duree: [0.3, 8] };
+// Explications données à côté de chaque effet.
+export const EXPLICATIONS = {
+  filtre: "Un filtre ne garde qu'une partie des fréquences. Le passe-bas enlève les aigus : le son devient sourd, comme entendu derrière une porte. Le passe-haut enlève les graves : le son devient fin, comme au téléphone. La fréquence de coupure dit où passe la limite.",
+  echo: "Le son revient après un retard, de plus en plus faible, comme quand on crie face à une falaise : il fait l'aller-retour. Le temps règle l'écart entre deux répétitions, le retour la part qui revient à chaque fois (plus il est haut, plus les répétitions durent), le mélange la part de l'effet dans ce qu'on entend.",
+  reverb: "Dans une salle, le son rebondit sur les murs, le sol et le plafond des milliers de fois ; ces réflexions se mêlent et s'éteignent peu à peu. La durée est le temps que met le son à s'éteindre presque complètement (une perte de 60 décibels) : moins d'une seconde dans une salle de classe, plusieurs secondes dans une grande église.",
+};
+// Distance d'une paroi qui donnerait un écho de ce temps (aller-retour à 343 m/s, l'air à 20 °C).
+export const distanceEcho = t => 343 * t / 2;
 export const dureeTemps = p => 60 / p.tempo, dureeMesure = p => p.temps * 60 / p.tempo;
 // Aimante un temps sur la grille (en fraction de temps : 1 = le temps, 0.25 = la double croche). grille 0 : pas d'aimant.
 export function aimanter(p, t, grille = 1) { if (!grille) return Math.max(0, t); const pas = dureeTemps(p) * grille; return Math.max(0, Math.round(t / pas) * pas); }
@@ -59,7 +71,7 @@ export function planLecture(p, depuis = 0) {
   for (const pi of pistesAudibles(p)) for (const c of pi.clips) {
     const fin = c.debut + c.duree; if (fin <= depuis) continue;
     const saute = Math.max(0, depuis - c.debut);
-    out.push({ piste: pi.id, clip: c.id, son: c.son, quand: Math.max(0, c.debut - depuis), decalage: c.decalage + saute, duree: c.duree - saute, gain: c.gain * pi.volume, pan: pi.pan });
+    out.push({ piste: pi.id, clip: c.id, son: c.son, quand: Math.max(0, c.debut - depuis), decalage: c.decalage + saute, duree: c.duree - saute, gain: c.gain * pi.volume, gainClip: c.gain, pan: pi.pan });
   }
   return out.sort((a, b) => a.quand - b.quand);
 }

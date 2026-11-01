@@ -23,26 +23,42 @@ function bufferDe(ctx, id) {
   const buf = ctx.createBuffer(d.canaux.length, d.canaux[0].length, d.sr); d.canaux.forEach((c, i) => buf.copyToChannel(c, i));
   d.cache = { ctx, buf }; return buf;
 }
-// Le graphe : un gain par clip (avec fondus de 5 ms), un panoramique et une sortie communs. Renvoie les sources pour pouvoir les arrêter.
+// Réponse impulsionnelle de réverbération : un bruit stéréo qui décroît de 60 dB en `duree` secondes. Graine fixe : l'export est reproductible.
+function reponseSalle(ctx, duree) {
+  const n = Math.max(1, Math.round(duree * ctx.sampleRate)), ir = ctx.createBuffer(2, n, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) { const x = ir.getChannelData(c); let s = 12345 + c * 777; for (let i = 0; i < n; i++) { s = (s * 1664525 + 1013904223) >>> 0; x[i] = (s / 4294967296 * 2 - 1) * Math.pow(10, -3 * i / n); } }
+  return ir;
+}
+// La chaîne d'une piste : clips -> bus -> [filtre] -> son direct + [écho] + [réverbération] -> volume -> panoramique -> sortie.
+function chainePiste(ctx, pi, sortie) {
+  const e = P.effetsDe(pi), bus = ctx.createGain(), vol = ctx.createGain(); vol.gain.value = pi.volume;
+  let pre = bus;
+  if (e.filtre.actif) { const f = ctx.createBiquadFilter(); f.type = e.filtre.type === "passe-haut" ? "highpass" : "lowpass"; f.frequency.value = e.filtre.frequence; f.Q.value = 0.707; bus.connect(f); pre = f; }
+  pre.connect(vol);
+  if (e.echo.actif) { const d = ctx.createDelay(2), fb = ctx.createGain(), w = ctx.createGain(); d.delayTime.value = e.echo.temps; fb.gain.value = e.echo.retour; w.gain.value = e.echo.melange; pre.connect(d); d.connect(fb); fb.connect(d); d.connect(w); w.connect(vol); }
+  if (e.reverb.actif) { const cv = ctx.createConvolver(), w = ctx.createGain(); cv.buffer = reponseSalle(ctx, e.reverb.duree); w.gain.value = e.reverb.melange; pre.connect(cv); cv.connect(w); w.connect(vol); }
+  const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null; if (pan) { pan.pan.value = pi.pan; vol.connect(pan); pan.connect(sortie); } else vol.connect(sortie);
+  return { bus, vol, pan };
+}
+// Le graphe complet : un gain par clip (fondus de 5 ms), puis la chaîne de sa piste. Renvoie les sources (pour les arrêter) et les chaînes (pour régler en direct).
 function construire(ctx, projet, depuis, debut, sortie) {
-  const sources = [], f = 0.005;
+  const sources = [], chaines = {}, f = 0.005;
+  for (const pi of P.pistesAudibles(projet)) chaines[pi.id] = chainePiste(ctx, pi, sortie);
   for (const e of P.planLecture(projet, depuis)) {
-    const buf = bufferDe(ctx, e.son); if (!buf) continue;
+    const buf = bufferDe(ctx, e.son), ch = chaines[e.piste]; if (!buf || !ch) continue;
     const src = ctx.createBufferSource(); src.buffer = buf;
-    const g = ctx.createGain(), t0 = debut + e.quand, t1 = t0 + e.duree;
-    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(e.gain, t0 + Math.min(f, e.duree / 2)); g.gain.setValueAtTime(e.gain, Math.max(t0 + f, t1 - f)); g.gain.linearRampToValueAtTime(0, t1);
-    const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null; if (pan) pan.pan.value = e.pan;
-    src.connect(g); (pan ? (g.connect(pan), pan) : g).connect(sortie);
-    src.start(t0, e.decalage, e.duree); sources.push(src);
+    const g = ctx.createGain(), t0 = debut + e.quand, t1 = t0 + e.duree, gc = e.gainClip;
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(gc, t0 + Math.min(f, e.duree / 2)); g.gain.setValueAtTime(gc, Math.max(t0 + f, t1 - f)); g.gain.linearRampToValueAtTime(0, t1);
+    src.connect(g); g.connect(ch.bus); src.start(t0, e.decalage, e.duree); sources.push(src);
   }
-  return sources;
+  sources.chaines = chaines; return sources;
 }
 
 // ---------------------------------------------------------------- lecture
 function lire() {
   if (etat.lecture) return arreter();
   const ctx = contexte(); etat.debutCtx = ctx.currentTime + 0.06; etat.debutTete = etat.tete;
-  etat.sources = construire(ctx, etat.projet, etat.tete, etat.debutCtx, ctx.destination);
+  etat.sources = construire(ctx, etat.projet, etat.tete, etat.debutCtx, ctx.destination); etat.chaines = etat.sources.chaines;
   if ($("metro").checked) etat.metro = metronome(ctx, etat.tete, etat.debutCtx);
   etat.lecture = true; $("b-lire").innerHTML = "&#9632; Arrêter"; badge(etat.enreg ? "enregistrement" : "lecture", etat.enreg ? "erreur" : "marche");
 }
@@ -140,21 +156,22 @@ function afficher() {
   // règle : une marque par mesure
   const dm = P.dureeMesure(p); let r = ""; for (let m = 0; m * dm * etat.pxs < largeur; m++) r += `<span style="left:${m * dm * etat.pxs}px">${m + 1}</span>`;
   $("regle").innerHTML = r; $("regle").style.width = largeur + "px"; $("voies").style.width = largeur + "px";
-  $("entetes").innerHTML = `<div class="ent-regle"></div>` + p.pistes.map(pi => `<div class="entete${etat.arme === pi.id ? " armee" : ""}" data-piste="${pi.id}">
+  $("entetes").innerHTML = `<div class="ent-regle"></div>` + p.pistes.map(pi => { const fx = P.effetsDe(pi), nfx = ["filtre", "echo", "reverb"].filter(k => fx[k].actif).length; return `<div class="entete${etat.arme === pi.id ? " armee" : ""}" data-piste="${pi.id}">
     <input type="text" value="${esc(pi.nom)}" aria-label="Nom de la piste" maxlength="30">
-    <button type="button" class="b-arme" aria-pressed="${etat.arme === pi.id}" title="Enregistrer sur cette piste">&#9679; Rec</button><button type="button" class="b-muet" aria-pressed="${pi.muet}" title="Muet">M</button><button type="button" class="b-solo" aria-pressed="${pi.solo}" title="Solo">S</button>
-    <label class="vol-pan">Vol.<input type="range" class="r-vol" min="0" max="1.5" step="0.01" value="${pi.volume}" aria-label="Volume de ${esc(pi.nom)}"></label>
-    <label class="vol-pan">Pan.<input type="range" class="r-pan" min="-1" max="1" step="0.01" value="${pi.pan}" aria-label="Panoramique de ${esc(pi.nom)}"></label></div>`).join("");
+    <div class="ent-b"><button type="button" class="b-arme" aria-pressed="${etat.arme === pi.id}" title="Enregistrer sur cette piste">&#9679; Rec</button><button type="button" class="b-muet" aria-pressed="${pi.muet}" title="Muet">M</button><button type="button" class="b-solo" aria-pressed="${pi.solo}" title="Solo">S</button><button type="button" class="b-fx" aria-pressed="${etat.fx === pi.id}" title="Effets de la piste">Effets${nfx ? " " + nfx : ""}</button></div>
+    <label class="ent-r">Volume<input type="range" class="r-vol" min="0" max="1.5" step="0.01" value="${pi.volume}" aria-label="Volume de ${esc(pi.nom)}"><output class="o-vol">${Math.round(pi.volume * 100)} %</output></label>
+    <label class="ent-r">G<input type="range" class="r-pan" min="-1" max="1" step="0.01" value="${pi.pan}" aria-label="Panoramique de ${esc(pi.nom)}">D</label></div>`; }).join("");
   const grille = `background-size: ${P.dureeTemps(p) * etat.pxs}px 100%`;
   $("voies").innerHTML = p.pistes.map(pi => `<div class="voie" data-piste="${pi.id}" style="${grille}" aria-label="Piste ${esc(pi.nom)}">${pi.clips.map(c => `<div class="clip${etat.choisi === c.id ? " choisi" : ""}" data-clip="${c.id}" style="left:${c.debut * etat.pxs}px;width:${Math.max(4, c.duree * etat.pxs)}px" tabindex="0" aria-label="${esc((p.sons[c.son] || {}).nom || "son")}, à ${c.debut.toFixed(2)} s"><div class="nom-clip">${esc((p.sons[c.son] || {}).nom || "son")}</div><canvas></canvas></div>`).join("")}</div>`).join("");
   for (const el of document.querySelectorAll(".clip[data-clip]")) { const r2 = P.trouverClip(p, el.dataset.clip); dessinerOnde(el.querySelector("canvas"), p.sons[r2.clip.son], r2.clip); }
-  brancherEntetes(); brancherVoies(); majSelection();
+  brancherEntetes(); brancherVoies(); majSelection(); afficherEffets();
 }
 function majSelection() {
   const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); $("selection").hidden = !r; if (!r) return;
   $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain;
 }
 let minuteur = null;
+const ranger = () => { clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(() => {}), 300); };
 function changer() { afficher(); clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(e => message("Le projet n'a pas pu être rangé : " + e.message)), 250); if (etat.lecture && !etat.enreg) { arreter(); } }
 
 function brancherEntetes() {
@@ -164,8 +181,9 @@ function brancherEntetes() {
     el.querySelector(".b-arme").onclick = () => { etat.arme = pi.id; afficher(); };
     el.querySelector(".b-muet").onclick = () => { pi.muet = !pi.muet; changer(); };
     el.querySelector(".b-solo").onclick = () => { pi.solo = !pi.solo; changer(); };
-    el.querySelector(".r-vol").oninput = e => { pi.volume = +e.target.value; clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet), 300); };
-    el.querySelector(".r-pan").oninput = e => { pi.pan = +e.target.value; clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet), 300); };
+    el.querySelector(".r-vol").oninput = e => { pi.volume = +e.target.value; el.querySelector(".o-vol").textContent = Math.round(pi.volume * 100) + " %"; const ch = etat.lecture && etat.chaines && etat.chaines[pi.id]; if (ch) ch.vol.gain.setTargetAtTime(pi.volume, etat.ctx.currentTime, 0.02); ranger(); };
+    el.querySelector(".r-pan").oninput = e => { pi.pan = +e.target.value; const ch = etat.lecture && etat.chaines && etat.chaines[pi.id]; if (ch && ch.pan) ch.pan.pan.setTargetAtTime(pi.pan, etat.ctx.currentTime, 0.02); ranger(); };
+    el.querySelector(".b-fx").onclick = () => { etat.fx = etat.fx === pi.id ? null : pi.id; afficher(); if (etat.fx) $("effets").scrollIntoView({ block: "nearest" }); };
   }
 }
 function tempsDe(ev) { const r = $("voies").getBoundingClientRect(); return Math.max(0, (ev.clientX - r.left) / etat.pxs); }
@@ -185,10 +203,36 @@ function brancherVoies() {
   }
 }
 
+
+// ---------------------------------------------------------------- effets d'une piste, avec leur explication
+const curseur = (cle, lib, val, min, max, pas, fmt) => `<label class="fx-r">${lib}<input type="range" data-fx="${cle}" min="${min}" max="${max}" step="${pas}" value="${val}"><output data-o="${cle}">${fmt(val)}</output></label>`;
+const pc = v => Math.round(v * 100) + " %", sec = v => (+v).toFixed(2).replace(".", ",") + " s", hzf = v => (v >= 1000 ? (v / 1000).toFixed(1).replace(".", ",") + " kHz" : Math.round(v) + " Hz");
+function afficherEffets() {
+  const z = $("effets"), pi = etat.fx && P.trouverPiste(etat.projet, etat.fx); z.hidden = !pi; if (!pi) return;
+  const e = P.effetsDe(pi), L = P.LIMITES_EFFETS;
+  z.innerHTML = `<h2>Effets de la piste « ${esc(pi.nom)} »</h2><p class="petit">Ils s'appliquent à toute la piste, dans l'ordre : filtre, puis écho et réverbération ajoutés au son direct. Ils sont aussi dans le WAV exporté.</p>
+  <div class="fx-grille">
+   <fieldset><legend><label><input type="checkbox" data-actif="filtre"${e.filtre.actif ? " checked" : ""}> Filtre</label></legend>
+    <label class="fx-r">Type<select data-fx="filtre.type"><option value="passe-bas"${e.filtre.type === "passe-bas" ? " selected" : ""}>passe-bas (enlève les aigus)</option><option value="passe-haut"${e.filtre.type === "passe-haut" ? " selected" : ""}>passe-haut (enlève les graves)</option></select></label>
+    <label class="fx-r">Coupure<input type="range" data-fxlog="filtre.frequence" min="0" max="1000" step="1" value="${Math.round(1000 * Math.log(e.filtre.frequence / L.frequence[0]) / Math.log(L.frequence[1] / L.frequence[0]))}" aria-label="Fréquence de coupure"><output data-o="filtre.frequence">${hzf(e.filtre.frequence)}</output></label><p class="fx-ex">${esc(P.EXPLICATIONS.filtre)}</p></fieldset>
+   <fieldset><legend><label><input type="checkbox" data-actif="echo"${e.echo.actif ? " checked" : ""}> Écho</label></legend>
+    ${curseur("echo.temps", "Temps", e.echo.temps, L.temps[0], L.temps[1], 0.01, sec)}${curseur("echo.retour", "Retour", e.echo.retour, L.retour[0], L.retour[1], 0.01, pc)}${curseur("echo.melange", "Mélange", e.echo.melange, L.melange[0], L.melange[1], 0.01, pc)}
+    <p class="fx-ex">${esc(P.EXPLICATIONS.echo)} <span id="fx-distance">Avec ${sec(e.echo.temps)}, la paroi serait à environ ${Math.round(P.distanceEcho(e.echo.temps))} m.</span></p></fieldset>
+   <fieldset><legend><label><input type="checkbox" data-actif="reverb"${e.reverb.actif ? " checked" : ""}> Réverbération</label></legend>
+    ${curseur("reverb.duree", "Durée", e.reverb.duree, L.duree[0], L.duree[1], 0.1, sec)}${curseur("reverb.melange", "Mélange", e.reverb.melange, L.melange[0], L.melange[1], 0.01, pc)}<p class="fx-ex">${esc(P.EXPLICATIONS.reverb)}</p></fieldset>
+  </div>`;
+  const regler = (chemin, v) => { const [k, c] = chemin.split("."); pi.effets = P.effetsDe(pi); pi.effets[k][c] = v; };
+  z.querySelectorAll("[data-actif]").forEach(x => x.onchange = () => { pi.effets = P.effetsDe(pi); pi.effets[x.dataset.actif].actif = x.checked; changer(); });
+  z.querySelectorAll("input[data-fxlog]").forEach(x => { x.oninput = () => { const v = Math.round(L.frequence[0] * Math.pow(L.frequence[1] / L.frequence[0], +x.value / 1000)); regler("filtre.frequence", v); z.querySelector('[data-o="filtre.frequence"]').textContent = hzf(v); ranger(); }; x.onchange = () => { if (etat.lecture) { arreter(); lire(); } }; });
+  z.querySelectorAll("select[data-fx]").forEach(x => x.onchange = () => { regler(x.dataset.fx, x.value); changer(); });
+  z.querySelectorAll("input[data-fx]").forEach(x => { x.oninput = () => { const v = +x.value, fmt = /frequence/.test(x.dataset.fx) ? hzf : /temps|duree/.test(x.dataset.fx) ? sec : pc; regler(x.dataset.fx, v); z.querySelector(`[data-o="${x.dataset.fx}"]`).textContent = fmt(v); if (x.dataset.fx === "echo.temps") $("fx-distance").textContent = `Avec ${sec(v)}, la paroi serait à environ ${Math.round(P.distanceEcho(v))} m.`; ranger(); }; x.onchange = () => { if (etat.lecture) { arreter(); lire(); } }; });
+}
+
 // ---------------------------------------------------------------- export
 async function exporter() {
   const p = etat.projet, duree = P.dureeTotale(p); if (!duree) { message("Rien à exporter : ajoute d'abord un son."); return; }
-  const sr = 44100, ctx = new OfflineAudioContext(2, Math.ceil((duree + 0.05) * sr), sr), t0 = performance.now();
+  const queue = Math.max(0.05, ...p.pistes.map(pi => { const e = P.effetsDe(pi); return Math.max(e.reverb.actif ? e.reverb.duree : 0, e.echo.actif ? Math.min(6, e.echo.temps * Math.ceil(Math.log(0.001) / Math.log(Math.max(0.01, e.echo.retour)))) : 0); }));
+  const sr = 44100, ctx = new OfflineAudioContext(2, Math.ceil((duree + queue) * sr), sr), t0 = performance.now();
   construire(ctx, p, 0, 0, ctx.destination); const buf = await ctx.startRendering(), canaux = [buf.getChannelData(0), buf.getChannelData(1)];
   const w = encoderWAV(canaux, sr, 16); etat.dernierExport = { octets: w.octets.length, ecretes: w.ecretes, duree };
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([w.octets], { type: "audio/wav" })); a.download = (p.titre || "pistes").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9_-]+/g, "-") + ".wav"; document.body.appendChild(a); a.click(); a.remove();
