@@ -26,3 +26,6 @@ body { height: auto; overflow: auto; }
 .compo { display: flex; flex-wrap: wrap; gap: 6px; min-height: 92px; border: 2px dashed var(--noir); padding: 8px; background: #fff; margin: 8px 0; }
 .compo .carte-acc { min-width: 96px; }
 @media (max-width: 760px) { .harmonie { padding: 10px; } .clavier-h { height: 120px; } .clavier-h .bl { font-size: .6rem; } .onglets-h button { font-size: .85rem; } }
+
+/* Les titres de l'Harmonie contiennent des chiffres romains où la casse compte (I, vi, IV) et des noms de notes : jamais de majuscules forcées. */
+#contenu .heros h1 { text-transform: none; font-stretch: 75%; letter-spacing: 0; }

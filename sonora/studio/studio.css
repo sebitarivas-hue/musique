@@ -140,3 +140,13 @@ button.mode { border-style: dashed; } button.mode[aria-pressed="true"] { border-
 /* Le mode Découvrir du Studio : même titre condensé. */
 .scene h1, .scene h2 { font-family: "Archivo Variable", "Archivo Black", Arial, sans-serif; font-stretch: 62%; font-weight: 900; text-transform: uppercase; letter-spacing: -.005em; }
 .scene h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); line-height: .92; }
+
+/* Bandeau fixe des pages Pistes et Harmonie, même direction SIGNAL que les bandeaux de fiche. */
+.bandeau-page { position: relative; display: block; background: var(--noir); color: var(--papier); padding: 14px 22px 14px; overflow: hidden; }
+.bandeau-page::before { content: ""; position: absolute; top: 0; right: 0; width: 44px; height: 48px; background: var(--acide); }
+.bandeau-page::after { content: ""; position: absolute; top: 48px; right: 0; width: 14px; height: 26px; background: var(--rouge); }
+.bandeau-page .scene-etiq { display: inline-block; background: var(--acide); color: var(--noir); }
+.bp-titre { margin: 6px 0 4px; max-width: none; font-family: "Archivo Variable", "Archivo Black", Arial, sans-serif; font-weight: 900; font-stretch: 62%; font-size: clamp(1.8rem, 4.6vw, 3.2rem); line-height: .92; text-transform: uppercase; letter-spacing: -.005em; }
+.bp-titre .acide { color: var(--acide); }
+.bp-texte { margin: 0; max-width: 70ch; color: #D3D2CA; font: 400 clamp(.78rem, 1.3vw, .92rem)/1.5 var(--f-mono); letter-spacing: .03em; }
+@media (max-width: 760px) { .bandeau-page { padding: 10px 14px; } .bandeau-page::before { width: 30px; height: 34px; } .bandeau-page::after { top: 34px; width: 10px; height: 18px; } }
