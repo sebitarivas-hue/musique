@@ -119,6 +119,12 @@ h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-trans
 .fe-cadre { flex: 1 1 auto; width: 100%; border: 0; background: #fff; min-height: 0; }
 .fe-aide { margin: 0; padding: 6px 14px; font: 400 12px ui-monospace, Menlo, monospace; color: #BEBDB4; background: #11110F; }
 @media (max-width: 640px) { .fe-boite { box-shadow: none; } .fe-hote { display: none; } }
+.frise-wrap { position: relative; border: 2px solid var(--noir); background: var(--papier); margin-top: 12px; touch-action: none; }
+.frise-wrap canvas { display: block; width: 100%; cursor: grab; touch-action: none; outline-offset: -4px; }
+.frise-ctrl { position: absolute; right: 10px; bottom: 40px; display: flex; gap: 0; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100% - 20px); }
+.frise-ctrl button { font: 700 1.05rem/1 var(--f-mono, ui-monospace); min-width: 40px; height: 40px; padding: 0 10px; background: var(--noir); color: var(--acide); border: 2px solid var(--noir); border-left-width: 0; cursor: pointer; }
+.frise-ctrl button:first-child { border-left-width: 2px; } .frise-ctrl button:hover, .frise-ctrl button:focus-visible { background: var(--acide); color: var(--noir); outline: none; }
+.frise-aide { margin: 0; padding: 6px 10px; font: 400 12px var(--f-mono, ui-monospace); color: var(--gris); border-top: 1px solid #d8d7ce; }
 </style>
 </head>
 <body>
@@ -324,26 +330,80 @@ function disposer() {
 }
 function vueFrise(sel) {
   if (sel && E[sel]) { FRISE.sel = sel; FRISE.fam.add(E[sel].family); }
-  return `<span class="etiq">Frise chronologique</span><h1>Le temps des musiques</h1><p class="lead">Chaque étiquette est placée à sa date de départ. Touche-en une : son passé et son avenir s'allument.</p>
+  return `<span class="etiq">Frise chronologique</span><h1>Le temps des musiques</h1><p class="lead">Un point par musique, placé à sa date de départ, une bande par famille. Zoome pour faire apparaître les noms, touche un point : son passé et son avenir s'allument.</p>
   <div class="pastilles" id="filtres">${D.families.map(f => `<button type="button" class="pastille" data-f="${f.id}" style="--c:${COUL[f.id]}" aria-pressed="${FRISE.fam.has(f.id)}">${esc(f.name.split(",")[0])}</button>`).join("")}</div>
   <div class="pastilles" id="groupes">${Object.keys(GROUPES_TYPE).map(g => `<button type="button" class="pastille clair" data-g="${g}" aria-pressed="${FRISE.groupes.has(g)}">${g}</button>`).join("")}<button type="button" class="pastille clair" id="tout" aria-pressed="${FRISE.tout}">Toutes les filiations</button></div>
   <div class="champs"><label for="de">De</label><input id="de" type="number" min="1890" max="2030" step="10" value="${FRISE.de}"><label for="a">à</label><input id="a" type="number" min="1890" max="2030" step="10" value="${FRISE.a}"></div>
   <div class="carte-wrap" id="cw"></div><div id="detail" style="margin-top:14px"></div>`;
 }
+/* La frise est un nuage zoomable : une bande par famille, un point par entrée à sa date de départ, des étiquettes qui apparaissent par ordre d'importance quand on zoome.
+   Glisser pour se déplacer, molette ou pincement pour zoomer, double clic pour entrer, toucher un point pour voir son passé et son avenir s'allumer. */
+const VUE = { k: 1, tx: 0, ty: 0, w: 0, h: 0, dpr: 1, pts: [], lanes: {}, cree: false, survol: null, bouge: false };
+const LANE_H = 132, UNITE_X = 15;
+function anX(a) { const seg = [[500, 1500, 0.12], [1500, 1890, 0.38], [1890, 2040, 1]]; let x = 0; for (const [d, f, c] of seg) { if (a <= d) break; x += (Math.min(a, f) - d) * c; } return x * UNITE_X; }
+const hashId = id => { let h = 2166136261; for (let i = 0; i < id.length; i++) { h ^= id.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 10000) / 10000; };
+function importance(id) { return REL.sort[id].length + REL.ent[id].length; }
+function preparerNuage() {
+  const fams = D.families.filter(f => FRISE.fam.has(f.id)); VUE.lanes = {}; fams.forEach((f, i) => { VUE.lanes[f.id] = i; });
+  VUE.pts = D.entries.filter(dansFrise).map(e => { const lane = VUE.lanes[e.family], imp = importance(e.id); return { id: e.id, e, x: anX(e.period.start), y: lane * LANE_H + LANE_H * (0.1 + 0.8 * hashId(e.id)), lane, imp, r: 3 + Math.min(11, Math.sqrt(imp) * 2.2) }; })
+    .sort((a, b) => b.imp - a.imp || a.e.name.localeCompare(b.e.name));
+  VUE.nb = fams.length;
+}
+function toutVoir(complet) { const w = VUE.w, h = VUE.h; if (!VUE.pts.length) return; const xs = VUE.pts.map(p => p.x), x0 = (complet ? Math.min(...xs) : Math.max(Math.min(...xs), anX(1885))) - 60, x1 = (complet ? Math.max(...xs) : anX(2022)) + 150, hh = Math.max(1, VUE.nb) * LANE_H + 30;
+  VUE.k = Math.min(w / (x1 - x0), h / hh) * 0.98; VUE.tx = (w - (x1 - x0) * VUE.k) / 2 - x0 * VUE.k; VUE.ty = 24; }
+function zoomer(f, cx, cy) { const k2 = Math.max(0.05, Math.min(8, VUE.k * f)); cx = cx ?? VUE.w / 2; cy = cy ?? VUE.h / 2; VUE.tx = cx - (cx - VUE.tx) * (k2 / VUE.k); VUE.ty = cy - (cy - VUE.ty) * (k2 / VUE.k); VUE.k = k2; dessinerFrise(); }
+function centrerSur(id, kMin) { const p = VUE.pts.find(q => q.id === id); if (!p) return; VUE.k = Math.max(VUE.k, kMin || 1); VUE.tx = VUE.w / 2 - p.x * VUE.k; VUE.ty = VUE.h / 2 - p.y * VUE.k; }
 function dessinerFrise() {
-  const { pos, fy, haut } = disposer(), larg = MARGE + (AN1 - AN0) * PX + 40, sel = FRISE.sel && pos[FRISE.sel] ? FRISE.sel : null;
-  const allum = sel ? new Set([...remonte(sel, true), ...remonte(sel, false)]) : null;
-  const aretes = D.relations.filter(r => FILI.includes(r.type) || r.type === "SUBGENRE_OF").map(r => [r.target, r.source, r.type === "SUBGENRE_OF" ? "p" : r.statut]).filter(([a, b]) => pos[a] && pos[b]);
-  const cx = (id, s) => pos[id].x + (s ? pos[id].w : 0), cy = id => pos[id].y + 11, vis = aretes.filter(([a, b]) => FRISE.tout || (allum && allum.has(a) && allum.has(b)));
-  let svg = `<svg width="${larg}" height="${haut}" role="group" aria-label="Frise des musiques">`;
-  for (let a = 1900; a <= 2020; a += 10) svg += `<line x1="${MARGE + (a - AN0) * PX}" x2="${MARGE + (a - AN0) * PX}" y1="22" y2="${haut}" stroke="#ddd" stroke-width="${a % 50 ? 1 : 2}"/><text x="${MARGE + (a - AN0) * PX + 3}" y="16" fill="#555">${a}</text>`;
-  D.families.filter(f => FRISE.fam.has(f.id)).forEach(f => { svg += `<text x="6" y="${fy[f.id][0] + 15}" style="font:600 12px var(--f-txt)" fill="${COUL[f.id]}">${esc(f.name.split(",")[0].split(" ").slice(0, 2).join(" "))}</text>`; });
-  vis.forEach(([a, b, n]) => { const x1 = cx(a, 1), y1 = cy(a), x2 = cx(b, 0), y2 = cy(b), m = Math.max(30, Math.abs(x2 - x1) / 2); svg += `<path class="lien-svg" d="M${x1},${y1} C${x1 + m},${y1} ${x2 - m},${y2} ${x2},${y2}" stroke="${n === "p" ? "#999" : "#11110F"}" ${n === "interpretation" ? 'stroke-dasharray="5 4"' : ""} opacity="${n === "p" ? .5 : .9}"/>`; });
-  D.entries.forEach(e => { const p = pos[e.id]; if (!p) return; const f = allum && !allum.has(e.id);
-    svg += `<g class="noeud${e.id === sel ? " sel" : ""}${f ? " fondu" : ""}" tabindex="0" role="button" aria-label="${esc(e.name)}, ${e.period.start}" data-id="${e.id}"><rect x="${p.x}" y="${p.y}" width="${p.w}" height="22" rx="11" fill="${COUL[e.family]}"/><text x="${p.x + 9}" y="${p.y + 15}" fill="#fff">${esc(e.name)}</text></g>`; });
-  $("#cw").innerHTML = svg + "</svg>";
-  $("#cw").querySelectorAll(".noeud").forEach(n => { const go = () => { FRISE.sel = n.dataset.id; dessinerFrise(); detailFrise(); }; n.onclick = go; n.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); go(); } }; });
-  if (sel) { const p = pos[sel], cw = $("#cw"); cw.scrollLeft = Math.max(0, p.x - cw.clientWidth / 3); }
+  const cw = $("#cw"); if (!cw) return; let cv = cw.querySelector("canvas");
+  if (!cv) { cw.innerHTML = `<canvas tabindex="0" role="application" aria-label="Frise des musiques, zoomable. Flèches pour se déplacer, plus et moins pour zoomer."></canvas><div class="frise-ctrl" role="group" aria-label="Zoom"><button type="button" data-z="in" aria-label="Zoomer">+</button><button type="button" data-z="out" aria-label="Dézoomer">−</button><button type="button" data-z="all" aria-label="Tout voir, depuis l'an 500">Tout voir</button><button type="button" data-z="now" aria-label="Revenir sur le XXe siècle">1890 à aujourd'hui</button><button type="button" data-z="sel" aria-label="Centrer sur la sélection">Centrer</button></div><p class="frise-aide">Glisse pour te déplacer, pince ou molette pour zoomer. Touche un point pour allumer son passé et son avenir.</p>`; cv = cw.querySelector("canvas"); VUE.cree = false; }
+  const r = cw.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1), w = Math.max(280, Math.round(r.width)), h = Math.max(380, Math.round(Math.min(window.innerHeight * 0.72, 760)));
+  if (w !== VUE.w || h !== VUE.h || dpr !== VUE.dpr || !VUE.cree) { VUE.w = w; VUE.h = h; VUE.dpr = dpr; cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + "px"; cv.style.height = h + "px"; }
+  const prem = !VUE.cree; preparerNuage(); if (prem) { VUE.cree = true; toutVoir(); if (FRISE.sel && E[FRISE.sel]) centrerSur(FRISE.sel, 0.9); brancherNuage(cv, cw); }
+  const g = cv.getContext("2d"); g.setTransform(VUE.dpr, 0, 0, VUE.dpr, 0, 0); g.clearRect(0, 0, VUE.w, VUE.h);
+  const { k, tx, ty } = VUE, sel = FRISE.sel && VUE.pts.some(p => p.id === FRISE.sel) ? FRISE.sel : null;
+  const allum = sel ? new Set([...remonte(sel, true), ...remonte(sel, false)]) : null, parId = {}; VUE.pts.forEach(p => { parId[p.id] = p; });
+  const SX = x => x * k + tx, SY = y => y * k + ty;
+  // bandes de familles
+  g.fillStyle = "#F0EFE8"; g.fillRect(0, 0, VUE.w, VUE.h);
+  D.families.filter(f => FRISE.fam.has(f.id)).forEach(f => { const i = VUE.lanes[f.id], y0 = SY(i * LANE_H), y1 = SY((i + 1) * LANE_H); if (y1 < 0 || y0 > VUE.h) return; g.fillStyle = i % 2 ? "rgba(17,17,15,.035)" : "rgba(17,17,15,.0)"; g.fillRect(0, y0, VUE.w, y1 - y0); g.fillStyle = COUL[f.id]; g.fillRect(0, y0, 5, y1 - y0); });
+  // graduations (temps)
+  const pas = [10, 25, 50, 100, 250, 500].find(s => anX(1990 + s) - anX(1990) > 0 && (anX(2000) - anX(1900)) / 100 * s * k > 70) || 500;
+  g.font = "500 11px ui-monospace, Menlo, monospace"; g.textBaseline = "top"; g.strokeStyle = "rgba(17,17,15,.10)"; g.lineWidth = 1;
+  let derniere = -1e9; for (let a = Math.ceil(500 / pas) * pas; a <= 2030; a += pas) { const x = SX(anX(a)); if (x < 0 || x > VUE.w) continue; g.beginPath(); g.moveTo(x, 18); g.lineTo(x, VUE.h); g.stroke(); if (x - derniere < 46) continue; derniere = x; g.fillStyle = "#4B4A44"; g.fillText(String(a), x + 3, 4); }
+  // filiations
+  const aretes = D.relations.filter(r => FILI.includes(r.type) || r.type === "SUBGENRE_OF").map(r => [r.target, r.source, r.type === "SUBGENRE_OF" ? "p" : r.statut]).filter(([a, b]) => parId[a] && parId[b] && (FRISE.tout || (allum && allum.has(a) && allum.has(b))));
+  aretes.forEach(([a, b, n]) => { const A = parId[a], B = parId[b], x1 = SX(A.x), y1 = SY(A.y), x2 = SX(B.x), y2 = SY(B.y), m = Math.max(30, Math.abs(x2 - x1) / 2); g.strokeStyle = sel ? (n === "etabli" || n === "p" ? "#11110F" : "#8a8a82") : "rgba(17,17,15,.28)"; g.lineWidth = sel ? 2 : 1; g.setLineDash(n === "interpretation" ? [5, 4] : []); g.beginPath(); g.moveTo(x1, y1); g.bezierCurveTo(x1 + m, y1, x2 - m, y2, x2, y2); g.stroke(); }); g.setLineDash([]);
+  // points
+  let vus = 0; const pts = VUE.pts; for (const p of pts) { const x = SX(p.x), y = SY(p.y); if (x < -20 || x > VUE.w + 20 || y < -20 || y > VUE.h + 20) { p.sx = null; continue; } p.sx = x; p.sy = y; p.sr = Math.max(2.6, Math.min(16, p.r * Math.sqrt(k) * 0.9)); vus++;
+    const f = allum && !allum.has(p.id); g.globalAlpha = f ? 0.18 : 1; g.fillStyle = COUL[p.e.family]; g.beginPath(); g.arc(x, y, p.sr, 0, 6.2832); g.fill(); g.lineWidth = p.id === sel ? 3.5 : 1.2; g.strokeStyle = "#11110F"; g.stroke(); g.globalAlpha = 1; }
+  // étiquettes par ordre d'importance, sans chevauchement
+  g.font = "600 12px 'Instrument Sans', Arial, sans-serif"; g.textBaseline = "middle"; const boites = []; let nbEt = 0;
+  const ordre = [...pts].sort((a, b) => (b.id === sel) - (a.id === sel) || (allum && ((allum.has(b.id)) - (allum.has(a.id)))) || (b.id === VUE.survol) - (a.id === VUE.survol) || b.imp - a.imp);
+  for (const p of ordre) { if (p.sx == null) continue; const f = allum && !allum.has(p.id); if (f && p.id !== VUE.survol) continue; const t = p.e.name, tw = g.measureText(t).width, bx = p.sx + p.sr + 4, by = p.sy - 9, bw = tw + 8, bh = 18;
+    if (bx + bw > VUE.w + 4 || boites.some(q => bx < q[0] + q[2] + 2 && bx + bw > q[0] - 2 && by < q[1] + q[3] + 1 && by + bh > q[1] - 1)) continue; boites.push([bx, by, bw, bh]); nbEt++;
+    g.fillStyle = p.id === sel ? "#D6FF00" : "rgba(240,239,232,.92)"; g.fillRect(bx, by, bw, bh); g.strokeStyle = "#11110F"; g.lineWidth = p.id === sel ? 2 : 1; g.strokeRect(bx + .5, by + .5, bw - 1, bh - 1); g.fillStyle = "#11110F"; g.fillText(t, bx + 4, by + bh / 2 + 1); }
+  // noms des familles, collés à gauche
+  g.font = "700 11px ui-monospace, Menlo, monospace"; g.textBaseline = "top"; D.families.filter(f => FRISE.fam.has(f.id)).forEach(f => { const y = SY(VUE.lanes[f.id] * LANE_H) + 6; if (y < -14 || y > VUE.h) return; const t = f.name.split(",")[0].toUpperCase(); const tw = g.measureText(t).width; g.fillStyle = "#11110F"; g.fillRect(8, y - 2, tw + 10, 17); g.fillStyle = "#D6FF00"; g.fillText(t, 13, y + 1); });
+  window.FRISE_VUE = { k: +k.toFixed(3), points: pts.length, visibles: vus, etiquettes: nbEt, allumes: allum ? allum.size : 0, selection: sel };
+}
+function brancherNuage(cv, cw) {
+  const ptr = new Map(); let dernier = null, dep = 0, pince = 0;
+  const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const trouve = (x, y) => { let best = null, bd = 1e9; for (const p of VUE.pts) { if (p.sx == null) continue; const d = Math.hypot(p.sx - x, p.sy - y); if (d <= Math.max(12, p.sr + 5) && d < bd) { bd = d; best = p; } } return best; };
+  cv.addEventListener("pointerdown", e => { cv.setPointerCapture(e.pointerId); ptr.set(e.pointerId, pos(e)); dep = 0; if (ptr.size === 2) { const [a, b] = [...ptr.values()]; pince = Math.hypot(a[0] - b[0], a[1] - b[1]); } dernier = pos(e); });
+  cv.addEventListener("pointermove", e => { const [x, y] = pos(e);
+    if (ptr.has(e.pointerId)) { ptr.set(e.pointerId, [x, y]);
+      if (ptr.size === 2) { const [a, b] = [...ptr.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pince > 0) zoomer(d / pince, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2); pince = d; dep = 99; }
+      else if (dernier) { const dx = x - dernier[0], dy = y - dernier[1]; dep += Math.abs(dx) + Math.abs(dy); if (dep > 4) { VUE.tx += dx; VUE.ty += dy; dessinerFrise(); cv.style.cursor = "grabbing"; } dernier = [x, y]; } }
+    else { const p = trouve(x, y), id = p ? p.id : null; if (id !== VUE.survol) { VUE.survol = id; cv.style.cursor = id ? "pointer" : "grab"; dessinerFrise(); } } });
+  const fin = e => { const [x, y] = pos(e); const etait = ptr.has(e.pointerId); ptr.delete(e.pointerId); if (ptr.size < 2) pince = 0; cv.style.cursor = "grab";
+    if (etait && ptr.size === 0 && dep <= 4) { const p = trouve(x, y); if (p) { FRISE.sel = p.id; dessinerFrise(); detailFrise(); } else if (FRISE.sel) { FRISE.sel = null; dessinerFrise(); detailFrise(); } } dernier = ptr.size ? [...ptr.values()][0] : null; };
+  cv.addEventListener("pointerup", fin); cv.addEventListener("pointercancel", e => { ptr.delete(e.pointerId); pince = 0; });
+  cv.addEventListener("wheel", e => { e.preventDefault(); const [x, y] = pos(e); zoomer(Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.0018)), x, y); }, { passive: false });
+  cv.addEventListener("dblclick", e => { const [x, y] = pos(e); zoomer(2, x, y); });
+  cv.addEventListener("keydown", e => { const p = 60; if (e.key === "+" || e.key === "=") zoomer(1.4); else if (e.key === "-") zoomer(1 / 1.4); else if (e.key === "ArrowLeft") { VUE.tx += p; dessinerFrise(); } else if (e.key === "ArrowRight") { VUE.tx -= p; dessinerFrise(); } else if (e.key === "ArrowUp") { VUE.ty += p; dessinerFrise(); } else if (e.key === "ArrowDown") { VUE.ty -= p; dessinerFrise(); } else if (e.key === "0") { toutVoir(); dessinerFrise(); } else return; e.preventDefault(); });
+  cw.querySelector(".frise-ctrl").addEventListener("click", e => { const z = e.target.closest("[data-z]"); if (!z) return; const m = z.dataset.z; if (m === "in") zoomer(1.5); else if (m === "out") zoomer(1 / 1.5); else if (m === "all") { toutVoir(true); dessinerFrise(); } else if (m === "now") { toutVoir(false); dessinerFrise(); } else if (m === "sel" && FRISE.sel) { centrerSur(FRISE.sel, 1.2); dessinerFrise(); } });
+  if (!window.__friseResize) { window.__friseResize = true; window.addEventListener("resize", () => { if ($("#cw canvas")) { VUE.w = 0; dessinerFrise(); } }); }
 }
 function detailFrise() {
   const e = FRISE.sel && E[FRISE.sel]; if (!e) { $("#detail").innerHTML = `<p class="petit">Choisis une étiquette pour voir son histoire.</p>`; return; }
