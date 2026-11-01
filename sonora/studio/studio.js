@@ -199,6 +199,7 @@ async function compilerPuis(executer) {
   construireReglages(m, etat.valeursRestaurees || {}); etat.valeursRestaurees = null;
   $("clavier-zone").hidden = !m.voix; if (etat.afficherCreation) etat.afficherCreation(m); $("source-zone").hidden = !m.entrees.some(e => e.genre === "audio");
   if (m.voix) construireClavier();
+  if (etat.mode === "decouverte") majScene();
   journal("ok", `Compilé en ${ms.toFixed(0)} ms (${res.via === "worker" ? "dans un Worker" : "sur le fil principal"}) : ${esc(m.nom)}, ${m.reglages.length} réglage${m.reglages.length > 1 ? "s" : ""}, ${m.canaux} canal${m.canaux > 1 ? "ux" : ""}${m.voix ? `, ${m.voix.nbVoix} voix` : ""}, ${m.stats ? m.stats.apres : "?"} nœuds après optimisation.`);
   if (!executer) { etatBadge(etat.marche ? "en marche" : "compilé", etat.marche ? "marche" : ""); if (etat.marche) await chargerDansMoteur(m); return m; }
   return m;
@@ -220,14 +221,14 @@ async function executer() {
     }
     await etat.moteur.demarrer(); etat.moteur.activerAnalyse(true);
     const m = await compilerPuis(true); if (!m) return;
-    etat.marche = true; await chargerDansMoteur(m);
+    etat.marche = true; majBoutonScene(); await chargerDansMoteur(m);
     $("b-arreter").disabled = false; etatBadge("en marche", "marche");
     journal("info", `Son à ${etat.moteur.sampleRate} Hz, latence estimée ${(etat.moteur.latence * 1000).toFixed(0)} ms.`);
   } catch (e) { journal("err", esc(e instanceof ErreurMoteur ? e.message : String(e && e.message || e))); etatBadge("erreur", "erreur"); }
 }
 async function arreter() {
   if (!etat.moteur || !etat.marche) return;
-  toutRelacher(); if (etat.arreterSequence) etat.arreterSequence(); arreterAutomations(); debrancherSource(); etat.marche = false; $("b-arreter").disabled = true;
+  toutRelacher(); if (etat.arreterSequence) etat.arreterSequence(); arreterAutomations(); debrancherSource(); etat.marche = false; majBoutonScene(); $("b-arreter").disabled = true;
   await etat.moteur.arreter(); etatBadge("arrêté"); journal("info", "Arrêté.");
 }
 async function reinitialiser() {
@@ -247,6 +248,7 @@ function boucleDessin(t) {
   if (t - dernierDessin < 30) return; dernierDessin = t;
   const x = etat.marche ? etat.tampon : null;
   dessinerOscillo($("oscillo"), x); dessinerSpectre($("spectre"), x, etat.sr);
+  if (etat.mode === "decouverte") { dessinerOscillo($("scene-onde"), x); if ($("b-scene").getAttribute("aria-pressed") !== String(!!etat.marche)) majBoutonScene(); }
   if (x) {
     let mx = 0; for (let i = 0; i < x.length; i++) mx = Math.max(mx, Math.abs(x[i]));
     const p = picHz(x, etat.sr); $("m-pic").textContent = "pic : " + (p ? (p >= 1000 ? (p / 1000).toFixed(2) + " kHz" : p.toFixed(1) + " Hz") : "-");
@@ -332,6 +334,31 @@ $("p-import").onchange = async e => {
   } catch (err) { journal("err", esc(err.message)); }
 };
 
+// ---------------------------------------------------------------- mode Découvrir ou Programmer
+const NIVEAU_PHRASE = { "Découverte": "Pour découvrir", "Programmation": "Pour programmer", "Recherche": "Pour chercher" };
+function lireMode() { try { return localStorage.getItem("sonora:mode") || "decouverte"; } catch (_) { return "decouverte"; } }
+function appliquerMode(m) {
+  etat.mode = m; document.body.dataset.mode = m; $("scene").hidden = m !== "decouverte";
+  $("b-mode").textContent = m === "decouverte" ? "Programmer" : "Découvrir"; $("b-mode").setAttribute("aria-pressed", String(m !== "decouverte"));
+  const ongletCentre = document.querySelector('#onglets-mobiles [data-p="centre"]'); if (ongletCentre) ongletCentre.textContent = m === "decouverte" ? "Écouter" : "Code";
+  try { localStorage.setItem("sonora:mode", m); } catch (_) {}
+  if (m === "decouverte") majScene(); else ed.maj && ed.maj();
+}
+function majScene() {
+  const e = EXEMPLES.find(x => x.id === etat.exempleId), m = etat.module;
+  $("scene-titre").textContent = e ? e.titre : ($("p-titre").value || "Mon programme");
+  $("scene-texte").textContent = e ? e.texte : "Ton propre programme. Écoute-le, puis règle-le avec les curseurs.";
+  $("scene-niveau").textContent = e ? NIVEAU_PHRASE[e.niveau] || e.niveau : "Mon programme";
+  const voix = m && m.voix, effet = m && m.entrees.some(x => x.genre === "audio"), n = m ? m.reglages.length : 0;
+  const ou = window.matchMedia("(max-width: 760px)").matches ? "dans l'onglet Réglages" : "à droite";
+  $("scene-aide").textContent = voix ? `Puis joue des notes sur le clavier, ${ou} (ou avec les touches Q, S, D, F...).` : effet ? `C'est un effet : il transforme un son. Choisis ce qu'il reçoit dans « Source de test », ${ou}.` : n ? `Puis bouge ${n > 1 ? "les curseurs" : "le curseur"} ${ou} : le son change aussitôt.` : "Ce programme n'a pas de réglage : écoute-le, puis ouvre le programme pour le modifier.";
+  majBoutonScene();
+}
+function majBoutonScene() { const on = !!etat.marche; $("b-scene").setAttribute("aria-pressed", String(on)); $("b-scene-t").textContent = on ? "Arrêter" : "Écouter"; $("b-scene").querySelector(".scene-icone").innerHTML = on ? "&#9632;" : "&#9654;"; }
+$("b-mode").onclick = () => appliquerMode(etat.mode === "decouverte" ? "programmation" : "decouverte");
+$("b-voir-code").onclick = () => { appliquerMode("programmation"); basculerPanneauMobile("centre"); ed.focus(); };
+$("b-scene").onclick = async () => { if (etat.marche) await arreter(); else { await executer(); if (etat.marche && etat.module && etat.module.reglages.length && window.matchMedia("(max-width: 760px)").matches) { /* sur téléphone, les curseurs sont dans un autre onglet : on le dit, on ne bascule pas d'office */ } } majBoutonScene(); };
+
 // ---------------------------------------------------------------- démarrage
 remplirExemples(); remplirModules(); construireClavier();
 const creation = installerCreation({ etat, $, journal, esc, executer, titreCourant, ed });
@@ -346,4 +373,5 @@ journal("info", "SONORA Studio. Appuie sur Exécuter (Ctrl+Entrée) pour entendr
 if (lien && lien.source) journal("av", "Programme chargé depuis un lien de partage. Il a remplacé ton brouillon : lis-le avant de l'exécuter.");
 else if (lien && lien.erreur) journal("err", esc(lien.erreur));
 const d = Moteur.diagnostic(); if (!d.ok) { etat.audioIndispo = true; journal("err", esc(d.raison)); etatBadge("audio indisponible", "erreur"); $("b-executer").disabled = true; }
+appliquerMode(lireMode());
 window.STUDIO_PRET = true;

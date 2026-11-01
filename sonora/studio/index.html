@@ -12,6 +12,7 @@
 <header class="haut">
   <div class="marque"><a href="../../choix.html" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Studio</span></div>
   <div class="actions" role="group" aria-label="Commandes">
+    <button type="button" id="b-mode" class="mode" aria-pressed="false" title="Basculer entre découvrir les sons et écrire le programme">Programmer</button>
     <button type="button" id="b-executer" class="principal" title="Compiler et jouer (Ctrl+Entrée)">&#9654; Exécuter</button>
     <button type="button" id="b-arreter" title="Arrêter (Ctrl+.)" disabled>&#9632; Arrêter</button>
     <button type="button" id="b-compiler" title="Compiler sans jouer">Compiler</button>
@@ -53,6 +54,15 @@
       <button type="button" role="tab" data-m="code" aria-selected="true">Code</button>
       <button type="button" role="tab" data-m="graphe" aria-selected="false">Graphe</button>
       <span class="diag" id="diag" role="status" aria-live="polite"></span>
+    </div>
+    <div id="scene" class="scene" hidden>
+      <p class="scene-etiq" id="scene-niveau"></p>
+      <h2 id="scene-titre"></h2>
+      <p id="scene-texte"></p>
+      <button type="button" id="b-scene" class="scene-jouer" aria-pressed="false"><span class="scene-icone" aria-hidden="true">&#9654;</span><span id="b-scene-t">Écouter</span></button>
+      <p class="scene-aide" id="scene-aide">Puis bouge les curseurs : le son change aussitôt.</p>
+      <canvas id="scene-onde" class="scene-onde" role="img" aria-label="La forme du son, en direct"></canvas>
+      <div class="scene-suite"><button type="button" id="b-voir-code">Voir et modifier le programme</button><span class="petit">ou choisis un autre son dans la liste.</span></div>
     </div>
     <div id="editeur" class="editeur"></div>
     <div id="graphe" class="graphe" hidden></div>

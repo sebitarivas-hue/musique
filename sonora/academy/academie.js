@@ -65,7 +65,7 @@ function ouvrir(id) {
   if (p && p.reussi) $("resultat").innerHTML = `<p class="verdict-global ok">Déjà réussi. Tu peux le refaire autrement.</p>`;
   $("b-ecouter-ex").onclick = () => ecouter(l.exemple, $("b-ecouter-ex"), $("msg-ex"));
   $("b-copier").onclick = () => { ed.valeur = l.exemple; ed.maj && ed.maj(); $("resultat").innerHTML = ""; };
-  $("b-studio-ex").onclick = () => { try { localStorage.setItem("sonora:brouillon", JSON.stringify({ source: l.exemple, titre: l.titre, exemple: null, projet: null })); } catch (_) {} location.href = "../studio/index.html"; };
+  $("b-studio-ex").onclick = () => { try { localStorage.setItem("sonora:brouillon", JSON.stringify({ source: l.exemple, titre: l.titre, exemple: null, projet: null })); } catch (_) {} try { localStorage.setItem("sonora:mode", "programmation"); } catch (_) {} location.href = "../studio/index.html"; };
   $("b-ecouter").onclick = () => ecouter(ed.valeur, $("b-ecouter"), $("msg-ex2"));
   $("b-verifier").onclick = () => corriger(l);
   $("b-indice").onclick = () => { const z = $("indice"); z.hidden = false; z.textContent = "Indice : " + ex.indice; };

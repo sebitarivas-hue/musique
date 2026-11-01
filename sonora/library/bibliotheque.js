@@ -82,7 +82,7 @@ async function arreter() {
 }
 function versStudio(source, titre, exemple) {
   try { localStorage.setItem("sonora:brouillon", JSON.stringify({ source, titre, exemple, projet: null })); } catch (_) {}
-  location.href = "../studio/index.html";
+  try { localStorage.setItem("sonora:mode", "programmation"); } catch (_) {} location.href = "../studio/index.html";
 }
 
 // ---------------------------------------------------------------- fiche d'un programme

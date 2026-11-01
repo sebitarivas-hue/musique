@@ -93,7 +93,7 @@ function dessinerVues(res) {
 }
 function ouvrirDansStudio(exp, programme) {
   try { localStorage.setItem("sonora:brouillon", JSON.stringify({ source: programme, titre: exp.titre, exemple: null, projet: null })); } catch (_) {}
-  location.href = "../studio/index.html";
+  try { localStorage.setItem("sonora:mode", "programmation"); } catch (_) {} location.href = "../studio/index.html";
 }
 const bloc = (titre, html, cls = "") => `<section class="${cls}"><h2>${titre}</h2>${html}</section>`;
 function entete(exp) { return `<span class="etiq-domaine">${esc(exp.domaine)}</span><h1>${esc(exp.titre)}</h1>` + bloc("La question", `<p class="question">${esc(exp.question)}</p>`) + bloc("L'idée", exp.explication.map(p => `<p>${esc(p)}</p>`).join(""), "explication"); }
