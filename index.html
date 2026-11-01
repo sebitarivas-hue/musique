@@ -979,6 +979,33 @@ html.signal :is(.jouer-fam, .ludo-carte):hover { transform: none; background: va
 html.signal :is(.jouer-fam, .ludo-carte):hover :is(b, span, svg) { color: var(--noir) !important; }
 html.signal .levels a, html.signal .levels button { border-radius: 0 !important; border: 2px solid var(--noir); font-family: var(--f-mono); font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
 html.signal .levels a[aria-current="page"], html.signal .levels button[aria-current="page"] { background: var(--noir); color: var(--acide); }
+.fenetre-ext { position: fixed; inset: 0; z-index: 9999; background: rgba(17,17,15,.72); display: grid; place-items: center; padding: clamp(8px, 3vw, 28px); }
+.fe-boite { width: min(1180px, 100%); height: min(860px, 100%); background: #11110F; color: #F0EFE8; display: flex; flex-direction: column; border: 2px solid #11110F; box-shadow: 10px 10px 0 #D6FF00; }
+.fe-haut { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #11110F; flex-wrap: wrap; }
+.fe-titre { font: 800 1.05rem/1.1 "Archivo Variable", "Archivo Black", Arial, sans-serif; font-stretch: 75%; text-transform: uppercase; color: #D6FF00; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fe-hote { font: 400 12px ui-monospace, Menlo, monospace; letter-spacing: .06em; color: #BEBDB4; }
+.fe-onglet, .fe-fermer { font: 500 12px ui-monospace, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; padding: 9px 12px; border: 1.5px solid #F0EFE8; color: #F0EFE8; background: transparent; text-decoration: none; cursor: pointer; }
+.fe-fermer { background: #D6FF00; color: #11110F; border-color: #D6FF00; font-weight: 700; } .fe-onglet:hover, .fe-onglet:focus-visible { background: #F0EFE8; color: #11110F; outline: none; }
+.fe-cadre { flex: 1 1 auto; width: 100%; border: 0; background: #fff; min-height: 0; }
+.fe-aide { margin: 0; padding: 6px 14px; font: 400 12px ui-monospace, Menlo, monospace; color: #BEBDB4; background: #11110F; }
+@media (max-width: 640px) { .fe-boite { box-shadow: none; } .fe-hote { display: none; } }
+/* Ludothèque en direction SIGNAL : bandeau de famille noir à titre condensé, tuiles de jeu à angles droits, trait de couleur de la famille. */
+html.signal .ludo-pills a { border-radius: 0 !important; background: var(--papier); color: var(--noir) !important; border: 2px solid var(--noir); border-top: 8px solid var(--c); font: 500 .78rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; }
+html.signal .ludo-pills a:hover, html.signal .ludo-pills a:focus-visible { background: var(--acide); outline: none; }
+html.signal .ludo-fam { margin-top: 30px; }
+html.signal .ludo-band { position: relative; background: var(--noir); color: var(--papier); border: 0; padding: 16px 18px 16px 18px; gap: 16px; overflow: hidden; border-radius: 0; }
+html.signal .ludo-band::before { content: ""; position: absolute; top: 0; right: 0; width: 34px; height: 40px; background: var(--c); }
+html.signal .ludo-band h2 { font-family: "Archivo Variable", var(--f-titre); font-weight: 900; font-stretch: 62%; font-size: clamp(1.8rem, 5vw, 2.8rem); line-height: .92; text-transform: uppercase; letter-spacing: 0; color: var(--papier); border: 0; padding: 0; margin: 0; }
+html.signal .ludo-band .small { color: #D3D2CA; font: 400 .8rem/1.5 var(--f-mono); letter-spacing: .03em; opacity: 1; display: block; margin-top: 6px; max-width: 60ch; }
+html.signal .ludo-bi { color: var(--c); } html.signal .ludo-bi svg { width: 46px; height: 46px; }
+html.signal .ludo-grille { gap: 0; margin-top: 0; border-top: 2px solid var(--noir); border-left: 2px solid var(--noir); grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); }
+html.signal .ludo-carte { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr auto; row-gap: 8px; padding: 14px 14px 12px; border: 0; border-right: 2px solid var(--noir) !important; border-bottom: 2px solid var(--noir) !important; border-top: 8px solid var(--c) !important; background: var(--papier); border-radius: 0 !important; box-shadow: none; min-height: 190px; }
+html.signal .ludo-carte:hover, html.signal .ludo-carte:focus-visible { transform: none; box-shadow: none; background: var(--acide) !important; outline: none; }
+html.signal .ludo-ic { grid-row: auto; width: 40px; height: 40px; border-radius: 0 !important; border: 0 !important; background: var(--noir); color: var(--c); } html.signal .ludo-ic svg { width: 24px; height: 24px; }
+html.signal .ludo-tx { gap: 6px; } html.signal .ludo-carte b { font-family: "Archivo Variable", var(--f-titre); font-weight: 900; font-stretch: 75%; font-size: 1.3rem; line-height: 1; text-transform: uppercase; letter-spacing: 0; }
+html.signal .ludo-carte .small { font-size: .86rem; line-height: 1.45; color: var(--gris); } html.signal .ludo-s { font: 400 11px/1.4 var(--f-mono); letter-spacing: .04em; color: var(--gris); }
+html.signal .ludo-go { border-radius: 0; background: transparent; color: var(--noir); padding: 0; font: 500 11px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; }
+html.signal .ludo-carte.neuf { box-shadow: inset 0 0 0 3px var(--acide); } html.signal .ludo-carte.verrou { background: transparent; border-top-style: solid !important; opacity: .7; } html.signal .ludo-carte.verrou .ludo-ic { background: #8a8a82; color: var(--papier); }
 /* Carrefours en direction SIGNAL */
 html.signal .car-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 18px 28px; align-items: end; }
 html.signal .car-eyebrow { display: inline-block; font: 500 12px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--noir); background: var(--acide); padding: 6px 9px; }
@@ -1451,6 +1478,7 @@ a.en-ecole { color: inherit; text-decoration: none; } a.en-ecole:hover b, a.en-e
 #sy-scope { width: 100%; height: auto; aspect-ratio: 720 / 200; border-radius: 22px; display: block; background: #11110F; margin-top: 8px; }
 .sy-curs { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 12px; }
 .sy-clavier { display: grid; grid-template-columns: repeat(16, 1fr); gap: 3px; margin-top: 12px; } .sy-touche { min-height: 76px; border: 2px solid var(--ink); border-radius: 10px; background: var(--surface); color: var(--ink); font: 600 .72rem var(--f-body); padding: 0 0 6px; display: flex; align-items: flex-end; justify-content: center; cursor: pointer; touch-action: manipulation; } .sy-touche:active { background: #D6FF00; color: #11110F; }
+.lj-live { width: 100%; max-width: 720px; height: auto; display: block; margin: 12px 0 4px; border: 2px solid #11110F; background: #11110F; }
 .lj-visu { width: 100%; max-width: 480px; height: auto; border-radius: 18px; margin-top: 10px; display: block; } .lj-visu[hidden] { display: none; }
 @media (max-width: 640px) { .sy-clavier { grid-template-columns: repeat(8, 1fr); } .bl-ligne, .lj-grille .bl-ligne { grid-template-columns: 1fr; } .bl-pas { min-height: 24px; } }
 /* La progression : carte des séquences, jeux verrouillés, niveaux */
@@ -4311,6 +4339,35 @@ function vueJouer() {
     + (role() === "prof" ? "" : `<a class="jouer-fam" href="#parcours" style="--c:#4658FF">${ICONES_NAV.parcours}<b>Mon parcours</b><span>Mes badges et les quêtes de la semaine</span></a>`) + `<a class="jouer-fam" href="#ludo" style="--c:#4B4A44">${famIco("theorie")}<b>Tous les jeux</b><span>Les ${D.ludo.jeux.length} jeux, toutes classes</span></a></div>`;
   return h;
 }
+/* Visualisation en temps réel, la même dans tous les jeux : forme d'onde, spectre et niveau du son réellement joué (celui qui sort du maître), avec une ligne de repos quand rien ne joue. */
+function vizLive(cv) {
+  if (!cv) return; const g = cv.getContext("2d"), W = cv.width, H = cv.height, NB = 56; let tps = null, frq = null, niveau = 0, lisse = new Float32Array(NB);
+  const NOIR = "#11110F", ACIDE = "#D6FF00", PAPIER = "#F0EFE8", ROUGE = "#FF5638";
+  cv.dataset.etat = "repos"; cv.dataset.lumiere = "0";
+  (function boucle() {
+    if (!document.body.contains(cv)) return;
+    const an = AC && MASTER ? analyseur() : null; let actif = false;
+    if (an) { if (!tps) { tps = new Float32Array(an.fftSize); frq = new Uint8Array(an.frequencyBinCount); } an.getFloatTimeDomainData(tps); an.getByteFrequencyData(frq); let e = 0; for (const v of tps) e += v * v; niveau = Math.sqrt(e / tps.length); actif = niveau > 0.002; }
+    g.fillStyle = NOIR; g.fillRect(0, 0, W, H);
+    g.strokeStyle = "#2a2a26"; g.lineWidth = 1; for (let i = 1; i < 8; i++) { g.beginPath(); g.moveTo(i * W / 8, 0); g.lineTo(i * W / 8, H); g.stroke(); } g.beginPath(); g.moveTo(0, H / 2); g.lineTo(W, H / 2); g.stroke();
+    const wOnde = W * 0.62;
+    // forme d'onde
+    g.strokeStyle = actif ? ACIDE : "#55554E"; g.lineWidth = 2.2; g.beginPath();
+    if (actif) { let dep = 0; for (let i = 1; i < tps.length / 2; i++) if (tps[i - 1] < 0 && tps[i] >= 0) { dep = i; break; } const n = Math.min(900, tps.length - dep); const gain = Math.min(6, 0.42 / Math.max(niveau, 0.02));
+      for (let i = 0; i < n; i++) { const x = i / n * wOnde, y = H / 2 - tps[dep + i] * gain * (H / 2 - 10); i ? g.lineTo(x, y) : g.moveTo(x, y); } } else { g.moveTo(0, H / 2); g.lineTo(wOnde, H / 2); }
+    g.stroke();
+    // spectre : barres sur une échelle logarithmique
+    const x0 = wOnde + 14, wS = W - x0 - 40, bw = wS / NB;
+    for (let b = 0; b < NB; b++) { let v = 0; if (actif) { const a0 = Math.floor(Math.pow(frq.length, b / NB)), a1 = Math.max(a0 + 1, Math.floor(Math.pow(frq.length, (b + 1) / NB))); for (let k = a0; k < a1 && k < frq.length; k++) v = Math.max(v, frq[k]); v /= 255; }
+      lisse[b] = Math.max(v, lisse[b] * 0.86); const h = Math.max(2, lisse[b] * (H - 34)); g.fillStyle = lisse[b] > 0.02 ? PAPIER : "#3a3a35"; g.fillRect(x0 + b * bw, H - 22 - h, Math.max(1, bw - 1.5), h); }
+    // niveau
+    const hn = Math.min(1, niveau * 4) * (H - 34); g.fillStyle = "#2a2a26"; g.fillRect(W - 26, 12, 12, H - 34); g.fillStyle = hn > (H - 34) * 0.85 ? ROUGE : ACIDE; g.fillRect(W - 26, 12 + (H - 34) - hn, 12, hn);
+    g.fillStyle = "#BEBDB4"; g.font = "500 12px ui-monospace, Menlo, monospace"; g.fillText("ONDE", 10, H - 6); g.fillText("SPECTRE", x0, H - 6); g.fillText("NIVEAU", W - 62, H - 6);
+    if (actif) { g.fillStyle = ROUGE; g.fillRect(wOnde - 3, 8, 3, H - 30); }
+    cv.dataset.etat = actif ? "son" : "repos"; if (actif) cv.dataset.lumiere = String(Math.round(niveau * 1000));
+    requestAnimationFrame(boucle);
+  })();
+}
 function vueJeuLudo(id) {
   const j = D.ludo.jeux.find(x => x.id === id), f = ludoFam(j.famille), M = j.moteur, niv = Math.min(+get("ludo-niv:" + id, "0"), nivMaxOuvert(id)), kc = maClasse();
   if (kc && j.seances.some(s => s[0] === kc) && !jeuOuvert(j, kc)) { NIV_CARTE = kc; return head("Pas encore", j.titre, "Ce jeu se débloque à sa séance.") + `<div class="ludo-grille">${carteJeu(j)}</div><p class="small"><a href="#jouer">Ta progression</a></p>`; }
@@ -4318,6 +4375,7 @@ function vueJeuLudo(id) {
     + `<p class="small">Relié au cours : ${j.seances.map(s => `<a href="#seance-${s[0]}-${s[1]}-${s[2]}">${esc(ludoSeance(s))}</a>`).join(", ")}. Notion : ${esc(j.notion)}.</p>
     <section class="tool ludo-jeu" style="--c:${f[2]}"><div class="themes" role="group" aria-label="Niveau du jeu">${M.niveaux.map(([t], i) => niveauOuvert(id, i) ? `<button type="button" class="chip" data-lvl="${i}" aria-pressed="${i === niv}">${i + 1}. ${esc(t)}${etoilesNiv(id, i) ? " " + "&#9733;".repeat(etoilesNiv(id, i)) : ""}</button>` : `<button type="button" class="chip verrou" disabled title="Gagne deux étoiles au niveau ${i} pour l'ouvrir">${i + 1}. verrouillé</button>`).join("")}</div>
       <p class="small" id="lj-aide">${esc(M.niveaux[niv][1])}</p>
+      <canvas id="lj-live" class="lj-live" width="720" height="190" role="img" aria-label="Le son en direct : forme d'onde, spectre et niveau"></canvas>
       <p class="jq" id="lj-q" aria-live="polite">Manche 1 sur ${M.manches}. Appuie sur «&nbsp;Écouter&nbsp;».</p>
       <div class="actions"><button type="button" class="btn-main" id="lj-play">Écouter</button><button type="button" class="btn2" id="lj-encore" hidden>Réécouter</button></div>
       <div class="actions" id="lj-rep"></div><p class="fb2" id="lj-fb" aria-live="polite"></p><canvas id="lj-visu" class="lj-visu" width="480" height="120" hidden role="img" aria-label="La forme de l'onde entendue"></canvas>
@@ -4802,6 +4860,7 @@ function brancherJeuLudo(id) {
   const j = D.ludo.jeux.find(x => x.id === id), M = j.moteur, $ = x => document.getElementById(x); if (!$("lj-play")) return;
   const E = { niv: Math.min(+get("ludo-niv:" + id, "0"), nivMaxOuvert(id)), manche: 0, score: 0, cur: null, repondu: false };
   window.LUDO_ETAT = E;  // lu par les tests (outils/tests/faust.js)
+  vizLive($("lj-live"));
   const instrBrut = LUDO_INSTR[id] || ["voix"], avecMachine = instrBrut.includes("machine"), instr = instrBrut.filter(x => x !== "machine");
   /* Les instruments se chargent dès l'ouverture du jeu ; « Écouter » attend qu'ils soient tous là (jamais de son de secours). */
   setTimeout(() => { try { chargerInstruments(instr); if (avecMachine) chargerMachine(); } catch (_) {} }, 30);
@@ -5311,6 +5370,28 @@ function habillerEntete() {
   }
 }
 new MutationObserver(habillerEntete).observe(document.getElementById("app"), { childList: true });
+/* Liens externes : ils s'ouvrent dans une fenêtre embarquée au-dessus de la page (aussi au-dessus d'un diaporama projeté), avec toujours un bouton pour les ouvrir dans un onglet.
+   Certains sites interdisent d'être affichés dans une autre page (YouTube, Google, réseaux sociaux...) : pour ceux-là, une vraie petite fenêtre s'ouvre, qui ne quitte pas le cours. */
+const HOTES_SANS_CADRE = /(^|\.)(youtube\.com|youtu\.be|youtube-nocookie\.com|google\.[a-z.]+|facebook\.com|instagram\.com|x\.com|twitter\.com|spotify\.com|deezer\.com|apple\.com|bandcamp\.com|soundcloud\.com)$/i;
+function ouvrirFenetreExterne(url, titre) {
+  let h; try { h = new URL(url, location.href).hostname; } catch (_) { return false; }
+  if (HOTES_SANS_CADRE.test(h)) { const f = window.open(url, "externe", "popup=yes,width=1000,height=720"); if (f) { try { f.opener = null; } catch (_) {} return true; } return false; }
+  document.getElementById("fenetre-ext")?.remove();
+  const el = document.createElement("div"); el.id = "fenetre-ext"; el.className = "fenetre-ext"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", titre || "Page externe");
+  el.innerHTML = `<div class="fe-boite"><div class="fe-haut"><span class="fe-titre">${esc(titre || h)}</span><span class="fe-hote">${esc(h)}</span><a class="fe-onglet" href="${esc(url)}" target="_blank" rel="noopener" data-sans-fenetre>Ouvrir dans un onglet</a><button type="button" class="fe-fermer" aria-label="Fermer la fenêtre">Fermer</button></div>
+    <iframe class="fe-cadre" src="${esc(url)}" title="${esc(titre || h)}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation" allow="autoplay; fullscreen"></iframe>
+    <p class="fe-aide">Si la page reste vide, ce site refuse d'être affiché ici : utilise « Ouvrir dans un onglet ».</p></div>`;
+  document.body.appendChild(el); const retour = document.activeElement;
+  const fermer = () => { el.remove(); document.removeEventListener("keydown", clavier, true); if (retour && retour.focus) try { retour.focus(); } catch (_) {} };
+  const clavier = e => { if (e.key === "Escape") { e.stopPropagation(); e.preventDefault(); fermer(); } };
+  document.addEventListener("keydown", clavier, true); el.querySelector(".fe-fermer").onclick = fermer; el.addEventListener("click", e => { if (e.target === el) fermer(); }); el.querySelector(".fe-fermer").focus();
+  return true;
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest && e.target.closest('a[target="_blank"][href^="http"]'); if (!a || a.hasAttribute("data-sans-fenetre") || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  let u; try { u = new URL(a.href); } catch (_) { return; } if (u.origin === location.origin) return;
+  if (ouvrirFenetreExterne(a.href, (a.textContent || "").replace(/\s+/g, " ").trim().slice(0, 80))) e.preventDefault();
+}, true);
 window.addEventListener("hashchange", rendre);
 rendre();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").then(r => r.update()).catch(() => {});

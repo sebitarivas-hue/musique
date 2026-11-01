@@ -109,6 +109,16 @@ h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-trans
 .carte b { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-transform: uppercase; font-size: 1.35rem; line-height: 1; }
 .carte span { opacity: .85; } .carte .suite { font: 500 .78rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; opacity: 1; }
 @media (max-width: 640px) { .bande, .fiche-tete { margin: 0 -16px 16px; } }
+.fenetre-ext { position: fixed; inset: 0; z-index: 9999; background: rgba(17,17,15,.72); display: grid; place-items: center; padding: clamp(8px, 3vw, 28px); }
+.fe-boite { width: min(1180px, 100%); height: min(860px, 100%); background: #11110F; color: #F0EFE8; display: flex; flex-direction: column; border: 2px solid #11110F; box-shadow: 10px 10px 0 #D6FF00; }
+.fe-haut { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #11110F; flex-wrap: wrap; }
+.fe-titre { font: 800 1.05rem/1.1 "Archivo Variable", "Archivo Black", Arial, sans-serif; font-stretch: 75%; text-transform: uppercase; color: #D6FF00; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fe-hote { font: 400 12px ui-monospace, Menlo, monospace; letter-spacing: .06em; color: #BEBDB4; }
+.fe-onglet, .fe-fermer { font: 500 12px ui-monospace, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; padding: 9px 12px; border: 1.5px solid #F0EFE8; color: #F0EFE8; background: transparent; text-decoration: none; cursor: pointer; }
+.fe-fermer { background: #D6FF00; color: #11110F; border-color: #D6FF00; font-weight: 700; } .fe-onglet:hover, .fe-onglet:focus-visible { background: #F0EFE8; color: #11110F; outline: none; }
+.fe-cadre { flex: 1 1 auto; width: 100%; border: 0; background: #fff; min-height: 0; }
+.fe-aide { margin: 0; padding: 6px 14px; font: 400 12px ui-monospace, Menlo, monospace; color: #BEBDB4; background: #11110F; }
+@media (max-width: 640px) { .fe-boite { box-shadow: none; } .fe-hote { display: none; } }
 </style>
 </head>
 <body>
@@ -458,6 +468,28 @@ function habillerAtlas() {
   const h = b.querySelector("h1"); if (h) sepH1(h); app.insertBefore(b, n);
 }
 new MutationObserver(habillerAtlas).observe(app, { childList: true });
+/* Liens externes : ils s'ouvrent dans une fenêtre embarquée au-dessus de la page (aussi au-dessus d'un diaporama projeté), avec toujours un bouton pour les ouvrir dans un onglet.
+   Certains sites interdisent d'être affichés dans une autre page (YouTube, Google, réseaux sociaux...) : pour ceux-là, une vraie petite fenêtre s'ouvre, qui ne quitte pas le cours. */
+const HOTES_SANS_CADRE = /(^|\.)(youtube\.com|youtu\.be|youtube-nocookie\.com|google\.[a-z.]+|facebook\.com|instagram\.com|x\.com|twitter\.com|spotify\.com|deezer\.com|apple\.com|bandcamp\.com|soundcloud\.com)$/i;
+function ouvrirFenetreExterne(url, titre) {
+  let h; try { h = new URL(url, location.href).hostname; } catch (_) { return false; }
+  if (HOTES_SANS_CADRE.test(h)) { const f = window.open(url, "externe", "popup=yes,width=1000,height=720"); if (f) { try { f.opener = null; } catch (_) {} return true; } return false; }
+  document.getElementById("fenetre-ext")?.remove();
+  const el = document.createElement("div"); el.id = "fenetre-ext"; el.className = "fenetre-ext"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", titre || "Page externe");
+  el.innerHTML = `<div class="fe-boite"><div class="fe-haut"><span class="fe-titre">${esc(titre || h)}</span><span class="fe-hote">${esc(h)}</span><a class="fe-onglet" href="${esc(url)}" target="_blank" rel="noopener" data-sans-fenetre>Ouvrir dans un onglet</a><button type="button" class="fe-fermer" aria-label="Fermer la fenêtre">Fermer</button></div>
+    <iframe class="fe-cadre" src="${esc(url)}" title="${esc(titre || h)}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation" allow="autoplay; fullscreen"></iframe>
+    <p class="fe-aide">Si la page reste vide, ce site refuse d'être affiché ici : utilise « Ouvrir dans un onglet ».</p></div>`;
+  document.body.appendChild(el); const retour = document.activeElement;
+  const fermer = () => { el.remove(); document.removeEventListener("keydown", clavier, true); if (retour && retour.focus) try { retour.focus(); } catch (_) {} };
+  const clavier = e => { if (e.key === "Escape") { e.stopPropagation(); e.preventDefault(); fermer(); } };
+  document.addEventListener("keydown", clavier, true); el.querySelector(".fe-fermer").onclick = fermer; el.addEventListener("click", e => { if (e.target === el) fermer(); }); el.querySelector(".fe-fermer").focus();
+  return true;
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest && e.target.closest('a[target="_blank"][href^="http"]'); if (!a || a.hasAttribute("data-sans-fenetre") || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  let u; try { u = new URL(a.href); } catch (_) { return; } if (u.origin === location.origin) return;
+  if (ouvrirFenetreExterne(a.href, (a.textContent || "").replace(/\s+/g, " ").trim().slice(0, 80))) e.preventDefault();
+}, true);
 brancherRecherche(); window.addEventListener("hashchange", rendre); rendre();
 </script>
 </body>
