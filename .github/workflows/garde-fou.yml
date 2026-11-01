@@ -1,0 +1,127 @@
+# Garde-fou : ce depot est PUBLIC et il sert un cours de college.
+#
+# Deux risques, et ils ne sont pas de meme nature.
+# 1. Les donnees du hub prive `stopera` : sante, finances, famille, administratif.
+# 2. Les donnees d'eleves, qui sont des mineurs. Une liste de classe, un export
+#    Pronote, un trombinoscope ou un releve de notes publie ici serait bien plus
+#    grave qu'une maladresse : ce depot est lisible par n'importe qui.
+#
+# Conception, reprise du garde-fou de `proyectos` et corrigee sur un point :
+# - les etapes bloquantes ne regardent que des NOMS de fichiers ou des MOTIFS ;
+# - aucun identifiant personnel n'est ecrit en clair dans ce fichier. Le garde-fou
+#   de `proyectos` epelle le numero de securite sociale, le numero CAF et le
+#   mobile prive dans un depot public : il publie ce qu'il protege. On ne refait
+#   pas cette erreur ici, donc on detecte par forme et jamais par valeur.
+# - les motifs trop flous pour etre surs n'AVERTISSENT que, sans faire echouer.
+# - aucune dependance externe, aucun secret, aucune API.
+#
+# Verifie le 01/11/2026 contre les 1047 fichiers du depot : zero correspondance
+# sur chacune des etapes bloquantes. Les extensions presentes ce jour-la sont
+# mp3, pdf, js, json, wasm, woff2, jpg, png, txt, html, css, md et data.
+#
+# ATTENTION, difference avec `proyectos` : ici `manifest.json` et `sw.js` sont
+# legitimes, le site est une application installable. Ne jamais recopier l'etape
+# cm2-kpop du garde-fou de proyectos, elle ferait echouer chaque push.
+name: garde-fou
+on:
+  push:
+  pull_request:
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bloquer les tableurs, la bureautique et les archives
+        # Une liste de classe ou un releve de notes arrive toujours sous une de ces
+        # formes, parce que c'est ce qu'exportent Pronote, EcoleDirecte et SIECLE.
+        # C'est le controle le plus precis dont on dispose contre une donnee d'eleve.
+        run: |
+          M=$(git ls-files | grep -Ei '\.(csv|tsv|xlsx?|ods|docx?|odt|pptx?|odp|numbers|pages|key|zip|7z|rar|eml|msg)$' || true)
+          if [ -n "$M" ]; then
+            echo "::error::GARDE-FOU - tableur, document bureautique ou archive detecte dans ce depot PUBLIC. Un export de liste de classe ou de notes prend exactement cette forme. Ces fichiers restent dans le depot prive :"
+            echo "$M"
+            exit 1
+          fi
+
+      - name: Bloquer les exports de logiciels de vie scolaire
+        run: |
+          M=$(git ls-files | grep -Ei 'pronote|ecoledirecte|ecole-directe|siecle|trombinoscope|liste[-_ ]?(des[-_ ]?)?eleves|appel[-_ ]?classe|emargement|bulletin[-_ ]?(trimestre|eleve)' || true)
+          if [ -n "$M" ]; then
+            echo "::error::GARDE-FOU - fichier de vie scolaire detecte. Ce depot est public et les eleves sont des mineurs :"
+            echo "$M"
+            exit 1
+          fi
+
+      - name: Bloquer les dossiers du hub prive stopera
+        run: |
+          M=$(git ls-files | grep -Ei '(^|/)(memory|ops|github-audit|inbox|Career|ADMIN-STOPERA|DOCS_STOPERA|Projets_STopera|ADMIN-REPRISE|DOCTORAT-MALMO|knowledge_legacy_a_trier|\.roots)(/|$)' || true)
+          if [ -n "$M" ]; then
+            echo "::error::GARDE-FOU - contenu du hub prive stopera detecte dans ce depot PUBLIC :"
+            echo "$M"
+            exit 1
+          fi
+
+      - name: Bloquer le marqueur de contenu prive
+        # Convention du hub prive : un document qui ne doit jamais sortir porte ce
+        # marqueur. S'il arrive ici par copier-coller, la publication echoue.
+        run: |
+          M=$(grep -rIl -e 'PRIVE-STOPERA-NE-PAS-PUBLIER' -e 'publiable: false' . \
+              --exclude-dir=.git --exclude-dir=.github 2>/dev/null || true)
+          if [ -n "$M" ]; then
+            echo "::error::GARDE-FOU - marqueur de contenu prive detecte :"
+            echo "$M"
+            exit 1
+          fi
+
+      - name: Bloquer toute adresse de courriel
+        # Un site de cours de college n'a besoin d'aucune adresse en clair : le
+        # contact passe par l'etablissement. Verifie le 01/11/2026 : zero occurrence
+        # dans les pages ecrites a la main, donc toute correspondance est une
+        # intrusion et jamais un heritage.
+        #
+        # Le dossier `faust` est exclu, et ce n'est pas une facilite : les fichiers
+        # dsp-meta.json generes par le compilateur Faust portent les en-tetes de
+        # copyright de la bibliotheque, donc des dizaines d'adresses d'universitaires.
+        # Sans cette exclusion, cette etape ferait echouer chaque push. Teste.
+        run: |
+          M=$(grep -rInIE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' . \
+              --include='*.html' --include='*.md' \
+              --exclude-dir=.git --exclude-dir=.github \
+              --exclude-dir=faust --exclude-dir=polices 2>/dev/null || true)
+          if [ -n "$M" ]; then
+            echo "::error::GARDE-FOU - adresse de courriel detectee dans ce depot PUBLIC. Si elle est volontaire, elle doit etre une adresse d'etablissement et cette etape doit etre amendee en connaissance de cause :"
+            echo "$M"
+            exit 1
+          fi
+
+      - name: Bloquer les numeros personnels, par forme et non par valeur
+        # Numero de securite sociale francais : 13 chiffres commencant par 1 ou 2.
+        # Mobile francais : soit 06 ou 07 avec un separateur entre chaque paire, soit
+        # dix chiffres colles. Le separateur est exige, et ce detail compte : la
+        # version laxiste `0[67]([ .-]?[0-9]{2}){4}` attrape `06.66666666`, qui est
+        # une coordonnee de trace SVG presente dans index.html. Teste le 01/11/2026,
+        # les deux formes retenues donnent zero correspondance.
+        run: |
+          M=$(grep -rInIE '\b[12][0-9]{12}\b|\b0[67]([ .-][0-9]{2}){4}\b|\b0[67][0-9]{8}\b|\bFR[0-9]{2}[ ]?[0-9A-Z ]{20,}' . \
+              --include='*.html' --include='*.md' --include='*.txt' \
+              --exclude-dir=.git --exclude-dir=.github 2>/dev/null || true)
+          if [ -n "$M" ]; then
+            echo "::error::GARDE-FOU - suite de chiffres de la forme d'un numero de securite sociale, d'un mobile ou d'un IBAN :"
+            echo "$M"
+            exit 1
+          fi
+
+      - name: Dates de naissance et listes de noms (avertissement seul, n'echoue jamais)
+        # Trop flou pour bloquer, assez utile pour signaler : une date de naissance
+        # d'eleve, ou un fichier qui aligne des couples prenom-nom.
+        run: |
+          M=$(grep -rInIE '\b[0-9]{2}/[0-9]{2}/(19[89][0-9]|20[0-2][0-9])\b' . \
+              --include='*.html' --include='*.md' --include='*.txt' --include='*.json' \
+              --exclude-dir=.git --exclude-dir=.github 2>/dev/null | head -20 || true)
+          if [ -n "$M" ]; then
+            echo "::warning::GARDE-FOU - date ressemblant a une date de naissance. A verifier avant publication :"
+            echo "$M"
+          fi
+          exit 0
