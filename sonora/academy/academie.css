@@ -1,0 +1,15 @@
+.progres { font: 500 .8rem var(--f-mono); margin: 10px 0 0; }
+#nav-exp .fait::before { content: "\2713  "; font-weight: 700; } #nav-exp button.fait { background: var(--tint); }
+#nav-exp button[aria-current=true].fait { background: var(--acide); }
+.petit-bouton { margin-top: 14px; min-height: 30px; font-size: .75rem; }
+.cours p { max-width: 70ch; margin: 0 0 10px; } .cours code, .consigne code { font: 500 .88em var(--f-mono); background: var(--tint); padding: 1px 4px; }
+.objectif { font: 400 1.2rem/1.3 var(--f-display); margin: 6px 0 4px; }
+.zone-code { display: grid; grid-template-columns: 38px minmax(0, 1fr); height: 260px; background: var(--noir); color: var(--papier); font: 400 .85rem/22px var(--f-mono); border: 2px solid var(--noir); position: relative; }
+.zone-code.court { height: 190px; }
+.criteres { list-style: none; margin: 10px 0 0; padding: 0; } .criteres li { padding: 6px 10px; margin: 0 0 4px; background: var(--tint); display: grid; grid-template-columns: 22px 1fr; gap: 0 6px; }
+.criteres li.ok { background: var(--acide); } .criteres li.non { background: #fff; border-left: 6px solid var(--rouge); } .criteres .detail { grid-column: 2; font: .78rem var(--f-mono); color: var(--gris); } .criteres li.ok .detail { color: var(--noir); }
+.erreur-comp { border-left: 6px solid var(--rouge); background: #fff; padding: 8px 12px; font: .85rem var(--f-mono); white-space: pre-wrap; margin-top: 10px; }
+.verdict-global { font: 500 1rem var(--f-mono); margin: 10px 0 0; } .verdict-global.ok { background: var(--acide); display: inline-block; padding: 4px 10px; }
+.nav-lecon { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+details.solution pre { background: var(--noir); color: var(--papier); padding: 12px; overflow: auto; font: .8rem/1.5 var(--f-mono); }
+.sr-seul { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }

@@ -1,0 +1,66 @@
+// Bibliothèque de modules : signatures, documentation, état d'implémentation.
+// `impl` : le générateur de code sait produire ce module. Un module déclaré mais non implémenté est vérifié
+// (types, unités) mais refusé à la génération avec l'erreur E801 : on ne simule rien.
+import { ZERO, D_TEMPS, D_FREQ, D_PHASE, D_NIVEAU } from "./unites.js";
+
+const P = (nom, t, o = {}) => ({ nom, t, ...o });
+const sortie = (r, n = 1, d = ZERO) => ({ r, n, d });
+
+// Types de paramètres (champ t) :
+//   audio : signal sans unité ; Hz s Phase dB : quantité de cette dimension ; Ratio : sans unité ;
+//   Entier, Texte, table : constantes ; Porte : booléen de contrôle ; num : n'importe quelle dimension.
+// rmax : la cadence maximale acceptée (par défaut audio).
+export const MODULES = {
+  // Générateurs
+  sinus: { famille: "Générateurs", params: [P("freq", "Hz"), P("phase", "Phase", { defaut: 0 })], ret: sortie("a"), impl: true, phase: 2,
+    doc: "Une onde sinusoïdale : un seul partiel. La phase est en tours." },
+  carre: { famille: "Générateurs", params: [P("freq", "Hz"), P("largeur", "Ratio", { defaut: 0.5, rmax: "k" })], ret: sortie("a"), impl: true, phase: 3, doc: "Une onde carrée, à largeur d'impulsion réglable." },
+  triangle: { famille: "Générateurs", params: [P("freq", "Hz")], ret: sortie("a"), impl: true, phase: 3, doc: "Une onde triangulaire." },
+  dent: { famille: "Générateurs", params: [P("freq", "Hz")], ret: sortie("a"), impl: true, phase: 3, doc: "Une onde en dent de scie." },
+  impulsions: { famille: "Générateurs", params: [P("freq", "Hz")], ret: sortie("a"), impl: true, phase: 3, doc: "Un train d'impulsions." },
+  bruit_blanc: { famille: "Générateurs", params: [P("graine", "Entier", { defaut: 1 })], ret: sortie("a"), impl: true, phase: 3, doc: "Un bruit blanc à graine : la même graine donne toujours le même bruit." },
+  bruit_rose: { famille: "Générateurs", params: [P("graine", "Entier", { defaut: 1 })], ret: sortie("a"), impl: true, phase: 3, doc: "Un bruit rose : -3 dB par octave." },
+  table_onde: { famille: "Générateurs", params: [P("t", "table"), P("freq", "Hz")], ret: sortie("a"), impl: true, phase: 7, doc: "Lit une table d'onde en boucle, avec interpolation linéaire. Pas de filtrage anti-repliement : une table riche en harmoniques se replie aux notes aiguës." },
+  additive: { famille: "Synthèse", params: [P("freq", "Hz"), P("amplitudes", "table")], ret: sortie("a"), impl: true, phase: 7, doc: "Somme d'harmoniques : amplitudes[0] pour la fondamentale, amplitudes[1] pour l'octave, etc. 64 harmoniques au plus. Les harmoniques au-dessus de la moitié de la fréquence d'échantillonnage sont omis." },
+  // Enveloppes et contrôle
+  adsr: { famille: "Enveloppes", params: [P("porte", "Porte"), P("attaque", "s", { rmax: "k" }), P("declin", "s", { rmax: "k" }), P("soutien", "Ratio", { rmax: "k" }), P("relache", "s", { rmax: "k" })], ret: sortie("k"), impl: true, phase: 3, doc: "Enveloppe attaque, déclin, soutien, relâche." },
+  ar: { famille: "Enveloppes", params: [P("attaque", "s", { rmax: "k" }), P("relache", "s", { rmax: "k" })], ret: sortie("k"), impl: true, phase: 7, doc: "Enveloppe en deux temps : monte de 0 à 1 en `attaque`, redescend à 0 en `relache`. Elle repart au début du programme et à chaque nouvelle note d'une voix." },
+  rampe: { famille: "Enveloppes", params: [P("de", "num"), P("vers", "num"), P("duree", "s")], ret: sortie("k"), impl: true, phase: 7, generique: true, doc: "Une rampe linéaire de `de` à `vers` en `duree`, puis elle reste à `vers`. Elle repart au début du programme et à chaque nouvelle note d'une voix." },
+  lfo: { famille: "Contrôle", params: [P("freq", "Hz", { rmax: "k" }), P("forme", "Texte", { defaut: "sinus" })], ret: sortie("k"), impl: true, phase: 3, doc: "Oscillateur lent, valeurs de -1 à 1." },
+  niveau: { famille: "Contrôle", params: [P("x", "audio"), P("fenetre", "s", { defaut: 0.05, rmax: "k" })], ret: sortie("k"), impl: true, phase: 7, doc: "Niveau efficace d'un signal audio (audio vers contrôle), lissé sur `fenetre`." },
+  // Filtres
+  passe_bas: { famille: "Filtres", params: [P("entree", "audio"), P("coupure", "Hz", { rmax: "k" }), P("q", "Ratio", { defaut: 0.707, rmax: "k" })], ret: sortie("a"), impl: true, phase: 3, doc: "Filtre passe-bas du second ordre." },
+  passe_haut: { famille: "Filtres", params: [P("entree", "audio"), P("coupure", "Hz", { rmax: "k" }), P("q", "Ratio", { defaut: 0.707, rmax: "k" })], ret: sortie("a"), impl: true, phase: 3, doc: "Filtre passe-haut du second ordre." },
+  passe_bande: { famille: "Filtres", params: [P("entree", "audio"), P("centre", "Hz", { rmax: "k" }), P("q", "Ratio", { defaut: 1, rmax: "k" })], ret: sortie("a"), impl: true, phase: 3, doc: "Filtre passe-bande." },
+  coupe_bande: { famille: "Filtres", params: [P("entree", "audio"), P("centre", "Hz", { rmax: "k" }), P("q", "Ratio", { defaut: 1, rmax: "k" })], ret: sortie("a"), impl: true, phase: 3, doc: "Filtre coupe-bande." },
+  pic: { famille: "Filtres", params: [P("entree", "audio"), P("centre", "Hz", { rmax: "k" }), P("q", "Ratio", { defaut: 1, rmax: "k" }), P("gain", "dB", { defaut: 0 })], ret: sortie("a"), impl: true, phase: 3, doc: "Filtre en cloche (égaliseur paramétrique)." },
+  // Retards et effets
+  z1: { famille: "Retards", params: [P("entree", "audio")], ret: sortie("a"), impl: true, phase: 2, retard: true, doc: "Retarde le signal d'un échantillon (sert aux boucles avec rec)." },
+  retarde: { famille: "Retards", params: [P("entree", "audio"), P("duree", "s"), P("max", "s")], ret: sortie("a"), impl: true, phase: 2, retard: true, doc: "Ligne à retard : la durée ne dépasse pas `max`, qui est une constante." },
+  echo: { famille: "Retards", params: [P("x", "audio"), P("duree", "s"), P("retour", "Ratio", { defaut: 0.3 }), P("melange", "Ratio", { defaut: 0.3 })], ret: sortie("a"), impl: true, compose: true, phase: 7, doc: "Écho : chaque répétition revient `retour` fois plus faible (retour limité à 95 %, durée jusqu'à 2 s). `melange` règle le niveau des répétitions." },
+  chorus: { famille: "Modulations", params: [P("x", "audio"), P("vitesse", "Hz"), P("profondeur", "Ratio"), P("melange", "Ratio", { defaut: 0.5 })], ret: sortie("a"), impl: true, compose: true, phase: 7, doc: "Chorus : deux copies retardées de 15 à 28 ms, dont le retard oscille, mélangées au son sec. Sur un son pur, les copies peuvent s'annuler par moments : c'est le peigne du chorus." },
+  flanger: { famille: "Modulations", params: [P("x", "audio"), P("vitesse", "Hz"), P("profondeur", "Ratio"), P("melange", "Ratio", { defaut: 0.5 })], ret: sortie("a"), impl: true, compose: true, phase: 7, doc: "Flanger : un retard court (0,5 à 5,5 ms) avec retour, qui balaie un peigne de creux dans le spectre." },
+  phaser: { famille: "Modulations", params: [P("x", "audio"), P("vitesse", "Hz"), P("profondeur", "Ratio"), P("melange", "Ratio", { defaut: 0.5 })], ret: sortie("a"), impl: true, compose: true, phase: 7, doc: "Phaser : quatre filtres passe-tout du premier ordre dont le coefficient oscille ; mélangés au son sec ils creusent des encoches mobiles. Le coefficient est fixé en échantillons : la position des encoches suit la fréquence d'échantillonnage." },
+  sature: { famille: "Distorsion", params: [P("x", "audio"), P("gain", "dB")], ret: sortie("a"), impl: true, compose: true, phase: 7, doc: "Saturation douce : tanh(x * gain). Arrondit les crêtes et crée des harmoniques impairs. La sortie ne dépasse jamais 1." },
+  ecrete: { famille: "Distorsion", params: [P("x", "audio"), P("gain", "dB")], ret: sortie("a"), impl: true, compose: true, phase: 7, doc: "Écrêtage dur : le signal multiplié par le gain est coupé net à -1 et 1." },
+  reverberation: { famille: "Espace", params: [P("x", "audio"), P("duree", "s"), P("amortissement", "Ratio", { defaut: 0.5 }), P("melange", "Ratio", { defaut: 0.3 })], ret: sortie("a"), impl: true, compose: true, phase: 7, doc: "Réverbération : quatre peignes à amortissement des aigus puis deux diffuseurs (Schroeder). `duree` est le temps de déclin de 60 dB, mesuré à 10 % près." },
+  corde_pincee: { famille: "Synthèse", params: [P("freq", "Hz"), P("amortissement", "Ratio", { defaut: 0.5 })], ret: sortie("a"), impl: true, compose: true, phase: 7, doc: "Corde pincée (Karplus-Strong) : une brève salve de bruit entre dans une boucle de retard filtrée par une moyenne de deux échantillons. La corde est pincée au début du programme. Fréquence de 20 Hz à 4 kHz ; plus l'amortissement est grand, plus la note s'éteint vite." },
+  grains: { famille: "Synthèse", params: [P("source", "table"), P("densite", "Hz"), P("taille", "s"), P("position", "Ratio"), P("hauteur", "Ratio", { defaut: 1 })], ret: sortie("a"), impl: false, phase: 7, doc: "Synthèse granulaire : des grains de la table, à la densité demandée." },
+  panoramique: { famille: "Espace", params: [P("x", "audio"), P("position", "Ratio")], ret: sortie("a", 2), impl: true, compose: true, phase: 7, doc: "Panoramique à puissance constante : -3 dB au centre, une seule voie aux extrémités. Renvoie deux canaux." },
+};
+
+// Fonctions mathématiques : entrées et sortie en dimensions. Les formes marquées « meme » exigent la même dimension.
+const D = { zero: ZERO, T: D_TEMPS, F: D_FREQ, P: D_PHASE, L: D_NIVEAU };
+export const MATHS = {
+  abs: { arite: 1, meme: true }, signe: { arite: 1, entree: [null], sortie: ZERO },
+  min: { arite: 2, meme: true }, max: { arite: 2, meme: true }, clamp: { arite: 3, meme: true },
+  mix: { arite: 3, mixte: true },
+  sin: { arite: 1, trig: true }, cos: { arite: 1, trig: true }, tan: { arite: 1, trig: true },
+  tanh: { arite: 1, entree: [ZERO], sortie: ZERO }, exp: { arite: 1, entree: [ZERO], sortie: ZERO }, log: { arite: 1, entree: [ZERO], sortie: ZERO },
+  log2: { arite: 1, entree: [ZERO], sortie: ZERO }, sqrt: { arite: 1, entree: [ZERO], sortie: ZERO }, racine: { arite: 1, entree: [ZERO], sortie: ZERO, alias: "sqrt" },
+  floor: { arite: 1, entree: [ZERO], sortie: ZERO }, arrondi: { arite: 1, entree: [ZERO], sortie: ZERO },
+  lin: { arite: 1, entree: [D.L], sortie: ZERO }, db: { arite: 1, entree: [ZERO], sortie: D.L },
+  periode: { arite: 1, entree: [D.F], sortie: D.T }, frequence: { arite: 1, entree: [D.T], sortie: D.F },
+  midi: { arite: 1, entree: [ZERO], sortie: D.F }, note_de: { arite: 1, entree: [D.F], sortie: ZERO },
+  transpose: { arite: 2, transpose: true },
+};

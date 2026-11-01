@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONORA Science</title>
+<meta name="description" content="Comprendre le son par la mesure : des expériences d'acoustique et de psychoacoustique calculées sur les signaux réellement produits.">
+<link rel="stylesheet" href="../studio/studio.css">
+<link rel="stylesheet" href="science.css">
+</head>
+<body>
+<a class="saut" href="#fiche">Aller à l'expérience</a>
+<header class="haut">
+  <div class="marque"><a href="../../" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Science</span></div>
+  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" aria-current="page" href="index.html">Science</a></nav>
+  <div class="etat" id="etat" role="status" aria-live="polite">prêt</div>
+</header>
+<nav class="onglets-mobiles" aria-label="Panneaux" id="onglets-mobiles"><button type="button" data-p="liste" aria-pressed="false">Expériences</button><button type="button" data-p="fiche" aria-pressed="true">Expérience</button></nav>
+<main id="sciences" data-actif="fiche">
+  <aside class="panneau" id="liste" aria-label="Liste des expériences"><div id="nav-exp"></div><p class="petit" id="avis-limites"></p></aside>
+  <article class="panneau" id="fiche" aria-live="polite"></article>
+</main>
+<script type="module" src="science.js"></script>
+</body>
+</html>

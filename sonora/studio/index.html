@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONORA Studio</title>
+<meta name="description" content="Programmer un son : écrire, compiler, écouter et visualiser, dans le navigateur.">
+<link rel="stylesheet" href="studio.css">
+</head>
+<body>
+<a class="saut" href="#editeur">Aller à l'éditeur</a>
+<header class="haut">
+  <div class="marque"><a href="../../" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Studio</span></div>
+  <div class="actions" role="group" aria-label="Commandes">
+    <button type="button" id="b-executer" class="principal" title="Compiler et jouer (Ctrl+Entrée)">&#9654; Exécuter</button>
+    <button type="button" id="b-arreter" title="Arrêter (Ctrl+.)" disabled>&#9632; Arrêter</button>
+    <button type="button" id="b-compiler" title="Compiler sans jouer">Compiler</button>
+    <button type="button" id="b-reset" title="Remettre les réglages à leur valeur de départ">Réinitialiser</button>
+  </div>
+  <div class="etat" id="etat" role="status" aria-live="polite">arrêté</div>
+</header>
+<nav class="onglets-mobiles" aria-label="Panneaux" id="onglets-mobiles">
+  <button type="button" data-p="gauche" aria-pressed="false">Bibliothèque</button>
+  <button type="button" data-p="centre" aria-pressed="true">Code</button>
+  <button type="button" data-p="droite" aria-pressed="false">Réglages</button>
+  <button type="button" data-p="bas" aria-pressed="false">Analyse</button>
+</nav>
+<main id="grille" data-actif="centre">
+  <aside class="panneau" id="gauche" aria-label="Bibliothèque">
+    <div class="onglets" role="tablist">
+      <button type="button" role="tab" data-t="exemples" aria-selected="true">Exemples</button>
+      <button type="button" role="tab" data-t="modules" aria-selected="false">Modules</button>
+      <button type="button" role="tab" data-t="projets" aria-selected="false">Projets</button>
+    </div>
+    <div class="vue" id="v-exemples"></div>
+    <div class="vue" id="v-modules" hidden></div>
+    <div class="vue" id="v-projets" hidden>
+      <label class="champ">Titre du projet<input type="text" id="p-titre" maxlength="80" value="Sans titre"></label>
+      <div class="rang">
+        <button type="button" id="p-enreg">Enregistrer</button><button type="button" id="p-dupl">Dupliquer</button><button type="button" id="p-suppr">Supprimer</button>
+      </div>
+      <div class="rang">
+        <button type="button" id="p-nouveau">Nouveau</button><button type="button" id="p-export">Exporter le projet</button><button type="button" id="p-export-sn">Exporter le code (.sn)</button>
+      </div>
+      <label class="champ">Importer un fichier (.sonora.json ou .sn)<input type="file" id="p-import" accept=".json,.sn,.sonora,text/plain,application/json"></label>
+      <ul class="liste" id="p-liste" aria-label="Projets enregistrés"></ul>
+      <p class="petit">Les projets restent dans ce navigateur. Exporte un fichier pour les garder ailleurs ou les partager.</p>
+    </div>
+  </aside>
+  <section class="panneau" id="centre" aria-label="Programme">
+    <div class="onglets" role="tablist">
+      <button type="button" role="tab" data-m="code" aria-selected="true">Code</button>
+      <button type="button" role="tab" data-m="graphe" aria-selected="false">Graphe</button>
+      <span class="diag" id="diag" role="status" aria-live="polite"></span>
+    </div>
+    <div id="editeur" class="editeur"></div>
+    <div id="graphe" class="graphe" hidden></div>
+    <div id="aide" class="aide" aria-live="polite"><p class="petit">Place le curseur sur un mot : son aide s'affiche ici. Ctrl+Espace propose des mots.</p></div>
+  </section>
+  <aside class="panneau" id="droite" aria-label="Réglages">
+    <h2>Réglages</h2>
+    <div id="reglages"><p class="petit">Compile un programme : ses réglages apparaissent ici, avec un curseur chacun.</p></div>
+    <div id="source-zone" hidden>
+      <h2>Source de test</h2>
+      <p class="petit">Un effet transforme un son : choisis ce qu'il reçoit.</p>
+      <select id="source-test" aria-label="Source de test">
+        <option value="sinus">Sinus 220 Hz</option><option value="bruit">Bruit blanc</option><option value="clics">Clics (un par seconde)</option><option value="micro">Micro</option><option value="aucune">Aucune</option>
+      </select>
+    </div>
+    <div id="clavier-zone" hidden>
+      <h2>Clavier</h2>
+      <p class="petit">Joue avec la souris, le doigt ou les touches A, Z, E, R… (ligne du milieu : notes blanches, ligne du haut : noires).</p>
+      <div id="clavier" class="clavier" role="group" aria-label="Clavier de deux octaves"></div>
+    </div>
+  </aside>
+  <section class="panneau" id="bas" aria-label="Console et analyse">
+    <div class="console" id="console" role="log" aria-live="polite" aria-label="Console"></div>
+    <div class="visus">
+      <figure><canvas id="oscillo" aria-label="Oscilloscope" role="img"></canvas><figcaption>Oscilloscope</figcaption></figure>
+      <figure><canvas id="spectre" aria-label="Analyseur de spectre" role="img"></canvas><figcaption>Spectre</figcaption></figure>
+      <div class="mesures" id="mesures" aria-live="off"><span id="m-pic">pic : -</span><span id="m-niv">crête : -</span><span id="m-sr">-</span></div>
+    </div>
+  </section>
+</main>
+<script type="module" src="studio.js"></script>
+</body>
+</html>

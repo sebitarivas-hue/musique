@@ -1,0 +1,22 @@
+body { height: auto; overflow: auto; } 
+#sciences { flex: 1; display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 0; }
+#liste, #fiche { grid-row: 1; margin: -1px 0 0 -1px; } #fiche { padding: 18px 24px 40px; max-width: 1100px; }
+.lien-bouton { display: inline-flex; align-items: center; min-height: 38px; padding: 6px 14px; border: 2px solid var(--papier); color: var(--papier); text-decoration: none; font: 600 .85rem var(--f-body); } .lien-bouton[aria-current=page] { background: var(--acide); color: var(--noir); border-color: var(--acide); }
+.groupe-nav { font: 500 .72rem var(--f-mono); text-transform: uppercase; letter-spacing: .1em; margin: 14px 0 4px; color: var(--gris); }
+#nav-exp ul { list-style: none; margin: 0; padding: 0; } #nav-exp li { margin: 0 0 4px; } #nav-exp button { display: block; width: 100%; text-align: left; padding: 8px 10px; } #nav-exp button[aria-current=true] { background: var(--acide); } #nav-exp .tag { display: inline-block; font: 500 .62rem var(--f-mono); text-transform: uppercase; background: var(--noir); color: var(--acide); padding: 1px 5px; margin-left: 6px; }
+#fiche h1 { font: 400 clamp(1.7rem, 3.4vw, 2.6rem)/1.05 var(--f-display); margin: 4px 0 14px; letter-spacing: -.01em; }
+.etiq-domaine { display: inline-block; font: 500 .75rem var(--f-mono); text-transform: uppercase; letter-spacing: .1em; background: var(--noir); color: var(--acide); padding: 3px 8px; }
+#fiche h2 { margin: 24px 0 8px; padding-top: 12px; border-top: 2px solid var(--noir); }
+.question { font: 400 1.25rem/1.3 var(--f-display); margin: 6px 0 4px; } .explication p { max-width: 70ch; margin: 0 0 10px; }
+.bloc-exp { border: 2px solid var(--noir); padding: 14px; background: #fff; } .bloc-exp .commandes { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+.bloc-exp .reglages-exp { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 24px; } .bloc-exp .reglage { margin-bottom: 10px; }
+table.mesures { width: 100%; border-collapse: collapse; font-size: .88rem; } table.mesures th { text-align: left; font: 500 .7rem var(--f-mono); text-transform: uppercase; letter-spacing: .08em; border-bottom: 2px solid var(--noir); padding: 4px 8px 4px 0; } table.mesures td { border-bottom: 1px solid var(--tint); padding: 6px 8px 6px 0; vertical-align: top; }
+table.mesures td.n { font-family: var(--f-mono); text-align: right; white-space: nowrap; } .verdict { font: 500 .8rem var(--f-mono); padding: 1px 6px; white-space: nowrap; } .verdict.ok { background: var(--acide); } .verdict.non { background: var(--rouge); } .verdict.info { background: var(--tint); }
+.bilan { font: 500 .9rem var(--f-mono); margin: 8px 0; } .bilan.ok { color: var(--noir); } .bilan.non { color: #c0300f; }
+.vues { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 12px; } .vues figure { margin: 0; } .vues canvas { width: 100%; height: 180px; display: block; background: var(--noir); } .vues figcaption { font: 500 .68rem var(--f-mono); text-transform: uppercase; letter-spacing: .08em; padding-top: 3px; }
+.interpretation { border-left: 6px solid var(--acide); background: #fff; padding: 10px 14px; max-width: 75ch; margin: 0; }
+.prog { margin-top: 10px; } .prog summary { cursor: pointer; font-weight: 600; } .prog pre { background: var(--noir); color: var(--papier); padding: 12px; overflow: auto; font: 400 .8rem/1.5 var(--f-mono); }
+.consigne { background: var(--tint); padding: 10px 12px; margin: 10px 0; } .consigne ol { margin: 4px 0 4px 18px; padding: 0; }
+.progression { font: 500 .85rem var(--f-mono); margin: 8px 0; } .gros-boutons { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; } .gros-boutons button { min-height: 52px; min-width: 160px; font-size: 1rem; }
+.resultat-aud { border: 2px solid var(--noir); background: #fff; padding: 10px 14px; margin-top: 12px; }
+@media (max-width: 900px) { #sciences { grid-template-columns: 1fr; } #sciences .panneau { display: none; } #sciences[data-actif=liste] #liste, #sciences[data-actif=fiche] #fiche { display: block; } #fiche { padding: 14px 14px 40px; } .onglets-mobiles { display: flex; } table.mesures { font-size: .8rem; } table.mesures th:nth-child(4), table.mesures td:nth-child(4) { display: none; } }
