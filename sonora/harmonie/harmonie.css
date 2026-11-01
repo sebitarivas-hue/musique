@@ -1,0 +1,28 @@
+body { height: auto; overflow: auto; }
+.onglets-h { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 2px solid var(--noir); background: var(--papier); }
+.onglets-h button { flex: 1 1 0; border: 0; border-right: 2px solid var(--noir); min-height: 46px; font-weight: 700; } .onglets-h button:last-child { border-right: 0; }
+.onglets-h button[aria-selected="true"] { background: var(--noir); color: var(--acide); }
+.harmonie { padding: 14px 16px 40px; max-width: 1180px; margin: 0 auto; }
+.rang-h { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; margin: 8px 0 12px; }
+.rang-h label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; font-weight: 600; } .rang-h select, .rang-h input { min-height: 40px; font: inherit; padding: 4px 8px; border: 2px solid var(--noir); background: #fff; }
+.texte-mode { max-width: 70ch; background: #fff; border-left: 6px solid var(--acide); padding: 8px 12px; margin: 8px 0 14px; }
+.clavier-h { position: relative; height: 150px; display: flex; border: 2px solid var(--noir); background: #fff; user-select: none; margin: 10px 0; }
+.clavier-h .bl { flex: 1; border-right: 1px solid var(--noir); position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font: 600 .72rem var(--f-mono); cursor: pointer; background: #fff; }
+.clavier-h .bl.dans { background: var(--acide); } .clavier-h .bl.tonique { background: var(--noir); color: var(--acide); }
+.clavier-h .no { position: absolute; top: 0; width: 4.2%; height: 60%; background: var(--noir); color: var(--papier); z-index: 2; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; font: 600 .6rem var(--f-mono); cursor: pointer; border: 1px solid var(--noir); }
+.clavier-h .no.dans { background: #7d9400; color: #fff; } .clavier-h .no.tonique { background: var(--rouge); }
+.clavier-h .joue { outline: 4px solid var(--bleu); outline-offset: -4px; }
+.accords { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin: 10px 0; }
+.carte-acc { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px; border: 2px solid var(--noir); background: #fff; cursor: pointer; min-height: 84px; }
+.carte-acc .rom { font: 400 1.5rem/1 var(--f-display); } .carte-acc .nm { font: 600 .82rem var(--f-body); } .carte-acc .ql { font: .68rem var(--f-mono); color: var(--gris); }
+.carte-acc:hover { background: var(--acide); } .carte-acc.actif:hover { background: var(--noir); } .carte-acc.actif { background: var(--noir); color: var(--acide); } .carte-acc.actif .ql { color: var(--acide); }
+.liste-prog { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.liste-prog button { text-align: left; padding: 10px; } .liste-prog button[aria-pressed="true"] { background: var(--acide); }
+.liste-prog .fam { grid-column: 1 / -1; font: 500 .72rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; margin: 10px 0 0; }
+.jeu-zone { border: 2px solid var(--noir); background: #fff; padding: 16px; text-align: center; }
+.choix-jeu { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 12px 0; } .choix-jeu button { min-height: 52px; min-width: 130px; font-weight: 700; }
+.choix-jeu button.juste { background: var(--acide); } .choix-jeu button.faux { background: var(--rouge); color: #fff; }
+.score { font: 500 1rem var(--f-mono); } .retour-jeu { min-height: 1.5em; font-weight: 600; }
+.compo { display: flex; flex-wrap: wrap; gap: 6px; min-height: 92px; border: 2px dashed var(--noir); padding: 8px; background: #fff; margin: 8px 0; }
+.compo .carte-acc { min-width: 96px; }
+@media (max-width: 760px) { .harmonie { padding: 10px; } .clavier-h { height: 120px; } .clavier-h .bl { font-size: .6rem; } .onglets-h button { font-size: .85rem; } }

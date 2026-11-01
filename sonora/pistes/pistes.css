@@ -1,0 +1,29 @@
+body { height: auto; overflow: auto; }
+#pistes-app { padding: 10px 14px 30px; display: flex; flex-direction: column; gap: 8px; }
+.transport, .outils, .selection { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.transport { background: var(--noir); color: var(--papier); padding: 8px 10px; } .transport button { color: var(--noir); }
+.transport .position { font: 500 1.2rem var(--f-mono); color: var(--acide); min-width: 6.5ch; }
+.mini { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; } .mini input[type=number] { width: 4.5em; min-height: 34px; } .mini select { min-height: 34px; }
+.mini.case input { width: 18px; height: 18px; } .espace { flex: 1; }
+button.enreg[aria-pressed="true"] { background: var(--rouge); color: #fff; border-color: var(--rouge); }
+.bouton-fichier { display: inline-flex; align-items: center; min-height: 38px; padding: 6px 12px; border: 2px solid var(--noir); background: var(--acide); font-weight: 600; cursor: pointer; } .bouton-fichier input { position: absolute; left: -9999px; }
+.selection { border: 2px solid var(--noir); background: #fff; padding: 6px 10px; }
+.ligne { display: grid; grid-template-columns: 210px minmax(0, 1fr); border: 2px solid var(--noir); background: #fff; }
+.entetes { border-right: 2px solid var(--noir); } .entetes .ent-regle { height: 28px; border-bottom: 2px solid var(--noir); background: var(--tint); }
+.entete { height: 104px; overflow: hidden; border-bottom: 1px solid var(--gris); padding: 5px 8px; display: grid; grid-template-columns: auto auto auto; justify-content: start; gap: 3px 6px; align-content: start; font-size: .74rem; }
+.entete.armee { background: #fff1ee; box-shadow: inset 4px 0 0 var(--rouge); } .entete input[type=text] { grid-column: 1 / -1; font: 600 .85rem var(--f-body); border: 1px solid var(--tint); padding: 3px 4px; }
+.entete button { min-height: 28px; padding: 2px 8px; font-size: .75rem; } .entete button[aria-pressed="true"] { background: var(--noir); color: var(--acide); }
+.entete label { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; height: 16px; } .entete label input { flex: 1; height: 14px; margin: 0; }
+.defile { position: relative; overflow-x: auto; overflow-y: hidden; }
+.regle { position: relative; height: 28px; border-bottom: 2px solid var(--noir); background: var(--tint); cursor: pointer; }
+.regle span { position: absolute; top: 0; height: 100%; border-left: 1px solid var(--noir); padding-left: 3px; font: 500 .7rem/28px var(--f-mono); }
+.voie { position: relative; height: 104px; border-bottom: 1px solid var(--gris); background-image: linear-gradient(to right, rgba(0,0,0,.08) 1px, transparent 1px); }
+.voie.survol { background-color: #fbffe0; }
+.clip { position: absolute; top: 6px; height: 92px; background: var(--acide); border: 2px solid var(--noir); cursor: grab; overflow: hidden; touch-action: none; }
+.clip.choisi { outline: 3px solid var(--bleu); outline-offset: 1px; z-index: 2; } .clip canvas { width: 100%; height: 70px; display: block; }
+.clip .nom-clip { font: 600 .7rem/16px var(--f-body); padding: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--noir); color: var(--acide); }
+.clip.enreg-en-cours { background: #ffd9d1; }
+.curseur { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--rouge); pointer-events: none; z-index: 3; }
+@media (max-width: 760px) { .ligne { grid-template-columns: 120px minmax(0, 1fr); } .entete { grid-template-columns: 1fr; } .entete .vol-pan { display: none; } #pistes-app { padding: 8px; } }
+.selection[hidden] { display: none; }
+.entete .b-arme { min-width: 44px; }

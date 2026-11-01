@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONORA Harmonie</title>
+<meta name="description" content="Le jeu d'harmonie : gammes et modes, accords, progressions classiques, pop, blues et du monde, jeu d'oreille et composition.">
+<link rel="stylesheet" href="../studio/studio.css">
+<link rel="stylesheet" href="harmonie.css">
+</head>
+<body>
+<a class="saut" href="#contenu">Aller au contenu</a>
+<header class="haut">
+  <div class="marque"><a href="../../choix.html" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Harmonie</span></div>
+  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../academy/index.html">Academy</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" href="../pistes/index.html">Pistes</a><a class="lien-bouton" aria-current="page" href="index.html">Harmonie</a></nav>
+  <div class="etat" id="etat" role="status" aria-live="polite">prêt</div>
+</header>
+<nav class="onglets-h" role="tablist" aria-label="Parties du jeu d'harmonie" id="onglets">
+  <button type="button" role="tab" data-v="explorer" aria-selected="true">Explorer</button>
+  <button type="button" role="tab" data-v="progressions" aria-selected="false">Progressions</button>
+  <button type="button" role="tab" data-v="jeu" aria-selected="false">Jeu d'oreille</button>
+  <button type="button" role="tab" data-v="composer" aria-selected="false">Composer</button>
+</nav>
+<main id="contenu" class="harmonie">
+  <section id="v-explorer" class="vue-h" role="tabpanel"></section>
+  <section id="v-progressions" class="vue-h" role="tabpanel" hidden></section>
+  <section id="v-jeu" class="vue-h" role="tabpanel" hidden></section>
+  <section id="v-composer" class="vue-h" role="tabpanel" hidden></section>
+</main>
+<script type="module" src="harmonie.js"></script>
+<script src="../retour.js"></script>
+</body>
+</html>

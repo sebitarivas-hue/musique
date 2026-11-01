@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONORA Pistes</title>
+<meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
+<link rel="stylesheet" href="../studio/studio.css">
+<link rel="stylesheet" href="pistes.css">
+</head>
+<body>
+<a class="saut" href="#ligne">Aller aux pistes</a>
+<header class="haut">
+  <div class="marque"><a href="../../choix.html" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Pistes</span></div>
+  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../academy/index.html">Academy</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" aria-current="page" href="index.html">Pistes</a><a class="lien-bouton" href="../harmonie/index.html">Harmonie</a></nav>
+  <div class="etat" id="etat" role="status" aria-live="polite">prêt</div>
+</header>
+<main id="pistes-app">
+  <section class="transport" aria-label="Transport">
+    <button type="button" id="b-lire" class="principal" title="Lecture et arrêt (barre d'espace)">&#9654; Lire</button>
+    <button type="button" id="b-debut" title="Revenir au début">&#9198; Début</button>
+    <button type="button" id="b-enreg" class="enreg" aria-pressed="false" title="Enregistrer au micro sur la piste choisie (touche R)">&#9679; Enregistrer</button>
+    <span class="position" id="position" aria-live="off">0:00.0</span>
+    <label class="mini">Tempo<input type="number" id="tempo" min="40" max="240" value="100"></label>
+    <label class="mini">Aimant<select id="aimant"><option value="0">aucun</option><option value="1" selected>temps</option><option value="0.5">demi-temps</option><option value="0.25">double croche</option></select></label>
+    <label class="mini case"><input type="checkbox" id="metro"> Métronome</label>
+    <span class="espace"></span>
+    <button type="button" id="b-zoom-moins" aria-label="Dézoomer">&minus;</button><button type="button" id="b-zoom-plus" aria-label="Zoomer">+</button>
+  </section>
+  <section class="outils" aria-label="Sons et projet">
+    <label class="bouton-fichier">Importer des sons<input type="file" id="fichiers" accept="audio/*,.wav,.mp3,.ogg,.m4a,.flac" multiple></label>
+    <label class="mini">Son SONORA<select id="choix-sonora"><option value="">Choisir…</option></select></label>
+    <button type="button" id="b-ajout-sonora">Ajouter</button>
+    <button type="button" id="b-piste">Ajouter une piste</button>
+    <button type="button" id="b-export">Exporter en WAV</button>
+    <button type="button" id="b-nouveau">Nouveau projet</button>
+  </section>
+  <section class="selection" id="selection" aria-label="Clip choisi" hidden>
+    <b id="sel-nom"></b>
+    <button type="button" id="b-couper" title="Couper au curseur (touche S)">Couper au curseur</button>
+    <button type="button" id="b-dupliquer" title="Dupliquer (touche D)">Dupliquer</button>
+    <button type="button" id="b-supprimer" title="Supprimer (touche Suppr)">Supprimer</button>
+    <label class="mini">Gain<input type="range" id="sel-gain" min="0" max="2" step="0.01"></label>
+  </section>
+  <p class="petit aide" id="message" role="status" aria-live="polite">Glisse des fichiers audio sur une piste, ou choisis une piste et appuie sur Enregistrer. Les sons restent dans ce navigateur.</p>
+  <div class="ligne" id="ligne">
+    <div class="entetes" id="entetes"></div>
+    <div class="defile" id="defile"><div class="regle" id="regle" aria-label="Règle : clique pour placer le curseur"></div><div class="voies" id="voies"></div><div class="curseur" id="curseur" aria-hidden="true"></div></div>
+  </div>
+</main>
+<script type="module" src="pistes.js"></script>
+<script src="../retour.js"></script>
+</body>
+</html>
