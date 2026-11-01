@@ -957,6 +957,33 @@ html.signal .hs-espace a { color: #D3D2CA; }
   html.signal .hs-collage { height: auto; min-height: 520px; margin-top: 0; }
 }
 /* L'accueil prend toute la largeur ; le reste de la page Semaine garde sa colonne de lecture. */
+/* Carrefours en direction SIGNAL */
+html.signal .car-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 18px 28px; align-items: end; }
+html.signal .car-eyebrow { display: inline-block; font: 500 12px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--noir); background: var(--acide); padding: 6px 9px; }
+html.signal .car-titre { font-family: "Archivo Variable", var(--f-titre); font-weight: 900; font-stretch: 62%; font-size: clamp(2.8rem, 11vw, 6.4rem); line-height: .88; letter-spacing: -.01em; text-transform: uppercase; color: var(--papier); margin: 14px 0 14px; }
+html.signal .car-titre span { display: block; } html.signal .car-titre .l2 { color: var(--acide); }
+html.signal .car-sous { margin: 0; font: 400 clamp(.82rem, 1.5vw, 1rem)/1.6 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: #D3D2CA; max-width: 34rem; }
+html.signal .car-collage { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-self: stretch; }
+html.signal .car-img { display: block; width: 100%; background-image: url("images/accueil.jpg"); background-repeat: no-repeat; background-color: #1b1b18; filter: grayscale(1) contrast(1.08); }
+html.signal .car-img:first-child { grid-column: 1 / -1; }
+html.signal .car-collage { max-height: 360px; overflow: hidden; align-self: start; }
+html.signal .car-bloc-acide, html.signal .car-bloc-rouge { position: absolute; display: block; }
+html.signal .car-bloc-acide { right: 0; top: 0; width: 22%; height: 26%; background: var(--acide); mix-blend-mode: normal; opacity: .96; }
+html.signal .car-bloc-rouge { right: 0; bottom: 8%; width: 7%; height: 14%; background: var(--rouge); }
+html.signal .car-onde { grid-column: 1 / -1; border-top: 1px solid #3A3A35; padding-top: 10px; }
+html.signal .car-onde .hs-onde svg { height: clamp(70px, 12vw, 120px); }
+html.signal .car-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 0; margin: 22px 0 8px; border-top: 2px solid var(--noir); border-left: 2px solid var(--noir); }
+html.signal .car-t { position: relative; display: grid; grid-template-rows: auto auto auto 1fr auto; gap: 8px; min-height: 250px; padding: 16px 16px 14px; background: var(--papier); color: var(--noir); text-decoration: none; border-right: 2px solid var(--noir); border-bottom: 2px solid var(--noir); transition: background .12s, color .12s; }
+html.signal .car-t .car-n { font: 500 12px/1 var(--f-mono); letter-spacing: .12em; }
+html.signal .car-t .car-g svg { width: 100%; max-width: 150px; height: 64px; display: block; color: var(--noir); }
+html.signal .car-t b { font: 800 1.35rem/1.05 "Archivo Variable", var(--f-titre); font-stretch: 75%; text-transform: uppercase; letter-spacing: .005em; }
+html.signal .car-t .car-d { font-size: .88rem; line-height: 1.45; color: var(--gris); }
+html.signal .car-t .car-go { font: 500 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; display: inline-flex; gap: 8px; align-items: center; } html.signal .car-t .car-go::after { content: ""; width: 26px; height: 2px; background: currentColor; transition: width .15s; }
+html.signal .car-t:hover, html.signal .car-t:focus-visible { background: var(--acide); outline: none; } html.signal .car-t:hover .car-go::after, html.signal .car-t:focus-visible .car-go::after { width: 46px; }
+html.signal .car-t1 { background: var(--noir); color: var(--papier); } html.signal .car-t1 .car-g svg { color: var(--acide); } html.signal .car-t1 .car-d { color: #D3D2CA; }
+html.signal .car-t1:hover, html.signal .car-t1:focus-visible { background: var(--acide); color: var(--noir); } html.signal .car-t1:hover .car-g svg, html.signal .car-t1:hover .car-d { color: var(--noir); }
+@media (min-width: 1100px) { html.signal #app:has(> .car-hero) > .car-grille { max-width: none !important; margin-left: 0 !important; margin-right: 0 !important; } }
+@media (max-width: 759px) { html.signal .car-hero { grid-template-columns: minmax(0, 1fr); } html.signal .car-collage { max-width: 420px; } html.signal .car-t { min-height: 0; } }
 @media (min-width: 1100px) { html.signal #app:has(> .hero-signal) { max-width: 1240px; } html.signal #app:has(> .hero-signal) > :not(.hero-signal) { max-width: 760px; margin-left: auto; margin-right: auto; }
   html.signal .hero-signal { margin: 0; } }
 /* Les quatre niveaux en bandeaux : numéro en couleur, point de couleur, et toujours le libellé. */
@@ -4835,10 +4862,40 @@ const COUL_CARREFOUR = ["#4658FF", "#19b58a", "#ff5a36", "#5a2bd6", "#ffb000", "
 const ICO_CARREFOUR = { "@sonora_studio": ICONES_NAV.faust, "@sonora_science": ICONES_NAV.faust, "@sonora_academy": ICONES_NAV.faust, "@sonora_library": ICONES_NAV.faust, "@sonora_pistes": ICONES_NAV.faust, "@sonora_harmonie": ICONES_NAV.parcours, "@atlas": ICONES_NAV.pratiquer, "pratiquer-{k}": ICONES_NAV.pratiquer, monde: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
   chorale: ICONES_NAV.chorale, plus: ICONES_NAV.plus, faust: ICONES_NAV.faust, "faust-matieres": famIco("creation"), "faust-ateliers": famIco("instruments"), "faust-studio": ICONES_NAV.faust, "pratiquer-{k}-atelier": famIco("theorie"),
   "ludo-{k}": famIco("rythme"), "pratiquer-{k}-jeux": famIco("ecoute"), parcours: ICONES_NAV.parcours };
+/* Carrefours en direction SIGNAL (maquette « Sound as matter ») : bandeau noir, titre condensé, forme d'onde, extraits du collage, tuiles à pictogramme.
+   Les extraits sont découpés dans images/accueil.jpg (x, y, largeur, hauteur en pixels de l'image d'origine, 1672 x 820). */
+const CROP_COLLAGE = { statue: [1237, 0, 356, 395], rouleau: [0, 419, 254, 211], partition: [291, 419, 260, 211], main: [1247, 419, 377, 211] };
+const IMG_CARREFOUR = { labo: ["main", "rouleau", "partition"], jouer: ["rouleau", "main", "partition"], ecouter: ["statue", "partition", "rouleau"] };
+const cropImg = k => { const [x, y, w, h] = CROP_COLLAGE[k]; return `<span class="car-img" aria-hidden="true" style="aspect-ratio:${w}/${h};background-size:${(1672 / w * 100).toFixed(1)}% auto;background-position:${(x / (1672 - w) * 100).toFixed(1)}% ${(y / (820 - h) * 100).toFixed(1)}%"></span>`; };
+function pictoTuile(h, i) {
+  const svg = c => `<svg viewBox="0 0 120 60" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square">${c}</svg>`;
+  const barres = (n, f, w = 2.2) => Array.from({ length: n }, (_, j) => { const v = f(j, n), x = 6 + j * (108 / n); return `<path d="M${x.toFixed(1)} 56V${(56 - v).toFixed(1)}" stroke-width="${w}"/>`; }).join("");
+  const cle = h.replace(/^@/, "").replace(/-\{k\}.*$/, "").replace(/\{k\}/, "");
+  if (cle === "sonora_studio") return svg('<path d="M30 14 8 30l22 16M90 14l22 16-22 16"/><path d="M44 36c6-18 10-18 16 0s10 18 16 0" stroke-width="3"/>');
+  if (cle === "sonora_science") return svg(barres(14, (j, n) => 6 + 44 * Math.exp(-j / 4) * (.5 + .5 * Math.abs(Math.sin(j * 1.7)))));
+  if (cle === "sonora_academy") return svg('<path d="M8 54h24V40h24V26h24V12h24"/><path d="M8 54v0" />');
+  if (cle === "sonora_pistes") return svg('<path d="M8 12h104M8 30h104M8 48h104" stroke-width="1"/><path d="M12 12h30M60 12h40M24 30h46M82 30h26M8 48h20M46 48h50" stroke-width="7"/>');
+  if (cle === "sonora_library") return svg('<rect x="10" y="8" width="26" height="20"/><rect x="47" y="8" width="26" height="20"/><rect x="84" y="8" width="26" height="20"/><rect x="10" y="34" width="26" height="20"/><rect x="47" y="34" width="26" height="20" fill="currentColor"/><rect x="84" y="34" width="26" height="20"/>');
+  if (cle === "sonora_harmonie") return svg('<path d="M8 8v46M23 8v46M38 8v46M53 8v46M68 8v46M83 8v46M98 8v46M112 8v46M8 8h104M8 54h104" stroke-width="1.4"/><path d="M19 8v28M34 8v28M64 8v28M79 8v28M94 8v28" stroke-width="7"/>');
+  if (cle === "atlas") return svg('<circle cx="22" cy="30" r="6"/><circle cx="62" cy="12" r="6"/><circle cx="62" cy="48" r="6"/><circle cx="102" cy="30" r="6" fill="currentColor"/><path d="M28 28l28-14M28 32l28 14M68 14l28 14M68 46l28-14"/>');
+  if (cle === "monde") return svg('<circle cx="60" cy="30" r="24"/><path d="M36 30h48M60 6c-12 12-12 36 0 48M60 6c12 12 12 36 0 48"/>');
+  if (cle === "chorale") return svg(barres(4, (j) => [26, 40, 20, 33][j], 9));
+  if (cle === "pratiquer") return svg('<path d="M8 14h104M8 24h104M8 34h104M8 44h104M8 54h104" stroke-width="1"/><circle cx="34" cy="39" r="6" fill="currentColor"/><circle cx="66" cy="29" r="6" fill="currentColor"/><circle cx="96" cy="19" r="6" fill="currentColor"/>');
+  if (cle === "ludo") return svg('<rect x="12" y="8" width="44" height="20"/><rect x="64" y="8" width="44" height="20" fill="currentColor"/><rect x="12" y="34" width="44" height="20" fill="currentColor"/><rect x="64" y="34" width="44" height="20"/>');
+  if (cle === "parcours") return svg(barres(6, (j) => 10 + j * 8, 8));
+  return svg(`<path d="M6 30C18 ${8 + (i % 3) * 4} 30 ${8 + (i % 3) * 4} 42 30S66 ${52 - (i % 3) * 4} 78 30 102 ${10 + (i % 2) * 6} 114 30" stroke-width="2.6"/>`);
+}
 function vueCarrefour(id) {
   const [titre, txt, L] = D.nav.carrefours[id], k = maClasse() || defautNiv(), r = role() === "prof" ? "prof" : "eleve", R = rubrique(id) || [id, titre, titre];
-  return head(R[2], titre, txt) + `<div class="jouer-fams carrefour">${L.filter(x => x[3] === "tous" || x[3] === r).map(([h, t, d], i) =>
-    `<a class="jouer-fam" href="${h[0] === "@" ? esc(D[h.slice(1)] || "#") : "#" + h.replace("{k}", k)}" style="--c:${COUL_CARREFOUR[i % COUL_CARREFOUR.length]}">${ICO_CARREFOUR[h] || ""}<b>${insec(t)}</b><span>${insec(d)}</span></a>`).join("")}</div>`;
+  const liste = L.filter(x => x[3] === "tous" || x[3] === r), lien = h => h[0] === "@" ? esc(D[h.slice(1)] || "#") : "#" + h.replace("{k}", k);
+  if (!SIGNAL()) return head(R[2], titre, txt) + `<div class="jouer-fams carrefour">${liste.map(([h, t, d], i) =>
+    `<a class="jouer-fam" href="${lien(h)}" style="--c:${COUL_CARREFOUR[i % COUL_CARREFOUR.length]}">${ICO_CARREFOUR[h] || ""}<b>${insec(t)}</b><span>${insec(d)}</span></a>`).join("")}</div>`;
+  const mots = titre.split(" "), m = Math.ceil(mots.length / 2), ims = IMG_CARREFOUR[id] || IMG_CARREFOUR.labo;
+  return `<section class="hero-signal car-hero" aria-labelledby="car-t"><div class="car-gauche"><span class="car-eyebrow">${esc(R[2])}</span>
+      <h1 id="car-t" class="car-titre"><span>${esc(mots.slice(0, m).join(" "))}</span><span class="l2">${esc(mots.slice(m).join(" "))}</span></h1><p class="car-sous">${esc(txt)}</p></div>
+    <div class="car-collage" aria-hidden="true">${cropImg(ims[0])}${cropImg(ims[1])}${cropImg(ims[2])}<i class="car-bloc-acide"></i><i class="car-bloc-rouge"></i></div>
+    <div class="car-onde">${ondeSignal()}</div></section>
+    <div class="car-grille">${liste.map(([h, t, d], i) => `<a class="car-t${i === 0 ? " car-t1" : ""}" href="${lien(h)}"><span class="car-n">${String(i + 1).padStart(2, "0")}</span><span class="car-g">${pictoTuile(h, i)}</span><b>${insec(t)}</b><span class="car-d">${insec(d)}</span><span class="car-go">Ouvrir</span></a>`).join("")}</div>`;
 }
 function vueParcours() {
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], q = quetes();
