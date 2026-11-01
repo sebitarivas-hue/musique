@@ -1,5 +1,7 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js";
+import * as Ed from "./editions.js";
 import * as P from "./projet.js";
 import { Stockage } from "./stockage.js";
 import { encoderWAV } from "../studio/wav.js";
@@ -143,6 +145,21 @@ function finirEnregistrement() {
   message(`Enregistré : ${(y.length / c.sr).toFixed(1).replace(".", ",")} s sur la piste. Latence compensée : ${Math.round(lat * 1000)} ms.`); etat.dernierEnreg = { duree: y.length / c.sr, latence: lat }; changer();
 }
 
+// ---------------------------------------------------------------- historique : annuler et rétablir
+// On range une copie du projet à chaque changement. Les sons sont immuables (un effet crée un nouveau son), donc revenir en arrière ne perd jamais d'audio.
+const histo = { pile: [], refaire: [], snap: null };
+function empiler() { const nouveau = JSON.stringify(etat.projet); if (histo.snap === null) { histo.snap = nouveau; return; } if (nouveau !== histo.snap) { histo.pile.push(histo.snap); if (histo.pile.length > 100) histo.pile.shift(); histo.refaire = []; histo.snap = nouveau; } }
+function restaurer(texte) { histo.snap = texte; etat.projet = P.verifierProjet(JSON.parse(texte)); if (etat.choisi && !P.trouverClip(etat.projet, etat.choisi)) etat.choisi = null; if (!P.trouverPiste(etat.projet, etat.arme)) etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; if (etat.lecture && !etat.enreg) arreter(); afficher(); clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(() => {}), 250); }
+function annuler() { if (!histo.pile.length) { message("Rien à annuler."); return; } histo.refaire.push(histo.snap); restaurer(histo.pile.pop()); message("Annulé."); }
+function retablir() { if (!histo.refaire.length) { message("Rien à rétablir."); return; } histo.pile.push(histo.snap); restaurer(histo.refaire.pop()); message("Rétabli."); }
+window.PISTES_HISTO = histo;
+// ---------------------------------------------------------------- effets sur le clip choisi : ils créent un nouveau son, l'original reste intact
+function appliquerEffet(id) {
+  const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!r) { message("Choisis d'abord un clip : clique dessus."); return; }
+  const c = r.clip, src = etat.buffers[c.son]; if (!src) { message("Le son de ce clip n'est pas chargé."); return; }
+  const e = Ed.EFFETS[id], res = e.f(Ed.extrait(src, c.decalage, c.duree)), nom = `${etat.projet.sons[c.son].nom} (${e.etiquette})`.slice(0, 80);
+  const sid = ajouterAudio(nom, res.canaux, res.sr); c.son = sid; c.decalage = 0; c.duree = Ed.duree(res); changer(); message(`${e.nom} appliqué au clip : nouveau son « ${nom} ». Ctrl+Z pour annuler.`);
+}
 // ---------------------------------------------------------------- sons
 function ajouterAudio(nom, canaux, sr) {
   const id = P.ajouterSon(etat.projet, { nom, duree: canaux[0].length / sr, sr, canaux: canaux.length });
@@ -202,7 +219,7 @@ function majSelection() {
 }
 let minuteur = null;
 const ranger = () => { clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(() => {}), 300); };
-function changer() { afficher(); clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(e => message("Le projet n'a pas pu être rangé : " + e.message)), 250); if (etat.lecture && !etat.enreg) { arreter(); } }
+function changer() { empiler(); afficher(); clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(e => message("Le projet n'a pas pu être rangé : " + e.message)), 250); if (etat.lecture && !etat.enreg) { arreter(); } }
 
 function brancherEntetes() {
   for (const el of document.querySelectorAll(".entete")) {
@@ -273,7 +290,7 @@ async function exporter() {
 $("b-lire").onclick = lire; $("b-debut").onclick = () => { if (etat.lecture) arreter(); etat.tete = 0; };
 $("b-enreg").onclick = enregistrer; $("b-export").onclick = exporter;
 $("b-piste").onclick = () => { etat.projet.pistes.push(P.nouvellePiste(`Piste ${etat.projet.pistes.length + 1}`)); changer(); };
-$("b-nouveau").onclick = async () => { if (!confirm("Commencer un nouveau projet ? L'ancien et ses sons seront effacés de ce navigateur.")) return; if (etat.lecture) arreter(); await Stockage.toutEffacer().catch(() => {}); etat.projet = P.nouveauProjet(); etat.buffers = {}; etat.tete = 0; etat.choisi = null; etat.arme = etat.projet.pistes[0].id; changer(); message("Nouveau projet."); };
+$("b-nouveau").onclick = async () => { if (!confirm("Commencer un nouveau projet ? L'ancien et ses sons seront effacés de ce navigateur.")) return; if (etat.lecture) arreter(); await Stockage.toutEffacer().catch(() => {}); etat.projet = P.nouveauProjet(); etat.buffers = {}; etat.tete = 0; etat.choisi = null; etat.arme = etat.projet.pistes[0].id; histo.pile = []; histo.refaire = []; histo.snap = JSON.stringify(etat.projet); changer(); message("Nouveau projet."); };
 $("fichiers").onchange = e => { const pi = P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0]; importer(e.target.files, pi.id, P.aimanter(etat.projet, etat.tete, +$("aimant").value)).then(() => { e.target.value = ""; }); };
 $("tempo").onchange = e => { etat.projet.tempo = Math.max(40, Math.min(240, +e.target.value || 100)); changer(); };
 $("b-zoom-plus").onclick = () => { etat.pxs = Math.min(400, etat.pxs * 1.5); afficher(); }; $("b-zoom-moins").onclick = () => { etat.pxs = Math.max(10, etat.pxs / 1.5); afficher(); };
@@ -284,10 +301,47 @@ $("b-supprimer").onclick = () => { if (!etat.choisi) return; P.supprimerClip(eta
 $("sel-gain").oninput = e => { const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r) { r.clip.gain = +e.target.value; clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet), 300); } };
 for (const e of ENTREES) { const o = document.createElement("option"); o.value = e.id; o.textContent = e.titre; $("choix-sonora").appendChild(o); }
 $("b-ajout-sonora").onclick = () => { if ($("choix-sonora").value) sonSonora($("choix-sonora").value); };
+// ---------------------------------------------------------------- commandes : menus, raccourcis, aide (la table est dans commandes.js)
+const pisteActive = () => P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0];
+const sansClip = () => { message("Choisis d'abord un clip : clique dessus."); };
+const EXEC = {
+  importer: () => $("fichiers").click(), exporter: () => $("b-export").click(), nouveau: () => $("b-nouveau").click(), annuler, refaire: retablir,
+  couper: () => etat.choisi ? $("b-couper").click() : sansClip(), dupliquer: () => etat.choisi ? $("b-dupliquer").click() : sansClip(), supprimer: () => etat.choisi ? $("b-supprimer").click() : sansClip(),
+  deselectionner: () => { etat.choisi = null; afficher(); },
+  lire: () => lire(), debut: () => $("b-debut").click(), enregistrer: () => enregistrer(), metronome: () => { $("metro").checked = !$("metro").checked; message("Métronome " + ($("metro").checked ? "activé" : "coupé") + "."); },
+  "piste-ajouter": () => $("b-piste").click(),
+  "piste-haut": () => { const L = etat.projet.pistes, i = Math.max(0, L.findIndex(x => x.id === etat.arme) - 1); etat.arme = L[i].id; afficher(); }, "piste-bas": () => { const L = etat.projet.pistes, i = Math.min(L.length - 1, L.findIndex(x => x.id === etat.arme) + 1); etat.arme = L[i].id; afficher(); },
+  "piste-muet": () => { const pi = pisteActive(); if (pi) { pi.muet = !pi.muet; changer(); } }, "piste-solo": () => { const pi = pisteActive(); if (pi) { pi.solo = !pi.solo; changer(); } },
+  "zoom-plus": () => $("b-zoom-plus").click(), "zoom-moins": () => $("b-zoom-moins").click(), "zoom-tout": () => { etat.pxs = 60; afficher(); },
+  "aide-raccourcis": () => ouvrirAide(),
+};
+for (const id of Object.keys(Ed.EFFETS)) EXEC[id] = () => appliquerEffet(id);
+const ACTIF = { annuler: () => histo.pile.length > 0, refaire: () => histo.refaire.length > 0 };
+function lancer(id) { const f = EXEC[id]; if (f) f(); majMenus(); }
+function ouvrirAide() {
+  fermerMenus(); document.getElementById("aide-clavier")?.remove(); const el = document.createElement("div"); el.id = "aide-clavier"; el.className = "aide-clavier"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", "Raccourcis clavier");
+  el.innerHTML = `<div class="ac-boite"><div class="ac-haut"><b>Raccourcis clavier</b><button type="button" class="ac-fermer">Fermer</button></div><div class="ac-corps">${MENUS.map(m => `<section><h3>${esc(m)}</h3><dl>${COMMANDES.filter(c => c.menu === m).map(c => `<div><dt>${esc(c.libelle)}</dt><dd>${c.touches.length ? c.touches.map(t => `<kbd>${esc(t)}</kbd>`).join(" ou ") : "<span class='petit'>menu</span>"}</dd></div>`).join("")}</dl></section>`).join("")}<p class="petit">Les raccourcis qui agissent sur un clip demandent d'abord de cliquer sur ce clip. Sur Mac, Ctrl se lit Cmd.</p></div></div>`;
+  document.body.appendChild(el); const fin = () => { el.remove(); document.removeEventListener("keydown", cl, true); }, cl = e => { if (e.key === "Escape") { e.stopPropagation(); e.preventDefault(); fin(); } };
+  document.addEventListener("keydown", cl, true); el.querySelector(".ac-fermer").onclick = fin; el.addEventListener("click", e => { if (e.target === el) fin(); }); el.querySelector(".ac-fermer").focus();
+}
+function construireMenus() {
+  const nav = $("barre-menus"); if (!nav) return;
+  nav.innerHTML = MENUS.map(m => `<div class="menu"><button type="button" class="menu-b" aria-haspopup="true" aria-expanded="false" data-menu="${esc(m)}">${esc(m)}</button><ul class="menu-l" role="menu" hidden>${COMMANDES.filter(c => c.menu === m).map(c => `<li role="none"><button type="button" role="menuitem" data-cmd="${c.id}"><span>${esc(c.libelle)}</span><kbd>${esc(affichage(c))}</kbd></button></li>`).join("")}</ul></div>`).join("");
+  nav.addEventListener("click", e => { const it = e.target.closest("[data-cmd]"), b = e.target.closest(".menu-b"); if (it) { if (it.disabled) return; fermerMenus(); lancer(it.dataset.cmd); } else if (b) { const ouvert = b.getAttribute("aria-expanded") === "true"; fermerMenus(); if (!ouvert) ouvrirMenu(b); } });
+  nav.addEventListener("keydown", e => { const b = document.activeElement; const items = () => [...nav.querySelectorAll('.menu-l:not([hidden]) [data-cmd]:not(:disabled)')];
+    if (e.key === "Escape") { fermerMenus(); return; }
+    if (b && b.classList.contains("menu-b")) { const bs = [...nav.querySelectorAll(".menu-b")], i = bs.indexOf(b); if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); const n = bs[(i + (e.key === "ArrowRight" ? 1 : bs.length - 1)) % bs.length], ouvert = b.getAttribute("aria-expanded") === "true"; fermerMenus(); n.focus(); if (ouvert) ouvrirMenu(n); } else if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") { e.preventDefault(); ouvrirMenu(b); const it = items()[0]; if (it) it.focus(); } }
+    else if (b && b.dataset.cmd) { const L = items(), i = L.indexOf(b); if (e.key === "ArrowDown") { e.preventDefault(); L[(i + 1) % L.length].focus(); } else if (e.key === "ArrowUp") { e.preventDefault(); L[(i + L.length - 1) % L.length].focus(); } else if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const bs = [...nav.querySelectorAll(".menu-b")], cur = b.closest(".menu").querySelector(".menu-b"), n = bs[(bs.indexOf(cur) + (e.key === "ArrowRight" ? 1 : bs.length - 1)) % bs.length]; e.preventDefault(); fermerMenus(); ouvrirMenu(n); const it = items()[0]; if (it) it.focus(); } } });
+  document.addEventListener("click", e => { if (!e.target.closest("#barre-menus")) fermerMenus(); });
+}
+function ouvrirMenu(b) { majMenus(); b.setAttribute("aria-expanded", "true"); b.parentElement.querySelector(".menu-l").hidden = false; }
+function fermerMenus() { const a = document.activeElement; if (a && a.closest && a.closest("#barre-menus")) a.blur(); document.querySelectorAll("#barre-menus .menu-b").forEach(b => b.setAttribute("aria-expanded", "false")); document.querySelectorAll("#barre-menus .menu-l").forEach(l => { l.hidden = true; }); }
+function majMenus() { document.querySelectorAll("#barre-menus [data-cmd]").forEach(b => { const id = b.dataset.cmd, c = COMMANDES.find(x => x.id === id); b.disabled = !!(ACTIF[id] && !ACTIF[id]()) || !!(c && c.clip && !etat.choisi); }); }
 document.addEventListener("keydown", e => {
-  const t = e.target; if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA")) return;
-  if (e.key === " ") { e.preventDefault(); lire(); } else if (e.key === "r" || e.key === "R") enregistrer();
-  else if ((e.key === "Delete" || e.key === "Backspace") && etat.choisi) { e.preventDefault(); $("b-supprimer").click(); } else if ((e.key === "s" || e.key === "S") && etat.choisi) $("b-couper").click(); else if ((e.key === "d" || e.key === "D") && etat.choisi) $("b-dupliquer").click();
+  if (e.key === "Escape" && document.querySelector("#barre-menus .menu-l:not([hidden])")) { fermerMenus(); e.preventDefault(); return; }
+  const t = e.target; if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA" || (document.querySelector("#barre-menus .menu-l:not([hidden])")))) return;
+  if (document.getElementById("aide-clavier")) return;
+  const c = commandePour(e); if (!c) return; e.preventDefault(); lancer(c.id);
 });
 document.addEventListener("visibilitychange", () => { if (document.hidden && etat.lecture) arreter(); });
 
@@ -298,6 +352,6 @@ async function demarrer() {
   try { const lu = await Stockage.lireProjet(); if (lu) p = P.verifierProjet(lu); } catch (_) { p = null; rangement = false; }
   if (p) { for (const id of Object.keys(p.sons)) { try { const d = await Stockage.lireSon(id); if (d) etat.buffers[id] = d; } catch (_) {} } const perdus = Object.keys(p.sons).filter(id => !etat.buffers[id]); if (perdus.length) message(`${perdus.length} son${perdus.length > 1 ? "s" : ""} n'ont pas été retrouvés dans ce navigateur.`); }
   if (!rangement) message("Le navigateur ne range pas le projet (stockage indisponible ou bloqué) : tu peux travailler, mais il ne sera pas conservé à la fermeture. Exporte en WAV pour garder ton travail.");
-  etat.projet = p || P.nouveauProjet(); etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; afficher(); requestAnimationFrame(boucle); window.PISTES_PRET = true;
+  etat.projet = p || P.nouveauProjet(); histo.snap = JSON.stringify(etat.projet); construireMenus(); majMenus(); etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; afficher(); requestAnimationFrame(boucle); window.PISTES_PRET = true;
 }
 demarrer();

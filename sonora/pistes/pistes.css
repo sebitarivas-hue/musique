@@ -32,3 +32,19 @@ button.enreg[aria-pressed="true"] { background: var(--rouge); color: #fff; borde
 .fx-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; } .fx-grille fieldset { border: 2px solid var(--noir); margin: 0; padding: 8px 10px; } .fx-grille legend { font-weight: 700; padding: 0 4px; }
 .fx-r { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: .8rem; font-weight: 600; } .fx-r input[type=range] { flex: 1; } .fx-r output { min-width: 4.5em; text-align: right; font: .75rem var(--f-mono); } .fx-r select { flex: 1; min-height: 32px; }
 .fx-ex { font-size: .8rem; color: var(--gris); margin: 6px 0 0; } .entete .b-fx[aria-pressed="true"] { background: var(--acide); color: var(--noir); }
+
+/* Barre de menus (style des logiciels de montage) et fenêtre des raccourcis */
+.barre-menus { display: flex; flex-wrap: wrap; background: var(--noir); border-top: 1px solid #3A3A35; border-bottom: 2px solid var(--acide); position: relative; z-index: 30; }
+.menu { position: relative; } .menu-b { background: transparent; color: var(--papier); border: 0; border-radius: 0; padding: 9px 14px; font: 500 .8rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.menu-b:hover, .menu-b[aria-expanded="true"], .menu-b:focus-visible { background: var(--acide); color: var(--noir); outline: none; }
+.menu-l { position: absolute; left: 0; top: 100%; min-width: 300px; margin: 0; padding: 0; list-style: none; background: var(--papier); border: 2px solid var(--noir); box-shadow: 8px 8px 0 var(--acide); }
+.menu-l[hidden] { display: none; } .menu-l button { display: flex; width: 100%; justify-content: space-between; align-items: baseline; gap: 18px; padding: 8px 14px; background: transparent; color: var(--noir); border: 0; border-radius: 0; text-align: left; font: 500 .92rem var(--f-body); cursor: pointer; }
+.menu-l button:hover:not(:disabled), .menu-l button:focus-visible { background: var(--acide); outline: none; } .menu-l button:disabled { color: #8a8a82; cursor: default; } .menu-l kbd, .ac-corps kbd { font: 500 11px var(--f-mono); letter-spacing: .04em; padding: 2px 6px; border: 1.5px solid currentColor; background: transparent; white-space: nowrap; }
+.aide-clavier { position: fixed; inset: 0; z-index: 9998; background: rgba(17,17,15,.72); display: grid; place-items: center; padding: 14px; }
+.ac-boite { width: min(980px, 100%); max-height: 100%; overflow: auto; background: var(--papier); border: 2px solid var(--noir); box-shadow: 10px 10px 0 var(--acide); }
+.ac-haut { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--noir); color: var(--acide); position: sticky; top: 0; } .ac-haut b { font: 900 1.4rem "Archivo Variable", var(--f-display); font-stretch: 75%; text-transform: uppercase; }
+.ac-fermer { font: 700 12px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; padding: 8px 12px; background: var(--acide); color: var(--noir); border: 0; border-radius: 0; cursor: pointer; }
+.ac-corps { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0; } .ac-corps section { padding: 12px 16px; border-right: 2px solid var(--noir); border-bottom: 2px solid var(--noir); } .ac-corps h3 { font: 900 1.1rem "Archivo Variable", var(--f-display); font-stretch: 75%; text-transform: uppercase; margin: 0 0 8px; }
+.ac-corps dl { margin: 0; } .ac-corps dl div { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid #d8d7ce; } .ac-corps dt { font-size: .9rem; } .ac-corps dd { margin: 0; text-align: right; } .ac-corps > p { grid-column: 1 / -1; padding: 10px 16px; margin: 0; }
+@media (max-width: 760px) { .menu-b { padding: 8px 10px; font-size: .72rem; } .menu-l { min-width: 250px; } }
+.menu-l kbd:empty { display: none; }
