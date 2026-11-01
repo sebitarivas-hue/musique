@@ -971,6 +971,14 @@ html.signal .page-head h1 .l2 { color: var(--acide); }
 html.signal .page-head .lead { margin: 0; max-width: 62ch; font: 400 clamp(.82rem, 1.4vw, .98rem)/1.6 var(--f-mono); letter-spacing: .05em; color: #D3D2CA; }
 html.signal .page-head .brand { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font: 400 12px/1.3 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: #BEBDB4; }
 html.signal .page-head .brand span { color: #BEBDB4; }
+/* Pages de choix (Jouer, ludothèque, familles) : mêmes tuiles à angles droits que le Labo. Les boutons, pastilles et célébrations gardent leurs formes arrondies. */
+html.signal .page-head { display: flex; flex-direction: column; align-items: flex-start; }
+html.signal :is(.jouer-fam, .jouer-jour, .ludo-carte, .ludo-band, .jouer-stats a, .gros-lien, .niveau-carte, .levels a, .levels button) { border-radius: 0; box-shadow: none; }
+html.signal :is(.jouer-fam, .jouer-jour, .ludo-carte, .ludo-band, .gros-lien) { border: 2px solid var(--noir); border-top: 10px solid var(--noir); }
+html.signal :is(.jouer-fam, .ludo-carte):hover { transform: none; background: var(--acide) !important; color: var(--noir) !important; }
+html.signal :is(.jouer-fam, .ludo-carte):hover :is(b, span, svg) { color: var(--noir) !important; }
+html.signal .levels a, html.signal .levels button { border-radius: 0 !important; border: 2px solid var(--noir); font-family: var(--f-mono); font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
+html.signal .levels a[aria-current="page"], html.signal .levels button[aria-current="page"] { background: var(--noir); color: var(--acide); }
 /* Carrefours en direction SIGNAL */
 html.signal .car-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 18px 28px; align-items: end; }
 html.signal .car-eyebrow { display: inline-block; font: 500 12px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--noir); background: var(--acide); padding: 6px 9px; }
@@ -4896,6 +4904,11 @@ function pictoTuile(h, i) {
   if (cle === "sonora_pistes") return svg('<path d="M8 12h104M8 30h104M8 48h104" stroke-width="1"/><path d="M12 12h30M60 12h40M24 30h46M82 30h26M8 48h20M46 48h50" stroke-width="7"/>');
   if (cle === "sonora_library") return svg('<rect x="10" y="8" width="26" height="20"/><rect x="47" y="8" width="26" height="20"/><rect x="84" y="8" width="26" height="20"/><rect x="10" y="34" width="26" height="20"/><rect x="47" y="34" width="26" height="20" fill="currentColor"/><rect x="84" y="34" width="26" height="20"/>');
   if (cle === "sonora_harmonie") return svg('<path d="M8 8v46M23 8v46M38 8v46M53 8v46M68 8v46M83 8v46M98 8v46M112 8v46M8 8h104M8 54h104" stroke-width="1.4"/><path d="M19 8v28M34 8v28M64 8v28M79 8v28M94 8v28" stroke-width="7"/>');
+  if (cle === "faust") return svg('<path d="M6 30c10-24 14-24 24 0s14 24 24 0 14-24 24 0" stroke-width="3"/><path d="M6 54h108" stroke-width="1.2"/>');
+  if (cle === "faust-matieres") return svg('<path d="M10 14h100M10 26h100M10 38h100M10 50h100" stroke-width="1"/><path d="M10 14h38M10 26h70M10 38h54M10 50h92" stroke-width="7"/>');
+  if (cle === "faust-ateliers") return svg('<rect x="8" y="14" width="30" height="34"/><rect x="45" y="14" width="30" height="34"/><rect x="82" y="14" width="30" height="34" fill="currentColor"/><path d="M23 30h0M60 30h0" stroke-width="6"/>');
+  if (cle === "faust-studio") return svg('<path d="M10 14h60M10 26h90M18 38h50M10 50h74" stroke-width="3"/><path d="M100 38l10 12M110 38l-10 12" stroke-width="3"/>');
+  if (cle === "pratiquer-atelier" || cle === "pratiquer-{k}-atelier") return svg('<path d="M60 8v26M48 8v26M54 34a6 6 0 0 0 12 0M60 40v16" stroke-width="3"/>');
   if (cle === "atlas") return svg('<circle cx="22" cy="30" r="6"/><circle cx="62" cy="12" r="6"/><circle cx="62" cy="48" r="6"/><circle cx="102" cy="30" r="6" fill="currentColor"/><path d="M28 28l28-14M28 32l28 14M68 14l28 14M68 46l28-14"/>');
   if (cle === "monde") return svg('<circle cx="60" cy="30" r="24"/><path d="M36 30h48M60 6c-12 12-12 36 0 48M60 6c12 12 12 36 0 48"/>');
   if (cle === "chorale") return svg(barres(4, (j) => [26, 40, 20, 33][j], 9));
