@@ -10,6 +10,7 @@ import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessine
 import { Escalier } from "./psychophysique.js";
 import { heros, etatBouton } from "../studio/heros.js";
 import * as A from "./analyse.js";
+import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -18,6 +19,8 @@ window.SCIENCE = etat;
 const badge = (t, c = "") => { const e = $("etat"); e.textContent = t; e.className = "etat " + c; };
 const modules = {};
 const moduleDe = exp => (modules[exp.id] ||= preparer(exp.programme));
+const moduleTimbre = id => (modules["timbre:" + id] ||= preparer(programmeTimbre(id)));
+const optionsTimbres = (sel = "orgue") => Object.entries(TIMBRES).map(([id, t]) => `<option value="${id}"${id === sel ? " selected" : ""}>${esc(t.nom)}</option>`).join("");
 
 // ---------------------------------------------------------------- navigation
 function remplirListe() {
@@ -104,7 +107,7 @@ function ouvrir(id) {
   const exp = parId(id) || EXPERIENCES[0]; arreterEcoute(); etat.exp = exp; etat.valeurs = {}; etat.resultat = null;
   document.querySelectorAll("#nav-exp button").forEach(b => b.setAttribute("aria-current", String(b.dataset.id === exp.id)));
   document.title = exp.titre + ", SONORA Science"; basculerPanneau("fiche"); window.scrollTo(0, 0);
-  if (exp.type === "auditeur") return exp.id === "masquage" ? ficheMasquage(exp) : ficheSeuil(exp);
+  if (exp.type === "auditeur") return exp.id === "masquage" ? ficheMasquage(exp) : exp.id === "microtonalite" ? ficheMicro(exp) : ficheSeuil(exp);
   if (exp.type === "analyseur") return ficheAnalyseur(exp);
   const m = moduleDe(exp); etat.module = m;
   $("fiche").innerHTML = heros({ etiquette: exp.domaine, titre: exp.titre, texte: exp.question, aide: "Puis change les réglages juste en dessous : tu entends la différence, et tu la vois." })
@@ -203,12 +206,13 @@ function calculerMasquage(exp, m, s) {
 
 // ---------------------------------------------------------------- expérience à l'écoute : plus petit écart de hauteur
 function ficheSeuil(exp) {
-  const m = moduleDe(exp); etat.module = m; let esca = null, ctxAudio = null, enCours = false;
+  let m = moduleDe(exp); etat.module = m; etat.timbreSeuil = "orgue"; let esca = null, ctxAudio = null, enCours = false;
   $("fiche").innerHTML = entete(exp) + bloc("L'expérience", `<div class="bloc-exp"><div class="consigne"><b>Casque ou enceintes, endroit calme, volume confortable.</b> À chaque essai tu entends deux sons à la suite. Dis lequel est le plus aigu. Les écarts deviennent de plus en plus petits quand tu réussis. Environ 40 essais, 4 minutes.</div>
-    <p class="progression" id="progression">Prêt.</p><div class="commandes"><button type="button" class="principal" id="b-debut">Commencer</button><button type="button" id="b-rejouer" disabled>Réécouter les deux sons</button></div>
+    <label class="champ-timbre">Timbre des sons <select id="s-timbre">${optionsTimbres("orgue")}</select></label><p class="progression" id="progression">Prêt.</p><div class="commandes"><button type="button" class="principal" id="b-debut">Commencer</button><button type="button" id="b-rejouer" disabled>Réécouter les deux sons</button></div>
     <div class="gros-boutons"><button type="button" id="r-premier" disabled>Le premier est plus aigu</button><button type="button" id="r-second" disabled>Le second est plus aigu</button></div><p class="petit" id="msg-exp"></p></div>` ) + `<div id="resultats"></div>` + pied(exp, exp.programme);
   $("b-studio").onclick = () => ouvrirDansStudio(exp, exp.programme);
-  const ton = cents => { const x = rendreCanaux(m, { ecart: cents }, 0.4)[0], n = x.length, y = new Float32Array(n), f = Math.round(0.012 * SR); for (let i = 0; i < n; i++) y[i] = x[i] * Math.min(1, i / f, (n - 1 - i) / f); return y; }; // fondu de 12 ms : pas de claquement
+  $("s-timbre").onchange = ev => { etat.timbreSeuil = ev.target.value; m = moduleTimbre(ev.target.value); etat.module = m; };
+  const ton = cents => { const x = rendreCanaux(m, { ecart: cents, base: 1000 }, 0.4)[0], n = x.length, y = new Float32Array(n), f = Math.round(0.012 * SR); for (let i = 0; i < n; i++) y[i] = x[i] * Math.min(1, i / f, (n - 1 - i) / f); return y; }; // fondu de 12 ms : pas de claquement
   function jouer(e) {
     ctxAudio = ctxAudio || new (window.AudioContext || window.webkitAudioContext)(); if (ctxAudio.state === "suspended") ctxAudio.resume();
     const a = ton(e.premier), b = ton(e.second), gap = Math.round(0.3 * SR), buf = ctxAudio.createBuffer(1, a.length + gap + b.length, SR), d = buf.getChannelData(0); d.set(a, 0); d.set(b, a.length + gap);
@@ -239,6 +243,46 @@ function ficheSeuil(exp) {
   }
 }
 
+
+// ---------------------------------------------------------------- micro-intervalles et tempéraments (interactif)
+function ficheMicro(exp) {
+  const mi = etat.micro = { timbre: "orgue", base: 261.63, variantes: [], modele: null, ctx: null };
+  const lien = id => `../../atlas/index.html#e/${id}`;
+  const c1 = v => v.toFixed(1).replace(".", ","), fc = c => (c >= 0 ? "+" : "") + c1(c);
+  const optionsModeles = INTERVALLES.flatMap((it, i) => it.systemes.map(([nom], j) => `<option value="${i}.${j}">${esc(it.nom)}, ${esc(nom.split(",")[0].toLowerCase())}</option>`)).join("");
+  const lignes = INTERVALLES.map((it, i) => it.systemes.map(([nom, c, note], j) => `<tr><td>${j === 0 ? esc(it.nom) : ""}</td><td>${esc(nom)}</td><td class="n">${c1(c)}</td><td class="n">${fc(c - it.systemes[0][1])}</td><td class="actions-lig"><button type="button" data-lecture="${i}.${j}" data-mode="suite">Deux notes</button><button type="button" data-lecture="${i}.${j}" data-mode="accord">Ensemble</button></td><td>${esc(note)}</td></tr>`).join("")).join("");
+  $("fiche").innerHTML = entete(exp)
+    + bloc("Ton instrument", `<div class="bloc-exp"><div class="rang-champs"><label class="champ-timbre">Timbre <select id="m-timbre">${optionsTimbres("orgue")}</select></label><label class="champ-timbre">Note de base <select id="m-base"><option value="261.63">do (261,6 Hz)</option><option value="293.66">ré (293,7 Hz)</option><option value="329.63">mi (329,6 Hz)</option><option value="392">sol (392 Hz)</option><option value="440">la (440 Hz)</option></select></label></div><p class="petit" id="m-desc">${esc(TIMBRES.orgue.desc)}</p></div>`)
+    + bloc("Écouter les intervalles", `<p>Chaque ligne joue la même note de base, puis le même intervalle placé selon un système d'accord. Joue « Ensemble » pour entendre les battements quand l'intervalle n'est pas pur. La colonne « Écart » compare au tempérament égal, en cents.</p><div class="tableau-defile"><table class="mesures" id="m-table"><thead><tr><th>Intervalle</th><th>Système d'accord</th><th>Cents</th><th>Écart</th><th>Écouter</th><th>Remarque</th></tr></thead><tbody>${lignes}</tbody></table></div>`)
+    + bloc("L'éventail : du plus bas au plus haut", `<p>Choisis un modèle. Cinq versions sont tirées au hasard, chacune écartée de moins de 10 cents de la valeur théorique. Écoute-les, range-les, puis vérifie.</p><div class="commandes"><label class="champ-timbre">Modèle <select id="e-modele">${optionsModeles}</select></label><button type="button" class="principal" id="e-nouveau">Nouveau tirage</button><button type="button" id="e-ref">Écouter le modèle exact</button></div>
+      <div id="e-zone" class="eventail"></div><div class="commandes"><button type="button" id="e-verif" disabled>Vérifier mon classement</button></div><div id="e-res" aria-live="polite"></div>`)
+    + bloc("Les systèmes d'accord dans le monde", `<div class="cartes-systemes">${SYSTEMES.map(sy => `<article class="systeme"><h3>${esc(sy.nom)}</h3><p class="ou">${esc(sy.ou)}</p><p>${esc(sy.texte)}</p><p class="liens-atlas">Dans l'Atlas : ${sy.atlas.map(a => `<a href="${lien(a)}">${esc(NOMS_ATLAS[a])}</a>`).join(", ")}</p></article>`).join("")}</div>`) + pied(exp, programmeTimbre("cloche"));
+  $("b-studio").onclick = () => ouvrirDansStudio(exp, programmeTimbre(mi.timbre));
+  const ctx = () => (mi.ctx ||= new (window.AudioContext || window.webkitAudioContext)()), nom = ([i, j]) => INTERVALLES[i].systemes[j];
+  const rendre = (centsNote, sec = 0.7) => { const x = rendreCanaux(moduleTimbre(mi.timbre), { ecart: centsNote, base: mi.base }, sec)[0], n = x.length, y = new Float32Array(n), f = Math.round(0.012 * SR); for (let i = 0; i < n; i++) y[i] = x[i] * Math.min(1, i / f, (n - 1 - i) / f); return y; };
+  function jouer(parties, mode) { const c = ctx(); if (c.state === "suspended") c.resume(); const gap = Math.round(0.18 * SR), total = mode === "accord" ? parties[0].length : parties.reduce((s, p) => s + p.length + gap, 0), buf = c.createBuffer(1, total, SR), d = buf.getChannelData(0);
+    if (mode === "accord") parties.forEach(p => { for (let i = 0; i < p.length; i++) d[i] += p[i] * 0.7; }); else { let o = 0; for (const p of parties) { d.set(p, o); o += p.length + gap; } }
+    const src = c.createBufferSource(); src.buffer = buf; src.connect(c.destination); src.start(); }
+  const jouerIntervalle = (cents, mode) => jouer([rendre(0), rendre(cents)], mode);
+  $("m-timbre").onchange = ev => { mi.timbre = ev.target.value; $("m-desc").textContent = TIMBRES[mi.timbre].desc; };
+  $("m-base").onchange = ev => { mi.base = +ev.target.value; };
+  $("m-table").onclick = ev => { const b = ev.target.closest("button[data-lecture]"); if (!b) return; jouerIntervalle(nom(b.dataset.lecture.split(".").map(Number))[1], b.dataset.mode); };
+  const modele = () => { const [i, j] = $("e-modele").value.split(".").map(Number); return nom([i, j]); };
+  function tirer() {
+    const [nm, c] = modele(); mi.modele = c; mi.variantes = tirerVariantes(c, 5, 10); mi.rangs = {}; $("e-res").innerHTML = ""; $("e-verif").disabled = true;
+    $("e-zone").innerHTML = mi.variantes.map((v, k) => `<div class="e-version"><button type="button" class="e-v" data-k="${k}" aria-label="Écouter la version ${"ABCDE"[k]}">Version ${"ABCDE"[k]}</button><label>Rang <select class="e-rang" data-k="${k}"><option value="">?</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">${r}${r === 1 ? " (le plus bas)" : r === 5 ? " (le plus haut)" : ""}</option>`).join("")}</select></label></div>`).join("");
+    $("e-zone").querySelectorAll(".e-v").forEach(b => b.onclick = () => { const v = mi.variantes[+b.dataset.k]; jouerIntervalle(v.cents, "suite"); });
+    $("e-zone").querySelectorAll(".e-rang").forEach(s => s.onchange = () => { mi.rangs[s.dataset.k] = s.value ? +s.value : null; const vals = Object.values(mi.rangs).filter(Boolean); $("e-verif").disabled = !(vals.length === 5 && new Set(vals).size === 5); });
+  }
+  $("e-nouveau").onclick = tirer; tirer(); $("e-modele").onchange = tirer;
+  $("e-ref").onclick = () => jouerIntervalle(modele()[1], "suite");
+  $("e-verif").onclick = () => {
+    const ordre = ordreJuste(mi.variantes), vrai = {}; ordre.forEach((k, pos) => { vrai[k] = pos + 1; });
+    const justes = mi.variantes.filter(v => mi.rangs[v.rang] === vrai[v.rang]).length;
+    $("e-res").innerHTML = `<table class="mesures"><thead><tr><th>Version</th><th>Écart réel à la valeur théorique</th><th>Ton rang</th><th>Rang juste</th></tr></thead><tbody>${mi.variantes.map(v => `<tr><td>${"ABCDE"[v.rang]}</td><td class="n">${fc(v.ecart)} cents</td><td class="n">${mi.rangs[v.rang]}</td><td class="n">${vrai[v.rang]} ${mi.rangs[v.rang] === vrai[v.rang] ? "✓" : ""}</td></tr>`).join("")}</tbody></table><p>${justes} versions sur 5 bien placées. Les versions voisines diffèrent d'au moins 1,5 cent ; sous 5 cents d'écart, beaucoup d'auditeurs hésitent. Recommence avec un autre timbre pour comparer.</p>`;
+    etat.microResultat = { justes, ecarts: mi.variantes.map(v => v.ecart), rangs: { ...mi.rangs } };
+  };
+}
 // ---------------------------------------------------------------- démarrage
 remplirListe();
 const depart = () => ouvrir((location.hash || "#" + EXPERIENCES[0].id).slice(1));

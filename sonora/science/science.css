@@ -20,3 +20,14 @@ table.mesures td.n { font-family: var(--f-mono); text-align: right; white-space:
 .progression { font: 500 .85rem var(--f-mono); margin: 8px 0; } .gros-boutons { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; } .gros-boutons button { min-height: 52px; min-width: 160px; font-size: 1rem; }
 .resultat-aud { border: 2px solid var(--noir); background: #fff; padding: 10px 14px; margin-top: 12px; }
 @media (max-width: 900px) { #sciences { grid-template-columns: 1fr; } #sciences .panneau { display: none; } #sciences[data-actif=liste] #liste, #sciences[data-actif=fiche] #fiche { display: block; } #fiche { padding: 14px 14px 40px; } .onglets-mobiles { display: flex; } table.mesures { font-size: .8rem; } table.mesures th:nth-child(4), table.mesures td:nth-child(4) { display: none; } }
+
+/* Micro-intervalles et tempéraments */
+.champ-timbre { display: inline-flex; flex-direction: column; gap: 4px; font: 500 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; margin: 6px 14px 6px 0; } .champ-timbre select { font: 600 .95rem var(--f-body); padding: 8px 10px; border: 2px solid var(--noir); background: #fff; border-radius: 0; text-transform: none; letter-spacing: 0; }
+.rang-champs { display: flex; flex-wrap: wrap; }
+.tableau-defile { overflow-x: auto; } #m-table td, #m-table th { text-align: left; padding: 6px 8px; } #m-table td.n { text-align: right; font-family: var(--f-mono); } .actions-lig { white-space: nowrap; } .actions-lig button { margin-right: 4px; }
+.eventail { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0; border-top: 2px solid var(--noir); border-left: 2px solid var(--noir); margin: 12px 0; }
+.e-version { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-right: 2px solid var(--noir); border-bottom: 2px solid var(--noir); background: var(--papier); } .e-version .e-v { font-weight: 700; } .e-version label { font: 500 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; display: flex; flex-direction: column; gap: 4px; }
+.e-version select { font: 600 .95rem var(--f-body); padding: 6px 8px; border: 2px solid var(--noir); background: #fff; border-radius: 0; }
+.cartes-systemes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0; border-top: 2px solid var(--noir); border-left: 2px solid var(--noir); }
+.systeme { padding: 14px; border-right: 2px solid var(--noir); border-bottom: 2px solid var(--noir); background: var(--papier); } .systeme h3 { font: 900 1.25rem/1 "Archivo Variable", var(--f-display); font-stretch: 75%; text-transform: uppercase; margin: 0 0 6px; }
+.systeme .ou { font: 500 12px var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--gris); margin: 0 0 8px; } .liens-atlas a { font-weight: 700; }

@@ -1,10 +1,11 @@
+import { programmeTimbre } from "./microtonalite.js";
 // Les expériences de SONORA Science. Chaque expérience est un programme SONORA (le même langage que le Studio) plus une analyse.
 // Règle : tout résultat affiché est calculé à partir des échantillons que le programme produit, jamais recopié d'une formule.
 // La « théorie » est la valeur attendue d'après la physique ; l'écart et le verdict viennent de la comparaison avec la mesure.
 import * as A from "./analyse.js";
 
 export const SR = 44100;
-const arrondi = (v, d = 2) => (Math.abs(v) >= 100 ? v.toFixed(Math.max(0, d - 2)) : v.toFixed(d)).replace(/\.?0+$/, "") || "0";
+const arrondi = (v, d = 2) => { const t = Math.abs(v) >= 100 ? v.toFixed(Math.max(0, d - 2)) : v.toFixed(d); return (t.includes(".") ? t.replace(/\.?0+$/, "") : t) || "0"; }; // les zéros ne sont retirés qu'après une virgule : 440 reste 440
 // ligne de résultat : mesure, théorie, tolérance relative et absolue ; ok si l'écart est dans la tolérance
 export function L(nom, mesure, theorie, { unite = "", tol = 0.02, tolAbs = 0, d = 2, info = false } = {}) {
   const l = { nom, mesure, theorie, unite, d, info };
@@ -339,14 +340,15 @@ instrument Masquage {
     question: "Quel est le plus petit écart de fréquence que tu perçois entre deux sons purs ?",
     explication: ["Deux sons de fréquences très voisines paraissent identiques. Le seuil de discrimination est l'écart qu'on distingue une fois sur deux, à peu près. Il se mesure en cents (un demi-ton vaut 100 cents).",
       "Tu entendras deux sons à la suite : dis lequel est le plus aigu. L'écart diminue après deux bonnes réponses, augmente après une erreur : il converge vers ton seuil (procédure adaptative de Levitt). Au bout de quelques minutes, ton seuil est calculé à partir de tes réponses."],
-    programme: `/// Un son pur à 1 kHz, dont la fréquence est décalée de quelques cents.
-instrument SeuilHauteur {
-    reglage ecart : Reel = 20 dans -100 .. 100 etiquette "Écart (cents)"
-    sortie = sinus(1 kHz * 2 ^ (ecart / 1200)) * 0.25
-}
-`, duree: 0.5,
+    programme: programmeTimbre("orgue"), duree: 0.5,
     approfondissement: "Refais la mesure à un autre moment, puis après avoir écouté de la musique : ton seuil change-t-il ? Il est souvent plus fin pour les musiciens entraînés. Essaie avec une autre fréquence de référence en modifiant le programme dans le Studio." },
 
+  { id: "microtonalite", domaine: "Psychoacoustique", titre: "Micro-intervalles et tempéraments dans les musiques du monde", type: "auditeur",
+    question: "Que changent quelques cents dans un intervalle, et pourquoi les musiques du monde n'accordent-elles pas toutes comme un piano ?",
+    explication: ["Un demi-ton du piano vaut 100 cents. Les systèmes d'accord ne placent pas les intervalles aux mêmes endroits : la tierce majeure vaut 400 cents au piano, 386 cents quand elle est pure (rapport 5:4), 408 cents en intonation pythagoricienne. Quelques cents suffisent à faire battre ou fondre deux sons.",
+      "Tu pourras écouter ces intervalles dans plusieurs timbres, puis un éventail de versions d'un même modèle écartées de moins de 10 cents : à toi de les ranger du plus bas au plus haut. Chaque tradition musicale a sa manière de placer les notes ; les valeurs données sont celles de la théorie ou d'une idéalisation, la pratique varie selon les régions et les interprètes."],
+    programme: programmeTimbre("cloche"), duree: 0.5,
+    approfondissement: "Reprends l'éventail avec un autre timbre : le son pur est-il plus difficile ? Compare ensuite un intervalle du piano et sa version pure en les jouant ensemble : entends-tu les battements ? Cherche dans l'Atlas une musique qui n'accorde pas comme le piano." },
   // ------------------------------------------------------------------------------------------------ ANALYSE
   { id: "analyseur", domaine: "Analyse", titre: "L'analyseur : mesurer n'importe quel programme", type: "analyseur",
     question: "Que mesure-t-on dans un son, et comment le lire sur un oscilloscope, un spectre, un spectrogramme et une enveloppe ?",
