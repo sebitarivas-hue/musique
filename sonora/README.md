@@ -15,7 +15,8 @@ Contenu de ce dossier
 - PHASE5.md : SONORA Science, 14 expériences mesurées sur les signaux. La page est dans `science/`.
 - PHASE6.md : SONORA Academy, 10 leçons à exercices corrigés sur le son. La page est dans `academy/`.
 - PHASE7.md : bibliothèque de modules DSP : 14 modules livrés (écho, chorus, flanger, phaser, saturation, écrêtage, réverbération, panoramique, table d'onde, additive, niveau, rampe, ar, corde pincée).
-- src/ et tests/ : le compilateur et le moteur (aucune dépendance) et leurs 326 tests : `npm test` (Node, 247 tests), `npm run test:navigateur` (moteur, 17 tests) et `npm run test:studio` (interface, 23 tests) et `npm run test:science` (Science, 20 tests) et `npm run test:academie` (Academy, 19 tests), les quatre derniers dans Chromium via Playwright.
+- PHASE8.md : création avancée du Studio : export WAV, lien de partage, clavier MIDI, séquenceur euclidien.
+- src/ et tests/ : le compilateur et le moteur (aucune dépendance) et leurs 359 tests : `npm test` (Node, 265 tests), `npm run test:navigateur` (moteur, 17 tests) et `npm run test:studio` (interface, 23 tests) et `npm run test:science` (Science, 20 tests) et `npm run test:academie` (Academy, 19 tests) et `npm run test:creation` (création avancée, 15 tests dans Chromium), les cinq derniers dans Chromium via Playwright.
 
 ## Rapport d'audit (phase 0)
 
@@ -79,4 +80,5 @@ Voir SPEC.md, parties 12 à 14.
 - Phase 5, Science : faite, à valider (PHASE5.md).
 - Phase 6, Academy : faite, à valider (PHASE6.md).
 - Phase 7, modules DSP : faite sauf grains et les séquenceurs (phase 8), à valider (PHASE7.md).
+- Phase 8, création avancée : faite, à valider (PHASE8.md).
 - Phases 5 et suivantes : non commencées (PLAN.md).

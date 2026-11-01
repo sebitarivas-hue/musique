@@ -72,6 +72,33 @@
       <p class="petit">Joue avec la souris, le doigt ou les touches A, Z, E, R… (ligne du milieu : notes blanches, ligne du haut : noires).</p>
       <div id="clavier" class="clavier" role="group" aria-label="Clavier de deux octaves"></div>
     </div>
+    <div id="midi-zone" hidden>
+      <h2>Clavier MIDI</h2>
+      <button type="button" id="b-midi">Brancher un clavier MIDI</button>
+      <p class="petit" id="midi-etat" role="status">Les notes du clavier jouent l'instrument. La pédale de maintien est prise en compte.</p>
+    </div>
+    <div id="seq-zone" hidden>
+      <h2>Séquence</h2>
+      <p class="petit">Un rythme euclidien : des impulsions réparties le plus régulièrement possible sur les pas, avec les notes d'une gamme ou d'un arpège.</p>
+      <div class="rg"><label for="seq-tempo"><span>Tempo</span><output id="seq-tempo-v" for="seq-tempo">120 bpm</output></label><input type="range" id="seq-tempo" min="50" max="220" step="1" value="120"></div>
+      <div class="rg"><label for="seq-pas"><span>Nombre de pas</span></label><select id="seq-pas"><option>8</option><option>12</option><option selected>16</option></select></div>
+      <div class="rg"><label for="seq-imp"><span>Impulsions</span><output id="seq-imp-v" for="seq-imp">5</output></label><input type="range" id="seq-imp" min="1" max="16" step="1" value="5"></div>
+      <div class="rg"><label for="seq-rot"><span>Rotation</span><output id="seq-rot-v" for="seq-rot">0</output></label><input type="range" id="seq-rot" min="0" max="15" step="1" value="0"></div>
+      <div class="rg"><label for="seq-gamme"><span>Notes</span></label><select id="seq-gamme"><option value="penta">Pentatonique de do</option><option value="mineur">La mineur naturel</option><option value="accord">Accord de do majeur 7</option><option value="chromatique">Chromatique</option></select></div>
+      <div class="rg"><label for="seq-arp"><span>Ordre des notes</span></label><select id="seq-arp"><option value="montant">Montant</option><option value="descendant">Descendant</option><option value="aller-retour">Aller-retour</option><option value="hasard">Hasard</option></select></div>
+      <div class="rg"><label for="seq-swing"><span>Swing</span><output id="seq-swing-v" for="seq-swing">0 %</output></label><input type="range" id="seq-swing" min="0" max="50" step="1" value="0"></div>
+      <div class="rg"><label for="seq-porte"><span>Longueur des notes</span><output id="seq-porte-v" for="seq-porte">60 %</output></label><input type="range" id="seq-porte" min="10" max="100" step="5" value="60"></div>
+      <div id="seq-pas-vue" class="seq-pas" role="img" aria-label="Rythme"></div>
+      <div class="rang"><button type="button" id="b-seq" class="principal">Jouer la séquence</button><button type="button" id="b-seq-wav">Exporter la séquence en WAV</button></div>
+      <p class="petit">En direct, la séquence est cadencée par le navigateur : elle peut trembler de quelques millisecondes. Le fichier WAV, lui, est calculé à l'échantillon près.</p>
+    </div>
+    <div id="export-zone">
+      <h2>Exporter et partager</h2>
+      <div class="rang"><label class="champ" style="flex:1">Durée (s)<input type="number" id="wav-duree" min="1" max="60" step="1" value="4"></label><label class="champ" style="flex:1">Format<select id="wav-bits"><option value="16">16 bits</option><option value="24">24 bits</option><option value="32">32 bits flottant</option></select></label></div>
+      <div class="rang"><button type="button" id="b-wav">Exporter en WAV</button><button type="button" id="b-partager">Copier un lien de partage</button></div>
+      <label class="champ">Lien de partage<input type="text" id="lien" readonly placeholder="Le lien apparaît ici"></label>
+      <p class="petit" id="export-etat" role="status">Le WAV est calculé hors ligne, sans passer par les haut-parleurs. Le lien contient le programme lui-même : rien n'est envoyé à un serveur.</p>
+    </div>
   </aside>
   <section class="panneau" id="bas" aria-label="Console et analyse">
     <div class="console" id="console" role="log" aria-live="polite" aria-label="Console"></div>

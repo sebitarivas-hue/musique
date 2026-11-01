@@ -81,3 +81,8 @@ select, input[type=text] { min-height: 38px; padding: 6px 8px; background: #fff;
   .editeur { min-height: 52vh; font-size: 13px; } .actions button { flex: 1; } .haut { padding: 8px 10px; } .clavier { height: 140px; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+.seq-pas { display: flex; flex-wrap: wrap; gap: 2px; margin: 8px 0; font: 500 .9rem var(--f-mono); } .seq-pas span { width: 22px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--noir); background: #fff; }
+.seq-pas .pas-on { background: var(--noir); color: var(--acide); } .seq-pas .temps { border-width: 2px; } .seq-pas .joue { background: var(--acide); color: var(--noir); }
+#export-zone input[type=number], #export-zone select, #seq-zone select { width: 100%; min-height: 34px; } #lien { width: 100%; font: .75rem var(--f-mono); }
+.rg { margin: 0 0 12px; } .rg label { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; font-size: .85rem; } .rg input[type=range] { width: 100%; }

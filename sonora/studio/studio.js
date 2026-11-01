@@ -7,6 +7,7 @@ import { Editeur, inserer } from "./editeur.js";
 import { formater, vers, depuis } from "./reglages-commun.js";
 import { EXEMPLES } from "./exemples.js";
 import { Projets } from "./projets.js";
+import { installerCreation } from "./creation.js";
 import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js";
 import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js";
 
@@ -196,7 +197,7 @@ async function compilerPuis(executer) {
   afficherDiagnostics(res); // avertissements éventuels
   const m = res.module; etat.module = m; etat.dernier = res;
   construireReglages(m, etat.valeursRestaurees || {}); etat.valeursRestaurees = null;
-  $("clavier-zone").hidden = !m.voix; $("source-zone").hidden = !m.entrees.some(e => e.genre === "audio");
+  $("clavier-zone").hidden = !m.voix; if (etat.afficherCreation) etat.afficherCreation(m); $("source-zone").hidden = !m.entrees.some(e => e.genre === "audio");
   if (m.voix) construireClavier();
   journal("ok", `Compilé en ${ms.toFixed(0)} ms (${res.via === "worker" ? "dans un Worker" : "sur le fil principal"}) : ${esc(m.nom)}, ${m.reglages.length} réglage${m.reglages.length > 1 ? "s" : ""}, ${m.canaux} canal${m.canaux > 1 ? "ux" : ""}${m.voix ? `, ${m.voix.nbVoix} voix` : ""}, ${m.stats ? m.stats.apres : "?"} nœuds après optimisation.`);
   if (!executer) { etatBadge(etat.marche ? "en marche" : "compilé", etat.marche ? "marche" : ""); if (etat.marche) await chargerDansMoteur(m); return m; }
@@ -226,7 +227,7 @@ async function executer() {
 }
 async function arreter() {
   if (!etat.moteur || !etat.marche) return;
-  toutRelacher(); arreterAutomations(); debrancherSource(); etat.marche = false; $("b-arreter").disabled = true;
+  toutRelacher(); if (etat.arreterSequence) etat.arreterSequence(); arreterAutomations(); debrancherSource(); etat.marche = false; $("b-arreter").disabled = true;
   await etat.moteur.arreter(); etatBadge("arrêté"); journal("info", "Arrêté.");
 }
 async function reinitialiser() {
@@ -333,12 +334,16 @@ $("p-import").onchange = async e => {
 
 // ---------------------------------------------------------------- démarrage
 remplirExemples(); remplirModules(); construireClavier();
-const b = Projets.brouillon.lire();
+const creation = installerCreation({ etat, $, journal, esc, executer, titreCourant, ed });
+const lien = await creation.depuisLien();
+const b = lien && lien.source ? { source: lien.source, titre: lien.titre || "Programme partagé", exemple: null, projet: null } : Projets.brouillon.lire();
 if (b && b.source) { ed.valeur = b.source; $("p-titre").value = b.titre || "Sans titre"; etat.exempleId = b.exemple || null; if (b.projet) etat.projet = { id: b.projet, titre: b.titre }; }
 else { ed.valeur = EXEMPLES[0].code; etat.exempleId = EXEMPLES[0].id; $("p-titre").value = EXEMPLES[0].titre; }
 document.querySelectorAll(".carte-ex").forEach(x => x.setAttribute("aria-current", String(x.dataset.id === etat.exempleId)));
 $("p-titre").oninput = brouillon;
 verifierEnDirect(); compilerPuis(false);
 journal("info", "SONORA Studio. Appuie sur Exécuter (Ctrl+Entrée) pour entendre le programme.");
+if (lien && lien.source) journal("av", "Programme chargé depuis un lien de partage. Il a remplacé ton brouillon : lis-le avant de l'exécuter.");
+else if (lien && lien.erreur) journal("err", esc(lien.erreur));
 const d = Moteur.diagnostic(); if (!d.ok) { etat.audioIndispo = true; journal("err", esc(d.raison)); etatBadge("audio indisponible", "erreur"); $("b-executer").disabled = true; }
 window.STUDIO_PRET = true;
