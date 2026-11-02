@@ -1907,7 +1907,7 @@ function vueAccueil() {
   h += `<div class="pager"><span></span><a class="btn-main" href="#proj-accueil">Projeter</a><span></span></div><div class="stack" style="margin-top:16px">`;
   h += `<section class="card"><h2 class="blk-t">Déroulé de la séance</h2><ol class="plain">${D.accueil.deroule.map(d => `<li>${esc(d)}</li>`).join("")}</ol></section>`;
   h += `<section class="card"><h2 class="blk-t">Le cours</h2>${coursEcrit(D.diapos.accueil)}</section>`;
-  h += `<section class="card"><h2 class="blk-t">Ressources</h2><div class="dl" style="margin-top:0">${pdf("Premier_cours_QR.pdf", "Premier cours : QR code et lien, à imprimer")}${NIV.map(n => pdf(`Plan_${n}_eleves_parents.pdf`, `Plan de l'année, ${n}`)).join("")}</div>
+  h += `<section class="card"><h2 class="blk-t">Ressources</h2><div class="dl" style="margin-top:0">${pdf("Premier_cours_eleves.pdf", "Support du cours : fiche à remplir, quiz « quel genre de musique ? », origines de la musique, La Marseillaise (paroles et partition)")}${pdf("Premier_cours_QR.pdf", "Premier cours : QR code et lien, à imprimer")}${NIV.map(n => pdf(`Plan_${n}_eleves_parents.pdf`, `Plan de l'année, ${n}`)).join("")}</div>
     <div class="chips" style="margin-top:10px">${NIV.map(n => `<a class="chip" href="#seance-${n}-1-1">Séance suivante en ${n}</a>`).join("")}</div></section>`;
   return h + `</div>`;
 }
