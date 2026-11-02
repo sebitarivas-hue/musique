@@ -48,3 +48,13 @@ button.enreg[aria-pressed="true"] { background: var(--rouge); color: #fff; borde
 .ac-corps dl { margin: 0; } .ac-corps dl div { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid #d8d7ce; } .ac-corps dt { font-size: .9rem; } .ac-corps dd { margin: 0; text-align: right; } .ac-corps > p { grid-column: 1 / -1; padding: 10px 16px; margin: 0; }
 @media (max-width: 760px) { .menu-b { padding: 8px 10px; font-size: .72rem; } .menu-l { min-width: 250px; } }
 .menu-l kbd:empty { display: none; }
+
+/* Fenêtre de réglage des effets */
+.rg-boite { width: min(560px, 100%); } .rg-corps { padding: 14px 16px 16px; display: grid; gap: 12px; }
+.rg-texte { margin: 0; padding: 8px 12px; background: #fff; border-left: 6px solid var(--acide); font-size: .92rem; line-height: 1.5; }
+.rg-p { display: grid; gap: 4px; font: 600 .85rem var(--f-body, sans-serif); } .rg-p output { font: 500 .8rem var(--f-mono); color: #4B4A44; margin-left: 6px; }
+.rg-p input[type=range] { width: 100%; min-height: 36px; } .rg-p select { min-height: 40px; border: 2px solid var(--noir); background: #fff; font: inherit; padding: 4px 8px; border-radius: 0; }
+.rg-case { display: flex; align-items: center; gap: 10px; } .rg-case input { width: 22px; height: 22px; }
+.rg-etat { min-height: 1.4em; margin: 0; font: .8rem var(--f-mono); color: #4B4A44; }
+.rg-actions { display: flex; flex-wrap: wrap; gap: 10px; } .rg-actions button { min-height: 46px; padding: 0 16px; font: 700 .8rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; border: 2px solid var(--noir); border-radius: 0; background: #fff; cursor: pointer; }
+.rg-actions .principal { background: var(--acide); }

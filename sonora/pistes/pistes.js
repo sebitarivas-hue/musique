@@ -158,7 +158,32 @@ function appliquerEffet(id) {
   const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!r) { message("Choisis d'abord un clip : clique dessus."); return; }
   const c = r.clip, src = etat.buffers[c.son]; if (!src) { message("Le son de ce clip n'est pas chargé."); return; }
   const e = Ed.EFFETS[id], res = e.f(Ed.extrait(src, c.decalage, c.duree)), nom = `${etat.projet.sons[c.son].nom} (${e.etiquette})`.slice(0, 80);
-  const sid = ajouterAudio(nom, res.canaux, res.sr); c.son = sid; c.decalage = 0; c.duree = Ed.duree(res); changer(); message(`${e.nom} appliqué au clip : nouveau son « ${nom} ». Ctrl+Z pour annuler.`);
+  remplacerClip(c, res, nom, e.nom);
+}
+function remplacerClip(c, res, nom, effet) { const sid = ajouterAudio(nom, res.canaux, res.sr); c.son = sid; c.decalage = 0; c.duree = Ed.duree(res); changer(); message(`${effet} appliqué au clip : nouveau son « ${nom} ». Ctrl+Z pour annuler.`); }
+// Fenêtre de réglage : construite à partir de Ed.REGLABLES (libellés, bornes, unités). L'aperçu joue les 6 premières secondes du clip ; Appliquer crée un nouveau son, l'original reste intact.
+function ouvrirReglage(id) {
+  const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!r) { message("Choisis d'abord un clip : clique dessus."); return; }
+  const c = r.clip, src = etat.buffers[c.son], spec = Ed.REGLABLES[id]; if (!src) { message("Le son de ce clip n'est pas chargé."); return; }
+  fermerMenus(); document.getElementById("reglage")?.remove(); const el = document.createElement("div"); el.id = "reglage"; el.className = "aide-clavier"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", spec.nom);
+  const champ = p => { const u = p.unite ? ` ${p.unite}` : "";
+    if (p.choix) return `<label class="rg-p"><span>${esc(p.libelle)}</span><select data-p="${p.id}">${p.choix.map(([k, n]) => `<option value="${k}"${k === p.def ? " selected" : ""}>${esc(n)}</option>`).join("")}</select></label>`;
+    if (p.case) return `<label class="rg-p rg-case"><input type="checkbox" data-p="${p.id}"${p.def ? " checked" : ""}><span>${esc(p.libelle)}</span></label>`;
+    const max = (p.unite === "s" && (p.id === "entree" || p.id === "sortie")) ? Math.max(p.min, Math.min(p.max, c.duree)) : p.max;
+    return p.log ? `<label class="rg-p"><span>${esc(p.libelle)} <output data-o="${p.id}"></output></span><input type="range" data-p="${p.id}" data-log="1" min="0" max="1000" step="1" value="${Math.round(1000 * Ed.positionLog(p, p.def))}"></label>`
+      : `<label class="rg-p"><span>${esc(p.libelle)} <output data-o="${p.id}"></output></span><input type="range" data-p="${p.id}" min="${p.min}" max="${max}" step="${p.pas}" value="${Math.min(p.def, max)}"></label>`; };
+  el.innerHTML = `<div class="ac-boite rg-boite"><div class="ac-haut"><b>${esc(spec.nom)}</b><button type="button" class="ac-fermer">Fermer</button></div><div class="rg-corps"><p class="rg-texte">${esc(spec.texte)}</p>${spec.params.map(champ).join("")}<p class="rg-etat" role="status" aria-live="polite"></p><div class="rg-actions"><button type="button" id="rg-apercu">Écouter l'aperçu</button><button type="button" id="rg-appliquer" class="principal">Appliquer au clip</button></div></div></div>`;
+  document.body.appendChild(el);
+  const valeurs = () => { const v = {}; el.querySelectorAll("[data-p]").forEach(i => { const p = spec.params.find(q => q.id === i.dataset.p); v[p.id] = i.type === "checkbox" ? i.checked : p.choix ? i.value : i.dataset.log ? Ed.valeurLog(p, +i.value / 1000) : +i.value; }); return v; };
+  const texte = (p, x) => (Math.abs(x) >= 100 || p.unite === "Hz" ? Math.round(x) : Math.abs(x) >= 10 ? x.toFixed(1) : x.toFixed(2)).toString().replace(".", ",") + (p.unite ? " " + p.unite : "");
+  const montrer = () => { const v = valeurs(); el.querySelectorAll("output[data-o]").forEach(o => { const p = spec.params.find(q => q.id === o.dataset.o); o.textContent = texte(p, v[p.id]); }); }; montrer(); el.addEventListener("input", montrer);
+  let source = null; const taire = () => { if (source) { try { source.stop(); } catch (_) {} source = null; } };
+  const fin = () => { taire(); el.remove(); document.removeEventListener("keydown", cl, true); }, cl = e => { if (e.key === "Escape") { e.stopPropagation(); e.preventDefault(); fin(); } };
+  document.addEventListener("keydown", cl, true); el.querySelector(".ac-fermer").onclick = fin; el.addEventListener("click", e => { if (e.target === el) fin(); });
+  const etatTxt = el.querySelector(".rg-etat");
+  el.querySelector("#rg-apercu").onclick = () => { taire(); try { const res = spec.f(Ed.extrait(src, c.decalage, Math.min(c.duree, 6)), valeurs()), ctx = contexte(), buf = ctx.createBuffer(res.canaux.length, res.canaux[0].length, res.sr); res.canaux.forEach((x, i) => buf.copyToChannel(x, i)); source = ctx.createBufferSource(); source.buffer = buf; source.connect(ctx.destination); source.start(); etat.apercu = { effet: id, duree: buf.duration }; etatTxt.textContent = `Aperçu : ${buf.duration.toFixed(1).replace(".", ",")} s.`; } catch (e) { etatTxt.textContent = "Aperçu impossible : " + e.message; } };
+  el.querySelector("#rg-appliquer").onclick = () => { try { const res = spec.f(Ed.extrait(src, c.decalage, c.duree), valeurs()), nom = `${etat.projet.sons[c.son].nom} (${spec.etiquette})`.slice(0, 80); fin(); remplacerClip(c, res, nom, spec.nom); } catch (e) { etatTxt.textContent = "Impossible d'appliquer : " + e.message; } };
+  el.querySelector("[data-p]").focus();
 }
 // ---------------------------------------------------------------- sons
 function ajouterAudio(nom, canaux, sr) {
@@ -316,6 +341,7 @@ const EXEC = {
   "aide-raccourcis": () => ouvrirAide(),
 };
 for (const id of Object.keys(Ed.EFFETS)) EXEC[id] = () => appliquerEffet(id);
+for (const id of Object.keys(Ed.REGLABLES)) EXEC[id] = () => ouvrirReglage(id);
 const ACTIF = { annuler: () => histo.pile.length > 0, refaire: () => histo.refaire.length > 0 };
 function lancer(id) { const f = EXEC[id]; if (f) f(); majMenus(); }
 function ouvrirAide() {
@@ -340,7 +366,7 @@ function majMenus() { document.querySelectorAll("#barre-menus [data-cmd]").forEa
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && document.querySelector("#barre-menus .menu-l:not([hidden])")) { fermerMenus(); e.preventDefault(); return; }
   const t = e.target; if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA" || (document.querySelector("#barre-menus .menu-l:not([hidden])")))) return;
-  if (document.getElementById("aide-clavier")) return;
+  if (document.getElementById("aide-clavier") || document.getElementById("reglage")) return;
   const c = commandePour(e); if (!c) return; e.preventDefault(); lancer(c.id);
 });
 document.addEventListener("visibilitychange", () => { if (document.hidden && etat.lecture) arreter(); });

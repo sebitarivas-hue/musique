@@ -13,6 +13,9 @@ export const COMMANDES = [
   { id: "gain-plus", menu: "Effets", libelle: "Gain +3 dB", touches: ["]"], clip: true }, { id: "gain-moins", menu: "Effets", libelle: "Gain −3 dB", touches: ["["], clip: true },
   { id: "fondu-entree", menu: "Effets", libelle: "Fondu d'entrée", touches: ["F"], clip: true }, { id: "fondu-sortie", menu: "Effets", libelle: "Fondu de sortie", touches: ["Maj+F"], clip: true },
   { id: "vitesse-double", menu: "Effets", libelle: "Vitesse ×2 (une octave plus haut)", touches: [], clip: true }, { id: "vitesse-moitie", menu: "Effets", libelle: "Vitesse ÷2 (une octave plus bas)", touches: [], clip: true },
+  { id: "reglage-filtre", menu: "Effets", libelle: "Filtre : passe-bas, passe-haut, bande…", touches: [], clip: true }, { id: "reglage-egaliseur", menu: "Effets", libelle: "Égaliseur : graves, médiums, aigus…", touches: [], clip: true },
+  { id: "reglage-echo", menu: "Effets", libelle: "Écho…", touches: [], clip: true }, { id: "reglage-compresseur", menu: "Effets", libelle: "Compresseur…", touches: [], clip: true },
+  { id: "reglage-transposer", menu: "Effets", libelle: "Transposer sans changer la durée…", touches: [], clip: true }, { id: "reglage-fondu", menu: "Effets", libelle: "Fondu, durées au choix…", touches: [], clip: true }, { id: "reglage-gain", menu: "Effets", libelle: "Gain, valeur au choix…", touches: [], clip: true },
   { id: "zoom-plus", menu: "Affichage", libelle: "Zoom avant", touches: ["+", "="] }, { id: "zoom-moins", menu: "Affichage", libelle: "Zoom arrière", touches: ["-"] }, { id: "zoom-tout", menu: "Affichage", libelle: "Zoom par défaut", touches: ["0"] },
   { id: "aide-raccourcis", menu: "Aide", libelle: "Raccourcis clavier", touches: ["?"] },
 ];
