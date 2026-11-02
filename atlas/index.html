@@ -70,6 +70,7 @@ footer.bas { margin-top: 40px; padding-top: 14px; border-top: 2px solid var(--no
 .recherche-haut { position: relative; flex: 0 1 260px; } .recherche-haut input { width: 100%; font: 600 .9rem var(--f-txt); padding: 7px 14px; border-radius: 999px; border: 2px solid #fff; background: transparent; color: #fff; } .recherche-haut input::placeholder { color: #ccc; }
 .recherche-haut ul { position: absolute; top: 110%; left: 0; right: 0; list-style: none; margin: 0; padding: 6px; background: #fff; color: var(--noir); border: 2px solid var(--noir); border-radius: 18px; display: none; max-height: 60vh; overflow: auto; } .recherche-haut ul.on { display: block; } .recherche-haut li a { display: block; padding: 7px 10px; border-radius: 12px; text-decoration: none; color: var(--noir); } .recherche-haut li a:hover, .recherche-haut li a:focus { background: var(--acide); }
 header.haut { flex-wrap: wrap; } header.haut nav { flex-wrap: wrap; }
+@media (max-width: 640px) { header.haut { position: static; } }   /* sur téléphone, le bandeau occupait le quart de l'écran et restait collé : il défile avec la page */
 .saut { position: absolute; left: -999px; } .saut:focus { left: 8px; top: 8px; z-index: 50; background: var(--acide); padding: 8px 12px; border-radius: 10px; }
 .statut { display: inline-block; font: 500 11px/1 ui-monospace, Menlo, monospace; letter-spacing: .05em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; border: 1.5px solid var(--noir); background: #fff; color: var(--noir); } .statut.etabli { background: var(--acide); }
 .avis { background: #fff; border: 2px dashed var(--noir); border-radius: 18px; padding: 10px 14px; font-size: .9rem; margin-top: 18px; }
@@ -120,9 +121,11 @@ h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-trans
 .fe-aide { margin: 0; padding: 6px 14px; font: 400 12px ui-monospace, Menlo, monospace; color: #BEBDB4; background: #11110F; }
 @media (max-width: 640px) { .fe-boite { box-shadow: none; } .fe-hote { display: none; } }
 .frise-wrap { position: relative; border: 2px solid var(--noir); background: var(--papier); margin-top: 12px; touch-action: none; }
+.carte-wrap.frise-wrap { overflow: visible; max-height: none; }   /* le conteneur de la frise porte les boutons de zoom : il doit les positionner et ne pas défiler */
 .frise-wrap canvas { display: block; width: 100%; cursor: grab; touch-action: none; outline-offset: -4px; }
 .frise-ctrl { position: absolute; right: 10px; bottom: 40px; display: flex; gap: 0; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100% - 20px); }
 .frise-ctrl button { font: 700 1.05rem/1 var(--f-mono, ui-monospace); min-width: 40px; height: 40px; padding: 0 10px; background: var(--noir); color: var(--acide); border: 2px solid var(--noir); border-left-width: 0; cursor: pointer; }
+@media (max-width: 640px) { .carte-wrap.frise-wrap .frise-ctrl button { min-width: 32px; min-height: 0; height: 36px; padding: 0 6px; font-size: .66rem; line-height: 1; } .carte-wrap.frise-wrap .frise-ctrl { right: 6px; } }
 .frise-ctrl button:first-child { border-left-width: 2px; } .frise-ctrl button:hover, .frise-ctrl button:focus-visible { background: var(--acide); color: var(--noir); outline: none; }
 .frise-aide { margin: 0; padding: 6px 10px; font: 400 12px var(--f-mono, ui-monospace); color: var(--gris); border-top: 1px solid #d8d7ce; }
 </style>
@@ -338,7 +341,7 @@ function vueFrise(sel) {
 }
 /* La frise est un nuage zoomable : une bande par famille, un point par entrée à sa date de départ, des étiquettes qui apparaissent par ordre d'importance quand on zoome.
    Glisser pour se déplacer, molette ou pincement pour zoomer, double clic pour entrer, toucher un point pour voir son passé et son avenir s'allumer. */
-const VUE = { k: 1, tx: 0, ty: 0, w: 0, h: 0, dpr: 1, pts: [], lanes: {}, cree: false, survol: null, bouge: false };
+const VUE = { k: 1, sy: 1, tx: 0, ty: 0, w: 0, h: 0, dpr: 1, pts: [], lanes: {}, cree: false, survol: null, bouge: false };
 const LANE_H = 132, UNITE_X = 15;
 function anX(a) { const seg = [[500, 1500, 0.12], [1500, 1890, 0.38], [1890, 2040, 1]]; let x = 0; for (const [d, f, c] of seg) { if (a <= d) break; x += (Math.min(a, f) - d) * c; } return x * UNITE_X; }
 const hashId = id => { let h = 2166136261; for (let i = 0; i < id.length; i++) { h ^= id.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 10000) / 10000; };
@@ -350,19 +353,23 @@ function preparerNuage() {
   VUE.nb = fams.length;
 }
 function toutVoir(complet) { const w = VUE.w, h = VUE.h; if (!VUE.pts.length) return; const xs = VUE.pts.map(p => p.x), x0 = (complet ? Math.min(...xs) : Math.max(Math.min(...xs), anX(1885))) - 60, x1 = (complet ? Math.max(...xs) : anX(2022)) + 150, hh = Math.max(1, VUE.nb) * LANE_H + 30;
-  VUE.k = Math.min(w / (x1 - x0), h / hh) * 0.98; VUE.tx = (w - (x1 - x0) * VUE.k) / 2 - x0 * VUE.k; VUE.ty = 24; }
+  VUE.k = Math.min(w / (x1 - x0), h / hh) * 0.98; VUE.tx = (w - (x1 - x0) * VUE.k) / 2 - x0 * VUE.k; VUE.ty = 24;
+  /* Échelle verticale propre : quand la largeur limite (téléphone), les bandes s'étirent pour remplir la hauteur au lieu de s'écraser en haut. */
+  VUE.sy = Math.max(1, Math.min(3, (h - 40) / (hh * VUE.k))); }
 function zoomer(f, cx, cy) { const k2 = Math.max(0.05, Math.min(8, VUE.k * f)); cx = cx ?? VUE.w / 2; cy = cy ?? VUE.h / 2; VUE.tx = cx - (cx - VUE.tx) * (k2 / VUE.k); VUE.ty = cy - (cy - VUE.ty) * (k2 / VUE.k); VUE.k = k2; dessinerFrise(); }
-function centrerSur(id, kMin) { const p = VUE.pts.find(q => q.id === id); if (!p) return; VUE.k = Math.max(VUE.k, kMin || 1); VUE.tx = VUE.w / 2 - p.x * VUE.k; VUE.ty = VUE.h / 2 - p.y * VUE.k; }
+function centrerSur(id, kMin) { const p = VUE.pts.find(q => q.id === id); if (!p) return; VUE.k = Math.max(VUE.k, kMin || 1); VUE.tx = VUE.w / 2 - p.x * VUE.k; VUE.ty = VUE.h / 2 - p.y * VUE.k * VUE.sy; }
 function dessinerFrise() {
   const cw = $("#cw"); if (!cw) return; let cv = cw.querySelector("canvas");
+  cw.classList.add("frise-wrap");
   if (!cv) { cw.innerHTML = `<canvas tabindex="0" role="application" aria-label="Frise des musiques, zoomable. Flèches pour se déplacer, plus et moins pour zoomer."></canvas><div class="frise-ctrl" role="group" aria-label="Zoom"><button type="button" data-z="in" aria-label="Zoomer">+</button><button type="button" data-z="out" aria-label="Dézoomer">−</button><button type="button" data-z="all" aria-label="Tout voir, depuis l'an 500">Tout voir</button><button type="button" data-z="now" aria-label="Revenir sur le XXe siècle">1890 à aujourd'hui</button><button type="button" data-z="sel" aria-label="Centrer sur la sélection">Centrer</button></div><p class="frise-aide">Glisse pour te déplacer, pince ou molette pour zoomer. Touche un point pour allumer son passé et son avenir.</p>`; cv = cw.querySelector("canvas"); VUE.cree = false; }
   const r = cw.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1), w = Math.max(280, Math.round(r.width)), h = Math.max(380, Math.round(Math.min(window.innerHeight * 0.72, 760)));
   if (w !== VUE.w || h !== VUE.h || dpr !== VUE.dpr || !VUE.cree) { VUE.w = w; VUE.h = h; VUE.dpr = dpr; cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + "px"; cv.style.height = h + "px"; }
+  { const fc = cw.querySelector(".frise-ctrl"); if (fc) { fc.style.bottom = "auto"; fc.style.top = Math.max(4, h - fc.offsetHeight - 8) + "px"; } }   /* ancrés au bas de la zone dessinée, pas au bas du texte d'aide */
   const prem = !VUE.cree; preparerNuage(); if (prem) { VUE.cree = true; toutVoir(); if (FRISE.sel && E[FRISE.sel]) centrerSur(FRISE.sel, 0.9); brancherNuage(cv, cw); }
   const g = cv.getContext("2d"); g.setTransform(VUE.dpr, 0, 0, VUE.dpr, 0, 0); g.clearRect(0, 0, VUE.w, VUE.h);
   const { k, tx, ty } = VUE, sel = FRISE.sel && VUE.pts.some(p => p.id === FRISE.sel) ? FRISE.sel : null;
   const allum = sel ? new Set([...remonte(sel, true), ...remonte(sel, false)]) : null, parId = {}; VUE.pts.forEach(p => { parId[p.id] = p; });
-  const SX = x => x * k + tx, SY = y => y * k + ty;
+  const SX = x => x * k + tx, SY = y => y * k * VUE.sy + ty;
   // bandes de familles
   g.fillStyle = "#F0EFE8"; g.fillRect(0, 0, VUE.w, VUE.h);
   D.families.filter(f => FRISE.fam.has(f.id)).forEach(f => { const i = VUE.lanes[f.id], y0 = SY(i * LANE_H), y1 = SY((i + 1) * LANE_H); if (y1 < 0 || y0 > VUE.h) return; g.fillStyle = i % 2 ? "rgba(17,17,15,.035)" : "rgba(17,17,15,.0)"; g.fillRect(0, y0, VUE.w, y1 - y0); g.fillStyle = COUL[f.id]; g.fillRect(0, y0, 5, y1 - y0); });
@@ -376,15 +383,19 @@ function dessinerFrise() {
   // points
   let vus = 0; const pts = VUE.pts; for (const p of pts) { const x = SX(p.x), y = SY(p.y); if (x < -20 || x > VUE.w + 20 || y < -20 || y > VUE.h + 20) { p.sx = null; continue; } p.sx = x; p.sy = y; p.sr = Math.max(2.6, Math.min(16, p.r * Math.sqrt(k) * 0.9)); vus++;
     const f = allum && !allum.has(p.id); g.globalAlpha = f ? 0.18 : 1; g.fillStyle = COUL[p.e.family]; g.beginPath(); g.arc(x, y, p.sr, 0, 6.2832); g.fill(); g.lineWidth = p.id === sel ? 3.5 : 1.2; g.strokeStyle = "#11110F"; g.stroke(); g.globalAlpha = 1; }
-  // étiquettes par ordre d'importance, sans chevauchement
-  g.font = "600 12px 'Instrument Sans', Arial, sans-serif"; g.textBaseline = "middle"; const boites = []; let nbEt = 0;
+  // noms des familles, collés à gauche : leurs cases sont réservées avant les étiquettes, pour que rien ne passe dessous
+  const boites = [], tags = []; g.font = "700 10px ui-monospace, Menlo, monospace";
+  D.families.filter(f => FRISE.fam.has(f.id)).forEach(f => { const y = SY(VUE.lanes[f.id] * LANE_H) + 5; if (y < -14 || y > VUE.h) return; const t = f.name.split(",")[0].toUpperCase(), tw = g.measureText(t).width; tags.push({ t, y, tw }); boites.push([8, y - 2, tw + 10, 15]); });
+  // étiquettes par ordre d'importance, sans chevauchement, en nombre borné par la surface (un téléphone n'en porte pas autant qu'un écran d'ordinateur)
+  g.font = "600 12px 'Instrument Sans', Arial, sans-serif"; g.textBaseline = "middle"; let nbEt = 0; const maxEt = Math.max(12, Math.floor(VUE.w * VUE.h / 12000)), etiq = [];
   const ordre = [...pts].sort((a, b) => (b.id === sel) - (a.id === sel) || (allum && ((allum.has(b.id)) - (allum.has(a.id)))) || (b.id === VUE.survol) - (a.id === VUE.survol) || b.imp - a.imp);
-  for (const p of ordre) { if (p.sx == null) continue; const f = allum && !allum.has(p.id); if (f && p.id !== VUE.survol) continue; const t = p.e.name, tw = g.measureText(t).width, bx = p.sx + p.sr + 4, by = p.sy - 9, bw = tw + 8, bh = 18;
-    if (bx + bw > VUE.w + 4 || boites.some(q => bx < q[0] + q[2] + 2 && bx + bw > q[0] - 2 && by < q[1] + q[3] + 1 && by + bh > q[1] - 1)) continue; boites.push([bx, by, bw, bh]); nbEt++;
+  for (const p of ordre) { if (p.sx == null) continue; const f = allum && !allum.has(p.id); if (f && p.id !== VUE.survol) continue; const prio = p.id === sel || p.id === VUE.survol || (allum && allum.has(p.id)); if (nbEt >= maxEt && !prio) continue;
+    const t = p.e.name, tw = g.measureText(t).width, by = p.sy - 9, bw = tw + 8, bh = 18; let bx = p.sx + p.sr + 4;
+    if (bx + bw > VUE.w - 2) bx = p.sx - p.sr - 4 - bw;          // trop près du bord droit : l'étiquette passe à gauche du point
+    if (bx < 2 || boites.some(q => bx < q[0] + q[2] + 2 && bx + bw > q[0] - 2 && by < q[1] + q[3] + 1 && by + bh > q[1] - 1)) continue; boites.push([bx, by, bw, bh]); nbEt++; etiq.push([bx, by, bw, bh]);
     g.fillStyle = p.id === sel ? "#D6FF00" : "rgba(240,239,232,.92)"; g.fillRect(bx, by, bw, bh); g.strokeStyle = "#11110F"; g.lineWidth = p.id === sel ? 2 : 1; g.strokeRect(bx + .5, by + .5, bw - 1, bh - 1); g.fillStyle = "#11110F"; g.fillText(t, bx + 4, by + bh / 2 + 1); }
-  // noms des familles, collés à gauche
-  g.font = "700 11px ui-monospace, Menlo, monospace"; g.textBaseline = "top"; D.families.filter(f => FRISE.fam.has(f.id)).forEach(f => { const y = SY(VUE.lanes[f.id] * LANE_H) + 6; if (y < -14 || y > VUE.h) return; const t = f.name.split(",")[0].toUpperCase(); const tw = g.measureText(t).width; g.fillStyle = "#11110F"; g.fillRect(8, y - 2, tw + 10, 17); g.fillStyle = "#D6FF00"; g.fillText(t, 13, y + 1); });
-  window.FRISE_VUE = { k: +k.toFixed(3), points: pts.length, visibles: vus, etiquettes: nbEt, allumes: allum ? allum.size : 0, selection: sel };
+  g.font = "700 10px ui-monospace, Menlo, monospace"; g.textBaseline = "top"; tags.forEach(({ t, y, tw }) => { g.fillStyle = "#11110F"; g.fillRect(8, y - 2, tw + 10, 15); g.fillStyle = "#D6FF00"; g.fillText(t, 13, y + 1); });
+  window.FRISE_VUE = { k: +k.toFixed(3), points: pts.length, visibles: vus, etiquettes: nbEt, maxEtiquettes: maxEt, boites: etiq, familles: boites.slice(0, tags.length), allumes: allum ? allum.size : 0, selection: sel };
 }
 function brancherNuage(cv, cw) {
   const ptr = new Map(); let dernier = null, dep = 0, pince = 0;
