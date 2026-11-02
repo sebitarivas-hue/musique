@@ -285,7 +285,8 @@ function ficheMicro(exp) {
 }
 // ---------------------------------------------------------------- démarrage
 remplirListe();
-const depart = () => ouvrir((location.hash || "#" + EXPERIENCES[0].id).slice(1));
+// Sur téléphone, sans expérience demandée dans l'adresse, on ouvre d'abord sur le menu des expériences : c'est lui qu'on cherche en arrivant.
+const depart = () => { const h = location.hash; ouvrir((h || "#" + EXPERIENCES[0].id).slice(1)); if (!h && !etat.menuVu && matchMedia("(max-width: 900px)").matches) basculerPanneau("liste"); etat.menuVu = true; };
 window.addEventListener("hashchange", depart); depart();
 document.addEventListener("visibilitychange", () => { if (document.hidden && etat.marche) arreterEcoute(); });
 window.SCIENCE_PRET = true;

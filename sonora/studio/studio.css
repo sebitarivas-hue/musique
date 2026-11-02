@@ -81,6 +81,8 @@ select, input[type=text] { min-height: 38px; padding: 6px 8px; background: #fff;
   .visus { grid-template-columns: 1fr; } .visus canvas { min-height: 120px; } .mesures { grid-column: 1; } #droite { display: none; } #grille[data-actif=droite] #droite { display: block; }
   .editeur { min-height: 52vh; font-size: 13px; } .actions button { flex: 1; } .haut { padding: 8px 10px; } .clavier { height: 140px; }
 }
+/* petits téléphones (360 px) : les liens des espaces SONORA passent à la ligne au lieu d'être coupés à droite */
+@media (max-width: 420px) { header.haut nav.actions { flex-wrap: wrap; overflow: visible; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 .seq-pas { display: flex; flex-wrap: wrap; gap: 2px; margin: 8px 0; font: 500 .9rem var(--f-mono); } .seq-pas span { width: 22px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--noir); background: #fff; }
