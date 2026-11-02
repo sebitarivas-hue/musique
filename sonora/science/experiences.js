@@ -1,8 +1,8 @@
-import { programmeTimbre } from "./microtonalite.js?v=2d1e4af40a";
+import { programmeTimbre } from "./microtonalite.js?v=80d7d75486";
 // Les expériences de SONORA Science. Chaque expérience est un programme SONORA (le même langage que le Studio) plus une analyse.
 // Règle : tout résultat affiché est calculé à partir des échantillons que le programme produit, jamais recopié d'une formule.
 // La « théorie » est la valeur attendue d'après la physique ; l'écart et le verdict viennent de la comparaison avec la mesure.
-import * as A from "./analyse.js?v=2d1e4af40a";
+import * as A from "./analyse.js?v=80d7d75486";
 
 export const SR = 44100;
 const arrondi = (v, d = 2) => { const t = Math.abs(v) >= 100 ? v.toFixed(Math.max(0, d - 2)) : v.toFixed(d); return (t.includes(".") ? t.replace(/\.?0+$/, "") : t) || "0"; }; // les zéros ne sont retirés qu'après une virgule : 440 reste 440

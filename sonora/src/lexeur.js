@@ -1,5 +1,5 @@
 // Analyse lexicale : le texte source devient une suite de jetons positionnés.
-import { UNITES } from "./unites.js?v=2d1e4af40a";
+import { UNITES } from "./unites.js?v=80d7d75486";
 
 export const MOTS = new Set(["utilise", "comme", "const", "fonction", "rend", "instrument", "effet", "reglage", "entree", "sortie", "soit", "rec",
   "voix", "polyphonie", "automation", "boucle", "dans", "courbe", "lissage", "etiquette", "pas", "choix", "si", "alors", "sinon", "et", "ou", "non",

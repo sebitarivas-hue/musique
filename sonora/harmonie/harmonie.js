@@ -1,16 +1,16 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=2d1e4af40a";
-import { rendreSuite, evenementsProgression, INSTRUMENTS } from "./son.js?v=2d1e4af40a";
-import { heros, etatBouton } from "../studio/heros.js?v=2d1e4af40a";
-import { encoderWAV } from "../studio/wav.js?v=2d1e4af40a";
-import { dessinerOscillo } from "../studio/visuels.js?v=2d1e4af40a";
-import * as P from "../pistes/projet.js?v=2d1e4af40a";
-import { Stockage } from "../pistes/stockage.js?v=2d1e4af40a";
-import * as A from "./accords.js?v=2d1e4af40a";
-import * as V from "./voicings.js?v=2d1e4af40a";
-import * as G from "./grille.js?v=2d1e4af40a";
-import { partitionSVG } from "./partition.js?v=2d1e4af40a";
+import * as H from "./theorie.js?v=80d7d75486";
+import { rendreSuite, evenementsProgression, INSTRUMENTS } from "./son.js?v=80d7d75486";
+import { heros, etatBouton } from "../studio/heros.js?v=80d7d75486";
+import { encoderWAV } from "../studio/wav.js?v=80d7d75486";
+import { dessinerOscillo } from "../studio/visuels.js?v=80d7d75486";
+import * as P from "../pistes/projet.js?v=80d7d75486";
+import { Stockage } from "../pistes/stockage.js?v=80d7d75486";
+import * as A from "./accords.js?v=80d7d75486";
+import * as V from "./voicings.js?v=80d7d75486";
+import * as G from "./grille.js?v=80d7d75486";
+import { partitionSVG } from "./partition.js?v=80d7d75486";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -27,7 +27,7 @@ function contexte() { if (!etat.ctx) { etat.ctx = new (window.AudioContext || wi
 function stop() { if (etat.source) { try { etat.source.stop(); } catch (_) {} etat.source = null; } etat.lecture = false; etat.suivi = null; etat.vivant = null; majVivant([], -1); document.querySelectorAll(".jouer-pseudo").forEach(b => etatBouton(b, false)); document.querySelectorAll(".carte-acc.actif").forEach(c => c.classList.remove("actif")); badge("prêt"); }
 function jouerCanaux(canaux, { boucle = false, suivi = null, bouton = null, evenements = null, colonnes = null } = {}) {
   stop(); const ctx = contexte(), buf = ctx.createBuffer(canaux.length, canaux[0].length, SR); canaux.forEach((c, i) => buf.copyToChannel(c, i));
-  const s = ctx.createBufferSource(); s.buffer = buf; s.loop = boucle; s.connect(etat.analyseur); const t0 = ctx.currentTime + 0.03; s.start(t0);
+  const s = ctx.createBufferSource(); s.buffer = buf; s.loop = boucle; s.connect(etat.analyseur); const t0 = ctx.currentTime + 0.03; s.start(t0); etat.finSon = boucle ? Infinity : t0 + buf.duration;
   s.onended = () => { if (etat.source === s) stop(); };
   etat.source = s; etat.lecture = true; etat.vivant = evenements ? { evenements, colonnes, t0, duree: buf.duration, boucle, cle: "" } : null; etat.suivi = suivi ? { ...suivi, t0, duree: buf.duration } : null; if (bouton) etatBouton(bouton, true); badge("en écoute", "marche");
   etat.dernierRendu = { duree: buf.duration, canaux: canaux.length };
@@ -148,24 +148,27 @@ function vueJeu() {
   $("b-jeu-ecoute").onclick = () => etat.lecture ? stop() : jouerQuestion();
   document.querySelectorAll("#choix-jeu [data-rep]").forEach(b => b.onclick = () => repondre(b.dataset.rep));
   if ($("b-suivante")) $("b-suivante").onclick = () => { nouvelleQuestion(); vueJeu(); jouerQuestion(); };
-  if ($("b-rejouer")) $("b-rejouer").onclick = () => { etat.jeu = { ...j, n: 0, score: 0, serie: 0, repondu: false }; nouvelleQuestion(); vueJeu(); jouerQuestion(); };
+  if ($("b-rejouer")) $("b-rejouer").onclick = () => { etat.jeu = { ...j, n: 0, score: 0, serie: 0, repondu: false, tropTot: false, entendue: false, finQuestion: 0 }; nouvelleQuestion(); vueJeu(); jouerQuestion(); };
   $("b-quitter").onclick = () => { stop(); etat.jeu = null; vueJeu(); };
   if (j.repondu) { marquer(); $("retour-jeu").textContent = j.retour; }
 }
 function nouvelleQuestion() { const j = etat.jeu; j.n++; j.repondu = false; j.question = j.genre === "accord" ? H.questionAccord(j.niveau) : j.genre === "cadence" ? H.questionCadence() : H.questionMode(j.niveau); }
 function jouerQuestion() {
+  { const j = etat.jeu; if (j && j.finQuestion && etat.ctx && etat.ctx.currentTime >= j.finQuestion) j.entendue = true; } // déjà entendue une fois en entier avant de réécouter
   const q = etat.jeu.question;
   if (q.genre === "accord") jouerNotes(q.notes, { duree: 1.8 });
   else if (q.genre === "mode") jouerEv(q.notes.map((m, i) => ({ t: i * 0.33, duree: 0.31, notes: [m] })));
   else { const v = H.voicing(q.accords), r = evenementsProgression(v, { tempo: 100, style: "plaque" }); jouerEv(r.evenements); }
   const b = $("b-jeu-ecoute"); if (b) etatBouton(b, true);
+  if (etat.jeu) etat.jeu.finQuestion = etat.finSon;
 }
 const EXPLIC = { majeur: "tierce majeure puis tierce mineure", mineur: "tierce mineure puis tierce majeure", "diminué": "deux tierces mineures", "augmenté": "deux tierces majeures", "septième de dominante": "accord majeur et septième mineure", "majeur septième": "accord majeur et septième majeure", "mineur septième": "accord mineur et septième mineure" };
 function repondre(rep) {
   const j = etat.jeu; if (j.repondu) return; const q = j.question, juste = rep === q.bonne; j.repondu = true; j.reponse = rep;
+  if (!(j.entendue || (j.finQuestion && etat.ctx && etat.ctx.currentTime >= j.finQuestion))) j.tropTot = true; j.entendue = false; j.finQuestion = 0; // points : chaque question écoutée jusqu'au bout
   if (juste) { j.score++; j.serie++; } else j.serie = 0;
   j.retour = (juste ? "Juste. " : `Non : c'était ${libelle(q.genre, q.bonne)}. `) + (q.genre === "accord" ? `Un accord ${q.bonne} : ${EXPLIC[q.bonne]}.` : q.genre === "cadence" ? `En ${q.tonique} : ${q.accords.map(a => a.nom).join(", ")}.` : H.MODES[q.bonne].texte);
-  if (j.n >= 10) { points(`harmonie:partie:${j.genre}:${j.niveau}`, 3, "sonora"); if (j.score >= 7) points(`harmonie:7sur10:${j.genre}:${j.niveau}`, 10, "sonora"); const k = `record:${j.genre}:${j.niveau}`; if (j.score > lire(k, 0)) garder(k, j.score); j.retour += ` Partie finie : ${j.score} sur 10.`; }
+  if (j.n >= 10) { if (!j.tropTot) { points(`harmonie:partie:${j.genre}:${j.niveau}`, 3, "sonora"); if (j.score >= 7) points(`harmonie:7sur10:${j.genre}:${j.niveau}`, 10, "sonora"); } else j.retour += " Pas de points pour cette partie : réponds seulement après avoir écouté chaque question jusqu'au bout."; const k = `record:${j.genre}:${j.niveau}`; if (j.score > lire(k, 0)) garder(k, j.score); j.retour += ` Partie finie : ${j.score} sur 10.`; }
   etat.journalJeu = (etat.journalJeu || []).concat([{ bonne: q.bonne, rep, juste }]); vueJeu();
 }
 function marquer() { const j = etat.jeu; document.querySelectorAll("#choix-jeu [data-rep]").forEach(b => { b.disabled = true; if (b.dataset.rep === j.question.bonne) b.classList.add("juste"); else if (b.dataset.rep === j.reponse) b.classList.add("faux"); }); }

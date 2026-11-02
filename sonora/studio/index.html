@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Studio</title>
 <meta name="description" content="Programmer un son : écrire, compiler, écouter et visualiser, dans le navigateur.">
-<link rel="stylesheet" href="studio.css?v=2d1e4af40a">
+<link rel="stylesheet" href="studio.css?v=80d7d75486">
 </head>
 <body>
 <a class="saut" href="#editeur">Aller à l'éditeur</a>
@@ -106,7 +106,7 @@
     <div id="export-zone">
       <h2>Exporter et partager</h2>
       <div class="rang"><label class="champ" style="flex:1">Durée (s)<input type="number" id="wav-duree" min="1" max="60" step="1" value="4"></label><label class="champ" style="flex:1">Format<select id="wav-bits"><option value="16">16 bits</option><option value="24">24 bits</option><option value="32">32 bits flottant</option></select></label></div>
-      <div class="rang"><button type="button" id="b-wav">Exporter en WAV</button><button type="button" id="b-partager">Copier un lien de partage</button></div>
+      <div class="rang"><button type="button" id="b-wav">Exporter en WAV</button><button type="button" id="b-vers-pistes">Envoyer vers Pistes</button><button type="button" id="b-partager">Copier un lien de partage</button></div>
       <label class="champ">Lien de partage<input type="text" id="lien" readonly placeholder="Le lien apparaît ici"></label>
       <details id="proposer" class="proposer"><summary>Proposer ce programme à la classe</summary>
         <p class="petit">Tu prépares un petit fichier que tu remets à ton professeur, comme un devoir. Rien n'est envoyé : c'est toi qui le donnes. Il relit, et s'il accepte, ton programme rejoint la Library de la classe.</p>
@@ -130,8 +130,8 @@
     </div>
   </section>
 </main>
-<script type="module" src="studio.js?v=2d1e4af40a"></script>
-<script src="../barre-cours.js?v=2d1e4af40a"></script>
-<script src="../retour.js?v=2d1e4af40a"></script>
+<script type="module" src="studio.js?v=80d7d75486"></script>
+<script src="../barre-cours.js?v=80d7d75486"></script>
+<script src="../retour.js?v=80d7d75486"></script>
 </body>
 </html>

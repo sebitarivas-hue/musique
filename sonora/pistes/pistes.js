@@ -1,14 +1,14 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=2d1e4af40a";
-import * as Ed from "./editions.js?v=2d1e4af40a";
-import * as P from "./projet.js?v=2d1e4af40a";
-import { Stockage } from "./stockage.js?v=2d1e4af40a";
-import { creerBouton } from "./bouton.js?v=2d1e4af40a";
-import { encoderWAV } from "../studio/wav.js?v=2d1e4af40a";
-import { ENTREES } from "../library/catalogue.js?v=2d1e4af40a";
-import { compiler } from "../src/index.js?v=2d1e4af40a";
-import { rendre } from "../src/rendu.js?v=2d1e4af40a";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=80d7d75486";
+import * as Ed from "./editions.js?v=80d7d75486";
+import * as P from "./projet.js?v=80d7d75486";
+import { Stockage } from "./stockage.js?v=80d7d75486";
+import { creerBouton } from "./bouton.js?v=80d7d75486";
+import { encoderWAV } from "../studio/wav.js?v=80d7d75486";
+import { ENTREES } from "../library/catalogue.js?v=80d7d75486";
+import { compiler } from "../src/index.js?v=80d7d75486";
+import { rendre } from "../src/rendu.js?v=80d7d75486";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -37,7 +37,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=2d1e4af40a"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=80d7d75486"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -111,9 +111,18 @@ function metronome(ctx, depuis, debut) {
 }
 function boucle() {
   requestAnimationFrame(boucle);
-  if (etat.lecture && etat.ctx) { etat.tete = Math.max(0, etat.debutTete + etat.ctx.currentTime - etat.debutCtx); const fin = P.dureeTotale(etat.projet); if (!etat.enreg && etat.tete > fin + 0.3 && fin > 0) { arreter(); } }
+  if (etat.lecture && etat.ctx) { etat.tete = Math.max(0, etat.debutTete + etat.ctx.currentTime - etat.debutCtx); const fin = P.dureeTotale(etat.projet); if (!etat.enreg && etat.tete > fin + 0.3 && fin > 0) { finEcoute(); arreter(); } }
   $("position").textContent = fmtT(etat.tete); $("curseur").style.left = (etat.tete * etat.pxs) + "px";
   if (etat.enreg && etat.capture) { majClipEnCours(); majNiveauMicro(); }
+}
+
+// La lecture est allée jusqu'au bout du projet sans être arrêtée : les sons entendus en entier comptent.
+// Un enregistrement rapporte quand on l'a réécouté en entier ; l'export rapporte si tout le projet a été écouté depuis le début (voir exporter).
+function finEcoute() {
+  const p = etat.projet, depuis = etat.debutTete, audibles = new Set(P.pistesAudibles(p).map(pi => pi.id));
+  if (depuis <= 0.05) etat.toutEcoute = true;
+  const entendus = new Set(p.pistes.filter(pi => audibles.has(pi.id)).flatMap(pi => pi.clips.filter(c => c.debut >= depuis - 0.01).map(c => c.son)));
+  if ((etat.aReecouter || []).some(id => entendus.has(id))) { points("pistes:enreg", 10, "sonora"); etat.aReecouter = []; }
 }
 
 // ---------------------------------------------------------------- enregistrement au micro
@@ -174,7 +183,7 @@ async function finirEnregistrement() {
   const lat = voie === "worklet" ? Math.min(0.3, (etat.ctx.baseLatency || 0) + (etat.ctx.outputLatency || 0)) : 0, coupe = Math.round(lat * sr), y = coupe && coupe < n / 2 ? x.slice(coupe) : x;
   const num = Object.values(etat.projet.sons).filter(s => /^Enregistrement/.test(s.nom)).length + 1;
   const id = ajouterAudio(`Enregistrement ${num}`, [y], sr); P.placerClip(etat.projet, P.pisteLibre(etat.projet, c.piste, c.debut, y.length / sr), id, c.debut);
-  message(`Enregistré : ${(y.length / sr).toFixed(1).replace(".", ",")} s sur la piste.${voie === "worklet" ? ` Latence compensée : ${Math.round(lat * 1000)} ms.` : " Ton navigateur a utilisé l'enregistreur de secours : la latence n'est pas compensée, décale le clip à la main si besoin."}`); etat.dernierEnreg = { duree: y.length / sr, latence: lat, voie }; points("pistes:enreg", 10, "sonora"); changer();
+  message(`Enregistré : ${(y.length / sr).toFixed(1).replace(".", ",")} s sur la piste.${voie === "worklet" ? ` Latence compensée : ${Math.round(lat * 1000)} ms.` : " Ton navigateur a utilisé l'enregistreur de secours : la latence n'est pas compensée, décale le clip à la main si besoin."}`); etat.dernierEnreg = { duree: y.length / sr, latence: lat, voie }; etat.aReecouter = (etat.aReecouter || []).concat(id); changer(); // points : quand ce son aura été réécouté en entier
 }
 
 // ---------------------------------------------------------------- historique : annuler et rétablir
@@ -235,7 +244,7 @@ async function importer(fichiers, pisteId, debut) {
     try { const { canaux, sr } = await decoder(f); const id = ajouterAudio(f.name.replace(/\.[^.]+$/, ""), canaux, sr); P.placerClip(etat.projet, P.pisteLibre(etat.projet, pisteId, t, canaux[0].length / sr), id, t); t += canaux[0].length / sr; n++; }
     catch (e) { message(`${f.name} : ce fichier n'est pas un son que le navigateur sait lire.`); }
   }
-  if (n) { message(`${n} son${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""}.`); points("pistes:son", 3, "sonora"); changer(); }
+  if (n) { message(`${n} son${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""}.`); changer(); }
 }
 function sonSonora(idEntree) {
   const e = ENTREES.find(x => x.id === idEntree); if (!e) return;
@@ -245,7 +254,7 @@ function sonSonora(idEntree) {
   if (m.entrees.some(x => x.genre === "audio")) { const x = new Float32Array(n); x[0] = 0.9; x[sr] = 0.9; x[sr * 2] = 0.9; o.entrees = [x]; }
   const sortie = rendre(m, o), pi = P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0];
   const id = ajouterAudio(e.titre, sortie.canaux.slice(0, 2), sr), t0 = P.aimanter(etat.projet, etat.tete, +$("aimant").value); P.placerClip(etat.projet, P.pisteLibre(etat.projet, pi.id, t0, 4), id, t0);
-  message(`« ${e.titre} » ajouté : 4 s rendues par SONORA.`); points("pistes:son", 3, "sonora"); changer();
+  message(`« ${e.titre} » ajouté : 4 s rendues par SONORA.`); changer();
 }
 
 // ---------------------------------------------------------------- affichage
@@ -275,7 +284,7 @@ function majSelection() {
 }
 let minuteur = null;
 const ranger = () => { clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(() => {}), 300); };
-function changer() { empiler(); afficher(); clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(e => message("Le projet n'a pas pu être rangé : " + e.message)), 250); if (etat.lecture && !etat.enreg) { arreter(); } }
+function changer() { etat.toutEcoute = false; empiler(); afficher(); clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(e => message("Le projet n'a pas pu être rangé : " + e.message)), 250); if (etat.lecture && !etat.enreg) { arreter(); } }
 
 function brancherEntetes() {
   for (const el of document.querySelectorAll(".entete")) {
@@ -364,7 +373,7 @@ function afficherEffets() {
     }
     zone.appendChild(art); requestAnimationFrame(() => schemaFx(cv, k, P.effetsDe(pi)));
   }
-  z.querySelector("#fx-ajouter").onchange = ev => { if (P.ajouterEffet(pi, ev.target.value)) { points("pistes:effet:" + ev.target.value, 3, "sonora"); message(`${NOMS_FX[ev.target.value]} ajouté à la piste « ${pi.nom} ».`); changer(); } };
+  z.querySelector("#fx-ajouter").onchange = ev => { if (P.ajouterEffet(pi, ev.target.value)) { message(`${NOMS_FX[ev.target.value]} ajouté à la piste « ${pi.nom} ».`); changer(); } };
   z.querySelector("#fx-fermer").onclick = () => { etat.fx = null; afficher(); };
   z.querySelectorAll("[data-actif]").forEach(x => x.onchange = () => { P.interrupteurEffet(pi, x.dataset.actif, x.checked); changer(); });
   z.querySelectorAll("[data-retirer]").forEach(x => x.onclick = () => { P.retirerEffet(pi, x.dataset.retirer); message(`${NOMS_FX[x.dataset.retirer]} retiré de la piste « ${pi.nom} » (Ctrl+Z pour l'annuler).`); changer(); });
@@ -379,7 +388,7 @@ async function exporter() {
   const chaines = await chainesProjet(ctx, p, ctx.destination); planifier(ctx, p, 0, 0, chaines); const buf = await ctx.startRendering(), canaux = [buf.getChannelData(0), buf.getChannelData(1)];
   const w = encoderWAV(canaux, sr, 16); etat.dernierExport = { octets: w.octets.length, ecretes: w.ecretes, duree };
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([w.octets], { type: "audio/wav" })); a.download = (p.titre || "pistes").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9_-]+/g, "-") + ".wav"; document.body.appendChild(a); a.click(); a.remove();
-  points("pistes:export", 10, "sonora");
+  if (etat.toutEcoute && P.dureeTotale(p) >= 8 && p.pistes.reduce((n, pi) => n + pi.clips.length, 0) >= 2) points("pistes:export", 10, "sonora"); // points : tout le projet écouté du début à la fin, sans modification depuis
   message(`WAV exporté : ${duree.toFixed(1).replace(".", ",")} s, stéréo, 16 bits, calculé en ${Math.round(performance.now() - t0)} ms.${w.ecretes ? ` Attention : ${w.ecretes} échantillons dépassent 0 dB, baisse des volumes.` : ""}`);
 }
 
@@ -444,12 +453,25 @@ document.addEventListener("keydown", e => {
 document.addEventListener("visibilitychange", () => { if (document.hidden && etat.lecture) arreter(); });
 
 // ---------------------------------------------------------------- démarrage : on reprend le projet rangé, avec ses sons
+// Les sons envoyés par le Studio (bouton « Envoyer vers Pistes ») : ils attendent dans le rangement local, on les place sur une piste libre, au début.
+async function recevoirDuStudio() {
+  let L = []; try { L = JSON.parse(localStorage.getItem("pistes:arrivees") || "[]"); } catch (_) {} if (!L.length) return;
+  const recus = [];
+  for (const a of L) {
+    try { const d = await Stockage.lireSon(a.id); if (!d || !d.canaux || !d.canaux.length) continue;
+      const id = ajouterAudio(a.nom, d.canaux, d.sr), duree = d.canaux[0].length / d.sr; P.placerClip(etat.projet, P.pisteLibre(etat.projet, etat.arme || etat.projet.pistes[0].id, 0, duree), id, 0); recus.push(a.nom);
+      Stockage.effacerSon(a.id).catch(() => {}); } catch (_) {}
+  }
+  try { localStorage.removeItem("pistes:arrivees"); } catch (_) {}
+  if (recus.length) { empiler(); Stockage.ecrireProjet(etat.projet).catch(() => {}); message(`Reçu du Studio : ${recus.map(n => "« " + n + " »").join(", ")}. Le son est placé au début d'une piste libre.`); }
+}
 async function demarrer() {
   let p = null;
   let rangement = true;
   try { const lu = await Stockage.lireProjet(); if (lu) p = P.verifierProjet(lu); } catch (_) { p = null; rangement = false; }
   if (p) { for (const id of Object.keys(p.sons)) { try { const d = await Stockage.lireSon(id); if (d) etat.buffers[id] = d; } catch (_) {} } const perdus = Object.keys(p.sons).filter(id => !etat.buffers[id]); if (perdus.length) message(`${perdus.length} son${perdus.length > 1 ? "s" : ""} n'ont pas été retrouvés dans ce navigateur.`); }
   if (!rangement) message("Le navigateur ne range pas le projet (stockage indisponible ou bloqué) : tu peux travailler, mais il ne sera pas conservé à la fermeture. Exporte en WAV pour garder ton travail.");
-  etat.projet = p || P.nouveauProjet(); histo.snap = JSON.stringify(etat.projet); construireMenus(); majMenus(); etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; afficher(); requestAnimationFrame(boucle); window.PISTES_PRET = true;
+  etat.projet = p || P.nouveauProjet(); histo.snap = JSON.stringify(etat.projet); construireMenus(); majMenus(); etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id;
+  await recevoirDuStudio(); afficher(); requestAnimationFrame(boucle); window.PISTES_PRET = true;
 }
 demarrer();

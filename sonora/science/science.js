@@ -1,16 +1,16 @@
 // SONORA Science : fiches d'expériences. Le programme de chaque fiche est du SONORA ; l'écoute passe par le moteur (AudioWorklet),
 // la mesure par le même noyau rendu hors ligne ; tous les chiffres affichés sont calculés sur ces signaux.
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=2d1e4af40a";
-import { formater, vers, depuis } from "../studio/reglages-commun.js?v=2d1e4af40a";
-import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=2d1e4af40a";
-import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=2d1e4af40a";
-import { EXEMPLES } from "../studio/exemples.js?v=2d1e4af40a";
-import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=2d1e4af40a";
-import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=2d1e4af40a";
-import { Escalier } from "./psychophysique.js?v=2d1e4af40a";
-import { heros, etatBouton } from "../studio/heros.js?v=2d1e4af40a";
-import * as A from "./analyse.js?v=2d1e4af40a";
-import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=2d1e4af40a";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=80d7d75486";
+import { formater, vers, depuis } from "../studio/reglages-commun.js?v=80d7d75486";
+import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=80d7d75486";
+import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=80d7d75486";
+import { EXEMPLES } from "../studio/exemples.js?v=80d7d75486";
+import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=80d7d75486";
+import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=80d7d75486";
+import { Escalier } from "./psychophysique.js?v=80d7d75486";
+import { heros, etatBouton } from "../studio/heros.js?v=80d7d75486";
+import * as A from "./analyse.js?v=80d7d75486";
+import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=80d7d75486";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -66,11 +66,13 @@ async function demarrerMoteur() {
 async function ecouter(module, { accord } = {}) {
   try {
     const m = await demarrerMoteur(); await m.charger(module); for (const [n, v] of Object.entries(etat.valeurs)) m.regler(n, v);
-    etat.marche = true; badge("en écoute", "marche"); if ($("b-ecouter")) etatBouton($("b-ecouter"), true);
+    etat.marche = true; etat.ecouteDebut = performance.now(); badge("en écoute", "marche"); if ($("b-ecouter")) etatBouton($("b-ecouter"), true);
     if (module.voix) { m.accord(accord || [[48, 220, 0.8], [49, 277.18, 0.8], [50, 329.63, 0.8]]); }
   } catch (e) { badge("erreur", "erreur"); const z = $("msg-exp"); if (z) z.textContent = e instanceof ErreurMoteur ? e.message : String(e && e.message || e); }
 }
-async function arreterEcoute() { if (etat.arretGen) { etat.arretGen(); etat.arretGen = null; } if (!etat.moteur || !etat.marche) return; etat.marche = false; await etat.moteur.arreter(); badge("prêt"); if ($("b-ecouter")) etatBouton($("b-ecouter"), false); }
+// Temps d'écoute sans interruption de l'expérience ouverte (en secondes) : la plus longue écoute, ou celle en cours.
+const ecouteDe = id => Math.max((etat.ecoutes || {})[id] || 0, etat.marche && etat.ecouteDebut && etat.exp && etat.exp.id === id ? (performance.now() - etat.ecouteDebut) / 1000 : 0);
+async function arreterEcoute() { if (etat.marche && etat.ecouteDebut && etat.exp) { etat.ecoutes = etat.ecoutes || {}; etat.ecoutes[etat.exp.id] = ecouteDe(etat.exp.id); } etat.ecouteDebut = 0; if (etat.arretGen) { etat.arretGen(); etat.arretGen = null; } if (!etat.moteur || !etat.marche) return; etat.marche = false; await etat.moteur.arreter(); badge("prêt"); if ($("b-ecouter")) etatBouton($("b-ecouter"), false); }
 let dernier = 0;
 (function boucle(t) { requestAnimationFrame(boucle); if (t - dernier < 33) return; dernier = t; const o = $("live-oscillo"), s = $("live-spectre"); if (!o || !s) return; const x = etat.marche ? etat.tampon : null; dessinerOscillo(o, x); dessinerSpectre(s, x, etat.sr); const h = $("heros-onde"); if (h) dessinerOscillo(h, x); })(0);
 
@@ -105,7 +107,7 @@ function entete(exp) { return `<span class="etiq-domaine">${esc(exp.domaine)}</s
 const pied = (exp, programme) => bloc("Pour aller plus loin", `<p>${esc(exp.approfondissement)}</p>`) + `<details class="prog"><summary>Le programme SONORA de cette expérience</summary><pre id="code-exp">${esc(programme)}</pre><button type="button" id="b-studio">Ouvrir dans le Studio pour le modifier</button></details>`;
 
 function ouvrir(id) {
-  const exp = parId(id) || EXPERIENCES[0]; arreterEcoute(); etat.exp = exp; etat.valeurs = {}; etat.resultat = null;
+  const exp = parId(id) || EXPERIENCES[0]; arreterEcoute(); if (etat.arretLecture) { etat.arretLecture(); etat.arretLecture = null; } etat.exp = exp; etat.valeurs = {}; etat.resultat = null;
   document.querySelectorAll("#nav-exp button").forEach(b => b.setAttribute("aria-current", String(b.dataset.id === exp.id)));
   document.title = exp.titre + ", SONORA Science"; basculerPanneau("fiche"); window.scrollTo(0, 0);
   if (exp.type === "auditeur") return exp.id === "masquage" ? ficheMasquage(exp) : exp.id === "microtonalite" ? ficheMicro(exp) : ficheSeuil(exp);
@@ -125,7 +127,7 @@ function lancerMesure(exp, m) {
   const z = $("resultats"); z.innerHTML = `<p class="petit" id="calcul">Calcul sur le signal produit…</p>`; badge("calcul");
   setTimeout(() => {
     try {
-      const t0 = performance.now(), res = mesurer(exp, m, { ...etat.valeurs }), ms = performance.now() - t0; etat.resultat = res; points("science:" + exp.id, 5, "sonora");
+      const t0 = performance.now(), res = mesurer(exp, m, { ...etat.valeurs }), ms = performance.now() - t0; etat.resultat = res; if (etat.arretLecture) etat.arretLecture(); etat.arretLecture = window.COURS_POINTS ? window.COURS_POINTS.lecture($("fiche"), "science:" + exp.id, 5, "sonora", { condition: () => ecouteDe(exp.id) >= 4 }) : null; // points : écouté au moins 4 s, mesuré, puis lu jusqu'au bout
       z.innerHTML = bloc("Ce que dit le signal", tableau(res) + `<p class="petit">Mesures faites sur ${exp.duree} s de signal rendu par le noyau SONORA (${ms.toFixed(0)} ms de calcul), avec les réglages ci-dessus.</p>`) +
         bloc("Les mesures en images", `<div class="vues">${(res.vues || []).map(v => `<figure><canvas id="${FIGURES[v][0]}" role="img" aria-label="${esc(FIGURES[v][1])}"></canvas><figcaption>${esc(FIGURES[v][1])}</figcaption></figure>`).join("")}</div>`) +
         bloc("Interprétation", `<p class="interpretation" id="interpretation">${esc(res.interpretation)}</p>`);
@@ -158,7 +160,7 @@ function ficheAnalyseur(exp) {
   $("b-mesurer").onclick = () => {
     if (!module) return; const z = $("resultats"); z.innerHTML = `<p class="petit">Calcul sur le signal produit…</p>`; badge("calcul");
     setTimeout(() => { try {
-      const a = mesurerLibre(module, { ...etat.valeurs }, { secondes: 4 }); etat.resultat = a; points("science:analyseur", 5, "sonora");
+      const a = mesurerLibre(module, { ...etat.valeurs }, { secondes: 4 }); etat.resultat = a;
       const L = (nom, v, u, d) => ({ nom, mesure: v, unite: u, d, info: true });
       const lignes = [L("Fréquence fondamentale", a.f0, "Hz", 1), L("Centroïde spectral (brillance)", a.centroide, "Hz", 0), L("Pics du spectre (les cinq plus forts)", a.pics.slice(0, 5).length, "", 0),
         L("Niveau efficace (RMS)", A.versDB(a.rms), "dB", 1), L("Niveau de crête", A.versDB(a.crete), "dB", 1), L("Facteur de crête (crête / efficace)", A.versDB(a.crete / Math.max(a.rms, 1e-9)), "dB", 1), L("Plage dynamique (entre les 5 % et les 95 % des niveaux de l'enveloppe)", a.plage, "dB", 1), L("Temps de montée de l'enveloppe (10 % à 90 % du maximum)", a.attaque, "ms", 0)];
@@ -291,7 +293,7 @@ function ficheGenerateur(exp) {
     g.ctx = g.ctx || new (window.AudioContext || window.webkitAudioContext)(); if (g.ctx.state === "suspended") await g.ctx.resume();
     g.osc = g.ctx.createOscillator(); g.osc.type = g.forme; g.osc.frequency.value = g.f; g.gain = g.ctx.createGain(); g.gain.gain.value = 0; g.an = g.ctx.createAnalyser(); g.an.fftSize = 4096;
     g.osc.connect(g.gain); g.gain.connect(g.an); g.an.connect(g.ctx.destination); g.osc.start(); g.gain.gain.setTargetAtTime(g.vol, g.ctx.currentTime, 0.03);
-    g.marche = true; points("science:generateur-sons", 3, "sonora"); $("g-jouer").textContent = "Arrêter"; badge("son en cours", "ok"); g.raf = requestAnimationFrame(dessiner);
+    g.marche = true; $("g-jouer").textContent = "Arrêter"; badge("son en cours", "ok"); g.raf = requestAnimationFrame(dessiner);
   };
   etat.arretGen = () => { if (g.marche) arret(); };
   maj();
@@ -315,16 +317,16 @@ function ficheMicro(exp) {
   const rendre = (centsNote, sec = 0.7) => { const x = rendreCanaux(moduleTimbre(mi.timbre), { ecart: centsNote, base: mi.base }, sec)[0], n = x.length, y = new Float32Array(n), f = Math.round(0.012 * SR); for (let i = 0; i < n; i++) y[i] = x[i] * Math.min(1, i / f, (n - 1 - i) / f); return y; };
   function jouer(parties, mode) { const c = ctx(); if (c.state === "suspended") c.resume(); const gap = Math.round(0.18 * SR), total = mode === "accord" ? parties[0].length : parties.reduce((s, p) => s + p.length + gap, 0), buf = c.createBuffer(1, total, SR), d = buf.getChannelData(0);
     if (mode === "accord") parties.forEach(p => { for (let i = 0; i < p.length; i++) d[i] += p[i] * 0.7; }); else { let o = 0; for (const p of parties) { d.set(p, o); o += p.length + gap; } }
-    const src = c.createBufferSource(); src.buffer = buf; src.connect(c.destination); src.start(); }
+    const src = c.createBufferSource(); src.buffer = buf; src.connect(c.destination); src.start(); return buf.duration; }
   const jouerIntervalle = (cents, mode) => jouer([rendre(0), rendre(cents)], mode);
   $("m-timbre").onchange = ev => { mi.timbre = ev.target.value; $("m-desc").textContent = TIMBRES[mi.timbre].desc; };
   $("m-base").onchange = ev => { mi.base = +ev.target.value; };
   $("m-table").onclick = ev => { const b = ev.target.closest("button[data-lecture]"); if (!b) return; jouerIntervalle(nom(b.dataset.lecture.split(".").map(Number))[1], b.dataset.mode); };
   const modele = () => { const [i, j] = $("e-modele").value.split(".").map(Number); return nom([i, j]); };
   function tirer() {
-    const [nm, c] = modele(); mi.modele = c; mi.variantes = tirerVariantes(c, 5, 10); mi.rangs = {}; $("e-res").innerHTML = ""; $("e-verif").disabled = true;
+    const [nm, c] = modele(); mi.modele = c; mi.entendues = new Set(); mi.variantes = tirerVariantes(c, 5, 10); mi.rangs = {}; $("e-res").innerHTML = ""; $("e-verif").disabled = true;
     $("e-zone").innerHTML = mi.variantes.map((v, k) => `<div class="e-version"><button type="button" class="e-v" data-k="${k}" aria-label="Écouter la version ${"ABCDE"[k]}">Version ${"ABCDE"[k]}</button><label>Rang <select class="e-rang" data-k="${k}"><option value="">?</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">${r}${r === 1 ? " (le plus bas)" : r === 5 ? " (le plus haut)" : ""}</option>`).join("")}</select></label></div>`).join("");
-    $("e-zone").querySelectorAll(".e-v").forEach(b => b.onclick = () => { const v = mi.variantes[+b.dataset.k]; jouerIntervalle(v.cents, "suite"); });
+    $("e-zone").querySelectorAll(".e-v").forEach(b => b.onclick = () => { const k = +b.dataset.k, v = mi.variantes[k], lot = mi.variantes, d = jouerIntervalle(v.cents, "suite"); setTimeout(() => { if (mi.variantes === lot) mi.entendues.add(k); }, d * 1000); }); // entendue : seulement une fois le son fini
     $("e-zone").querySelectorAll(".e-rang").forEach(s => s.onchange = () => { mi.rangs[s.dataset.k] = s.value ? +s.value : null; const vals = Object.values(mi.rangs).filter(Boolean); $("e-verif").disabled = !(vals.length === 5 && new Set(vals).size === 5); });
   }
   $("e-nouveau").onclick = tirer; tirer(); $("e-modele").onchange = tirer;
@@ -333,7 +335,7 @@ function ficheMicro(exp) {
     const ordre = ordreJuste(mi.variantes), vrai = {}; ordre.forEach((k, pos) => { vrai[k] = pos + 1; });
     const justes = mi.variantes.filter(v => mi.rangs[v.rang] === vrai[v.rang]).length;
     $("e-res").innerHTML = `<table class="mesures"><thead><tr><th>Version</th><th>Écart réel à la valeur théorique</th><th>Ton rang</th><th>Rang juste</th></tr></thead><tbody>${mi.variantes.map(v => `<tr><td>${"ABCDE"[v.rang]}</td><td class="n">${fc(v.ecart)} cents</td><td class="n">${mi.rangs[v.rang]}</td><td class="n">${vrai[v.rang]} ${mi.rangs[v.rang] === vrai[v.rang] ? "✓" : ""}</td></tr>`).join("")}</tbody></table><p>${justes} versions sur 5 bien placées. Les versions voisines diffèrent d'au moins 1,5 cent ; sous 5 cents d'écart, beaucoup d'auditeurs hésitent. Recommence avec un autre timbre pour comparer.</p>`;
-    points("science:microtonalite", 10, "sonora"); etat.microResultat = { justes, ecarts: mi.variantes.map(v => v.ecart), rangs: { ...mi.rangs } };
+    if (mi.entendues.size === 5) points("science:microtonalite", 10, "sonora"); else $("e-res").insertAdjacentHTML("beforeend", `<p class="petit">Pas de points cette fois : il faut écouter les cinq versions jusqu'au bout avant de vérifier.</p>`); etat.microResultat = { justes, ecarts: mi.variantes.map(v => v.ecart), rangs: { ...mi.rangs } };
   };
 }
 // ---------------------------------------------------------------- démarrage

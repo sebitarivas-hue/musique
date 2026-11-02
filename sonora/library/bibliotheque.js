@@ -1,16 +1,16 @@
 // SONORA Library : catalogue d'instruments et d'effets, recherche, écoute, mesure, ouverture dans le Studio, enregistrement dans les projets.
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=2d1e4af40a";
-import { MODULES } from "../src/index.js?v=2d1e4af40a";
-import { Editeur } from "../studio/editeur.js?v=2d1e4af40a";
-import { Projets } from "../studio/projets.js?v=2d1e4af40a";
-import { encoder } from "../studio/partage.js?v=2d1e4af40a";
-import { ENTREES } from "./catalogue.js?v=2d1e4af40a";
-import { profil, modulesEmployes, accordDeTest, bruitDeTest, melodieDeTest, sourceDe } from "./profil.js?v=2d1e4af40a";
-import { trouver } from "./recherche.js?v=2d1e4af40a";
-import { preparer } from "../science/executeur.js?v=2d1e4af40a";
-import { heros, etatBouton } from "../studio/heros.js?v=2d1e4af40a";
-import { dessinerOscillo } from "../studio/visuels.js?v=2d1e4af40a";
-import { lireProposition, lireClasse, construireClasse, sérialiser, valider, FORMAT_CLASSE, LIMITES } from "./classe.js?v=2d1e4af40a";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=80d7d75486";
+import { MODULES } from "../src/index.js?v=80d7d75486";
+import { Editeur } from "../studio/editeur.js?v=80d7d75486";
+import { Projets } from "../studio/projets.js?v=80d7d75486";
+import { encoder } from "../studio/partage.js?v=80d7d75486";
+import { ENTREES } from "./catalogue.js?v=80d7d75486";
+import { profil, modulesEmployes, accordDeTest, bruitDeTest, melodieDeTest, sourceDe } from "./profil.js?v=80d7d75486";
+import { trouver } from "./recherche.js?v=80d7d75486";
+import { preparer } from "../science/executeur.js?v=80d7d75486";
+import { heros, etatBouton } from "../studio/heros.js?v=80d7d75486";
+import { dessinerOscillo } from "../studio/visuels.js?v=80d7d75486";
+import { lireProposition, lireClasse, construireClasse, sérialiser, valider, FORMAT_CLASSE, LIMITES } from "./classe.js?v=80d7d75486";
 
 const TOUS = [...ENTREES];
 const $ = id => document.getElementById(id);
@@ -76,12 +76,12 @@ async function ecouter(e, bouton, msg) {
     if (!etat.moteur) etat.moteur = new Moteur().on("analyse", a => { etat.tampon = a.tampon; }); await etat.moteur.demarrer(); etat.moteur.activerAnalyse(true); await etat.moteur.charger(module);
     if (module.voix) etat.moteur.accord([[48, 220, 0.8], [49, 277.18, 0.8], [50, 329.63, 0.8]]);
     if (module.entrees.some(x => x.genre === "audio")) brancherSource(e);
-    etat.marche = true; etat.bouton = bouton; etatBouton(bouton, true); badge("en écoute", "marche"); if (e.id) points("library:" + e.id, 2, "sonora");
+    etat.marche = true; etat.bouton = bouton; etatBouton(bouton, true); badge("en écoute", "marche"); if (e.id) { const jeton = etat.jetonEcoute = (etat.jetonEcoute || 0) + 1; setTimeout(() => { if (etat.marche && etat.jetonEcoute === jeton) (etat.ecoutees = etat.ecoutees || new Set()).add(e.id); }, 8000); } // écouté 8 s sans interruption
   } catch (er) { msg.textContent = er instanceof ErreurMoteur ? er.message : String(er && er.message || er); badge("erreur", "erreur"); }
 }
 async function arreter() {
   if (etat.source) { try { etat.source.stop(); etat.source.disconnect(); } catch (_) {} etat.source = null; }
-  if (etat.moteur && etat.marche) await etat.moteur.arreter(); etat.marche = false; if (etat.bouton) etatBouton(etat.bouton, false); badge("prêt");
+  etat.jetonEcoute = (etat.jetonEcoute || 0) + 1; if (etat.moteur && etat.marche) await etat.moteur.arreter(); etat.marche = false; if (etat.bouton) etatBouton(etat.bouton, false); badge("prêt");
 }
 function versStudio(source, titre, exemple) {
   try { localStorage.setItem("sonora:brouillon", JSON.stringify({ source, titre, exemple, projet: null })); } catch (_) {}
@@ -124,6 +124,7 @@ function ouvrir(id) {
   <h2>Ce que mesure le son produit</h2><div id="profil"><p class="petit">Calcul sur le signal rendu…</p></div>`;
   const ed = new Editeur($("zone-code"), {}); ed.valeur = e.code; ed.ta.readOnly = true; ed.ta.setAttribute("aria-label", "Code de " + e.titre + ", en lecture seule");
   $("b-ecouter").onclick = () => ecouter(e, $("b-ecouter"), $("msg"));
+  if (etat.arretLecture) etat.arretLecture(); etat.arretLecture = window.COURS_POINTS ? window.COURS_POINTS.lecture($("fiche"), "library:" + e.id, 2, "sonora", { condition: () => !!(etat.ecoutees && etat.ecoutees.has(e.id)) }) : null; // points : écouté 8 s et fiche lue jusqu'au bout
   if ($("src-essai")) $("src-essai").onchange = ev => { (etat.sources = etat.sources || {})[e.id] = ev.target.value; if (etat.marche && etat.moteur) brancherSource(e); const p = profil(e.code, { source: ev.target.value, transpose: e.transpose || 1 }); etat.profil = p; $("profil").innerHTML = p.ok ? tableProfil(p, e) : `<p class="bilan non">${esc(p.erreur)}</p>`; };
   $("b-studio").onclick = () => versStudio(e.code, e.titre, e.origine === "Studio" ? e.id : null);
   $("b-enreg").onclick = () => { const p = Projets.enregistrer({ titre: e.titre, source: e.code, reglages: {} }); $("msg").textContent = p ? `Enregistré dans tes projets sous « ${e.titre} ». Tu le retrouveras dans le Studio et dans l'onglet Mes projets.` : "Le navigateur refuse d'enregistrer (stockage plein ou bloqué)."; etat.dernierProjet = p && p.id; };

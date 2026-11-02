@@ -1,11 +1,12 @@
 // Création avancée du Studio : export WAV, partage par lien, clavier MIDI, séquenceur. Branche les modules purs (wav, partage, midi, sequence) sur la page.
-import { encoderWAV } from "./wav.js?v=2d1e4af40a";
-import { encoder, decoder, motif as MOTIF_LIEN } from "./partage.js?v=2d1e4af40a";
-import { Clavier, brancher } from "./midi.js?v=2d1e4af40a";
-import { euclide, arpege, motifDepuis, planDeNotes, Sequenceur } from "./sequence.js?v=2d1e4af40a";
-import { rendre } from "../src/rendu.js?v=2d1e4af40a";
-import { compiler } from "../src/index.js?v=2d1e4af40a";
-import { creerProposition, slug } from "../library/classe.js?v=2d1e4af40a";
+import { encoderWAV } from "./wav.js?v=80d7d75486";
+import { Stockage as RangementPistes } from "../pistes/stockage.js?v=80d7d75486";
+import { encoder, decoder, motif as MOTIF_LIEN } from "./partage.js?v=80d7d75486";
+import { Clavier, brancher } from "./midi.js?v=80d7d75486";
+import { euclide, arpege, motifDepuis, planDeNotes, Sequenceur } from "./sequence.js?v=80d7d75486";
+import { rendre } from "../src/rendu.js?v=80d7d75486";
+import { compiler } from "../src/index.js?v=80d7d75486";
+import { creerProposition, slug } from "../library/classe.js?v=80d7d75486";
 
 const GAMMES = { penta: [60, 62, 64, 67, 69, 72, 74, 76], mineur: [57, 59, 60, 62, 64, 65, 67, 69], accord: [48, 55, 59, 64, 67, 71, 76], chromatique: [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71] };
 const SR_EXPORT = 44100;
@@ -43,6 +44,19 @@ export function installerCreation({ etat, $, journal, esc, executer, titreCouran
     } catch (e) { zone.textContent = e.message; journal("err", esc(e.message)); }
   }
   $("b-wav").onclick = () => { const d = Math.max(1, Math.min(60, +lire("wav-duree") || 4)); exporter(d); };
+  // Envoyer vers Pistes (étape 5 de l'audit de navigation) : le même calcul que l'export WAV, déposé dans le rangement local de Pistes
+  // avec une liste d'arrivée (clé « pistes:arrivees ») ; Pistes le place sur une piste libre à l'ouverture. Rien ne quitte l'appareil.
+  $("b-vers-pistes").onclick = async () => {
+    const zone = $("export-etat"), duree = Math.max(1, Math.min(60, +lire("wav-duree") || 4));
+    try {
+      const { sortie } = rendreExport({ duree }), id = "arrivee-" + Date.now().toString(36), nom = titreCourant() || "Son du Studio";
+      await RangementPistes.ecrireSon(id, { canaux: sortie.canaux.slice(0, 2), sr: SR_EXPORT });
+      let L = []; try { L = JSON.parse(localStorage.getItem("pistes:arrivees") || "[]"); } catch (_) {}
+      L.push({ id, nom, duree }); localStorage.setItem("pistes:arrivees", JSON.stringify(L));
+      zone.textContent = `« ${nom} » (${duree} s) est envoyé vers Pistes.`; journal("ok", esc(zone.textContent)); etat.envoiPistes = { id, nom, duree };
+      location.href = "../pistes/index.html";
+    } catch (e) { zone.textContent = "L'envoi vers Pistes n'a pas pu se faire : " + e.message; journal("err", esc(zone.textContent)); }
+  };
 
   // ---------------------------------------------------------------- partage
   async function lienPartage() { return location.origin + location.pathname + "#p=" + await encoder({ source: ed.valeur, titre: titreCourant() }); }
