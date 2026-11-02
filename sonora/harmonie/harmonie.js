@@ -1,18 +1,19 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=5a3dc26c82";
-import { rendreSuite, evenementsProgression, INSTRUMENTS } from "./son.js?v=5a3dc26c82";
-import { heros, etatBouton } from "../studio/heros.js?v=5a3dc26c82";
-import { encoderWAV } from "../studio/wav.js?v=5a3dc26c82";
-import { dessinerOscillo } from "../studio/visuels.js?v=5a3dc26c82";
-import * as P from "../pistes/projet.js?v=5a3dc26c82";
-import { Stockage } from "../pistes/stockage.js?v=5a3dc26c82";
-import * as A from "./accords.js?v=5a3dc26c82";
-import * as V from "./voicings.js?v=5a3dc26c82";
-import * as G from "./grille.js?v=5a3dc26c82";
-import { partitionSVG } from "./partition.js?v=5a3dc26c82";
+import * as H from "./theorie.js?v=2d1e4af40a";
+import { rendreSuite, evenementsProgression, INSTRUMENTS } from "./son.js?v=2d1e4af40a";
+import { heros, etatBouton } from "../studio/heros.js?v=2d1e4af40a";
+import { encoderWAV } from "../studio/wav.js?v=2d1e4af40a";
+import { dessinerOscillo } from "../studio/visuels.js?v=2d1e4af40a";
+import * as P from "../pistes/projet.js?v=2d1e4af40a";
+import { Stockage } from "../pistes/stockage.js?v=2d1e4af40a";
+import * as A from "./accords.js?v=2d1e4af40a";
+import * as V from "./voicings.js?v=2d1e4af40a";
+import * as G from "./grille.js?v=2d1e4af40a";
+import { partitionSVG } from "./partition.js?v=2d1e4af40a";
 
 const $ = id => document.getElementById(id);
+const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const SR = 44100;
 const etat = { vue: "explorer", ctx: null, source: null, analyseur: null, tonique: 0, mode: "ionien", sons: 3, prog: H.PROGRESSIONS[0].id, tonP: 0, tempo: 90, style: "plaque", instrument: "piano", lecture: false, compo: [], tonC: 0, modeC: "ionien", jeu: null, grille: [], dispo: "choral", pulse: "aucune", sel: -1, vivant: null, fond: null, dernier: [] };
@@ -164,7 +165,7 @@ function repondre(rep) {
   const j = etat.jeu; if (j.repondu) return; const q = j.question, juste = rep === q.bonne; j.repondu = true; j.reponse = rep;
   if (juste) { j.score++; j.serie++; } else j.serie = 0;
   j.retour = (juste ? "Juste. " : `Non : c'était ${libelle(q.genre, q.bonne)}. `) + (q.genre === "accord" ? `Un accord ${q.bonne} : ${EXPLIC[q.bonne]}.` : q.genre === "cadence" ? `En ${q.tonique} : ${q.accords.map(a => a.nom).join(", ")}.` : H.MODES[q.bonne].texte);
-  if (j.n >= 10) { const k = `record:${j.genre}:${j.niveau}`; if (j.score > lire(k, 0)) garder(k, j.score); j.retour += ` Partie finie : ${j.score} sur 10.`; }
+  if (j.n >= 10) { points(`harmonie:partie:${j.genre}:${j.niveau}`, 3, "sonora"); if (j.score >= 7) points(`harmonie:7sur10:${j.genre}:${j.niveau}`, 10, "sonora"); const k = `record:${j.genre}:${j.niveau}`; if (j.score > lire(k, 0)) garder(k, j.score); j.retour += ` Partie finie : ${j.score} sur 10.`; }
   etat.journalJeu = (etat.journalJeu || []).concat([{ bonne: q.bonne, rep, juste }]); vueJeu();
 }
 function marquer() { const j = etat.jeu; document.querySelectorAll("#choix-jeu [data-rep]").forEach(b => { b.disabled = true; if (b.dataset.rep === j.question.bonne) b.classList.add("juste"); else if (b.dataset.rep === j.reponse) b.classList.add("faux"); }); }

@@ -101,7 +101,7 @@ body[data-mode="decouverte"] #bas .console { display: none; } body[data-mode="de
 .scene-etiq { font: 500 .75rem var(--f-mono); letter-spacing: .12em; text-transform: uppercase; margin: 0; background: var(--noir); color: var(--acide); padding: 3px 9px; }
 .scene h2 { font: 400 clamp(1.6rem, 3.2vw, 2.4rem)/1.1 var(--f-display); margin: 0; max-width: 22ch; }
 .scene p { margin: 0; max-width: 52ch; } .scene-aide { font-size: .9rem; color: var(--gris); }
-.scene-jouer { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 156px; height: 156px; border-radius: 50%; border: 4px solid var(--noir); background: var(--acide); font: 700 1.05rem var(--f-body); box-shadow: 6px 6px 0 var(--noir); cursor: pointer; transition: transform .12s, box-shadow .12s; }
+.scene-jouer { flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 156px; height: 156px; border-radius: 50%; border: 4px solid var(--noir); background: var(--acide); font: 700 1.05rem var(--f-body); box-shadow: 6px 6px 0 var(--noir); cursor: pointer; transition: transform .12s, box-shadow .12s; }
 .scene-jouer:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--noir); background: var(--acide) !important; } .scene-jouer:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0 var(--noir); }
 .scene-jouer .scene-icone { font-size: 2.6rem; line-height: 1; } .scene-jouer[aria-pressed="true"] { background: var(--noir); color: var(--acide); } .scene-jouer[aria-pressed="true"]:hover { background: var(--noir) !important; }
 .scene-onde { width: min(520px, 100%); height: 90px; display: block; }

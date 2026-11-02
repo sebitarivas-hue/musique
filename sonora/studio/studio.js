@@ -1,17 +1,18 @@
 // SONORA Studio : l'interface de programmation. Elle ne calcule aucun son : elle compile (Worker), envoie au moteur (AudioWorklet),
 // et affiche ce que le moteur renvoie.
-import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=5a3dc26c82";
-import { compiler, MODULES, MATHS } from "../src/index.js?v=5a3dc26c82";
-import { MOTS } from "../src/lexeur.js?v=5a3dc26c82";
-import { Editeur, inserer } from "./editeur.js?v=5a3dc26c82";
-import { formater, vers, depuis } from "./reglages-commun.js?v=5a3dc26c82";
-import { EXEMPLES } from "./exemples.js?v=5a3dc26c82";
-import { Projets } from "./projets.js?v=5a3dc26c82";
-import { installerCreation } from "./creation.js?v=5a3dc26c82";
-import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=5a3dc26c82";
-import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=5a3dc26c82";
+import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=2d1e4af40a";
+import { compiler, MODULES, MATHS } from "../src/index.js?v=2d1e4af40a";
+import { MOTS } from "../src/lexeur.js?v=2d1e4af40a";
+import { Editeur, inserer } from "./editeur.js?v=2d1e4af40a";
+import { formater, vers, depuis } from "./reglages-commun.js?v=2d1e4af40a";
+import { EXEMPLES } from "./exemples.js?v=2d1e4af40a";
+import { Projets } from "./projets.js?v=2d1e4af40a";
+import { installerCreation } from "./creation.js?v=2d1e4af40a";
+import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=2d1e4af40a";
+import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=2d1e4af40a";
 
 const $ = id => document.getElementById(id);
+const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const etat = { module: null, moteur: null, marche: false, valeurs: {}, projet: { id: null, titre: "Sans titre" }, tampon: null, sr: 44100, automatisation: null, touches: new Map(), source: null, exempleId: null };
 window.STUDIO = etat; // lu par les tests
@@ -221,7 +222,7 @@ async function executer() {
     }
     await etat.moteur.demarrer(); etat.moteur.activerAnalyse(true);
     const m = await compilerPuis(true); if (!m) return;
-    etat.marche = true; majBoutonScene(); await chargerDansMoteur(m);
+    etat.marche = true; majBoutonScene(); await chargerDansMoteur(m); points("studio:son", 5, "sonora");
     $("b-arreter").disabled = false; etatBadge("en marche", "marche");
     journal("info", `Son à ${etat.moteur.sampleRate} Hz, latence estimée ${(etat.moteur.latence * 1000).toFixed(0)} ms.`);
   } catch (e) { journal("err", esc(e instanceof ErreurMoteur ? e.message : String(e && e.message || e))); etatBadge("erreur", "erreur"); }

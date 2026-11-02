@@ -1,11 +1,11 @@
 // SONORA Academy : leçons, exercices corrigés sur le son produit. La progression reste dans le navigateur (aucun compte, rien n'est envoyé).
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=5a3dc26c82";
-import { Editeur } from "../studio/editeur.js?v=5a3dc26c82";
-import { UNITES, LECONS, parId } from "./parcours.js?v=5a3dc26c82";
-import { verifier } from "./correcteur.js?v=5a3dc26c82";
-import { preparer } from "../science/executeur.js?v=5a3dc26c82";
-import { heros, etatBouton } from "../studio/heros.js?v=5a3dc26c82";
-import { dessinerOscillo } from "../studio/visuels.js?v=5a3dc26c82";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=2d1e4af40a";
+import { Editeur } from "../studio/editeur.js?v=2d1e4af40a";
+import { UNITES, LECONS, parId } from "./parcours.js?v=2d1e4af40a";
+import { verifier } from "./correcteur.js?v=2d1e4af40a";
+import { preparer } from "../science/executeur.js?v=2d1e4af40a";
+import { heros, etatBouton } from "../studio/heros.js?v=2d1e4af40a";
+import { dessinerOscillo } from "../studio/visuels.js?v=2d1e4af40a";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -17,6 +17,7 @@ const etat = { lecon: null, moteur: null, marche: false, ed: null, essais: 0, de
 window.ACADEMIE = etat;
 const badge = (t, c = "") => { const e = $("etat"); e.textContent = t; e.className = "etat " + c; };
 
+const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 function progression() { const p = lire(); const n = LECONS.filter(l => p[l.id] && p[l.id].reussi).length; $("progres").textContent = `${n} leçon${n > 1 ? "s" : ""} réussie${n > 1 ? "s" : ""} sur ${LECONS.length}`; return p; }
 function liste() {
   const p = progression(), z = $("nav-exp"); z.innerHTML = "";
@@ -85,7 +86,7 @@ function corriger(l) {
       const bons = r.resultats.filter(x => x.ok).length;
       z.innerHTML = `<ul class="criteres">${r.resultats.map(x => `<li class="${x.ok ? "ok" : "non"}"><span aria-hidden="true">${x.ok ? "✓" : "✗"}</span><span>${esc(x.texte)}<span class="sr-seul">${x.ok ? " : réussi" : " : à corriger"}</span></span><span class="detail">${esc(x.detail)}</span></li>`).join("")}</ul>
       <p class="verdict-global ${r.reussi ? "ok" : "non"}" id="verdict">${r.reussi ? "Exercice réussi." : `${bons} critère${bons > 1 ? "s" : ""} sur ${r.resultats.length}.`}</p><p class="petit">Mesuré en ${(performance.now() - t0).toFixed(0)} ms sur 4 s de signal.</p>`;
-      if (r.reussi) { const p = lire(); p[l.id] = { reussi: true, essais: (p[l.id]?.essais || 0) + etat.essais, date: Date.now() }; ecrire(p); liste(); document.querySelectorAll("#nav-exp button").forEach(b => b.setAttribute("aria-current", String(b.dataset.id === l.id))); }
+      if (r.reussi) { points("academy:" + l.id, 10, "sonora"); const p = lire(); p[l.id] = { reussi: true, essais: (p[l.id]?.essais || 0) + etat.essais, date: Date.now() }; ecrire(p); liste(); document.querySelectorAll("#nav-exp button").forEach(b => b.setAttribute("aria-current", String(b.dataset.id === l.id))); }
     }
     badge("prêt");
   }, 30);

@@ -1,7 +1,7 @@
 // Correcteur des exercices de l'Academy. Sans DOM : compile le programme de l'élève, le rend hors ligne, mesure le signal, et juge chaque critère.
 // Un critère est jugé sur le son produit, pas sur la forme du code (sauf les critères de type « source »). Deux écritures différentes qui donnent le même son passent toutes les deux.
-import { preparer, mesurerLibre, valeursDefaut } from "../science/executeur.js?v=5a3dc26c82";
-import * as A from "../science/analyse.js?v=5a3dc26c82";
+import { preparer, mesurerLibre, valeursDefaut } from "../science/executeur.js?v=2d1e4af40a";
+import * as A from "../science/analyse.js?v=2d1e4af40a";
 
 const dB = A.versDB;
 const f1 = (x, d = 1) => (Math.round(x * 10 ** d) / 10 ** d).toString().replace(".", ",");

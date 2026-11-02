@@ -39,4 +39,30 @@
 @media (max-width:700px){.barre-cours .bc-rub{margin-left:0}.barre-cours .bc-pre{display:none}.barre-cours .bc-retour{max-width:46vw}}`;
   document.head.appendChild(css); document.body.insertBefore(nav, document.body.firstChild);
   window.BARRE_COURS = { retour: retourU, cours: coursU, espace, xp };
+
+  // Points : les mêmes que ceux du site du cours (clé « jeu » du navigateur, même règle : des points une seule fois par action).
+  // Seul l'espace élève en gagne, comme sur le site. Les badges sont recalculés par le site au prochain point gagné là-bas.
+  // Barème des outils (le site donne 5 à 20 points par action) :
+  //   Atlas : 1 par fiche lue, 3 par mode d'exploration ouvert la première fois, 5 par parcours ouvert ;
+  //   SONORA : Academy 10 par exercice réussi ; Science 5 par expérience mesurée, 10 par mesure à l'écoute terminée, 3 pour le générateur ;
+  //   Library 2 par instrument écouté ; Studio 5 au premier son ; Pistes 3 au premier son ajouté, 10 au premier enregistrement, 10 au premier export, 3 par effet ;
+  //   Harmonie 3 par partie finie (une fois par jeu et niveau), 10 pour 7 bonnes réponses sur 10 ou plus (une fois par jeu et niveau).
+  let toastT = 0;
+  function annoncer(x) {
+    let t = document.getElementById("bc-toast");
+    if (!t) { t = document.createElement("div"); t.id = "bc-toast"; t.setAttribute("role", "status"); t.setAttribute("aria-live", "polite"); t.style.cssText = "position:fixed;right:14px;bottom:14px;z-index:9999;background:#D6FF00;color:#11110F;border:2px solid #11110F;font:700 14px monospace;padding:8px 12px;box-shadow:4px 4px 0 #11110F;transition:opacity .3s"; document.body.appendChild(t); }
+    t.textContent = `+${x} XP`; t.style.opacity = "1"; clearTimeout(toastT); toastT = setTimeout(() => { t.style.opacity = "0"; }, 1600);
+  }
+  function gagner(cle, points, compteur) {
+    if (espace !== "eleves") return false;
+    const j = Object.assign({ xp: 0, faits: {}, badges: {}, c: {}, pays: {}, jours: [], serie: 0 }, lire(localStorage, "jeu") || {}); j.faits = j.faits || {}; j.c = j.c || {};
+    if (cle && j.faits[cle]) return false;
+    if (cle) j.faits[cle] = 1; if (compteur) j.c[compteur] = (j.c[compteur] || 0) + 1; j.xp = (j.xp || 0) + (points || 0);
+    try { localStorage.setItem("jeu", JSON.stringify(j)); } catch (_) { return false; }
+    const puce = nav.querySelector(".bc-xp"); if (puce) puce.textContent = j.xp + " XP"; else { const mp = [...nav.querySelectorAll("a")].find(a => /Mon parcours/.test(a.textContent)); if (mp) mp.insertAdjacentHTML("beforeend", ` <span class="bc-xp">${j.xp} XP</span>`); }
+    window.BARRE_COURS.xp = j.xp; if (points) annoncer(points); return true;
+  }
+  window.COURS_POINTS = { gagner };
+  // les points demandés avant le chargement de ce fichier (l'Atlas rend sa première page avant)
+  (window.__pointsEnAttente || []).forEach(a => gagner(...a)); window.__pointsEnAttente = [];
 })();

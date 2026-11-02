@@ -4189,6 +4189,8 @@ function jeu() {
   return PARC;
 }
 const sauverJeu = () => { try { localStorage.setItem("jeu", JSON.stringify(PARC)); } catch (_) {} };
+/* SONORA et l'Atlas ajoutent aussi des points (sonora/barre-cours.js) : si un autre onglet les change, on relit au lieu d'écraser. */
+window.addEventListener("storage", e => { if (e.key === "jeu") PARC = null; });
 const jeuActif = () => role() === "eleve";
 const niveauDe = xp => { let n = 0; NIVEAUX_JEU.forEach((x, i) => { if (xp >= x[0]) n = i; }); return n; };
 /* Gagner des points une seule fois par action (cle), et faire avancer un compteur. */

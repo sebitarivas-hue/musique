@@ -1,16 +1,16 @@
 // SONORA Library : catalogue d'instruments et d'effets, recherche, écoute, mesure, ouverture dans le Studio, enregistrement dans les projets.
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=5a3dc26c82";
-import { MODULES } from "../src/index.js?v=5a3dc26c82";
-import { Editeur } from "../studio/editeur.js?v=5a3dc26c82";
-import { Projets } from "../studio/projets.js?v=5a3dc26c82";
-import { encoder } from "../studio/partage.js?v=5a3dc26c82";
-import { ENTREES } from "./catalogue.js?v=5a3dc26c82";
-import { profil, modulesEmployes, accordDeTest, bruitDeTest, melodieDeTest, sourceDe } from "./profil.js?v=5a3dc26c82";
-import { trouver } from "./recherche.js?v=5a3dc26c82";
-import { preparer } from "../science/executeur.js?v=5a3dc26c82";
-import { heros, etatBouton } from "../studio/heros.js?v=5a3dc26c82";
-import { dessinerOscillo } from "../studio/visuels.js?v=5a3dc26c82";
-import { lireProposition, lireClasse, construireClasse, sérialiser, valider, FORMAT_CLASSE, LIMITES } from "./classe.js?v=5a3dc26c82";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=2d1e4af40a";
+import { MODULES } from "../src/index.js?v=2d1e4af40a";
+import { Editeur } from "../studio/editeur.js?v=2d1e4af40a";
+import { Projets } from "../studio/projets.js?v=2d1e4af40a";
+import { encoder } from "../studio/partage.js?v=2d1e4af40a";
+import { ENTREES } from "./catalogue.js?v=2d1e4af40a";
+import { profil, modulesEmployes, accordDeTest, bruitDeTest, melodieDeTest, sourceDe } from "./profil.js?v=2d1e4af40a";
+import { trouver } from "./recherche.js?v=2d1e4af40a";
+import { preparer } from "../science/executeur.js?v=2d1e4af40a";
+import { heros, etatBouton } from "../studio/heros.js?v=2d1e4af40a";
+import { dessinerOscillo } from "../studio/visuels.js?v=2d1e4af40a";
+import { lireProposition, lireClasse, construireClasse, sérialiser, valider, FORMAT_CLASSE, LIMITES } from "./classe.js?v=2d1e4af40a";
 
 const TOUS = [...ENTREES];
 const $ = id => document.getElementById(id);
@@ -66,6 +66,7 @@ function ficheProjet(id) {
 }
 
 // ---------------------------------------------------------------- écoute
+const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 async function ecouter(e, bouton, msg) {
   if (etat.marche) return arreter();
   let module; try { module = preparer(e.code); } catch (er) { msg.textContent = "Ce programme ne se compile pas : " + String(er.message).split(" | ")[0]; return; }
@@ -75,7 +76,7 @@ async function ecouter(e, bouton, msg) {
     if (!etat.moteur) etat.moteur = new Moteur().on("analyse", a => { etat.tampon = a.tampon; }); await etat.moteur.demarrer(); etat.moteur.activerAnalyse(true); await etat.moteur.charger(module);
     if (module.voix) etat.moteur.accord([[48, 220, 0.8], [49, 277.18, 0.8], [50, 329.63, 0.8]]);
     if (module.entrees.some(x => x.genre === "audio")) brancherSource(e);
-    etat.marche = true; etat.bouton = bouton; etatBouton(bouton, true); badge("en écoute", "marche");
+    etat.marche = true; etat.bouton = bouton; etatBouton(bouton, true); badge("en écoute", "marche"); if (e.id) points("library:" + e.id, 2, "sonora");
   } catch (er) { msg.textContent = er instanceof ErreurMoteur ? er.message : String(er && er.message || er); badge("erreur", "erreur"); }
 }
 async function arreter() {

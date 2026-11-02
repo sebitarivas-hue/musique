@@ -1,16 +1,17 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=5a3dc26c82";
-import * as Ed from "./editions.js?v=5a3dc26c82";
-import * as P from "./projet.js?v=5a3dc26c82";
-import { Stockage } from "./stockage.js?v=5a3dc26c82";
-import { creerBouton } from "./bouton.js?v=5a3dc26c82";
-import { encoderWAV } from "../studio/wav.js?v=5a3dc26c82";
-import { ENTREES } from "../library/catalogue.js?v=5a3dc26c82";
-import { compiler } from "../src/index.js?v=5a3dc26c82";
-import { rendre } from "../src/rendu.js?v=5a3dc26c82";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=2d1e4af40a";
+import * as Ed from "./editions.js?v=2d1e4af40a";
+import * as P from "./projet.js?v=2d1e4af40a";
+import { Stockage } from "./stockage.js?v=2d1e4af40a";
+import { creerBouton } from "./bouton.js?v=2d1e4af40a";
+import { encoderWAV } from "../studio/wav.js?v=2d1e4af40a";
+import { ENTREES } from "../library/catalogue.js?v=2d1e4af40a";
+import { compiler } from "../src/index.js?v=2d1e4af40a";
+import { rendre } from "../src/rendu.js?v=2d1e4af40a";
 
 const $ = id => document.getElementById(id);
+const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const etat = { projet: null, buffers: {}, ctx: null, lecture: false, enreg: false, tete: 0, debutCtx: 0, debutTete: 0, sources: [], choisi: null, arme: null, pxs: 60, metro: null };
 window.PISTES = etat;
@@ -36,7 +37,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=5a3dc26c82"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=2d1e4af40a"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -173,7 +174,7 @@ async function finirEnregistrement() {
   const lat = voie === "worklet" ? Math.min(0.3, (etat.ctx.baseLatency || 0) + (etat.ctx.outputLatency || 0)) : 0, coupe = Math.round(lat * sr), y = coupe && coupe < n / 2 ? x.slice(coupe) : x;
   const num = Object.values(etat.projet.sons).filter(s => /^Enregistrement/.test(s.nom)).length + 1;
   const id = ajouterAudio(`Enregistrement ${num}`, [y], sr); P.placerClip(etat.projet, P.pisteLibre(etat.projet, c.piste, c.debut, y.length / sr), id, c.debut);
-  message(`Enregistré : ${(y.length / sr).toFixed(1).replace(".", ",")} s sur la piste.${voie === "worklet" ? ` Latence compensée : ${Math.round(lat * 1000)} ms.` : " Ton navigateur a utilisé l'enregistreur de secours : la latence n'est pas compensée, décale le clip à la main si besoin."}`); etat.dernierEnreg = { duree: y.length / sr, latence: lat, voie }; changer();
+  message(`Enregistré : ${(y.length / sr).toFixed(1).replace(".", ",")} s sur la piste.${voie === "worklet" ? ` Latence compensée : ${Math.round(lat * 1000)} ms.` : " Ton navigateur a utilisé l'enregistreur de secours : la latence n'est pas compensée, décale le clip à la main si besoin."}`); etat.dernierEnreg = { duree: y.length / sr, latence: lat, voie }; points("pistes:enreg", 10, "sonora"); changer();
 }
 
 // ---------------------------------------------------------------- historique : annuler et rétablir
@@ -234,7 +235,7 @@ async function importer(fichiers, pisteId, debut) {
     try { const { canaux, sr } = await decoder(f); const id = ajouterAudio(f.name.replace(/\.[^.]+$/, ""), canaux, sr); P.placerClip(etat.projet, P.pisteLibre(etat.projet, pisteId, t, canaux[0].length / sr), id, t); t += canaux[0].length / sr; n++; }
     catch (e) { message(`${f.name} : ce fichier n'est pas un son que le navigateur sait lire.`); }
   }
-  if (n) { message(`${n} son${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""}.`); changer(); }
+  if (n) { message(`${n} son${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""}.`); points("pistes:son", 3, "sonora"); changer(); }
 }
 function sonSonora(idEntree) {
   const e = ENTREES.find(x => x.id === idEntree); if (!e) return;
@@ -244,7 +245,7 @@ function sonSonora(idEntree) {
   if (m.entrees.some(x => x.genre === "audio")) { const x = new Float32Array(n); x[0] = 0.9; x[sr] = 0.9; x[sr * 2] = 0.9; o.entrees = [x]; }
   const sortie = rendre(m, o), pi = P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0];
   const id = ajouterAudio(e.titre, sortie.canaux.slice(0, 2), sr), t0 = P.aimanter(etat.projet, etat.tete, +$("aimant").value); P.placerClip(etat.projet, P.pisteLibre(etat.projet, pi.id, t0, 4), id, t0);
-  message(`« ${e.titre} » ajouté : 4 s rendues par SONORA.`); changer();
+  message(`« ${e.titre} » ajouté : 4 s rendues par SONORA.`); points("pistes:son", 3, "sonora"); changer();
 }
 
 // ---------------------------------------------------------------- affichage
@@ -363,7 +364,7 @@ function afficherEffets() {
     }
     zone.appendChild(art); requestAnimationFrame(() => schemaFx(cv, k, P.effetsDe(pi)));
   }
-  z.querySelector("#fx-ajouter").onchange = ev => { if (P.ajouterEffet(pi, ev.target.value)) { message(`${NOMS_FX[ev.target.value]} ajouté à la piste « ${pi.nom} ».`); changer(); } };
+  z.querySelector("#fx-ajouter").onchange = ev => { if (P.ajouterEffet(pi, ev.target.value)) { points("pistes:effet:" + ev.target.value, 3, "sonora"); message(`${NOMS_FX[ev.target.value]} ajouté à la piste « ${pi.nom} ».`); changer(); } };
   z.querySelector("#fx-fermer").onclick = () => { etat.fx = null; afficher(); };
   z.querySelectorAll("[data-actif]").forEach(x => x.onchange = () => { P.interrupteurEffet(pi, x.dataset.actif, x.checked); changer(); });
   z.querySelectorAll("[data-retirer]").forEach(x => x.onclick = () => { P.retirerEffet(pi, x.dataset.retirer); message(`${NOMS_FX[x.dataset.retirer]} retiré de la piste « ${pi.nom} » (Ctrl+Z pour l'annuler).`); changer(); });
@@ -378,6 +379,7 @@ async function exporter() {
   const chaines = await chainesProjet(ctx, p, ctx.destination); planifier(ctx, p, 0, 0, chaines); const buf = await ctx.startRendering(), canaux = [buf.getChannelData(0), buf.getChannelData(1)];
   const w = encoderWAV(canaux, sr, 16); etat.dernierExport = { octets: w.octets.length, ecretes: w.ecretes, duree };
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([w.octets], { type: "audio/wav" })); a.download = (p.titre || "pistes").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9_-]+/g, "-") + ".wav"; document.body.appendChild(a); a.click(); a.remove();
+  points("pistes:export", 10, "sonora");
   message(`WAV exporté : ${duree.toFixed(1).replace(".", ",")} s, stéréo, 16 bits, calculé en ${Math.round(performance.now() - t0)} ms.${w.ecretes ? ` Attention : ${w.ecretes} échantillons dépassent 0 dB, baisse des volumes.` : ""}`);
 }
 

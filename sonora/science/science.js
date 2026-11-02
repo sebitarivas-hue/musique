@@ -1,18 +1,19 @@
 // SONORA Science : fiches d'expériences. Le programme de chaque fiche est du SONORA ; l'écoute passe par le moteur (AudioWorklet),
 // la mesure par le même noyau rendu hors ligne ; tous les chiffres affichés sont calculés sur ces signaux.
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=5a3dc26c82";
-import { formater, vers, depuis } from "../studio/reglages-commun.js?v=5a3dc26c82";
-import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=5a3dc26c82";
-import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=5a3dc26c82";
-import { EXEMPLES } from "../studio/exemples.js?v=5a3dc26c82";
-import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=5a3dc26c82";
-import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=5a3dc26c82";
-import { Escalier } from "./psychophysique.js?v=5a3dc26c82";
-import { heros, etatBouton } from "../studio/heros.js?v=5a3dc26c82";
-import * as A from "./analyse.js?v=5a3dc26c82";
-import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=5a3dc26c82";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=2d1e4af40a";
+import { formater, vers, depuis } from "../studio/reglages-commun.js?v=2d1e4af40a";
+import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=2d1e4af40a";
+import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=2d1e4af40a";
+import { EXEMPLES } from "../studio/exemples.js?v=2d1e4af40a";
+import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=2d1e4af40a";
+import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=2d1e4af40a";
+import { Escalier } from "./psychophysique.js?v=2d1e4af40a";
+import { heros, etatBouton } from "../studio/heros.js?v=2d1e4af40a";
+import * as A from "./analyse.js?v=2d1e4af40a";
+import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=2d1e4af40a";
 
 const $ = id => document.getElementById(id);
+const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const etat = { exp: null, module: null, valeurs: {}, moteur: null, marche: false, tampon: null, sr: 44100, controles: {} };
 window.SCIENCE = etat;
@@ -124,7 +125,7 @@ function lancerMesure(exp, m) {
   const z = $("resultats"); z.innerHTML = `<p class="petit" id="calcul">Calcul sur le signal produit…</p>`; badge("calcul");
   setTimeout(() => {
     try {
-      const t0 = performance.now(), res = mesurer(exp, m, { ...etat.valeurs }), ms = performance.now() - t0; etat.resultat = res;
+      const t0 = performance.now(), res = mesurer(exp, m, { ...etat.valeurs }), ms = performance.now() - t0; etat.resultat = res; points("science:" + exp.id, 5, "sonora");
       z.innerHTML = bloc("Ce que dit le signal", tableau(res) + `<p class="petit">Mesures faites sur ${exp.duree} s de signal rendu par le noyau SONORA (${ms.toFixed(0)} ms de calcul), avec les réglages ci-dessus.</p>`) +
         bloc("Les mesures en images", `<div class="vues">${(res.vues || []).map(v => `<figure><canvas id="${FIGURES[v][0]}" role="img" aria-label="${esc(FIGURES[v][1])}"></canvas><figcaption>${esc(FIGURES[v][1])}</figcaption></figure>`).join("")}</div>`) +
         bloc("Interprétation", `<p class="interpretation" id="interpretation">${esc(res.interpretation)}</p>`);
@@ -157,7 +158,7 @@ function ficheAnalyseur(exp) {
   $("b-mesurer").onclick = () => {
     if (!module) return; const z = $("resultats"); z.innerHTML = `<p class="petit">Calcul sur le signal produit…</p>`; badge("calcul");
     setTimeout(() => { try {
-      const a = mesurerLibre(module, { ...etat.valeurs }, { secondes: 4 }); etat.resultat = a;
+      const a = mesurerLibre(module, { ...etat.valeurs }, { secondes: 4 }); etat.resultat = a; points("science:analyseur", 5, "sonora");
       const L = (nom, v, u, d) => ({ nom, mesure: v, unite: u, d, info: true });
       const lignes = [L("Fréquence fondamentale", a.f0, "Hz", 1), L("Centroïde spectral (brillance)", a.centroide, "Hz", 0), L("Pics du spectre (les cinq plus forts)", a.pics.slice(0, 5).length, "", 0),
         L("Niveau efficace (RMS)", A.versDB(a.rms), "dB", 1), L("Niveau de crête", A.versDB(a.crete), "dB", 1), L("Facteur de crête (crête / efficace)", A.versDB(a.crete / Math.max(a.rms, 1e-9)), "dB", 1), L("Plage dynamique (entre les 5 % et les 95 % des niveaux de l'enveloppe)", a.plage, "dB", 1), L("Temps de montée de l'enveloppe (10 % à 90 % du maximum)", a.attaque, "ms", 0)];
@@ -200,7 +201,7 @@ function calculerMasquage(exp, m, s) {
     { nom: "Effet de masque : de combien il a fallu monter le son", mesure: effet, unite: "dB", d: 1, info: true }, { nom: "Niveau du son pur mesuré dans le signal, avec le bruit (pic du spectre)", mesure: tonDB, unite: "dB", d: 1, info: true },
     { nom: "Rapport son pur / bruit dans une bande de 132 Hz autour de 1 kHz, à ton seuil", mesure: rsb, unite: "dB", d: 1, info: true }];
   const interp = `Avec le bruit, tu as besoin d'un son pur ${fmt(Math.abs(effet), 1)} dB ${effet >= 0 ? "plus fort" : "plus faible"} que sans le bruit pour l'entendre à peine. À ton seuil, dans la bande de 132 Hz autour de 1 kHz, le son pur est à ${fmt(rsb, 1)} dB du bruit : ${rsb < 0 ? "en dessous du bruit, et tu l'entends encore parce que l'oreille filtre le bruit dans une bande étroite" : "au-dessus du bruit"}. Seule la différence entre tes deux seuils a un sens : les niveaux absolus dépendent du volume de ton appareil. Ce résultat vient d'une seule mesure, faite par une seule personne : refais-la plusieurs fois pour voir sa dispersion.`;
-  etat.resultat = { lignes, interpretation: interp, effet };
+  etat.resultat = { lignes, interpretation: interp, effet }; points("science:masquage", 10, "sonora");
   try { const k = "sonora:science:resultats", l = JSON.parse(localStorage.getItem(k) || "[]"); l.push({ id: exp.id, date: Date.now(), avec: s.avec, sans: s.sans, effet, rsb }); localStorage.setItem(k, JSON.stringify(l.slice(-50))); } catch (_) {}
   $("resultats").innerHTML = bloc("Ton résultat", `<div class="resultat-aud">${tableau({ lignes })}</div>`) + bloc("Interprétation", `<p class="interpretation" id="interpretation">${esc(interp)}</p>`);
 }
@@ -237,7 +238,7 @@ function ficheSeuil(exp) {
     const lignes = [{ nom: "Seuil de discrimination estimé (moyenne géométrique des dernières inversions)", mesure: s, unite: "cents", d: 1, info: true }, { nom: "Écart de fréquence correspondant à 1 kHz", mesure: s === null ? null : 1000 * (Math.pow(2, s / 1200) - 1), unite: "Hz", d: 2, info: true },
       { nom: "Part d'un demi-ton", mesure: s === null ? null : s / 100, unite: "demi-ton", d: 3, info: true }, { nom: "Essais, réponses justes", mesure: tot, unite: `dont ${ok} justes`, d: 0, info: true }, { nom: "Inversions de l'escalier", mesure: esca.inversions.length, unite: "", d: 0, info: true }];
     const interp = s === null ? "L'escalier n'a pas assez d'inversions pour estimer un seuil : refais la mesure en répondant à chaque essai." : `Ton seuil est d'environ ${fmt(s, 1)} cents, soit ${fmt(1000 * (Math.pow(2, s / 1200) - 1), 1)} Hz à 1 kHz et ${fmt(s / 100, 2)} de demi-ton. Procédure : après deux réponses justes de suite l'écart diminue, après une erreur il augmente ; elle converge vers l'écart que tu distingues environ sept fois sur dix. Cette valeur vient de ${tot} essais d'une seule séance : elle varie d'une séance à l'autre et dépend de ton attention, de l'entraînement et de ton matériel. Compare avec d'autres personnes ou avec toi-même après entraînement.`;
-    etat.resultat = { lignes, interpretation: interp, seuil: s };
+    etat.resultat = { lignes, interpretation: interp, seuil: s }; points("science:seuil-hauteur", 10, "sonora");
     try { const k = "sonora:science:resultats", l = JSON.parse(localStorage.getItem(k) || "[]"); l.push({ id: exp.id, date: Date.now(), seuil: s, essais: tot }); localStorage.setItem(k, JSON.stringify(l.slice(-50))); } catch (_) {}
     $("resultats").innerHTML = bloc("Ton résultat", `<div class="resultat-aud">${tableau({ lignes })}</div>`) + bloc("L'escalier", `<div class="vues"><figure><canvas id="fig-escalier" role="img" aria-label="Escalier : écart en cents à chaque essai"></canvas><figcaption>Écart à chaque essai (points verts : réponse juste, rouges : erreur)</figcaption></figure></div>`) + bloc("Interprétation", `<p class="interpretation" id="interpretation">${esc(interp)}</p>`);
     dessinerEscalier($("fig-escalier"), esca.essais, esca.inversions);
@@ -290,7 +291,7 @@ function ficheGenerateur(exp) {
     g.ctx = g.ctx || new (window.AudioContext || window.webkitAudioContext)(); if (g.ctx.state === "suspended") await g.ctx.resume();
     g.osc = g.ctx.createOscillator(); g.osc.type = g.forme; g.osc.frequency.value = g.f; g.gain = g.ctx.createGain(); g.gain.gain.value = 0; g.an = g.ctx.createAnalyser(); g.an.fftSize = 4096;
     g.osc.connect(g.gain); g.gain.connect(g.an); g.an.connect(g.ctx.destination); g.osc.start(); g.gain.gain.setTargetAtTime(g.vol, g.ctx.currentTime, 0.03);
-    g.marche = true; $("g-jouer").textContent = "Arrêter"; badge("son en cours", "ok"); g.raf = requestAnimationFrame(dessiner);
+    g.marche = true; points("science:generateur-sons", 3, "sonora"); $("g-jouer").textContent = "Arrêter"; badge("son en cours", "ok"); g.raf = requestAnimationFrame(dessiner);
   };
   etat.arretGen = () => { if (g.marche) arret(); };
   maj();
@@ -332,7 +333,7 @@ function ficheMicro(exp) {
     const ordre = ordreJuste(mi.variantes), vrai = {}; ordre.forEach((k, pos) => { vrai[k] = pos + 1; });
     const justes = mi.variantes.filter(v => mi.rangs[v.rang] === vrai[v.rang]).length;
     $("e-res").innerHTML = `<table class="mesures"><thead><tr><th>Version</th><th>Écart réel à la valeur théorique</th><th>Ton rang</th><th>Rang juste</th></tr></thead><tbody>${mi.variantes.map(v => `<tr><td>${"ABCDE"[v.rang]}</td><td class="n">${fc(v.ecart)} cents</td><td class="n">${mi.rangs[v.rang]}</td><td class="n">${vrai[v.rang]} ${mi.rangs[v.rang] === vrai[v.rang] ? "✓" : ""}</td></tr>`).join("")}</tbody></table><p>${justes} versions sur 5 bien placées. Les versions voisines diffèrent d'au moins 1,5 cent ; sous 5 cents d'écart, beaucoup d'auditeurs hésitent. Recommence avec un autre timbre pour comparer.</p>`;
-    etat.microResultat = { justes, ecarts: mi.variantes.map(v => v.ecart), rangs: { ...mi.rangs } };
+    points("science:microtonalite", 10, "sonora"); etat.microResultat = { justes, ecarts: mi.variantes.map(v => v.ecart), rangs: { ...mi.rangs } };
   };
 }
 // ---------------------------------------------------------------- démarrage

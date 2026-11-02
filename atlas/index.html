@@ -546,6 +546,9 @@ function rendre() {
   let h = (location.hash || "#").slice(1); try { h = decodeURIComponent(h); } catch (_) {}
   const [r, a] = h.split("/");
   let html, apres = null, onglet = "accueil";
+  /* points du cours (sonora/barre-cours.js, chargé après ce script : on met en attente si besoin) */
+  const points = (...x) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...x) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(x);
+  if (r === "e" && E[a]) points("atlas:e:" + a, 1, "atlas"); else if (r === "p" && a) points("atlas:p:" + a, 5, "atlas"); else if (["arbre", "graphe", "frise", "monde", "ecoute", "techniques"].includes(r)) points("atlas:mode:" + r, 3, "atlas");
   if (r === "e") { html = vueEntree(a); onglet = ""; apres = () => brancherFiche(a); }
   else if (r === "f") { html = vueFamille(a); onglet = ""; }
   else if (r === "arbre") { html = vueArbre(a); onglet = "arbre"; }
