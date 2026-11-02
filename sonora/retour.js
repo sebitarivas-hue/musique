@@ -24,6 +24,9 @@
     const c = e.target;
     if (c && c !== window && (c.tagName === "SCRIPT" || (c.tagName === "LINK" && /stylesheet/i.test(c.rel)))) { bande("fichier non chargé (" + court(c.src || c.href) + ")"); return; }
     const m = String(e.message || ""); if (!m || /ResizeObserver|^Script error\.?$/.test(m)) return;
+    // Erreurs qui ne viennent pas de la page : scripts injectés par le navigateur ou une extension (portefeuille de Brave : « window.ethereum »), évalués avec l'adresse de la page à la ligne 1.
+    const f = String(e.filename || ""), page = location.href.split("#")[0];
+    if (/ethereum|solana|metamask|webkit\.messageHandlers|__firefox__|-extension:/i.test(m + " " + f) || (f && f.split("#")[0] === page && (e.lineno || 0) <= 1)) return;
     bande(m.slice(0, 160) + (e.filename ? " (" + court(e.filename) + (e.lineno ? ":" + e.lineno : "") + ")" : ""));
   }, true);
 })();

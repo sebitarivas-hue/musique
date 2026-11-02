@@ -122,8 +122,9 @@ button.mode { border-style: dashed; } button.mode[aria-pressed="true"] { border-
 .heros { display: flex; min-height: 0; justify-content: flex-start; margin: 0 0 8px; border: 2px solid var(--noir); padding: 22px 16px 18px; }
 .heros h1 { font: 400 clamp(1.6rem, 3.4vw, 2.5rem)/1.08 var(--f-display); margin: 0; max-width: 24ch; letter-spacing: -.01em; }
 .heros .heros-texte { font: 400 1.12rem/1.35 var(--f-body); max-width: 50ch; }
-.jouer-pseudo::before { content: "\25B6"; display: block; font-size: 2.4rem; line-height: 1; margin-bottom: 2px; }
-.jouer-pseudo[aria-pressed="true"]::before { content: "\25A0"; }
+/* Le symbole est dessiné (triangle, carré) et non écrit avec un caractère : sur iPhone, le caractère « ▶ » est remplacé par un emoji bleu hors de la direction artistique (retour du 02/11/2026). */
+.jouer-pseudo::before { content: ""; display: block; width: 0; height: 0; border-style: solid; border-width: 1.15rem 0 1.15rem 1.9rem; border-color: transparent transparent transparent currentColor; margin: 0 0 4px 8px; }
+.jouer-pseudo[aria-pressed="true"]::before { width: 1.8rem; height: 1.8rem; border: 0; background: currentColor; margin: 0 0 4px; }
 @media (max-width: 760px) { .heros { padding: 16px 10px 14px; } }
 
 /* Direction SIGNAL (maquette « Sound as matter ») pour tous les bandeaux : fond noir, titre condensé en deux lignes, vert acide, mono. */
