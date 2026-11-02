@@ -110,6 +110,15 @@ h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-trans
 .carte b { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-transform: uppercase; font-size: 1.35rem; line-height: 1; }
 .carte span { opacity: .85; } .carte .suite { font: 500 .78rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; opacity: 1; }
 @media (max-width: 640px) { .bande, .fiche-tete { margin: 0 -16px 16px; } }
+.mini-etiq { font: 500 .66rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: #4B4A44; margin: 16px 0 0; }
+.graphe-liste { border: 0; border-radius: 0; background: transparent; overflow: visible; max-height: none; padding: 0; }
+.rel-groupe h2 { font: 500 .78rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; margin: 18px 0 6px; } .rel-groupe h2 .petit { margin-left: 6px; }
+.rel { position: relative; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 12px 8px 24px; margin-top: 6px; background: #fff; color: var(--noir); text-decoration: none; border: 2px solid var(--noir); }
+.rel::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: var(--c, var(--noir)); }
+.rel.interp::before { background: repeating-linear-gradient(0deg, var(--c, var(--noir)) 0 6px, transparent 6px 10px); }   /* rayé : interprétation, plein : fait établi */ .rel b { flex: 1; font-weight: 600; } .rel small { font: 500 .64rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: #4B4A44; text-align: right; }
+.rel:hover, .rel:focus-visible { background: var(--acide); outline: none; }
+@media (max-width: 640px) { .departs-liste { flex-wrap: nowrap; overflow-x: auto; margin-right: -16px; padding: 4px 16px 8px 0; gap: 6px; scrollbar-width: thin; } .departs-liste .pastille { flex: 0 0 auto; padding: 6px 10px; font-size: .7rem; border-width: 1.5px; }
+  .legende { gap: 4px; margin-top: 14px; } .legende .pastille { padding: 3px 8px; font-size: .6rem; border-width: 1px; gap: 5px; } }
 .fenetre-ext { position: fixed; inset: 0; z-index: 9999; background: rgba(17,17,15,.72); display: grid; place-items: center; padding: clamp(8px, 3vw, 28px); }
 .fe-boite { width: min(1180px, 100%); height: min(860px, 100%); background: #11110F; color: #F0EFE8; display: flex; flex-direction: column; border: 2px solid #11110F; box-shadow: 10px 10px 0 #D6FF00; }
 .fe-haut { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #11110F; flex-wrap: wrap; }
@@ -288,12 +297,19 @@ function vueArbre(fam) {
 /* ---------- Graphe des influences autour d'une entrée ---------- */
 function vueGraphe(id) {
   const e = E[id] || E["detroit-techno"]; id = e.id;
-  return `<span class="etiq">Graphe des influences</span><h1>${esc(e.name)}</h1><p class="lead">Ce qui l'a nourrie à gauche, ce qu'elle a donné à droite, ses outils en bas, ses croisements en haut. Touche un nom pour recentrer le graphe.</p>
-  <div class="pastilles">${DEPARTS.map(x => `<a class="pastille ${x === id ? "" : "clair"}" ${x === id ? `style="--c:${coul(E[x])}"` : ""} href="#graphe/${x}">${esc(E[x].name)}</a>`).join("")}</div>
+  return `<span class="etiq">Graphe des influences</span><h1>${esc(e.name)}</h1><p class="lead">D'où vient cette musique, ce qu'elle a donné, ses outils, ses croisements. Touche un nom pour recentrer.</p>
+  <p class="mini-etiq">Autres points de départ</p><div class="pastilles departs-liste">${DEPARTS.map(x => `<a class="pastille ${x === id ? "" : "clair"}" ${x === id ? `style="--c:${coul(E[x])}"` : ""} href="#graphe/${x}">${esc(E[x].name)}</a>`).join("")}</div>
   <div class="graphe-wrap" id="gw" role="group" aria-label="Graphe autour de ${esc(e.name)}"></div>
-  <div class="legende">${Object.entries(TNOM).filter(([k]) => k !== "SUBGENRE_OF" || true).map(([k, n]) => `<span class="pastille clair" style="cursor:default"><span style="width:18px;height:4px;background:${TCOUL[k]};display:inline-block;border-radius:2px"></span>${n}</span>`).join("")}<span class="pastille clair" style="cursor:default">trait plein : fait établi, pointillé : interprétation</span></div>
+  <div class="legende">${Object.entries(TNOM).filter(([k]) => k !== "SUBGENRE_OF" || true).map(([k, n]) => `<span class="pastille clair" style="cursor:default"><span style="width:18px;height:4px;background:${TCOUL[k]};display:inline-block;border-radius:2px"></span>${n}</span>`).join("")}<span class="pastille clair" style="cursor:default">${matchMedia("(max-width: 640px)").matches ? "bande pleine : fait établi, bande rayée : interprétation" : "trait plein : fait établi, pointillé : interprétation"}</span></div>
   <p class="pastilles"><a class="pastille" style="--c:#11110F" href="#e/${id}">Ouvrir la fiche</a></p>`;
 }
+/* Sur téléphone, un schéma de 1000 unités réduit à 360 pixels rend les noms illisibles : on présente les mêmes relations en listes, groupées, avec le type et le degré de certitude. */
+function listeGraphe(id, g) {
+  const groupes = [["Sources : d'où vient cette musique", g.gauche, "Aucune source enregistrée pour cette entrée."], ["Prolongements : ce qu'elle a donné", g.droite, "Aucun prolongement enregistré pour cette entrée."], ["Ses outils", g.bas, ""], ["Ses croisements", g.haut, ""]];
+  const gw = $("#gw"); gw.classList.add("graphe-liste");
+  gw.innerHTML = groupes.filter(([, L, vide]) => L.length || vide).map(([t, L, vide]) => `<section class="rel-groupe"><h2>${esc(t)} <span class="petit">${L.length || ""}</span></h2>${L.length ? L.map(([i, r]) => `<a class="rel${r.statut === "etabli" ? "" : " interp"}" style="--c:${TCOUL[r.type]}" href="#graphe/${i}"><b>${esc(E[i].name)}</b><small>${esc(TNOM[r.type] || r.type)}, ${r.statut === "etabli" ? "fait établi" : "interprétation"}</small></a>`).join("") : `<p class="petit">${esc(vide)}</p>`}</section>`).join("");
+}
+if (!window.__grapheMQ) { window.__grapheMQ = matchMedia("(max-width: 640px)"); window.__grapheMQ.addEventListener("change", () => { const m = location.hash.match(/^#graphe\/(.+)$/); if ($("#gw")) { const gw = $("#gw"); gw.classList.remove("graphe-liste"); dessinerGraphe(m ? m[1] : "detroit-techno"); } }); }
 function dessinerGraphe(id) {
   const e = E[id] || E["detroit-techno"]; id = e.id;
   const sor = REL.sort[id], ent = REL.ent[id];
@@ -301,6 +317,7 @@ function dessinerGraphe(id) {
   const droite = [...ent.filter(r => FILI.includes(r.type)).map(r => [r.source, r]), ...ent.filter(r => r.type === "SUBGENRE_OF").map(r => [r.source, r])];
   const bas = [...sor.filter(r => /^USES/.test(r.type)).map(r => [r.target, r]), ...ent.filter(r => /^USES/.test(r.type)).map(r => [r.source, r])];
   const haut = [...sor.filter(r => r.type === "CROSSES_WITH").map(r => [r.target, r]), ...ent.filter(r => r.type === "CROSSES_WITH").map(r => [r.source, r])];
+  if (matchMedia("(max-width: 640px)").matches) return listeGraphe(id, { gauche, droite, haut, bas });
   const W = 1000, rows = Math.max(gauche.length, droite.length, 2), H = 130 + rows * 44 + (haut.length ? 60 : 0) + (bas.length ? 60 : 0), cy = (haut.length ? 60 : 0) + 65 + rows * 22;
   const pos = {}, cx = W / 2; const colonne = (L, x) => L.forEach(([i], k) => { pos[i] = [x, cy + (k - (L.length - 1) / 2) * 44]; });
   colonne(gauche, 130); colonne(droite, W - 130);
