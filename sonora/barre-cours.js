@@ -56,11 +56,11 @@
   //   Pistes : 10 quand un enregistrement a été réécouté en entier dans la lecture du projet ; 10 pour un export d'au moins deux sons et 8 secondes,
   //     après avoir écouté tout le projet du début à la fin sans le modifier ensuite ;
   //   Harmonie : 3 par partie finie et 10 pour 7 sur 10 ou plus (une fois par jeu et niveau), seulement si chaque question a été écoutée jusqu'au bout avant la réponse.
-  let toastT = 0;
+  let toastT = 0, cumul = 0;
   function annoncer(x) {
     let t = document.getElementById("bc-toast");
     if (!t) { t = document.createElement("div"); t.id = "bc-toast"; t.setAttribute("role", "status"); t.setAttribute("aria-live", "polite"); t.style.cssText = "position:fixed;right:14px;bottom:14px;z-index:9999;background:#D6FF00;color:#11110F;border:2px solid #11110F;font:700 14px monospace;padding:8px 12px;box-shadow:4px 4px 0 #11110F;transition:opacity .3s"; document.body.appendChild(t); }
-    t.textContent = `+${x} XP`; t.style.opacity = "1"; clearTimeout(toastT); toastT = setTimeout(() => { t.style.opacity = "0"; }, 1600);
+    cumul += x; t.textContent = `+${cumul} XP`; t.style.opacity = "1"; clearTimeout(toastT); toastT = setTimeout(() => { t.style.opacity = "0"; cumul = 0; }, 2200); // les points gagnés ensemble s'additionnent
   }
   function gagner(cle, points, compteur) {
     if (espace !== "eleves") return false;
