@@ -30,7 +30,7 @@ function remplirListe() {
     for (const e of EXPERIENCES.filter(x => x.domaine === dom)) { const li = document.createElement("li"); li.innerHTML = `<button type="button" data-id="${e.id}">${esc(e.titre)}${e.type === "auditeur" ? '<span class="tag">à l\'écoute</span>' : ""}</button>`; li.querySelector("button").onclick = () => { location.hash = "#" + e.id; }; ul.appendChild(li); }
     z.appendChild(g);
   }
-  $("avis-limites").textContent = "Couvert : fréquence, période, amplitude, phase, interférences, battements, harmoniques, résonance, propagation, réflexion, consonance, localisation, une illusion, deux mesures à l'écoute, un analyseur. Pas encore couvert : diffraction, absorption, bandes critiques, courbes d'égale sonie.";
+  $("avis-limites").textContent = "Couvert : un générateur de sons purs, fréquence, période, amplitude, phase, interférences, battements, harmoniques, résonance, propagation, réflexion, consonance, localisation, une illusion, deux mesures à l'écoute, un analyseur. Pas encore couvert : diffraction, absorption, bandes critiques, courbes d'égale sonie.";
 }
 function basculerPanneau(p) { $("sciences").dataset.actif = p; document.querySelectorAll("#onglets-mobiles button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.p === p))); }
 document.querySelectorAll("#onglets-mobiles button").forEach(b => b.onclick = () => basculerPanneau(b.dataset.p));
@@ -69,7 +69,7 @@ async function ecouter(module, { accord } = {}) {
     if (module.voix) { m.accord(accord || [[48, 220, 0.8], [49, 277.18, 0.8], [50, 329.63, 0.8]]); }
   } catch (e) { badge("erreur", "erreur"); const z = $("msg-exp"); if (z) z.textContent = e instanceof ErreurMoteur ? e.message : String(e && e.message || e); }
 }
-async function arreterEcoute() { if (!etat.moteur || !etat.marche) return; etat.marche = false; await etat.moteur.arreter(); badge("prêt"); if ($("b-ecouter")) etatBouton($("b-ecouter"), false); }
+async function arreterEcoute() { if (etat.arretGen) { etat.arretGen(); etat.arretGen = null; } if (!etat.moteur || !etat.marche) return; etat.marche = false; await etat.moteur.arreter(); badge("prêt"); if ($("b-ecouter")) etatBouton($("b-ecouter"), false); }
 let dernier = 0;
 (function boucle(t) { requestAnimationFrame(boucle); if (t - dernier < 33) return; dernier = t; const o = $("live-oscillo"), s = $("live-spectre"); if (!o || !s) return; const x = etat.marche ? etat.tampon : null; dessinerOscillo(o, x); dessinerSpectre(s, x, etat.sr); const h = $("heros-onde"); if (h) dessinerOscillo(h, x); })(0);
 
@@ -109,6 +109,7 @@ function ouvrir(id) {
   document.title = exp.titre + ", SONORA Science"; basculerPanneau("fiche"); window.scrollTo(0, 0);
   if (exp.type === "auditeur") return exp.id === "masquage" ? ficheMasquage(exp) : exp.id === "microtonalite" ? ficheMicro(exp) : ficheSeuil(exp);
   if (exp.type === "analyseur") return ficheAnalyseur(exp);
+  if (exp.type === "generateur") return ficheGenerateur(exp);
   const m = moduleDe(exp); etat.module = m;
   $("fiche").innerHTML = heros({ etiquette: exp.domaine, titre: exp.titre, texte: exp.question, aide: "Puis change les réglages juste en dessous : tu entends la différence, et tu la vois." })
     + bloc("L'expérience", `<div class="bloc-exp"><div class="reglages-exp" id="reglages-exp"></div><div class="commandes"><button type="button" class="principal" id="b-mesurer">Mesurer sur le signal</button></div><p class="petit" id="msg-exp"></p>
@@ -244,6 +245,57 @@ function ficheSeuil(exp) {
 }
 
 
+
+// ---------------------------------------------------------------- générateur de sons purs (Web Audio direct, en continu)
+const NOTES = ["do", "do dièse", "ré", "ré dièse", "mi", "fa", "fa dièse", "sol", "sol dièse", "la", "la dièse", "si"];
+function noteProche(f) { const n = Math.round(12 * Math.log2(f / 440)) + 69, hz = 440 * Math.pow(2, (n - 69) / 12), cents = 1200 * Math.log2(f / hz); return { nom: NOTES[((n % 12) + 12) % 12] + " " + (Math.floor(n / 12) - 1), cents }; }
+function ficheGenerateur(exp) {
+  const g = etat.gen = { ctx: null, osc: null, gain: null, an: null, forme: "sine", f: 440, vol: 0.1, marche: false, raf: 0 };
+  const h = new URLSearchParams(location.hash.split("?")[1] || "").get("f"); if (h && +h >= 20 && +h <= 20000) g.f = +h;
+  $("fiche").innerHTML = heros({ etiquette: exp.domaine, titre: exp.titre, texte: exp.question, aide: "Règle la fréquence, puis appuie sur Jouer. Garde un volume bas au départ." })
+    + bloc("Le générateur", `<div class="bloc-exp"><div class="rang-champs"><label class="champ-timbre">Fréquence en Hz <input id="g-f" type="number" min="20" max="20000" step="any" value="${g.f}" inputmode="decimal"></label>
+    <label class="champ-timbre">Forme d'onde <select id="g-forme"><option value="sine">Sinus</option><option value="square">Carré</option><option value="sawtooth">Dent de scie</option><option value="triangle">Triangle</option></select></label></div>
+    <label class="reglage"><span>Fréquence (échelle logarithmique)</span><input id="g-fl" type="range" min="0" max="1000" value="0" aria-label="Fréquence, curseur"></label>
+    <div class="commandes"><button type="button" id="g-moins">-1 Hz</button><button type="button" id="g-plus">+1 Hz</button><button type="button" id="g-div">÷ 2</button><button type="button" id="g-mul">× 2</button><button type="button" id="g-440">440 Hz</button></div>
+    <label class="reglage"><span>Volume (départ bas)</span><input id="g-vol" type="range" min="0" max="100" value="10" aria-label="Volume"></label>
+    <p class="progression" id="g-info" aria-live="polite"></p>
+    <div class="commandes"><button type="button" class="principal" id="g-jouer">Jouer</button><button type="button" id="g-lien">Copier le lien de ce réglage</button></div><p class="petit" id="msg-exp"></p>
+    <div class="vues"><figure><canvas id="g-oscillo" role="img" aria-label="Oscilloscope en direct"></canvas><figcaption>Oscilloscope en direct</figcaption></figure></div></div>`)
+    + bloc("L'idée", exp.explication.map(p => `<p>${esc(p)}</p>`).join(""), "explication") + pied(exp, exp.programme);
+  $("b-studio").onclick = () => ouvrirDansStudio(exp, exp.programme);
+  const fl = $("g-fl"), min = Math.log(20), max = Math.log(20000), versSlider = f => Math.round(1000 * (Math.log(f) - min) / (max - min)), depuisSlider = v => Math.exp(min + (max - min) * v / 1000);
+  const virgule = v => String(Math.round(v * 100) / 100).replace(".", ",");
+  function maj(source) {
+    g.f = Math.min(20000, Math.max(20, g.f)); if (source !== "champ") $("g-f").value = Math.round(g.f * 100) / 100; if (source !== "slider") fl.value = versSlider(g.f);
+    const n = noteProche(g.f), c = Math.round(n.cents), longueur = 343 / g.f;
+    $("g-info").textContent = `${virgule(g.f)} Hz, période ${virgule(1000 / g.f)} ms, longueur d'onde ${longueur >= 1 ? virgule(longueur) + " m" : virgule(longueur * 100) + " cm"}. Note la plus proche : ${n.nom}${Math.abs(c) < 1 ? "" : ` (${c > 0 ? "+" : ""}${c} cents)`}.`;
+    if (g.osc) g.osc.frequency.setTargetAtTime(g.f, g.ctx.currentTime, 0.02);
+  }
+  $("g-f").oninput = ev => { const v = parseFloat(String(ev.target.value).replace(",", ".")); if (v >= 20 && v <= 20000) { g.f = v; maj("champ"); } };
+  fl.oninput = () => { g.f = depuisSlider(+fl.value); maj("slider"); };
+  $("g-moins").onclick = () => { g.f -= 1; maj(); }; $("g-plus").onclick = () => { g.f += 1; maj(); }; $("g-div").onclick = () => { g.f /= 2; maj(); }; $("g-mul").onclick = () => { g.f *= 2; maj(); }; $("g-440").onclick = () => { g.f = 440; maj(); };
+  $("g-forme").onchange = ev => { g.forme = ev.target.value; if (g.osc) g.osc.type = g.forme; };
+  const reglerVolume = () => { g.vol = Math.pow(+$("g-vol").value / 100, 2) * 0.5; if (g.gain) g.gain.gain.setTargetAtTime(g.vol, g.ctx.currentTime, 0.03); }; $("g-vol").oninput = reglerVolume; reglerVolume();
+  $("g-lien").onclick = async () => { const u = location.origin + location.pathname + "#generateur-sons?f=" + (Math.round(g.f * 100) / 100); try { await navigator.clipboard.writeText(u); $("msg-exp").textContent = "Lien copié."; } catch (_) { $("msg-exp").textContent = u; } };
+  function arret() { g.marche = false; cancelAnimationFrame(g.raf); if (g.gain) { g.gain.gain.setTargetAtTime(0, g.ctx.currentTime, 0.02); const o = g.osc; setTimeout(() => { try { o.stop(); o.disconnect(); } catch (_) {} }, 120); } g.osc = null; $("g-jouer").textContent = "Jouer"; badge("prêt"); }
+  function dessiner() {
+    const c = $("g-oscillo"); if (!c || !g.marche) return; const r = c.getBoundingClientRect(), d = devicePixelRatio || 1; c.width = Math.max(10, r.width * d); c.height = Math.max(10, r.height * d);
+    const x = c.getContext("2d"), buf = new Float32Array(g.an.fftSize); g.an.getFloatTimeDomainData(buf); x.fillStyle = "#11110F"; x.fillRect(0, 0, c.width, c.height); x.strokeStyle = "#D6FF00"; x.lineWidth = 2 * d; x.beginPath();
+    let dep = 0; for (let i = 1; i < buf.length / 2; i++) if (buf[i - 1] < 0 && buf[i] >= 0) { dep = i; break; }
+    const nb = Math.min(buf.length - dep, Math.max(64, Math.round(3 * g.ctx.sampleRate / g.f))); const ech = c.height / 2 / (g.vol > 0 ? Math.max(g.vol, 0.02) * 1.1 : 1);
+    for (let i = 0; i < nb; i++) { const px = i / nb * c.width, py = c.height / 2 - buf[dep + i] * ech; i ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke(); g.raf = requestAnimationFrame(dessiner);
+  }
+  $("g-jouer").onclick = async () => {
+    if (g.marche) return arret();
+    g.ctx = g.ctx || new (window.AudioContext || window.webkitAudioContext)(); if (g.ctx.state === "suspended") await g.ctx.resume();
+    g.osc = g.ctx.createOscillator(); g.osc.type = g.forme; g.osc.frequency.value = g.f; g.gain = g.ctx.createGain(); g.gain.gain.value = 0; g.an = g.ctx.createAnalyser(); g.an.fftSize = 4096;
+    g.osc.connect(g.gain); g.gain.connect(g.an); g.an.connect(g.ctx.destination); g.osc.start(); g.gain.gain.setTargetAtTime(g.vol, g.ctx.currentTime, 0.03);
+    g.marche = true; $("g-jouer").textContent = "Arrêter"; badge("son en cours", "ok"); g.raf = requestAnimationFrame(dessiner);
+  };
+  etat.arretGen = () => { if (g.marche) arret(); };
+  maj();
+}
+
 // ---------------------------------------------------------------- micro-intervalles et tempéraments (interactif)
 function ficheMicro(exp) {
   const mi = etat.micro = { timbre: "orgue", base: 261.63, variantes: [], modele: null, ctx: null };
@@ -286,7 +338,7 @@ function ficheMicro(exp) {
 // ---------------------------------------------------------------- démarrage
 remplirListe();
 // Sur téléphone, sans expérience demandée dans l'adresse, on ouvre d'abord sur le menu des expériences : c'est lui qu'on cherche en arrivant.
-const depart = () => { const h = location.hash; ouvrir((h || "#" + EXPERIENCES[0].id).slice(1)); if (!h && !etat.menuVu && matchMedia("(max-width: 900px)").matches) basculerPanneau("liste"); etat.menuVu = true; };
+const depart = () => { const h = location.hash; ouvrir((h || "#" + EXPERIENCES[0].id).slice(1).split("?")[0]); if (!h && !etat.menuVu && matchMedia("(max-width: 900px)").matches) basculerPanneau("liste"); etat.menuVu = true; };
 window.addEventListener("hashchange", depart); depart();
-document.addEventListener("visibilitychange", () => { if (document.hidden && etat.marche) arreterEcoute(); });
+document.addEventListener("visibilitychange", () => { if (document.hidden && (etat.marche || etat.arretGen)) arreterEcoute(); });
 window.SCIENCE_PRET = true;

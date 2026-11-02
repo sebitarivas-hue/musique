@@ -41,6 +41,18 @@ instrument FrequencePeriode {
     interpreter(r, v) { const f = r.lignes[0].mesure, T = r.lignes[1].mesure, lam = r.lignes[3].mesure; return `À ${fmt(f, 1)} Hz, une vibration dure ${fmt(T, 2)} ms et l'onde s'étend sur ${lam >= 1 ? fmt(lam, 2) + " m" : fmt(lam * 100, 1) + " cm"} dans l'air à ${v.temperature} °C. ${f > 1000 ? "Un son aigu a une onde courte : quelques centimètres seulement." : f < 100 ? "Un son grave a une onde longue : plusieurs mètres, comparable à la taille d'une pièce." : "Double la fréquence : la période et la longueur d'onde sont divisées par deux."}`; },
     approfondissement: "Fais varier la température : la fréquence ne change pas, mais la longueur d'onde si. Pourquoi un instrument à vent monte-t-il quand l'air se réchauffe ? (Indice : la hauteur dépend de la longueur d'onde dans le tuyau.)" },
 
+  { id: "generateur-sons", domaine: "Acoustique", titre: "Générateur de sons purs", type: "generateur",
+    question: "À quoi ressemble un son d'une seule fréquence, et à partir de quelle fréquence l'entends-tu, ou ne l'entends-tu plus ?",
+    explication: ["Un générateur produit un son de fréquence choisie. Tu règles la fréquence en hertz (Hz), la forme d'onde et le volume, et tu écoutes. Les valeurs de départ sont basses : monte le volume doucement.",
+      "L'oreille humaine entend environ de 20 Hz à 20 000 Hz, mais ces limites varient d'une personne à l'autre et baissent avec l'âge. Un téléphone ou de petites enceintes ne reproduisent presque rien sous 100 Hz : si tu n'entends rien dans le grave, c'est peut-être ton appareil et pas ton oreille. Un casque donne un résultat plus fiable."],
+    programme: `/// Un son pur de fréquence réglable (dans la page, le générateur propose aussi le carré, la dent de scie et le triangle).
+instrument Generateur {
+    reglage frequence : Hz = 440 Hz dans 20 Hz .. 20 kHz courbe log etiquette "Fréquence"
+    sortie = sinus(frequence) * 0.2
+}
+`, duree: 1,
+    approfondissement: "Cherche ta limite dans l'aigu : monte la fréquence jusqu'à ne plus rien entendre, puis compare avec ton voisin ou ta voisine. Passe ensuite de sinus à carré à 200 Hz : la hauteur reste la même mais le timbre change, parce que le carré contient des harmoniques (voir l'expérience sur les formes d'onde). Double la fréquence : l'intervalle entendu est une octave." },
+
   { id: "amplitude-niveau", domaine: "Acoustique", titre: "Amplitude et niveau en décibels",
     question: "De combien baisse l'amplitude quand on enlève 6 dB ? Et que mesure vraiment un décibel ?",
     explication: ["L'amplitude est la hauteur de la vibration ; l'oreille la perçoit comme l'intensité. On la compare à une référence en décibels : niveau = 20 × log10(amplitude / référence).",
