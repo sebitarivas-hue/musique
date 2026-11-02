@@ -1,14 +1,14 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js";
-import * as Ed from "./editions.js";
-import * as P from "./projet.js";
-import { Stockage } from "./stockage.js";
-import { creerBouton } from "./bouton.js";
-import { encoderWAV } from "../studio/wav.js";
-import { ENTREES } from "../library/catalogue.js";
-import { compiler } from "../src/index.js";
-import { rendre } from "../src/rendu.js";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=f449dbf2ea";
+import * as Ed from "./editions.js?v=f449dbf2ea";
+import * as P from "./projet.js?v=f449dbf2ea";
+import { Stockage } from "./stockage.js?v=f449dbf2ea";
+import { creerBouton } from "./bouton.js?v=f449dbf2ea";
+import { encoderWAV } from "../studio/wav.js?v=f449dbf2ea";
+import { ENTREES } from "../library/catalogue.js?v=f449dbf2ea";
+import { compiler } from "../src/index.js?v=f449dbf2ea";
+import { rendre } from "../src/rendu.js?v=f449dbf2ea";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -36,7 +36,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=f449dbf2ea"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };

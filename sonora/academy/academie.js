@@ -1,11 +1,11 @@
 // SONORA Academy : leçons, exercices corrigés sur le son produit. La progression reste dans le navigateur (aucun compte, rien n'est envoyé).
-import { Moteur, ErreurMoteur } from "../src/moteur.js";
-import { Editeur } from "../studio/editeur.js";
-import { UNITES, LECONS, parId } from "./parcours.js";
-import { verifier } from "./correcteur.js";
-import { preparer } from "../science/executeur.js";
-import { heros, etatBouton } from "../studio/heros.js";
-import { dessinerOscillo } from "../studio/visuels.js";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=f449dbf2ea";
+import { Editeur } from "../studio/editeur.js?v=f449dbf2ea";
+import { UNITES, LECONS, parId } from "./parcours.js?v=f449dbf2ea";
+import { verifier } from "./correcteur.js?v=f449dbf2ea";
+import { preparer } from "../science/executeur.js?v=f449dbf2ea";
+import { heros, etatBouton } from "../studio/heros.js?v=f449dbf2ea";
+import { dessinerOscillo } from "../studio/visuels.js?v=f449dbf2ea";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
