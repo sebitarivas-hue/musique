@@ -4,6 +4,7 @@ import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js";
 import * as Ed from "./editions.js";
 import * as P from "./projet.js";
 import { Stockage } from "./stockage.js";
+import { creerBouton } from "./bouton.js";
 import { encoderWAV } from "../studio/wav.js";
 import { ENTREES } from "../library/catalogue.js";
 import { compiler } from "../src/index.js";
@@ -111,38 +112,68 @@ function boucle() {
   requestAnimationFrame(boucle);
   if (etat.lecture && etat.ctx) { etat.tete = Math.max(0, etat.debutTete + etat.ctx.currentTime - etat.debutCtx); const fin = P.dureeTotale(etat.projet); if (!etat.enreg && etat.tete > fin + 0.3 && fin > 0) { arreter(); } }
   $("position").textContent = fmtT(etat.tete); $("curseur").style.left = (etat.tete * etat.pxs) + "px";
-  if (etat.enreg && etat.capture) majClipEnCours();
+  if (etat.enreg && etat.capture) { majClipEnCours(); majNiveauMicro(); }
 }
 
 // ---------------------------------------------------------------- enregistrement au micro
+// Deux voies en parallèle : un AudioWorklet qui recueille les échantillons bruts (précis, on compense la latence), et en filet de sécurité un MediaRecorder
+// (compressé, mais disponible là où le worklet ne répond pas, par exemple certains Safari). Si le worklet ne donne rien, on prend l'enregistrement du MediaRecorder.
 const CAPTEUR = `class Capteur extends AudioWorkletProcessor { process(e) { const c = e[0]; if (c && c[0]) this.port.postMessage(c[0].slice(0)); return true; } } registerProcessor("sonora-capteur", Capteur);`;
+const MICRO_ERREURS = { NotAllowedError: "Micro refusé. Autorise-le : sur iPhone, Réglages, Safari (ou ton navigateur), Micro ; sur ordinateur, l'icône à gauche de la barre d'adresse.", SecurityError: "Micro refusé : la page doit être ouverte en https.", NotFoundError: "Aucun micro n'a été trouvé sur cet appareil.", NotReadableError: "Le micro est utilisé par une autre application. Ferme-la puis recommence.", OverconstrainedError: "Ce micro n'accepte pas les réglages demandés." };
+const arretRecorder = rec => new Promise(ok => { if (!rec || rec.state === "inactive") return ok(); rec.addEventListener("stop", () => ok(), { once: true }); try { rec.stop(); } catch (_) { ok(); } });
+function abandonnerCapture(texte) {
+  const c = etat.capture; etat.enreg = false; etat.capture = null; $("b-enreg").setAttribute("aria-pressed", "false"); $("vu-micro").hidden = true;
+  if (c) { try { c.src.disconnect(); if (c.noeud) c.noeud.disconnect(); c.muet && c.muet.disconnect(); } catch (_) {} try { c.rec && c.rec.state !== "inactive" && c.rec.stop(); } catch (_) {} c.flux.getTracks().forEach(t => t.stop()); }
+  if (texte) message(texte);
+}
 async function enregistrer() {
   if (etat.enreg) return arreter();
-  const piste = P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0]; if (!piste) return;
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { message("Ce navigateur ne donne pas accès au micro."); return; }
-  const ctx = contexte();
-  let flux; try { flux = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); }
-  catch (e) { message("Micro refusé : " + (e && e.message || e) + ". Autorise-le dans la barre d'adresse du navigateur."); return; }
-  try { if (!etat.capteurPret) { const url = URL.createObjectURL(new Blob([CAPTEUR], { type: "text/javascript" })); await ctx.audioWorklet.addModule(url); etat.capteurPret = true; } }
-  catch (e) { flux.getTracks().forEach(t => t.stop()); message("L'enregistrement n'est pas possible dans ce navigateur."); return; }
-  const src = ctx.createMediaStreamSource(flux), noeud = new AudioWorkletNode(ctx, "sonora-capteur"), muet = ctx.createGain(); muet.gain.value = 0;
-  const morceaux = []; noeud.port.onmessage = e => morceaux.push(e.data); src.connect(noeud).connect(muet).connect(ctx.destination);
-  etat.capture = { flux, src, noeud, muet, morceaux, piste: piste.id, debut: etat.tete, sr: ctx.sampleRate };
-  etat.enreg = true; $("b-enreg").setAttribute("aria-pressed", "true"); message(`Enregistrement sur « ${piste.nom} »… Appuie sur Enregistrer ou Arrêter pour finir.`);
-  if (!etat.lecture) lire(); else badge("enregistrement", "erreur");
+  if (etat.demarrageEnreg) return; etat.demarrageEnreg = true;
+  try {
+    const piste = P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0]; if (!piste) return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { message("Ce navigateur ne donne pas accès au micro (il faut une page en https et un navigateur récent)."); return; }
+    const ctx = contexte(); let flux;
+    try { flux = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); }
+    catch (e1) { if (e1 && e1.name === "OverconstrainedError") { try { flux = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e2) { e1 = e2; } } if (!flux) { message(MICRO_ERREURS[e1 && e1.name] || "Micro indisponible : " + (e1 && (e1.message || e1.name) || e1)); return; } }
+    if (ctx.state !== "running") { try { await Promise.race([ctx.resume(), new Promise(ok => setTimeout(ok, 1500))]); } catch (_) {} }
+    const src = ctx.createMediaStreamSource(flux), analyseur = ctx.createAnalyser(); analyseur.fftSize = 1024; src.connect(analyseur);
+    const morceaux = []; let noeud = null, muet = null;
+    try {
+      if (!ctx.audioWorklet) throw new Error("pas d'AudioWorklet");
+      if (!etat.capteurPret) { const url = URL.createObjectURL(new Blob([CAPTEUR], { type: "text/javascript" })); await ctx.audioWorklet.addModule(url); etat.capteurPret = true; }
+      noeud = new AudioWorkletNode(ctx, "sonora-capteur"); muet = ctx.createGain(); muet.gain.value = 0; noeud.port.onmessage = ev => morceaux.push(ev.data); src.connect(noeud).connect(muet).connect(ctx.destination);
+    } catch (e) { noeud = null; etat.voieMicro = "recorder"; }
+    let rec = null; const blocs = [];
+    try { if (typeof MediaRecorder !== "undefined") { rec = new MediaRecorder(flux); rec.ondataavailable = ev => { if (ev.data && ev.data.size) blocs.push(ev.data); }; rec.start(250); } } catch (_) { rec = null; }
+    if (!noeud && !rec) { try { src.disconnect(); } catch (_) {} flux.getTracks().forEach(t => t.stop()); message("L'enregistrement n'est pas possible dans ce navigateur (ni AudioWorklet ni MediaRecorder)."); return; }
+    etat.capture = { flux, src, noeud, muet, morceaux, rec, blocs, analyseur, piste: piste.id, debut: etat.tete, sr: ctx.sampleRate, pic: 0, t0: ctx.currentTime };
+    etat.enreg = true; $("b-enreg").setAttribute("aria-pressed", "true"); $("vu-micro").hidden = false; message(`Enregistrement sur « ${piste.nom} »… Appuie sur Enregistrer ou Arrêter pour finir.`);
+    if (!etat.lecture) await lire(); else badge("enregistrement", "erreur");
+    if (!etat.lecture) { abandonnerCapture(document.getElementById("message").textContent.startsWith("Enregistrement sur") ? "La lecture n'a pas démarré : l'enregistrement est annulé. Appuie à nouveau sur Enregistrer." : null); return; }
+    const verif = etat.capture; setTimeout(() => { if (etat.capture !== verif) return; const recu = verif.morceaux.length || verif.blocs.length; if (!recu) message("Le micro ne transmet encore rien. Parle ou tape dans tes mains : si la barre de niveau ne bouge pas, vérifie l'autorisation du micro et que rien d'autre ne l'utilise."); else if (verif.pic < 0.002) message("Le micro est ouvert mais ne capte aucun son : vérifie le micro choisi et son volume dans les réglages de l'appareil."); }, 2200);
+    ctx.addEventListener("statechange", function gardien() { if (etat.capture !== verif) { ctx.removeEventListener("statechange", gardien); return; } if (ctx.state === "interrupted" || ctx.state === "suspended") { message("Le son a été interrompu par le système (appel, Siri, autre application). L'enregistrement est arrêté et gardé."); arreter(); } });
+  } finally { etat.demarrageEnreg = false; }
 }
-function majClipEnCours() { const c = etat.capture, n = c.morceaux.reduce((s, m) => s + m.length, 0); let el = document.querySelector(".clip.enreg-en-cours"); const voie = document.querySelector(`.voie[data-piste="${c.piste}"]`); if (!voie) return; if (!el) { el = document.createElement("div"); el.className = "clip enreg-en-cours"; el.innerHTML = `<div class="nom-clip">enregistrement</div>`; voie.appendChild(el); } el.style.left = c.debut * etat.pxs + "px"; el.style.width = Math.max(4, n / c.sr * etat.pxs) + "px"; }
-function finirEnregistrement() {
-  const c = etat.capture; etat.enreg = false; etat.capture = null; $("b-enreg").setAttribute("aria-pressed", "false");
-  try { c.src.disconnect(); c.noeud.disconnect(); c.muet.disconnect(); } catch (_) {} c.flux.getTracks().forEach(t => t.stop());
-  const n = c.morceaux.reduce((s, m) => s + m.length, 0); if (n < c.sr * 0.05) { message("Enregistrement trop court : rien n'est gardé."); afficher(); return; }
-  const x = new Float32Array(n); let o = 0; for (const m of c.morceaux) { x.set(m, o); o += m.length; }
-  // compensation de la latence de sortie : la piste d'accompagnement est entendue en retard, donc ce que l'on joue arrive en retard d'autant
-  const lat = Math.min(0.3, (etat.ctx.baseLatency || 0) + (etat.ctx.outputLatency || 0)), coupe = Math.round(lat * c.sr);
-  const y = coupe && coupe < n / 2 ? x.slice(coupe) : x;
+function majNiveauMicro() {
+  const c = etat.capture, vu = $("vu-micro"); if (!c || !c.analyseur) return; const b = new Float32Array(c.analyseur.fftSize); c.analyseur.getFloatTimeDomainData(b); let m = 0; for (const v of b) m = Math.max(m, Math.abs(v)); c.pic = Math.max(c.pic, m);
+  vu.firstElementChild.style.width = Math.min(100, Math.round(Math.sqrt(m) * 100)) + "%"; vu.setAttribute("aria-valuenow", String(Math.round(m * 100)));
+}
+function majClipEnCours() { const c = etat.capture, n = c.morceaux.reduce((s, m) => s + m.length, 0), dur = n ? n / c.sr : Math.max(0, etat.ctx.currentTime - c.t0); let el = document.querySelector(".clip.enreg-en-cours"); const voie = document.querySelector(`.voie[data-piste="${c.piste}"]`); if (!voie) return; if (!el) { el = document.createElement("div"); el.className = "clip enreg-en-cours"; el.innerHTML = `<div class="nom-clip">enregistrement</div>`; voie.appendChild(el); } el.style.left = c.debut * etat.pxs + "px"; el.style.width = Math.max(4, dur * etat.pxs) + "px"; }
+async function finirEnregistrement() {
+  const c = etat.capture; etat.enreg = false; etat.capture = null; $("b-enreg").setAttribute("aria-pressed", "false"); $("vu-micro").hidden = true;
+  try { c.src.disconnect(); if (c.noeud) c.noeud.disconnect(); if (c.muet) c.muet.disconnect(); } catch (_) {}
+  await arretRecorder(c.rec); c.flux.getTracks().forEach(t => t.stop());
+  let n = c.morceaux.reduce((s, m) => s + m.length, 0), x = null, sr = c.sr, voie = "worklet";
+  if (n >= c.sr * 0.05) { x = new Float32Array(n); let o = 0; for (const m of c.morceaux) { x.set(m, o); o += m.length; } }
+  else if (c.blocs.length) {
+    try { const buf = await etat.ctx.decodeAudioData(await new Blob(c.blocs).arrayBuffer()); x = buf.getChannelData(0).slice(); sr = buf.sampleRate; n = x.length; voie = "recorder"; } catch (e) { message("L'enregistrement a été capté mais n'a pas pu être lu par ce navigateur : " + (e && e.message || e)); afficher(); return; }
+  }
+  if (!x || n < sr * 0.05) { message("Enregistrement trop court ou vide : rien n'est gardé. Si le micro ne capte rien, regarde la barre de niveau pendant que tu parles."); afficher(); return; }
+  // compensation de la latence de sortie (voie worklet seulement) : la piste d'accompagnement est entendue en retard, donc ce que l'on joue arrive en retard d'autant
+  const lat = voie === "worklet" ? Math.min(0.3, (etat.ctx.baseLatency || 0) + (etat.ctx.outputLatency || 0)) : 0, coupe = Math.round(lat * sr), y = coupe && coupe < n / 2 ? x.slice(coupe) : x;
   const num = Object.values(etat.projet.sons).filter(s => /^Enregistrement/.test(s.nom)).length + 1;
-  const id = ajouterAudio(`Enregistrement ${num}`, [y], c.sr); P.placerClip(etat.projet, P.pisteLibre(etat.projet, c.piste, c.debut, y.length / c.sr), id, c.debut);
-  message(`Enregistré : ${(y.length / c.sr).toFixed(1).replace(".", ",")} s sur la piste. Latence compensée : ${Math.round(lat * 1000)} ms.`); etat.dernierEnreg = { duree: y.length / c.sr, latence: lat }; changer();
+  const id = ajouterAudio(`Enregistrement ${num}`, [y], sr); P.placerClip(etat.projet, P.pisteLibre(etat.projet, c.piste, c.debut, y.length / sr), id, c.debut);
+  message(`Enregistré : ${(y.length / sr).toFixed(1).replace(".", ",")} s sur la piste.${voie === "worklet" ? ` Latence compensée : ${Math.round(lat * 1000)} ms.` : " Ton navigateur a utilisé l'enregistreur de secours : la latence n'est pas compensée, décale le clip à la main si besoin."}`); etat.dernierEnreg = { duree: y.length / sr, latence: lat, voie }; changer();
 }
 
 // ---------------------------------------------------------------- historique : annuler et rétablir
@@ -228,11 +259,10 @@ function afficher() {
   // règle : une marque par mesure
   const dm = P.dureeMesure(p); let r = ""; for (let m = 0; m * dm * etat.pxs < largeur; m++) r += `<span style="left:${m * dm * etat.pxs}px">${m + 1}</span>`;
   $("regle").innerHTML = r; $("regle").style.width = largeur + "px"; $("voies").style.width = largeur + "px";
-  $("entetes").innerHTML = `<div class="ent-regle"></div>` + p.pistes.map(pi => { const fx = P.effetsDe(pi), nfx = ["filtre", "echo", "reverb"].filter(k => fx[k].actif).length; return `<div class="entete${etat.arme === pi.id ? " armee" : ""}" data-piste="${pi.id}">
+  $("entetes").innerHTML = `<div class="ent-regle"></div>` + p.pistes.map(pi => { const nfx = P.rackDe(pi).length; return `<div class="entete${etat.arme === pi.id ? " armee" : ""}" data-piste="${pi.id}">
     <input type="text" value="${esc(pi.nom)}" aria-label="Nom de la piste" maxlength="30">
-    <div class="ent-b"><button type="button" class="b-arme" aria-pressed="${etat.arme === pi.id}" title="Enregistrer sur cette piste">&#9679; Rec</button><button type="button" class="b-muet" aria-pressed="${pi.muet}" title="Muet">M</button><button type="button" class="b-solo" aria-pressed="${pi.solo}" title="Solo">S</button><button type="button" class="b-fx" aria-pressed="${etat.fx === pi.id}" title="Effets de la piste">Effets${nfx ? " " + nfx : ""}</button></div>
-    <label class="ent-r">Volume<input type="range" class="r-vol" min="0" max="1.5" step="0.01" value="${pi.volume}" aria-label="Volume de ${esc(pi.nom)}"><output class="o-vol">${Math.round(pi.volume * 100)} %</output></label>
-    <label class="ent-r">G<input type="range" class="r-pan" min="-1" max="1" step="0.01" value="${pi.pan}" aria-label="Panoramique de ${esc(pi.nom)}">D</label></div>`; }).join("");
+    <div class="ent-b"><button type="button" class="b-arme" aria-pressed="${etat.arme === pi.id}" title="Enregistrer sur cette piste">Rec</button><button type="button" class="b-muet" aria-pressed="${pi.muet}" title="Muet">M</button><button type="button" class="b-solo" aria-pressed="${pi.solo}" title="Solo">S</button><button type="button" class="b-fx" aria-pressed="${etat.fx === pi.id}" title="Effets de la piste">Effets${nfx ? " " + nfx : ""}</button></div>
+    <div class="ent-k"></div></div>`; }).join("");
   const grille = `background-size: ${P.dureeTemps(p) * etat.pxs}px 100%`;
   $("voies").innerHTML = p.pistes.map(pi => `<div class="voie" data-piste="${pi.id}" style="${grille}" aria-label="Piste ${esc(pi.nom)}">${pi.clips.map(c => `<div class="clip${etat.choisi === c.id ? " choisi" : ""}" data-clip="${c.id}" style="left:${c.debut * etat.pxs}px;width:${Math.max(4, c.duree * etat.pxs)}px" tabindex="0" aria-label="${esc((p.sons[c.son] || {}).nom || "son")}, à ${c.debut.toFixed(2)} s"><div class="nom-clip">${esc((p.sons[c.son] || {}).nom || "son")}</div><canvas></canvas></div>`).join("")}</div>`).join("");
   for (const el of document.querySelectorAll(".clip[data-clip]")) { const r2 = P.trouverClip(p, el.dataset.clip); dessinerOnde(el.querySelector("canvas"), p.sons[r2.clip.son], r2.clip); }
@@ -253,9 +283,12 @@ function brancherEntetes() {
     el.querySelector(".b-arme").onclick = () => { etat.arme = pi.id; afficher(); };
     el.querySelector(".b-muet").onclick = () => { pi.muet = !pi.muet; changer(); };
     el.querySelector(".b-solo").onclick = () => { pi.solo = !pi.solo; changer(); };
-    el.querySelector(".r-vol").oninput = e => { pi.volume = +e.target.value; el.querySelector(".o-vol").textContent = Math.round(pi.volume * 100) + " %"; const ch = etat.lecture && etat.chaines && etat.chaines[pi.id]; if (ch) ch.vol.gain.setTargetAtTime(pi.volume, etat.ctx.currentTime, 0.02); ranger(); };
-    el.querySelector(".r-pan").oninput = e => { pi.pan = +e.target.value; const ch = etat.lecture && etat.chaines && etat.chaines[pi.id]; if (ch && ch.pan) ch.pan.pan.setTargetAtTime(pi.pan, etat.ctx.currentTime, 0.02); ranger(); };
-    el.querySelector(".b-fx").onclick = () => { etat.fx = etat.fx === pi.id ? null : pi.id; afficher(); if (etat.fx) $("effets").scrollIntoView({ block: "nearest" }); };
+    const k = el.querySelector(".ent-k"), enChaine = () => etat.lecture && etat.chaines && etat.chaines[pi.id];
+    k.appendChild(creerBouton({ libelle: "Volume", nom: `Volume de ${pi.nom}`, min: 0, max: 1.5, valeur: pi.volume, def: 0.8, pas: 0.01, classe: "r-vol", classeValeur: "o-vol", taille: 38, format: v => Math.round(v * 100) + " %",
+      onInput: v => { pi.volume = v; const ch = enChaine(); if (ch) ch.vol.gain.setTargetAtTime(v, etat.ctx.currentTime, 0.02); ranger(); } }));
+    k.appendChild(creerBouton({ libelle: "Pan", nom: `Panoramique de ${pi.nom} (gauche à droite)`, min: -1, max: 1, valeur: pi.pan, def: 0, pas: 0.01, bipolaire: true, classe: "r-pan", classeValeur: "o-pan", taille: 38, format: v => Math.abs(v) < 0.005 ? "centre" : Math.round(Math.abs(v) * 100) + (v < 0 ? " G" : " D"),
+      onInput: v => { pi.pan = v; const ch = enChaine(); if (ch && ch.pan) ch.pan.pan.setTargetAtTime(v, etat.ctx.currentTime, 0.02); ranger(); } }));
+    el.querySelector(".b-fx").onclick = () => { etat.fx = etat.fx === pi.id ? null : pi.id; afficher(); if (etat.fx) $("effets").scrollIntoView({ block: "nearest", behavior: "smooth" }); };
   }
 }
 function tempsDe(ev) { const r = $("voies").getBoundingClientRect(); return Math.max(0, (ev.clientX - r.left) / etat.pxs); }
@@ -276,28 +309,65 @@ function brancherVoies() {
 }
 
 
-// ---------------------------------------------------------------- effets d'une piste, avec leur explication
-const curseur = (cle, lib, val, min, max, pas, fmt) => `<label class="fx-r">${lib}<input type="range" data-fx="${cle}" min="${min}" max="${max}" step="${pas}" value="${val}"><output data-o="${cle}">${fmt(val)}</output></label>`;
+// ---------------------------------------------------------------- effets d'une piste : un rack d'appareils, chacun avec son interrupteur, sa croix, ses boutons et son schéma
 const pc = v => Math.round(v * 100) + " %", sec = v => (+v).toFixed(2).replace(".", ",") + " s", hzf = v => (v >= 1000 ? (v / 1000).toFixed(1).replace(".", ",") + " kHz" : Math.round(v) + " Hz");
+const NOMS_FX = { filtre: "Filtre", echo: "Écho", reverb: "Réverbération" };
+const SCHEMAS_FX = { filtre: "Courbe de réponse du filtre : le niveau laissé passer, pour chaque fréquence.", echo: "Les répétitions : une barre par écho, de plus en plus petite.", reverb: "Décroissance de la réverbération : le niveau en décibels au cours du temps." };
+// Schémas calculés à partir des réglages (la réponse du filtre est celle d'un filtre de Butterworth du second ordre, comme celui du moteur audio ; le schéma de l'écho est la suite des amplitudes du moteur ; celui de la réverbération représente la définition de la durée, 60 dB de perte).
+function schemaFx(cv, k, e) {
+  const d = devicePixelRatio || 1, r = cv.getBoundingClientRect(), w = cv.width = Math.max(40, Math.round((r.width || 220) * d)), h = cv.height = Math.max(30, Math.round((r.height || 70) * d)), g = cv.getContext("2d");
+  g.fillStyle = "#11110F"; g.fillRect(0, 0, w, h); g.strokeStyle = "rgba(240,239,232,.18)"; g.lineWidth = d; g.fillStyle = "rgba(240,239,232,.6)"; g.font = `${9 * d}px monospace`;
+  const L = P.LIMITES_EFFETS; g.strokeStyle = "#D6FF00"; g.lineWidth = 2 * d;
+  if (k === "filtre") {
+    const f0 = 20, f1 = 20000, fc = e.filtre.frequence, haut = e.filtre.type === "passe-haut", y = db => h - 4 * d - (db + 40) / 43 * (h - 10 * d);
+    for (const db of [0, -20, -40]) { g.beginPath(); g.moveTo(0, y(db)); g.lineTo(w, y(db)); g.strokeStyle = "rgba(240,239,232,.18)"; g.lineWidth = d; g.stroke(); g.fillText(db + " dB", 3 * d, y(db) - 2 * d); }
+    g.strokeStyle = "#D6FF00"; g.lineWidth = 2 * d; g.beginPath();
+    for (let i = 0; i <= w; i += 2) { const f = f0 * Math.pow(f1 / f0, i / w), x = f / fc, m = haut ? x * x / Math.sqrt(1 + x ** 4) : 1 / Math.sqrt(1 + x ** 4), db = Math.max(-40, 20 * Math.log10(Math.max(m, 1e-6))); i ? g.lineTo(i, y(db)) : g.moveTo(i, y(db)); } g.stroke();
+    const xc = Math.log(fc / f0) / Math.log(f1 / f0) * w; g.strokeStyle = "#FF5638"; g.lineWidth = d; g.beginPath(); g.moveTo(xc, 0); g.lineTo(xc, h); g.stroke(); g.fillStyle = "#FF5638"; g.fillText(hzf(fc), Math.min(w - 48 * d, xc + 3 * d), 10 * d);
+  } else if (k === "echo") {
+    const t = e.echo.temps, ret = e.echo.retour, mel = e.echo.melange, taps = [{ t: 0, a: 1, direct: true }]; for (let i = 1; i <= 8; i++) { const a = mel * Math.pow(ret, i - 1); if (a < 0.02) break; taps.push({ t: i * t, a }); }
+    const tmax = Math.max(1.2, taps[taps.length - 1].t * 1.08); g.fillStyle = "rgba(240,239,232,.6)"; g.fillText("0 s", 3 * d, h - 3 * d); g.fillText(sec(tmax), w - 40 * d, h - 3 * d);
+    for (const tp of taps) { const x = 6 * d + tp.t / tmax * (w - 14 * d), hh = Math.min(1, tp.a) * (h - 18 * d); g.fillStyle = tp.direct ? "#F0EFE8" : "#D6FF00"; g.fillRect(x - 2 * d, h - 12 * d - hh, 4 * d, hh); }
+  } else {
+    const T = e.reverb.duree, tmax = Math.max(T * 1.1, 1), y = db => 6 * d + (-db) / 66 * (h - 18 * d); g.strokeStyle = "rgba(240,239,232,.18)"; g.lineWidth = d;
+    for (const db of [0, -30, -60]) { g.beginPath(); g.moveTo(0, y(db)); g.lineTo(w, y(db)); g.stroke(); g.fillStyle = "rgba(240,239,232,.6)"; g.fillText(db + " dB", 3 * d, y(db) + (db === 0 ? 11 : -2) * d); }
+    g.strokeStyle = "#D6FF00"; g.lineWidth = 2 * d; g.beginPath(); g.moveTo(6 * d, y(0)); g.lineTo(6 * d + T / tmax * (w - 12 * d), y(-60)); g.stroke(); g.fillStyle = "#FF5638"; g.fillText(sec(T), Math.min(w - 40 * d, 6 * d + T / tmax * (w - 12 * d)), y(-60) - 4 * d);
+    g.fillStyle = "rgba(240,239,232,.6)"; g.fillText("aigus amortis dès " + hzf(e.reverb.aigus), 6 * d, h - 3 * d);
+  }
+}
+const REGLAGES_FX = {
+  filtre: [["frequence", "Coupure", "frequence", true, 0, hzf, 1500]],
+  echo: [["temps", "Temps", "temps", false, 0.01, sec, 0.35], ["retour", "Retour", "retour", false, 0.01, pc, 0.4], ["melange", "Mélange", "melange", false, 0.01, pc, 0.35]],
+  reverb: [["duree", "Durée", "duree", false, 0.1, sec, 2], ["aigus", "Aigus", "aigus", true, 0, hzf, 6000], ["melange", "Mélange", "melange", false, 0.01, pc, 0.3]],
+};
 function afficherEffets() {
   const z = $("effets"), pi = etat.fx && P.trouverPiste(etat.projet, etat.fx); z.hidden = !pi; if (!pi) return;
-  const e = P.effetsDe(pi), L = P.LIMITES_EFFETS;
-  z.innerHTML = `<h2>Effets de la piste « ${esc(pi.nom)} »</h2><p class="petit">Ils s'appliquent à toute la piste, dans l'ordre : filtre, puis écho et réverbération ajoutés au son direct. Ils sont aussi dans le WAV exporté.</p>
-  <div class="fx-grille">
-   <fieldset><legend><label><input type="checkbox" data-actif="filtre"${e.filtre.actif ? " checked" : ""}> Filtre</label></legend>
-    <label class="fx-r">Type<select data-fx="filtre.type"><option value="passe-bas"${e.filtre.type === "passe-bas" ? " selected" : ""}>passe-bas (enlève les aigus)</option><option value="passe-haut"${e.filtre.type === "passe-haut" ? " selected" : ""}>passe-haut (enlève les graves)</option></select></label>
-    <label class="fx-r">Coupure<input type="range" data-fxlog="filtre.frequence" min="0" max="1000" step="1" value="${Math.round(1000 * Math.log(e.filtre.frequence / L.frequence[0]) / Math.log(L.frequence[1] / L.frequence[0]))}" aria-label="Fréquence de coupure"><output data-o="filtre.frequence">${hzf(e.filtre.frequence)}</output></label><p class="fx-ex">${esc(P.EXPLICATIONS.filtre)}</p></fieldset>
-   <fieldset><legend><label><input type="checkbox" data-actif="echo"${e.echo.actif ? " checked" : ""}> Écho</label></legend>
-    ${curseur("echo.temps", "Temps", e.echo.temps, L.temps[0], L.temps[1], 0.01, sec)}${curseur("echo.retour", "Retour", e.echo.retour, L.retour[0], L.retour[1], 0.01, pc)}${curseur("echo.melange", "Mélange", e.echo.melange, L.melange[0], L.melange[1], 0.01, pc)}
-    <p class="fx-ex">${esc(P.EXPLICATIONS.echo)} <span id="fx-distance">Avec ${sec(e.echo.temps)}, la paroi serait à environ ${Math.round(P.distanceEcho(e.echo.temps))} m.</span></p></fieldset>
-   <fieldset><legend><label><input type="checkbox" data-actif="reverb"${e.reverb.actif ? " checked" : ""}> Réverbération</label></legend>
-    ${curseur("reverb.duree", "Durée", e.reverb.duree, L.duree[0], L.duree[1], 0.1, sec)}${curseur("reverb.aigus", "Aigus", e.reverb.aigus, L.aigus[0], L.aigus[1], 100, hzf)}${curseur("reverb.melange", "Mélange", e.reverb.melange, L.melange[0], L.melange[1], 0.01, pc)}<p class="fx-ex">${esc(P.EXPLICATIONS.reverb)}</p></fieldset>
-  </div>`;
-  const regler = (chemin, v) => { const [k, c] = chemin.split("."); pi.effets = P.effetsDe(pi); pi.effets[k][c] = v; };
-  z.querySelectorAll("[data-actif]").forEach(x => x.onchange = () => { pi.effets = P.effetsDe(pi); pi.effets[x.dataset.actif].actif = x.checked; changer(); });
-  z.querySelectorAll("input[data-fxlog]").forEach(x => { x.oninput = () => { const v = Math.round(L.frequence[0] * Math.pow(L.frequence[1] / L.frequence[0], +x.value / 1000)); regler("filtre.frequence", v); z.querySelector('[data-o="filtre.frequence"]').textContent = hzf(v); ranger(); }; x.onchange = () => { if (etat.lecture) { arreter(); lire(); } }; });
-  z.querySelectorAll("select[data-fx]").forEach(x => x.onchange = () => { regler(x.dataset.fx, x.value); changer(); });
-  z.querySelectorAll("input[data-fx]").forEach(x => { x.oninput = () => { const v = +x.value, fmt = /frequence|aigus/.test(x.dataset.fx) ? hzf : /temps|duree/.test(x.dataset.fx) ? sec : pc; regler(x.dataset.fx, v); z.querySelector(`[data-o="${x.dataset.fx}"]`).textContent = fmt(v); if (x.dataset.fx === "echo.temps") $("fx-distance").textContent = `Avec ${sec(v)}, la paroi serait à environ ${Math.round(P.distanceEcho(v))} m.`; ranger(); }; x.onchange = () => { if (etat.lecture) { arreter(); lire(); } }; });
+  const e = P.effetsDe(pi), rack = P.rackDe(pi), L = P.LIMITES_EFFETS, manque = P.EFFETS_ORDRE.filter(k => !rack.includes(k));
+  const relancer = () => { if (etat.lecture) { arreter(); lire(); } };
+  z.innerHTML = `<div class="fx-haut"><h2>Effets de la piste « ${esc(pi.nom)} »</h2>
+    <label class="fx-ajout"><span class="sr-seul">Ajouter un effet</span><select id="fx-ajouter" aria-label="Ajouter un effet"><option value="">+ Ajouter un effet</option>${manque.map(k => `<option value="${k}">${NOMS_FX[k]}</option>`).join("")}</select></label>
+    <button type="button" class="croix-b" id="fx-fermer" aria-label="Fermer les effets"><span class="croix" aria-hidden="true"></span></button></div>
+    <p class="petit">Les effets s'appliquent à toute la piste, dans l'ordre filtre, puis écho et réverbération ajoutés au son direct. Ils sont aussi dans le WAV exporté. L'interrupteur éteint un effet sans perdre ses réglages ; la croix le retire du rack. Double clic sur un bouton : valeur de départ.</p>
+    <div class="fx-rack" id="fx-rack">${rack.length ? "" : `<p class="fx-vide">Aucun effet sur cette piste. Choisis-en un avec « Ajouter un effet ».</p>`}</div>`;
+  const zone = z.querySelector("#fx-rack");
+  for (const k of rack) {
+    const art = document.createElement("article"); art.className = "fx-device" + (e[k].actif ? "" : " eteint"); art.dataset.effet = k;
+    art.innerHTML = `<header><label class="fx-power" title="${e[k].actif ? "Éteindre" : "Allumer"} ${NOMS_FX[k].toLowerCase()}"><input type="checkbox" data-actif="${k}"${e[k].actif ? " checked" : ""} aria-label="${NOMS_FX[k]} : allumé"><span class="fx-led" aria-hidden="true"></span></label><h3>${NOMS_FX[k]}</h3><button type="button" class="croix-b" data-retirer="${k}" aria-label="Retirer ${esc(NOMS_FX[k].toLowerCase())} de la piste"><span class="croix" aria-hidden="true"></span></button></header>
+      <canvas class="fx-viz" role="img" aria-label="${esc(SCHEMAS_FX[k])}"></canvas>${k === "filtre" ? `<label class="fx-type">Type <select data-fx="filtre.type"><option value="passe-bas"${e.filtre.type === "passe-bas" ? " selected" : ""}>passe-bas (enlève les aigus)</option><option value="passe-haut"${e.filtre.type === "passe-haut" ? " selected" : ""}>passe-haut (enlève les graves)</option></select></label>` : ""}
+      <div class="fx-boutons"></div>${k === "echo" ? `<p class="fx-dist" id="fx-distance">Avec ${sec(e.echo.temps)}, la paroi serait à environ ${Math.round(P.distanceEcho(e.echo.temps))} m.</p>` : ""}
+      <details class="fx-ex"><summary>À quoi ça sert ?</summary><p>${esc(P.EXPLICATIONS[k])}</p></details>`;
+    const zb = art.querySelector(".fx-boutons"), cv = art.querySelector("canvas");
+    for (const [cle, lib, lim, log, pas, fmt, def] of REGLAGES_FX[k]) {
+      zb.appendChild(creerBouton({ libelle: lib, nom: `${NOMS_FX[k]}, ${lib.toLowerCase()}`, min: L[lim][0], max: L[lim][1], valeur: e[k][cle], def, pas, log, format: fmt, donnee: `${k}.${cle}`, taille: 52,
+        onInput: v => { pi.effets = P.effetsDe(pi); pi.effets[k][cle] = k === "filtre" && cle === "frequence" ? Math.round(v) : v; schemaFx(cv, k, P.effetsDe(pi)); if (k === "echo" && cle === "temps") art.querySelector("#fx-distance").textContent = `Avec ${sec(v)}, la paroi serait à environ ${Math.round(P.distanceEcho(v))} m.`; ranger(); }, onChange: relancer }));
+    }
+    zone.appendChild(art); requestAnimationFrame(() => schemaFx(cv, k, P.effetsDe(pi)));
+  }
+  z.querySelector("#fx-ajouter").onchange = ev => { if (P.ajouterEffet(pi, ev.target.value)) { message(`${NOMS_FX[ev.target.value]} ajouté à la piste « ${pi.nom} ».`); changer(); } };
+  z.querySelector("#fx-fermer").onclick = () => { etat.fx = null; afficher(); };
+  z.querySelectorAll("[data-actif]").forEach(x => x.onchange = () => { P.interrupteurEffet(pi, x.dataset.actif, x.checked); changer(); });
+  z.querySelectorAll("[data-retirer]").forEach(x => x.onclick = () => { P.retirerEffet(pi, x.dataset.retirer); message(`${NOMS_FX[x.dataset.retirer]} retiré de la piste « ${pi.nom} » (Ctrl+Z pour l'annuler).`); changer(); });
+  z.querySelectorAll("select[data-fx]").forEach(x => x.onchange = () => { pi.effets = P.effetsDe(pi); const [k2, c2] = x.dataset.fx.split("."); pi.effets[k2][c2] = x.value; changer(); });
 }
 
 // ---------------------------------------------------------------- export

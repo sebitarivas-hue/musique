@@ -6,10 +6,17 @@ const nouvelId = p => p + Date.now().toString(36) + (compteur++).toString(36);
 export function nouveauProjet({ titre = "Sans titre", tempo = 100, temps = 4 } = {}) {
   return { format: "sonora-pistes", version: 1, titre, tempo, temps, pistes: [nouvellePiste("Piste 1"), nouvellePiste("Piste 2")], sons: {} };
 }
-export function nouvellePiste(nom) { return { id: nouvelId("p"), nom, volume: 0.8, pan: 0, muet: false, solo: false, clips: [], effets: effetsParDefaut() }; }
+export function nouvellePiste(nom) { return { id: nouvelId("p"), nom, volume: 0.8, pan: 0, muet: false, solo: false, clips: [], effets: effetsParDefaut(), rack: [] }; }
 // Effets d'une piste : filtre, écho, réverbération. Chacun a un interrupteur et des réglages ; ils s'appliquent à toute la piste, avant le volume.
 export const effetsParDefaut = () => ({ filtre: { actif: false, type: "passe-bas", frequence: 1500 }, echo: { actif: false, temps: 0.35, retour: 0.4, melange: 0.35 }, reverb: { actif: false, duree: 2, aigus: 6000, melange: 0.3 } });
 export function effetsDe(pi) { const d = effetsParDefaut(), e = pi.effets || {}; return { filtre: { ...d.filtre, ...(e.filtre || {}) }, echo: { ...d.echo, ...(e.echo || {}) }, reverb: { ...d.reverb, ...(e.reverb || {}) } }; }
+// Le rack : les effets que la piste montre, dans l'ordre fixe filtre, écho, réverbération. Un effet du rack peut être éteint (interrupteur) ou retiré (croix) ;
+// retirer garde ses réglages. Un ancien projet sans rack montre les effets qui étaient allumés.
+export const EFFETS_ORDRE = ["filtre", "echo", "reverb"];
+export function rackDe(pi) { const e = effetsDe(pi), r = Array.isArray(pi.rack) ? pi.rack : null; return EFFETS_ORDRE.filter(k => (r ? r.includes(k) : e[k].actif)); }
+export function ajouterEffet(pi, k) { if (!EFFETS_ORDRE.includes(k)) return false; const e = pi.effets = effetsDe(pi); pi.rack = EFFETS_ORDRE.filter(x => x === k || rackDe(pi).includes(x)); e[k].actif = true; return true; }
+export function retirerEffet(pi, k) { if (!EFFETS_ORDRE.includes(k)) return false; const e = pi.effets = effetsDe(pi); pi.rack = rackDe(pi).filter(x => x !== k); e[k].actif = false; return true; }
+export function interrupteurEffet(pi, k, actif) { if (!EFFETS_ORDRE.includes(k)) return false; pi.rack = rackDe(pi); const e = pi.effets = effetsDe(pi); e[k].actif = !!actif; return true; } // l'effet reste dans le rack, éteint
 export const LIMITES_EFFETS = { frequence: [60, 12000], temps: [0.05, 1.5], retour: [0, 0.85], melange: [0, 1], duree: [0.3, 8], aigus: [1500, 20000] };
 // Explications données à côté de chaque effet.
 export const EXPLICATIONS = {

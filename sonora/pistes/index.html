@@ -21,7 +21,7 @@
   <section class="transport" aria-label="Transport">
     <button type="button" id="b-lire" class="principal" title="Lecture et arrêt (barre d'espace)">&#9654; Lire</button>
     <button type="button" id="b-debut" title="Revenir au début">&#9198; Début</button>
-    <button type="button" id="b-enreg" class="enreg" aria-pressed="false" title="Enregistrer au micro sur la piste choisie (touche R)">&#9679; Enregistrer</button>
+    <button type="button" id="b-enreg" class="enreg" aria-pressed="false" title="Enregistrer au micro sur la piste choisie (touche R)"><span class="pastille-rec" aria-hidden="true"></span> Enregistrer</button><span class="vu" id="vu-micro" role="meter" aria-label="Niveau du micro" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i></i></span>
     <span class="position" id="position" aria-live="off">0:00.0</span>
     <label class="mini">Tempo<input type="number" id="tempo" min="40" max="240" value="100"></label>
     <label class="mini">Aimant<select id="aimant"><option value="0">aucun</option><option value="1" selected>temps</option><option value="0.5">demi-temps</option><option value="0.25">double croche</option></select></label>
@@ -44,12 +44,12 @@
     <button type="button" id="b-supprimer" title="Supprimer (touche Suppr)">Supprimer</button>
     <label class="mini">Gain<input type="range" id="sel-gain" min="0" max="2" step="0.01"></label>
   </section>
-  <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
   <p class="petit aide" id="message" role="status" aria-live="polite">Glisse des fichiers audio sur une piste, ou choisis une piste et appuie sur Enregistrer. Les sons restent dans ce navigateur.</p>
   <div class="ligne" id="ligne">
     <div class="entetes" id="entetes"></div>
     <div class="defile" id="defile"><div class="regle" id="regle" aria-label="Règle : clique pour placer le curseur"></div><div class="voies" id="voies"></div><div class="curseur" id="curseur" aria-hidden="true"></div></div>
   </div>
+  <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
 <script type="module" src="pistes.js"></script>
 <script src="../retour.js"></script>
