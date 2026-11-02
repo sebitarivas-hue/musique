@@ -5492,8 +5492,18 @@ document.addEventListener("click", e => {
   let u; try { u = new URL(a.href); } catch (_) { return; } if (u.origin === location.origin) return;
   if (ouvrirFenetreExterne(a.href, (a.textContent || "").replace(/\s+/g, " ").trim().slice(0, 80))) e.preventDefault();
 }, true);
+/* Origine pour les pages hors du site (SONORA, Atlas) : l'adresse complète de la page où l'on est, son titre et l'espace. Leur barre commune s'en sert pour
+   « Retour », « Mon cours » et « Mon parcours » (sonora/barre-cours.js). La page précédente transmise par le navigateur perdrait tout ce qui suit le « # ». */
+function noterOrigine() {
+  const v = (location.hash || "#semaine").slice(1); if (!role() || v === "accueil") return;
+  const h = app.querySelector("h1"), t = (h ? (h.children.length ? [...h.children].map(x => x.textContent).join(" ") : h.textContent) : document.title).replace(/\s+/g, " ").trim(), espace = D.eleves ? "eleves" : "prof";
+  const o = JSON.stringify({ u: location.href, t, espace });
+  try { sessionStorage.setItem("cours:origine", o); localStorage.setItem("cours:origine", o); localStorage.setItem("cours:espace", espace); if (/^(semaine|cours|seq|seance)/.test(v)) localStorage.setItem("cours:dernier", o); } catch (_) {}
+}
 window.addEventListener("hashchange", rendre);
+window.addEventListener("hashchange", () => setTimeout(noterOrigine, 60));
 rendre();
+setTimeout(noterOrigine, 60);
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").then(r => r.update()).catch(() => {});
 </script>
 

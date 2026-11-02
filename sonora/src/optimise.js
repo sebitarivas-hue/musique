@@ -5,7 +5,7 @@
 //   4. suppression des nœuds que ni la sortie ni un retard n'utilisent ;
 //   5. renumérotation compacte.
 // Le pliage des constantes a lieu à la construction du graphe (Graphe.op). Le résultat numérique ne change pas.
-import { Graphe } from "./graphe.js?v=f449dbf2ea";
+import { Graphe } from "./graphe.js?v=5a3dc26c82";
 
 // g : graphe d'un module ; racines : ids de sortie. Ne modifie pas g.
 export function optimiser(g, racines, options = {}) {

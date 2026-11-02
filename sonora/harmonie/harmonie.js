@@ -1,16 +1,16 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=f449dbf2ea";
-import { rendreSuite, evenementsProgression, INSTRUMENTS } from "./son.js?v=f449dbf2ea";
-import { heros, etatBouton } from "../studio/heros.js?v=f449dbf2ea";
-import { encoderWAV } from "../studio/wav.js?v=f449dbf2ea";
-import { dessinerOscillo } from "../studio/visuels.js?v=f449dbf2ea";
-import * as P from "../pistes/projet.js?v=f449dbf2ea";
-import { Stockage } from "../pistes/stockage.js?v=f449dbf2ea";
-import * as A from "./accords.js?v=f449dbf2ea";
-import * as V from "./voicings.js?v=f449dbf2ea";
-import * as G from "./grille.js?v=f449dbf2ea";
-import { partitionSVG } from "./partition.js?v=f449dbf2ea";
+import * as H from "./theorie.js?v=5a3dc26c82";
+import { rendreSuite, evenementsProgression, INSTRUMENTS } from "./son.js?v=5a3dc26c82";
+import { heros, etatBouton } from "../studio/heros.js?v=5a3dc26c82";
+import { encoderWAV } from "../studio/wav.js?v=5a3dc26c82";
+import { dessinerOscillo } from "../studio/visuels.js?v=5a3dc26c82";
+import * as P from "../pistes/projet.js?v=5a3dc26c82";
+import { Stockage } from "../pistes/stockage.js?v=5a3dc26c82";
+import * as A from "./accords.js?v=5a3dc26c82";
+import * as V from "./voicings.js?v=5a3dc26c82";
+import * as G from "./grille.js?v=5a3dc26c82";
+import { partitionSVG } from "./partition.js?v=5a3dc26c82";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

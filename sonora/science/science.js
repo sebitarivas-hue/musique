@@ -1,16 +1,16 @@
 // SONORA Science : fiches d'expériences. Le programme de chaque fiche est du SONORA ; l'écoute passe par le moteur (AudioWorklet),
 // la mesure par le même noyau rendu hors ligne ; tous les chiffres affichés sont calculés sur ces signaux.
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=f449dbf2ea";
-import { formater, vers, depuis } from "../studio/reglages-commun.js?v=f449dbf2ea";
-import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=f449dbf2ea";
-import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=f449dbf2ea";
-import { EXEMPLES } from "../studio/exemples.js?v=f449dbf2ea";
-import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=f449dbf2ea";
-import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=f449dbf2ea";
-import { Escalier } from "./psychophysique.js?v=f449dbf2ea";
-import { heros, etatBouton } from "../studio/heros.js?v=f449dbf2ea";
-import * as A from "./analyse.js?v=f449dbf2ea";
-import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=f449dbf2ea";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=5a3dc26c82";
+import { formater, vers, depuis } from "../studio/reglages-commun.js?v=5a3dc26c82";
+import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=5a3dc26c82";
+import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=5a3dc26c82";
+import { EXEMPLES } from "../studio/exemples.js?v=5a3dc26c82";
+import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=5a3dc26c82";
+import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=5a3dc26c82";
+import { Escalier } from "./psychophysique.js?v=5a3dc26c82";
+import { heros, etatBouton } from "../studio/heros.js?v=5a3dc26c82";
+import * as A from "./analyse.js?v=5a3dc26c82";
+import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=5a3dc26c82";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
