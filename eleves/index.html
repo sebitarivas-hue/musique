@@ -1438,6 +1438,8 @@ html.signal .rappel .listen { border-top: 1px solid #3A3A35; } html.signal .rapp
 .lab-adsr-c { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 10px; }
 .lab-adsr-r { display: flex; flex-direction: column; gap: 4px; border-top: 2px solid #D6FF00; padding-top: 6px; } .lab-adsr-l { font: 600 13px var(--f-mono); color: #F0EFE8; } .lab-adsr-l b { color: #D6FF00; font-size: 1.3em; }
 .lab-adsr-l output { color: #D6FF00; margin-left: 4px; } .lab-adsr-r input { width: 100%; min-height: 32px; accent-color: #D6FF00; }
+.bl-defis { margin-top: 12px; } .bl-defis summary { cursor: pointer; font-weight: 600; } .bl-defis ol { margin: 8px 0 0 1.2em; padding: 0; line-height: 1.5; }
+.bl-fams { display: grid; gap: 14px; } .bl-fam-t { margin: 0; font: 700 1rem/1.2 var(--f-titre); } .bl-fam .small { margin: 2px 0 6px; } .pastille-bl.ecoute { border-style: dashed; } .bl-liens { display: inline-flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; } .bl-liens a { font-weight: 600; }
 .lab-adsr-d { font-size: .8rem; line-height: 1.4; color: #BEBDB4; } .lab-adsr-note { margin: 0; font: 400 11px/1.5 var(--f-mono); color: #9F9E96; }
 .lab-legende { display: flex; justify-content: space-between; gap: 10px; font: 400 10.5px var(--f-mono); color: #9F9E96; text-transform: uppercase; letter-spacing: .04em; }
 .lab-familles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 0; border-top: 1px solid #3A3A35; border-left: 1px solid #3A3A35; }
@@ -2838,6 +2840,24 @@ const RYTHMES = [
   { id: "teental", nom: "Teental (16 temps, musique hindoustanie)", bpm: 36, kick: "kick909", swing: 0, atlas: "hindustani", pistes: { tom: "x...x...x...x...", clap: "x...x.......x..." },
     note: "Le cycle de seize temps le plus courant de la musique du nord de l'Inde : quatre groupes de quatre. On frappe des mains aux temps 1, 5 et 13 (tali). Au temps 9, la main reste ouverte : c'est le khali, le « vide ». Le premier temps, sam, est le point d'arrivée de toute improvisation.",
     lien: "Ailleurs : un cycle qu'on compte et qu'on ressent, où le silence d'une main fait partie du rythme." },
+  { id: "rock", nom: "Rock : le beat de base", bpm: 120, kick: "kick909", swing: 0, atlas: "rock-roll", pistes: { kick: "x.......x.x.....", snare: "....x.......x...", hatc: "x.x.x.x.x.x.x.x." },
+    note: "La grosse caisse sur les temps 1 et 3, la caisse claire sur les temps 2 et 4, le charleston qui bat les croches : le premier rythme qu'apprend un batteur de rock.",
+    lien: "Plus ancien : la caisse claire sur les temps 2 et 4 (le backbeat) vient du rhythm and blues et du jazz." },
+  { id: "dembow", nom: "Dembow : reggaeton", bpm: 95, kick: "kick909", swing: 0, atlas: "reggaeton", pistes: { kick: "x...x...x...x...", snare: "...x..x....x..x." },
+    note: "La grosse caisse bat chaque temps, et la caisse claire répète un petit motif décalé, comme un « boum-tchi-boum-tchi » : c'est la base du reggaeton.",
+    lien: "Plus ancien : ce motif vient du dancehall jamaïcain, repris ensuite dans les musiques latines." },
+  { id: "ska", nom: "Ska : le contretemps", bpm: 150, kick: "kick909", swing: 0, atlas: "ska", pistes: { kick: "x...x...x...x...", rim: "..x...x...x...x." },
+    note: "Le claquement tombe entre les temps, sur les contretemps (ici le rimshot) : c'est le « off-beat ». On a envie de bouger vite.",
+    lien: "Plus ancien : le ska est né en Jamaïque, à la fin des années 1950 ; le reggae en est la version plus lente." },
+  { id: "bossa", nom: "Bossa nova : la clave brésilienne", bpm: 120, kick: "kick909", swing: 0, atlas: "bossa-nova", pistes: { rim: "x..x..x...x..x.." },
+    note: "Cinq coups sur seize pas, presque comme la clave cubaine mais plus léger : c'est le balancement doux de la bossa nova.",
+    lien: "Plus ancien : elle est née au Brésil, à Rio, à la fin des années 1950, du mélange du samba et du jazz." },
+  { id: "valse", nom: "Valse : trois temps", bpm: 110, kick: "kick909", swing: 0, pas: 12, pistes: { kick: "x...........", clap: "....x...x..." },
+    note: "Trois temps : un coup grave, puis deux coups légers. On compte « un, deux, trois » en tournant.",
+    lien: "Ailleurs : la valse est une danse tournée d'Europe, devenue danse de bal à Vienne autour de 1800." },
+  { id: "sixhuit", nom: "Six-huit : deux fois trois", bpm: 120, kick: "kick909", swing: 0, pas: 12, pistes: { kick: "x.....x.....", rim: "..x.x...x.x." },
+    note: "Six croches groupées en deux fois trois : on compte « un-deux-trois, quatre-cinq-six ». Cela donne un balancement qui roule.",
+    lien: "Ailleurs : on l'entend dans la gigue irlandaise et dans de nombreux blues lents." },
   { id: "spondee", nom: "Spondée : longue, longue", bpm: 100, kick: "kick909", swing: 0, famille: "grec", pistes: { tom: "x...x...x...x..." },
     note: "Deux longues (– –) : le pied le plus lent et le plus solennel. Le mot vient de spondê, la libation que l'on verse aux dieux. Le tom marque une longue.",
     lien: "Une longue dure deux brèves : c'est la règle de toute la métrique grecque." },
@@ -2874,18 +2894,39 @@ function sequenceur(lire, pas) {
   const id = setInterval(tic, 25); tic(); return { arreter() { actif = false; clearInterval(id); } };
 }
 /* Le beat lab : une grille, des rythmes à charger, le nom du rythme quand on le reconnaît. */
-const LABO_PISTES = { "6e": ["kick", "snare", "hatc"], "5e": ["kick", "snare", "clap", "hatc", "hato"], "4e": ["kick", "snare", "clap", "hatc", "hato", "rim", "cow"], "3e": PISTES.map(p => p[0]) };
-const LABO_RYTHMES = { "6e": ["house", "boombap", "reggae"], "5e": ["house", "boombap", "reggae"], "4e": ["house", "boombap", "reggae", "tresillo", "clave-son", "clave-rumba"], "3e": RYTHMES.filter(r => !r.pas && !r.famille).map(r => r.id) };
+const LABO_PISTES = { "6e": ["kick", "snare", "hatc"], "5e": ["kick", "snare", "clap", "hatc", "hato", "rim"], "4e": ["kick", "snare", "clap", "hatc", "hato", "rim", "cow"], "3e": PISTES.map(p => p[0]) };
+/* Les rythmes rangés par famille, avec une question à se poser : ce qu'on écoute, pas une leçon d'histoire. */
+const FAMILLES_RYTHME = [
+  ["danse", "Les danses d'aujourd'hui", "Compte les temps : où tombe la grosse caisse ?", ["house", "trap", "dnb", "dembow"]],
+  ["rap", "Rap, reggae et ska", "Quel temps reste vide ? Quel temps est claqué ?", ["boombap", "reggae", "ska"]],
+  ["rock", "Le rock", "La caisse claire tombe aux temps 2 et 4 : tape-les dans tes mains.", ["rock"]],
+  ["afro", "Afrique, Cuba, Brésil", "Un motif court qu'on répète sans cesse. Chante-le avant de le jouer.", ["clave-son", "clave-rumba", "tresillo", "bossa", "habanera", "bembe"]],
+  ["mesures", "Compter autrement", "Ici on ne compte pas jusqu'à quatre : combien de temps dans un tour ?", ["valse", "sixhuit", "aksak", "teental"]],
+  ["grec", "Les pieds grecs", "Une longue dure le double d'une brève. Dis les syllabes en rythme.", ["spondee", "iambe", "trochee", "dactyle", "anapeste"]]];
+/* Ce que chaque classe voit (les rythmes de seize pas se chargent dans la grille ; les autres, de 8, 9, 12 ou 16 temps à compter autrement, s'écoutent). */
+const LABO_RYTHMES = { "6e": ["house", "boombap", "reggae", "rock"], "5e": ["house", "boombap", "reggae", "rock", "ska", "dembow", "trap"], "4e": ["house", "boombap", "reggae", "rock", "ska", "dembow", "trap", "dnb", "tresillo", "clave-son", "clave-rumba", "bossa"], "3e": RYTHMES.map(r => r.id) };
+/* Où aller depuis un rythme : sa carte du monde, son entrée de l'Atlas, un jeu pour s'entraîner. */
+const RYTHME_MONDE = { reggae: "jamaique", ska: "jamaique", dembow: "jamaique", boombap: "bronx", "clave-son": "cuba", "clave-rumba": "cuba", tresillo: "cuba", habanera: "cuba", bembe: "cuba", bossa: "rio", aksak: "bulgarie", teental: "hindoustani", spondee: "grece", iambe: "grece", trochee: "grece", dactyle: "grece", anapeste: "grece" };
+/* Des défis courts, à faire avec la grille : on manipule un rythme pour entendre ce qui change. Pas de points. */
+const DEFIS_BEAT = {
+  "6e": ["Charge House, puis efface la grosse caisse. Que reste-t-il pour danser ?", "Charge Boom bap et déplace la caisse claire d'un pas. Entends-tu la différence ?", "Fabrique un rythme où la grosse caisse tombe sur chaque temps."],
+  "5e": ["Charge Rock, puis passe le swing à 30 %. Le rythme devient-il plus sautillant ?", "Charge Reggae, puis Ska : lequel te donne envie de bouger plus vite ? Pourquoi ?", "Écris un rythme de rap sur la grille et donne-lui un nom."],
+  "4e": ["Charge Clave son, puis Clave rumba : un seul coup change de place. Chante les deux.", "Charge Bossa nova et tape la grosse caisse sur chaque temps : que ressent-on ?", "Écoute le Tresillo (3 + 3 + 2) et retrouve-le dans la clave."],
+  "3e": ["Écoute Valse, puis Six-huit : combien de temps dans un tour ? Comment le sent-on ?", "Charge Clave son puis Habanera (en écoute) : quel point commun entends-tu ?", "Compose un rythme de seize pas qui mélange deux familles, et explique ce que tu as gardé de chacune."]
+};
+const liensRythme = R => [R.atlas && D.atlas ? `<a href="${esc(D.atlas)}#e/${R.atlas}">Dans l'Atlas</a>` : "", RYTHME_MONDE[R.id] ? `<a href="#monde-${RYTHME_MONDE[R.id]}">Sur la carte du monde</a>` : "",
+  `<a href="#ludo-${R.famille === "grec" ? "quel-pied-grec" : "quel-genre-rythme"}">S'entraîner : le reconnaître</a>`, `<a href="#faust-rythmes">L'atelier des rythmes</a>`].filter(Boolean).join(" ");
 function beatLabHtml(k) {
   const pistes = PISTES.filter(([p]) => LABO_PISTES[k].includes(p));
   return `<section class="at-beat"><h2 class="sec">${{ "6e": "Mon premier beat", "5e": "La boucle de batterie", "4e": "Clave, tresillo et balancement", "3e": "Le beat lab" }[k] || "Le beat lab"}</h2><p class="small">Allume des cases pour fabriquer un rythme de seize pas. Charge un rythme célèbre pour l'entendre, puis modifie-le. La grosse caisse, la caisse claire et les charlestons sont calculés avec Faust.</p>
-    <div class="bl-presets" role="group" aria-label="Rythmes à charger">${LABO_RYTHMES[k].map(id => `<button type="button" class="pastille-bl" data-r="${id}">${esc(rythme(id).nom)}</button>`).join("")}<button type="button" class="pastille-bl vide" id="bl-vide">Tout effacer</button></div>
+    <div class="bl-fams">${FAMILLES_RYTHME.map(([f, nom, q, ids]) => { const L = ids.filter(id => (LABO_RYTHMES[k] || LABO_RYTHMES["3e"]).includes(id)); return L.length ? `<div class="bl-fam"><h3 class="bl-fam-t">${esc(nom)}</h3><p class="small">${esc(q)}</p><div class="bl-presets" role="group" aria-label="${esc(nom)}">${L.map(id => { const R = rythme(id), seize = (R.pas || 16) === 16 && !R.famille; return `<button type="button" class="pastille-bl${seize ? "" : " ecoute"}" data-${seize ? "r" : "ec"}="${id}"${seize ? "" : ` title="À écouter : ce rythme ne se charge pas dans la grille de seize pas"`}>${esc(R.nom)}${seize ? "" : " (écoute)"}</button>`; }).join("")}</div></div>` : ""; }).join("")}<div class="bl-presets"><button type="button" class="pastille-bl vide" id="bl-vide">Tout effacer</button></div></div>
     <div class="bl-grille" role="group" aria-label="Grille de seize pas">${pistes.map(([p, n]) => `<div class="bl-ligne"><span class="bl-nom">${n}</span><div class="bl-pas-ligne">${Array.from({ length: 16 }, (_, i) => `<button type="button" class="bl-pas t${i % 4 === 0 ? "1" : ""}" data-p="${p}" data-i="${i}" aria-pressed="false" aria-label="${n}, pas ${i + 1}"></button>`).join("")}</div></div>`).join("")}</div>
     <div class="bl-cmd"><button type="button" class="at-play bl-play" id="bl-play" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg><span>Jouer</span></button>
       <label class="bl-c">Tempo <output id="bl-ot">110</output><input id="bl-t" type="range" min="60" max="180" value="110" aria-label="Tempo"></label>
       <label class="bl-c">Swing <output id="bl-os">0 %</output><input id="bl-s" type="range" min="0" max="50" value="0" aria-label="Swing"></label>
       <label class="bl-c">Grosse caisse <select id="bl-k" aria-label="Grosse caisse"><option value="kick909">909 (sèche)</option><option value="kick808">808 (longue)</option></select></label></div>
-    <p class="bl-nomrythme" id="bl-nom" aria-live="polite"></p></section>`;
+    <p class="bl-nomrythme" id="bl-nom" aria-live="polite"></p>
+    <details class="bl-defis"><summary>Trois défis pour t'entraîner</summary><ol>${(DEFIS_BEAT[k] || DEFIS_BEAT["6e"]).map(d => `<li>${esc(d)}</li>`).join("")}</ol></details></section>`;
 }
 function brancherBeatLab() {
   const $ = id => document.getElementById(id); if (!$("bl-play")) return;
@@ -2893,11 +2934,14 @@ function brancherBeatLab() {
   let seq = null; const cour = () => ({ bpm: +$("bl-t").value, swing: +$("bl-s").value / 100, kick: $("bl-k").value, pistes: Object.fromEntries(Object.entries(grille).map(([p, a]) => [p, a.join("")]).filter(([, c]) => c.includes("x"))) });
   const maj = () => { boutons.forEach(b => b.setAttribute("aria-pressed", String(grille[b.dataset.p][+b.dataset.i] === "x")));
     const c = cour().pistes, cles = Object.keys(c), R = RYTHMES.find(r => Object.keys(r.pistes).length === cles.length && cles.every(p => r.pistes[p] === c[p]));
-    $("bl-nom").innerHTML = R ? `C'est le rythme : <b>${esc(R.nom)}</b>. ${esc(R.note)} ${R.atlas && D.atlas ? `<a href="${esc(D.atlas)}#e/${R.atlas}">Dans l'Atlas &#8250;</a>` : ""}` : (cles.length ? "Ton rythme à toi. Charge un rythme célèbre pour le comparer." : ""); };
+    $("bl-nom").innerHTML = R ? `C'est le rythme : <b>${esc(R.nom)}</b>. ${esc(R.note)} <span class="bl-liens">${liensRythme(R)}</span>` : (cles.length ? "Ton rythme à toi. Charge un rythme célèbre pour le comparer." : ""); };
   const arreter = () => { if (seq) { seq.arreter(); seq = null; } $("bl-play").setAttribute("aria-pressed", "false"); $("bl-play").querySelector("span").textContent = "Jouer"; boutons.forEach(b => b.classList.remove("curseur")); };
   boutons.forEach(b => b.onclick = () => { const a = grille[b.dataset.p], i = +b.dataset.i; a[i] = a[i] === "x" ? "." : "x"; maj(); if (!seq) { chargerMachine().then(() => { if (machinePrete()) { deverrouiller(); frappe(SON_PISTE(b.dataset.p, $("bl-k").value), AC.currentTime + .01, VOL_PISTE[b.dataset.p]); } }); } });
   document.querySelectorAll(".pastille-bl[data-r]").forEach(b => b.onclick = () => { const R = rythme(b.dataset.r); Object.keys(grille).forEach(p => { grille[p] = (R.pistes[p] || ".".repeat(16)).padEnd(16, ".").slice(0, 16).split(""); });
     $("bl-t").value = R.bpm; $("bl-s").value = Math.round((R.swing || 0) * 100); $("bl-k").value = R.kick; $("bl-ot").textContent = R.bpm; $("bl-os").textContent = Math.round((R.swing || 0) * 100) + " %"; maj(); });
+  /* Les rythmes qui ne tiennent pas dans seize pas (valse, six-huit, aksak, cycle indien, pieds grecs) s'écoutent, avec leur explication et leurs liens. */
+  document.querySelectorAll(".pastille-bl[data-ec]").forEach(b => b.onclick = async () => { const R = rythme(b.dataset.ec); arreter(); deverrouiller(); audio(); b.setAttribute("aria-busy", "true"); await chargerMachine(); b.removeAttribute("aria-busy"); if (!machinePrete()) return;
+    $("bl-nom").innerHTML = `<b>${esc(R.nom)}.</b> ${esc(R.note)} <span class="bl-liens">${liensRythme(R)}</span>`; programmerRythme(R, repetitions(R), .12); });
   $("bl-vide").onclick = () => { Object.keys(grille).forEach(p => { grille[p] = Array(16).fill("."); }); maj(); };
   $("bl-t").oninput = () => { $("bl-ot").textContent = $("bl-t").value; }; $("bl-s").oninput = () => { $("bl-os").textContent = $("bl-s").value + " %"; };
   $("bl-play").onclick = async () => { if (seq) { arreter(); return; } deverrouiller(); audio(); $("bl-play").setAttribute("aria-busy", "true"); await chargerMachine(); $("bl-play").removeAttribute("aria-busy");
@@ -5007,13 +5051,13 @@ function accordPad(debut, dur, att, rel, vol, filtreHz, porte) {
 }
 Object.assign(LUDO_GEN, {
   "quel-genre-rythme": niv => {
-    const pool = niv === 0 ? ["house", "boombap", "reggae"] : ["house", "boombap", "reggae", "trap", "dnb"], id = hasard(pool), R0 = rythme(id);
+    const pool = niv === 0 ? ["house", "boombap", "reggae", "rock"] : ["house", "boombap", "reggae", "rock", "trap", "dnb", "dembow", "ska"], id = hasard(pool), R0 = rythme(id);
     const R = Object.assign({}, R0, { bpm: Math.round(R0.bpm * (niv === 2 ? .94 + Math.random() * .12 : 1)) }), pistes = niv === 2 ? ["kick", "hatc", "hato"] : null;
     return { reponses: pool.map(x => rythme(x).nom), bonne: pool.indexOf(id), retour: `${R0.nom} : ${R0.note} ${R0.lien || ""}`.trim(), jouer: () => programmerRythme(R, 2, .12, pistes) };
   },
   "reconstitue-rythme": niv => {
-    const pool = niv === 0 ? [["house", ["kick", "clap"]], ["reggae", ["kick", "rim"]], ["tresillo", ["kick"]]] : niv === 1 ? [["boombap", ["kick", "snare", "hatc"]], ["trap", ["kick", "snare", "hatc"]], ["dnb", ["kick", "snare", "hatc"]]]
-      : [["clave-son", ["cow"]], ["clave-rumba", ["cow"]], ["habanera", ["kick"]], ["bembe", ["cow"]], ["aksak", ["kick"]], ["teental", ["tom", "clap"]], ["iambe", ["rim", "tom"]], ["trochee", ["tom", "rim"]], ["dactyle", ["tom", "rim"]], ["anapeste", ["rim", "tom"]]];
+    const pool = niv === 0 ? [["house", ["kick", "clap"]], ["reggae", ["kick", "rim"]], ["tresillo", ["kick"]]] : niv === 1 ? [["boombap", ["kick", "snare", "hatc"]], ["trap", ["kick", "snare", "hatc"]], ["dnb", ["kick", "snare", "hatc"]], ["rock", ["kick", "snare", "hatc"]], ["dembow", ["kick", "snare"]]]
+      : [["clave-son", ["cow"]], ["clave-rumba", ["cow"]], ["bossa", ["rim"]], ["valse", ["kick", "clap"]], ["sixhuit", ["kick", "rim"]], ["ska", ["kick", "rim"]], ["habanera", ["kick"]], ["bembe", ["cow"]], ["aksak", ["kick"]], ["teental", ["tom", "clap"]], ["iambe", ["rim", "tom"]], ["trochee", ["tom", "rim"]], ["dactyle", ["tom", "rim"]], ["anapeste", ["rim", "tom"]]];
     const [id, vis] = hasard(pool), R = rythme(id), N = R.pas || 16;
     const aide = R.famille === "grec" ? " Le tom marque une longue, le rimshot une brève." : "";
     return { mode: "grille", pistes: vis, pas: N, cible: Object.fromEntries(vis.map(p => [p, R.pistes[p]])), R, retour: `${R.nom}. ${R.note} ${R.lien || ""}`.trim(), aide, jouer: () => programmerRythme(R, repetitions(R), .12, vis) };
