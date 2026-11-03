@@ -1,16 +1,16 @@
 // SONORA Science : fiches d'expériences. Le programme de chaque fiche est du SONORA ; l'écoute passe par le moteur (AudioWorklet),
 // la mesure par le même noyau rendu hors ligne ; tous les chiffres affichés sont calculés sur ces signaux.
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=db143e25e1";
-import { formater, vers, depuis } from "../studio/reglages-commun.js?v=db143e25e1";
-import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=db143e25e1";
-import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=db143e25e1";
-import { EXEMPLES } from "../studio/exemples.js?v=db143e25e1";
-import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=db143e25e1";
-import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=db143e25e1";
-import { Escalier } from "./psychophysique.js?v=db143e25e1";
-import { heros, etatBouton } from "../studio/heros.js?v=db143e25e1";
-import * as A from "./analyse.js?v=db143e25e1";
-import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=db143e25e1";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=5a32811e0b";
+import { formater, vers, depuis } from "../studio/reglages-commun.js?v=5a32811e0b";
+import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=5a32811e0b";
+import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=5a32811e0b";
+import { EXEMPLES } from "../studio/exemples.js?v=5a32811e0b";
+import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=5a32811e0b";
+import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=5a32811e0b";
+import { Escalier } from "./psychophysique.js?v=5a32811e0b";
+import { heros, etatBouton } from "../studio/heros.js?v=5a32811e0b";
+import * as A from "./analyse.js?v=5a32811e0b";
+import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=5a32811e0b";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -67,12 +67,15 @@ async function ecouter(module, { accord } = {}) {
   try {
     const m = await demarrerMoteur(); await m.charger(module); for (const [n, v] of Object.entries(etat.valeurs)) m.regler(n, v);
     etat.marche = true; etat.ecouteDebut = performance.now(); badge("en écoute", "marche"); if ($("b-ecouter")) etatBouton($("b-ecouter"), true);
-    if (module.voix) { m.accord(accord || [[48, 220, 0.8], [49, 277.18, 0.8], [50, 329.63, 0.8]]); }
+    if (module.voix && etat.exp && etat.exp.cycle) {  // une note qui s'enfonce puis se relève, en boucle : on entend les quatre étapes de l'enveloppe à chaque tour
+      const { tenue, pause } = etat.exp.cycle; let on = false; clearTimeout(etat.cycleT);
+      const bascule = () => { if (!etat.marche) return; on = !on; if (on) m.noteOn(1, 220, 0.9); else m.noteOff(1); etat.cycleT = setTimeout(bascule, (on ? tenue : pause) * 1000); }; bascule();
+    } else if (module.voix) { m.accord(accord || [[48, 220, 0.8], [49, 277.18, 0.8], [50, 329.63, 0.8]]); }
   } catch (e) { badge("erreur", "erreur"); const z = $("msg-exp"); if (z) z.textContent = e instanceof ErreurMoteur ? e.message : String(e && e.message || e); }
 }
 // Temps d'écoute sans interruption de l'expérience ouverte (en secondes) : la plus longue écoute, ou celle en cours.
 const ecouteDe = id => Math.max((etat.ecoutes || {})[id] || 0, etat.marche && etat.ecouteDebut && etat.exp && etat.exp.id === id ? (performance.now() - etat.ecouteDebut) / 1000 : 0);
-async function arreterEcoute() { if (etat.marche && etat.ecouteDebut && etat.exp) { etat.ecoutes = etat.ecoutes || {}; etat.ecoutes[etat.exp.id] = ecouteDe(etat.exp.id); } etat.ecouteDebut = 0; if (etat.arretGen) { etat.arretGen(); etat.arretGen = null; } if (!etat.moteur || !etat.marche) return; etat.marche = false; await etat.moteur.arreter(); badge("prêt"); if ($("b-ecouter")) etatBouton($("b-ecouter"), false); }
+async function arreterEcoute() { clearTimeout(etat.cycleT); if (etat.marche && etat.ecouteDebut && etat.exp) { etat.ecoutes = etat.ecoutes || {}; etat.ecoutes[etat.exp.id] = ecouteDe(etat.exp.id); } etat.ecouteDebut = 0; if (etat.arretGen) { etat.arretGen(); etat.arretGen = null; } if (!etat.moteur || !etat.marche) return; etat.marche = false; await etat.moteur.arreter(); badge("prêt"); if ($("b-ecouter")) etatBouton($("b-ecouter"), false); }
 let dernier = 0;
 (function boucle(t) { requestAnimationFrame(boucle); if (t - dernier < 33) return; dernier = t; const o = $("live-oscillo"), s = $("live-spectre"); if (!o || !s) return; const x = etat.marche ? etat.tampon : null; dessinerOscillo(o, x); dessinerSpectre(s, x, etat.sr); const h = $("heros-onde"); if (h) dessinerOscillo(h, x); })(0);
 
