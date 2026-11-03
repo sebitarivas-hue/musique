@@ -73,7 +73,7 @@ button.enreg[aria-pressed="true"] { background: var(--rouge); color: #fff; borde
 .entete .b-arme[aria-pressed="true"] { background: var(--rouge); color: #fff; border-color: var(--rouge); }
 
 /* Le transport reste sous les doigts pendant qu'on fait défiler les pistes */
-.transport { position: sticky; top: 0; z-index: 20; }
+@media (min-width: 900px) { .transport { position: sticky; top: 0; z-index: 20; } } /* collant seulement sur grand écran : sur téléphone la barre fait trois lignes et cacherait la moitié de la page */
 .pastille-rec { display: inline-block; width: .8em; height: .8em; border-radius: 50%; background: var(--rouge); vertical-align: -1px; }
 button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .vu { display: inline-block; width: 96px; height: 14px; border: 2px solid var(--papier); background: var(--noir); } .vu[hidden] { display: none; } .vu i { display: block; height: 100%; width: 0; background: var(--acide); transition: width .06s linear; }
@@ -100,3 +100,26 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .fx-dist { padding: 2px 10px; font-size: .78rem; color: var(--gris); }
 .fx-ex { padding: 4px 10px 10px; font-size: .8rem; } .fx-ex summary { cursor: pointer; font-weight: 700; padding: 6px 0; } .fx-ex p { margin: 4px 0 0; color: var(--gris); }
 @media (max-width: 760px) { .fx-device { flex-basis: 84vw; } .fx-haut h2 { min-width: 0; flex: 1 1 0; } .fx-haut #fx-fermer { order: 2; } .fx-haut .fx-ajout { order: 3; flex-basis: 100%; } .fx-ajout select { width: 100%; } }
+
+/* Enveloppe de volume : un calque sur la piste ; il laisse passer les clics sauf sur la piste en cours d'édition (bouton Env) */
+.voie > svg.env { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 4; overflow: visible; }
+.voie > svg.env-edit { pointer-events: auto; cursor: crosshair; background: rgba(214, 255, 0, .10); }
+.env-un { stroke: rgba(17, 17, 15, .35); stroke-width: 1; stroke-dasharray: 4 4; } .env-l { fill: none; stroke: var(--rouge); stroke-width: 2.5; stroke-linejoin: round; }
+.env-p { fill: var(--noir); stroke: var(--acide); stroke-width: 3; cursor: grab; } .env-p:hover, .env-p:focus-visible { fill: var(--rouge); outline: none; stroke: var(--noir); }
+.entete .b-env[aria-pressed="true"] { background: var(--rouge); color: #fff; border-color: var(--rouge); }
+
+/* MIDI : jouer un instrument */
+.midi { border: 2px solid var(--noir); background: #fff; padding: 10px 12px; } .midi[hidden] { display: none; } .midi-haut { display: flex; align-items: center; justify-content: space-between; } .midi-haut h2 { margin: 0 0 4px; font-size: 1rem; }
+.midi-rang { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 6px 0; } .midi-rang button { min-height: 38px; }
+#midi-oct { display: inline-block; min-width: 1.5em; text-align: center; font: 600 1rem var(--f-mono); }
+.midi-clavier { position: relative; display: flex; height: 96px; margin-top: 8px; max-width: 760px; user-select: none; -webkit-user-select: none; touch-action: none; }
+.touche { font: 600 .65rem var(--f-mono); cursor: pointer; border: 2px solid var(--noir); margin: 0; padding: 0; display: flex; align-items: flex-end; justify-content: center; border-radius: 0; touch-action: none; min-height: 0; }
+.touche.blanche { background: #fff; flex: 1 1 0; height: 96px; color: var(--noir); padding-bottom: 4px; margin-left: -2px; } .touche.blanche:first-of-type { margin-left: 0; }
+.touche.noire { background: var(--noir); color: var(--acide); position: absolute; top: 0; width: 6%; height: 58px; z-index: 2; padding-bottom: 3px; }
+.touche.jouee { background: var(--acide) !important; color: var(--noir) !important; } .touche:focus-visible { outline: 3px solid var(--bleu); outline-offset: -3px; z-index: 3; }
+
+/* Faust et Csound */
+.moteurs { border: 2px solid var(--noir); background: #fff; padding: 10px 12px; } .moteurs[hidden] { display: none; }
+.chip-m { min-height: 38px; padding: 0 16px; font-weight: 700; } .chip-m[aria-pressed="true"] { background: var(--noir); color: var(--acide); }
+.mot-champ[hidden] { display: none; } .mot-champ { display: block; margin: 8px 0; font: 600 .8rem var(--f-body); } .mot-champ textarea { display: block; width: 100%; box-sizing: border-box; margin-top: 4px; font: 500 .85rem/1.45 var(--f-mono); border: 2px solid var(--noir); padding: 8px; background: var(--papier); resize: vertical; }
+.mot-params { flex-wrap: wrap; justify-content: flex-start; padding-left: 0; } .mot-params:empty { display: none; } .mot-etat { white-space: pre-wrap; }

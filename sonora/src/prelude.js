@@ -83,4 +83,33 @@ export const COMPOSITES = {
     soit rec y = impulsion + coef * 0.5 * (retarde(y, periode - 0.5 ech, max: 50 ms) + z1(retarde(y, periode - 0.5 ech, max: 50 ms)))
     rend y * 0.4
 }`,
+  unisson: `fonction unisson(freq : Hz, ecart : Ratio = 0.01) : Audio {
+    soit e = clamp(ecart, 0, 0.05)
+    rend (dent(freq * (1 - 2 * e)) + dent(freq * (1 - e)) + dent(freq) + dent(freq * (1 + e)) + dent(freq * (1 + 2 * e))) * 0.2
+}`,
+  formants: `fonction formants(x : Audio, f1 : Hz, f2 : Hz, f3 : Hz, q : Ratio = 8) : Audio {
+    soit qq = clamp(q, 1, 30)
+    rend (passe_bande(x, f1, qq) + 0.5 * passe_bande(x, f2, qq) + 0.25 * passe_bande(x, f3, qq)) * 0.5
+}`,
+  ecrase: `fonction ecrase(x : Audio, niveaux : Ratio = 16) : Audio {
+    soit n = clamp(arrondi(niveaux), 2, 256)
+    rend arrondi(x * n) / n
+}`,
+  cloche: `fonction cloche(freq : Hz, duree : s = 3 s) : Audio {
+    soit f = clamp(freq, 40 Hz, 2 kHz)
+    soit t = rampe(0 s, 60 s, 60 s)
+    soit d = clamp(duree, 0.3 s, 20 s)
+    soit p1 = sinus(f * 0.56) * 1.00 * exp(-6.907755 * t / (d * 1.000))
+    soit p2 = sinus(f * 0.56 + 1 Hz) * 0.67 * exp(-6.907755 * t / (d * 0.900))
+    soit p3 = sinus(f * 0.92) * 1.00 * exp(-6.907755 * t / (d * 0.650))
+    soit p4 = sinus(f * 0.92 + 1.7 Hz) * 1.80 * exp(-6.907755 * t / (d * 0.550))
+    soit p5 = sinus(f * 1.19) * 2.67 * exp(-6.907755 * t / (d * 0.325))
+    soit p6 = sinus(f * 1.70) * 1.67 * exp(-6.907755 * t / (d * 0.350))
+    soit p7 = sinus(f * 2.00) * 1.46 * exp(-6.907755 * t / (d * 0.250))
+    soit p8 = sinus(f * 2.74) * 1.33 * exp(-6.907755 * t / (d * 0.200))
+    soit p9 = sinus(f * 3.00) * 1.33 * exp(-6.907755 * t / (d * 0.150))
+    soit p10 = sinus(f * 3.76) * 1.00 * exp(-6.907755 * t / (d * 0.100))
+    soit p11 = sinus(f * 4.07) * 1.33 * exp(-6.907755 * t / (d * 0.075))
+    rend (p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9 + p10 + p11) * 0.055
+}`,
 };
