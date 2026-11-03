@@ -3199,7 +3199,7 @@ function brancherJeux() {
   function repondre(r) {
     if (!O.sons) return;
     const ok = r === O.bon; O.manche++; if (ok) O.points++; setTimeout(() => bip(ok), 50);
-    if (ok) gagner(null, 2, "oreille"); if (O.manche >= 10 && O.points === 10) gagner(null, 30, "oreille10");
+    if (ok) gagner("plafond:oreille", 2, "oreille", 1, 20); if (O.manche >= 10 && O.points === 10) gagner("oreille10", 30, "oreille10");
     $("jo-fb").textContent = (ok ? "Bien entendu. " : `Non, c'était le ${O.bon === 1 ? "premier" : "second"}. `) + (O.manche >= 10 ? `Résultat : ${O.points} sur 10.` : `${O.points} sur ${O.manche}.`);
     O.sons = null; $("jo-1").disabled = $("jo-2").disabled = true; $("jo-play").textContent = O.manche >= 10 ? "Rejouer" : "Manche suivante";
   }
@@ -3210,7 +3210,7 @@ function brancherJeux() {
   chargerInstruments([sonChoisi("son-clavier", "clavier", SONS_MELODIE)]);
   document.querySelectorAll(".piano button").forEach((b, i) => b.onclick = () => {
     jouer(+b.dataset.f, .8, .3, sonClavier(), 0, voixOpt()); b.classList.add("on"); setTimeout(() => b.classList.remove("on"), 250);
-    if (C.cible !== null) { const ok = i === C.cible; if (ok) gagner(null, 5, "clavier"); $("jc-fb").textContent = ok ? `Oui, c'était ${NOTES[i][0]}.` : `Ce n'est pas ${NOTES[i][0]}. Réécoute avec « Défi » ou cherche encore.`; if (ok) C.cible = null; }
+    if (C.cible !== null) { const ok = i === C.cible; if (ok) gagner("plafond:clavier", 5, "clavier", 1, 25); $("jc-fb").textContent = ok ? `Oui, c'était ${NOTES[i][0]}.` : `Ce n'est pas ${NOTES[i][0]}. Réécoute avec « Défi » ou cherche encore.`; if (ok) C.cible = null; }
     else $("jc-fb").textContent = NOTES[i][0];
   });
   $("jc-gamme").onclick = () => { C.cible = null; NOTES.filter(n => !n[2]).forEach(([n, f], j) => jouer(f, .4, .3, sonClavier(), j * .42, voixOpt())); $("jc-fb").textContent = "do, ré, mi, fa, sol, la, si, do"; };
@@ -3238,7 +3238,7 @@ function brancherJeux() {
   /* Instruments : de l'orchestre ou du monde */
   const I = JEU.i = { liste: INSTR, fams: FAMILLES, points: 0, total: 0 }; I.reste = melange(I.liste);
   const poser = () => { if (!I.reste.length) I.reste = melange(I.liste); I.cur = I.reste.pop(); $("ji-q").textContent = I.cur[0]; };
-  const brancherFam = () => document.querySelectorAll("[data-fam]").forEach(b => b.onclick = () => { const ok = b.dataset.fam === I.cur[1]; if (ok) gagner(null, 2, "instr"); I.total++; if (ok) I.points++; bip(ok);
+  const brancherFam = () => document.querySelectorAll("[data-fam]").forEach(b => b.onclick = () => { const ok = b.dataset.fam === I.cur[1]; if (ok) gagner("plafond:instr", 2, "instr", 1, 20); I.total++; if (ok) I.points++; bip(ok);
     $("ji-fb").textContent = `${ok ? "Oui" : "Non"} : ${I.cur[0]}, famille des ${I.cur[1]}. ${I.cur[2]} (${I.points} sur ${I.total})`; poser(); });
   const mode = monde => { I.liste = monde ? INSTR_MONDE : INSTR; I.fams = monde ? FAMILLES_MONDE : FAMILLES; I.reste = melange(I.liste);
     $("ji-orch").setAttribute("aria-pressed", !monde); $("ji-monde").setAttribute("aria-pressed", monde);
@@ -3254,7 +3254,7 @@ function brancherJeux() {
     document.querySelectorAll("#jf-l .mv").forEach(b => b.onclick = () => { const i = +b.dataset.i, j = i + +b.dataset.d; [F.l[i], F.l[j]] = [F.l[j], F.l[i]]; dessiner();
       const nb = document.querySelector(`#jf-l .mv[data-i="${j}"][data-d="${b.dataset.d}"]`) || document.querySelector(`#jf-l .mv[data-i="${j}"]`); if (nb) nb.focus(); });
   }
-  $("jf-ok").onclick = () => { const bons = F.l.filter((x, i) => [...F.l].sort((a, b) => a[1] - b[1])[i] === x).length; if (bons === F.l.length) gagner("frise:" + F.l.map(x => x[1]).join(","), 20, "frise");
+  $("jf-ok").onclick = () => { const bons = F.l.filter((x, i) => [...F.l].sort((a, b) => a[1] - b[1])[i] === x).length; if (bons === F.l.length) gagner("frise:reussie", 20, "frise");
     bip(bons === F.l.length); $("jf-fb").textContent = bons === F.l.length ? "Tout est dans l'ordre. Les dates sont affichées." : `${bons} sur ${F.l.length} à la bonne place. Les dates sont affichées : corrige, puis vérifie encore.`; dessiner(true); };
   $("jf-new").onclick = serie; serie();
 }
@@ -3693,7 +3693,7 @@ function brancherAtelier2(id) {
         else if (cl) { L.node.setParamValue(L.chemins[cl[1]], 262); L.node.setParamValue(L.chemins[cl[2]], 1); setTimeout(() => { L.node.setParamValue(L.chemins[cl[2]], 0); setTimeout(fin, 400); }, 1600); }
         else if (jouer) { const etaitOn = !!val(jouer[1]); L.node.setParamValue(L.chemins[jouer[1]], 1); setTimeout(() => { if (!etaitOn) L.node.setParamValue(L.chemins[jouer[1]], 0); fin(); }, 3500); } }); };
     $("myst-verif").onclick = () => { if (cible === null) return void (fb.textContent = "Écoute d'abord un son mystère."); const [k, l] = a.mysteres[sorte], nom = (choixDe(k).find(c => c[0] === cible) || [])[1];
-      if (val(k) === cible) { reussis++; fb.textContent = `Bravo : c'était bien ${nom}. ${reussis} trouvé${reussis > 1 ? "s" : ""} sur ${coups}. Nouveau mystère ?`; gagner(`mystere:${id}:${coups}`, 3); cible = null; }
+      if (val(k) === cible) { reussis++; fb.textContent = `Bravo : c'était bien ${nom}. ${reussis} trouvé${reussis > 1 ? "s" : ""} sur ${coups}. Nouveau mystère ?`; gagner("plafond:mystere", 3, null, 1, 15); cible = null; }
       else fb.textContent = `Pas encore : ton son et le mystère n'ont pas ${l} pareille. Réécoute les deux.`; };
   }
   function majUI() {
@@ -4274,8 +4274,7 @@ const BADGES = [
   ["faust-tous", "Ingénieur du son", "Ouvrir les 10 ateliers Faust.", "code", j => j.c.faust >= D.ateliers.length],
   ["programmeur", "Programmeur", "Lire un programme Faust ligne par ligne.", "code", j => j.c.code >= 1],
   ["fiches", "Bibliothécaire", "Lire 5 fiches de notions.", "notion", j => j.c.fiches >= 5],
-  ["serie3", "Assidu", "Venir 3 jours de suite.", "flamme", j => j.serie >= 3],
-  ["serie7", "Inarrêtable", "Venir 7 jours de suite.", "flamme", j => j.serie >= 7],
+  /* Pas de badge pour venir plusieurs jours de suite (retour du 03/11/2026) : on ne récompense pas le temps passé sur le site. */
   ["semaine", "Semaine parfaite", "Terminer toutes les quêtes d'une semaine.", "coupe", j => j.c.semaines >= 1],
 ];
 const JEU_VIDE = () => ({ xp: 0, faits: {}, badges: {}, c: {}, pays: {}, jours: [], serie: 0 });
@@ -4309,11 +4308,14 @@ function lectureSite(el, cle, xp, compteur, apres) {
   LECTURES.push(arreter);
 }
 /* Gagner des points une seule fois par action (cle), et faire avancer un compteur. */
-function gagner(cle, xp, compteur, plus) {
+/* Retour de Sébastien du 03/11/2026 : les élèves cherchent à faire le plus de points possible. Deux garde-fous :
+   - une action qui rapporte (cle) ne rapporte qu'une seule fois, jamais « une fois par jour » ;
+   - un jeu qu'on peut rejouer à l'infini (oreille, clavier, instruments, mystère) a un plafond de points (plafond) : au-delà, le jeu continue et les compteurs des badges avancent, mais plus aucun point. */
+function gagner(cle, xp, compteur, plus, plafond) {
   if (!jeuActif()) return;
   const j = jeu();
-  if (cle && j.faits[cle]) return;
-  if (cle) j.faits[cle] = 1;
+  if (plafond) { j.plafonds = j.plafonds || {}; const deja = j.plafonds[cle] || 0; xp = Math.max(0, Math.min(xp || 0, plafond - deja)); j.plafonds[cle] = deja + xp; }
+  else { if (cle && j.faits[cle]) return; if (cle) j.faits[cle] = 1; }
   if (compteur) j.c[compteur] = (j.c[compteur] || 0) + (plus || 1);
   const avant = niveauDe(j.xp); j.xp += xp || 0;
   if (xp) { XP_ATTENTE += xp; clearTimeout(XP_T); XP_T = setTimeout(() => { toast(`+${XP_ATTENTE} XP`, "xp"); XP_ATTENTE = 0; }, 300); }
@@ -4419,7 +4421,7 @@ function progresBadge(id, j) {
   return ({ "premier-son": [c.sons, 1], sonotheque: [c.sons, 20], collection: [c.sons, Object.keys(D.sons).length], lecteur: [c.parts, 3], "lecteur-expert": [c.parts, Object.keys(D.partitions).length],
     explorateur: [c.seances, 10], voyageur: [c.seances, 40], quiz: [c.quiz, 1], "quiz-parfait": [c.parfaits, 1], "quiz-maitre": [c.parfaits, 5], oreille: [c.oreille, 10], "oreille-or": [c.oreille10, 1],
     pianiste: [c.clavier, 5], orchestre: [c.instr, 15], historien: [c.frise, 1], rythmicien: [c.rythme, 1], globe: [np, 5], monde: [np, 15], faust: [c.faust, 3], "faust-tous": [c.faust, D.ateliers.length],
-    programmeur: [c.code, 1], fiches: [c.fiches, 5], serie3: [j.serie, 3], serie7: [j.serie, 7], semaine: [c.semaines, 1] })[id] || [0, 1];
+    programmeur: [c.code, 1], fiches: [c.fiches, 5], semaine: [c.semaines, 1] })[id] || [0, 1];
 }
 const lienCible = (cible, contenu, cls) => cible ? `<a class="${cls}" href="${cible[0]}"${cible[1] ? ` data-ancre="${cible[1]}"` : ""}>${contenu}</a>` : `<div class="${cls}">${contenu}</div>`;
 /* Les missions : les badges pas encore gagnés, du plus facile au plus long */
@@ -5122,7 +5124,7 @@ function brancherJeuLudo(id) {
     const msg = et === 3 ? "Trois étoiles : niveau maîtrisé." : et === 2 ? "Deux étoiles : bien joué." : et === 1 ? "Une étoile : il en faut deux pour ouvrir le niveau suivant. Réécoute la séance, puis recommence." : "Aucune étoile : réécoute la séance, puis recommence, ça vient en écoutant.";
     $("lj-fin").hidden = false; $("lj-fin").innerHTML = `<b>${E.score} sur ${M.manches}, ${et} étoile${et > 1 ? "s" : ""}.</b> ${msg}${debloque ? ` <b>Niveau ${E.niv + 2} débloqué !</b>` : ""} <button type="button" class="btn2" id="lj-rejouer">Rejouer</button>${suivant ? ` <button type="button" class="btn-main" id="lj-suivant">Niveau suivant</button>` : ""}`;
     $("lj-rejouer").onclick = () => rendre(); if ($("lj-suivant")) $("lj-suivant").onclick = () => { set("ludo-niv:" + id, String(E.niv + 1)); rendre(); };
-    gagner(`ludo:${id}:${E.niv}:${new Date().toDateString()}`, 5 + E.score * 2, "ludo");
+    gagner(`ludo:${id}:${E.niv}`, 5 + E.score * 2, "ludo");  /* une seule fois par jeu et par niveau : plus de points en rejouant chaque jour */
     for (let t = 1; t <= et; t++) gagner(`ludo-etoile:${id}:${E.niv}:${t}`, 10 * t);
     if (debloque) toast(`Niveau ${E.niv + 2} débloqué`, "xp");
     [...new Set(j.seances.map(x => x[0]))].forEach(verifierSeqs);
@@ -5206,7 +5208,7 @@ function vueParcours() {
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], q = quetes();
   let h = head("Mon parcours", `Niveau ${n + 1} : ${NIVEAUX_JEU[n][1]}`, NIVEAUX_JEU[n][2]);
   h += `<section class="niveau-carte"><div class="nc-n">${n + 1}</div><div class="nc-t"><div class="label">${j.xp} XP${NIVEAUX_JEU[n + 1] ? `, encore ${haut - j.xp} pour le niveau ${n + 2} (${esc(NIVEAUX_JEU[n + 1][1])})` : ", niveau maximum"}</div>
-    <div class="nc-b"><span style="width:${Math.min(100, (j.xp - bas) / (haut - bas) * 100)}%"></span></div><div class="nc-s"><span>${medaille("flamme", j.serie > 0, "#c2410c")} ${j.serie} jour${j.serie > 1 ? "s" : ""} d'affilée</span><span>${medaille("coupe", true)} ${Object.keys(j.badges).length} badge${Object.keys(j.badges).length > 1 ? "s" : ""} sur ${BADGES.length}</span></div></div></section>`;
+    <div class="nc-b"><span style="width:${Math.min(100, (j.xp - bas) / (haut - bas) * 100)}%"></span></div><div class="nc-s"><span>${medaille("coupe", true)} ${Object.keys(j.badges).length} badge${Object.keys(j.badges).length > 1 ? "s" : ""} sur ${BADGES.length}</span></div></div></section>`;
   h += carteMission();
   if (maClasse()) h += carteProgression(maClasse());
   h += `<h2 class="sec" id="quetes" tabindex="-1">Quêtes de la semaine</h2>`;
@@ -5216,7 +5218,7 @@ function vueParcours() {
   h += `<h2 class="sec">Badges</h2><p class="small">Touche un badge pour savoir comment le gagner et y aller directement.</p><div class="badges">${BADGES.map(([id, nom, cond, g]) => { const on = !!j.badges[id], [a, b] = progresBadge(id, j), cible = cibleBadge(id);
       return lienCible(on ? null : cible, `${medaille(g, on)}<b>${esc(nom)}</b><span class="small">${esc(cond)}</span>${on ? `<span class="b-ok">Gagné</span>` : `${b > 1 ? `<span class="b-bar"><span style="width:${Math.min(100, a / b * 100)}%"></span></span><span class="b-pr">${Math.min(a, b)} sur ${b}</span>` : ""}<span class="b-go">${cible ? "Vas-y &#8250;" : "Reviens demain"}</span>`}`, "badge" + (on ? " on" : "")); }).join("")}</div>`;
   h += `<h2 class="sec">Les niveaux</h2><ol class="niveaux-l">${NIVEAUX_JEU.map(([x, nom, d], i) => `<li class="${i <= n ? "atteint" : ""}"><span class="lvlbadge" style="background:${i <= n ? "#0b0b0b" : "transparent"};color:${i <= n ? "#fff" : "var(--muted)"};border:1.5px solid ${i <= n ? "#0b0b0b" : "var(--line)"}">${i + 1}</span><span><b>${esc(nom)}</b><span class="small">${x} XP. ${esc(d)}</span></span></li>`).join("")}</ol>`;
-  h += `<h2 class="sec">Comment gagner des XP</h2><ul class="plain"><li>Ouvrir une séance : 10 XP. Écouter une œuvre ou un écho : 5 XP.</li><li>Un exemple sonore : 5 XP. Suivre une partition jusqu'au bout : 15 XP.</li><li>Une bonne réponse au quiz : 10 XP, et 30 XP de bonus pour un quiz sans faute.</li><li>Les jeux : chaque réussite compte. Un atelier Faust : 10 XP. Une fiche : 5 XP.</li><li>Venir chaque jour : 5 XP, et la série de jours augmente.</li></ul>`;
+  h += `<h2 class="sec">Comment gagner des XP</h2><p class="small">Les points sont là pour garder une trace de ce que tu as fait, pas pour faire un concours. Ils ne se gagnent qu'en travaillant vraiment : on ne peut pas en gagner en cliquant vite, en revenant chaque jour ou en rejouant le même jeu.</p><ul class="plain"><li>Une séance : 10 XP, une seule fois, quand tu l'as lue en entier.</li><li>Un son : 5 XP, une seule fois, quand tu l'as écouté jusqu'au bout. Une partition suivie jusqu'au bout : 15 XP.</li><li>Une bonne réponse au quiz : 10 XP, une seule fois par question, et 30 XP de bonus pour un quiz sans faute.</li><li>Les jeux : chaque jeu et chaque niveau rapportent une seule fois. Les jeux d'oreille, de clavier, d'instruments et de mystère ont un plafond : une fois atteint, tu peux continuer à t'entraîner, sans plus de points.</li><li>Venir sur le site, venir plusieurs jours de suite ou y passer du temps ne rapporte rien.</li></ul>`;
   h += `<p style="margin-top:14px"><button type="button" class="btn2" onclick="guide()">Revoir « Comment ça marche »</button> <a class="btn2" href="#guide">Le guide du site</a></p>`;
   h += `<p class="small" style="margin-top:14px">Ton parcours reste sur cet appareil : rien n'est envoyé, personne d'autre ne le voit. <button type="button" class="lien-btn" id="raz-jeu">Tout recommencer à zéro</button></p>`;
   h += `<p style="margin-top:14px"><a class="btn2" href="#plus">Plus de ressources</a></p>`;
