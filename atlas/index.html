@@ -76,7 +76,9 @@ header.haut { flex-wrap: wrap; } header.haut nav { flex-wrap: wrap; }
 .avis { background: #fff; border: 2px dashed var(--noir); border-radius: 18px; padding: 10px 14px; font-size: .9rem; margin-top: 18px; }
 .arbre ul { list-style: none; margin: 0; padding-left: 20px; border-left: 2px solid var(--noir); } .arbre > ul { border: 0; padding: 0; } .arbre details { margin: 4px 0; } .arbre summary { cursor: pointer; padding: 6px 10px; border-radius: 14px; display: inline-flex; gap: 8px; align-items: center; font-weight: 600; background: #fff; border: 2px solid var(--noir); } .arbre a { text-decoration: none; display: inline-block; padding: 6px 10px; border-radius: 14px; background: #fff; border: 2px solid var(--noir); font-weight: 600; margin: 4px 0; } .arbre .pt { width: 12px; height: 12px; border-radius: 50%; background: var(--c); display: inline-block; }
 .graphe-wrap { border: 2px solid var(--noir); border-radius: 24px; background: #fff; margin-top: 12px; overflow: auto; } .graphe-wrap svg { display: block; width: 100%; height: auto; min-width: 640px; } .graphe-wrap text { font: 600 12px var(--f-txt); pointer-events: none; }
-.monde-wrap { border: 2px solid var(--noir); border-radius: 24px; overflow: hidden; margin-top: 12px; background: #dfe9f0; } .monde-wrap svg { display: block; width: 100%; height: auto; } .monde-wrap .terre { fill: #f6f2e6; stroke: #b8b2a0; stroke-width: .5; } .pt-monde { cursor: pointer; } .pt-monde circle { stroke: #fff; stroke-width: 1.5; } .pt-monde:hover circle, .pt-monde:focus circle, .pt-monde.sel circle { stroke: #11110F; stroke-width: 3; }
+.monde-wrap { position: relative; border: 2px solid var(--noir); border-radius: 24px; overflow: hidden; margin-top: 12px; background: #dfe9f0; } .monde-wrap svg { touch-action: none; cursor: grab; } .monde-wrap svg.glisse { cursor: grabbing; } .monde-wrap .m-nom { font: 600 11px var(--f-txt); fill: #11110F; paint-order: stroke; stroke: #f6f2e6; stroke-width: 3px; pointer-events: none; }
+.monde-ctrl { position: absolute; right: 10px; bottom: 10px; display: flex; } .monde-ctrl button { font: 700 1rem/1 ui-monospace, Menlo, monospace; min-width: 40px; height: 40px; padding: 0 10px; background: var(--noir); color: var(--acide); border: 2px solid var(--noir); border-left-width: 0; cursor: pointer; } .monde-ctrl button:first-child { border-left-width: 2px; } .monde-ctrl button:hover, .monde-ctrl button:focus-visible { background: var(--acide); color: var(--noir); outline: none; }
+@media (max-width: 640px) { .monde-ctrl button { min-width: 34px; height: 34px; font-size: .8rem; } } .monde-wrap svg { display: block; width: 100%; height: auto; } .monde-wrap .terre { fill: #f6f2e6; stroke: #b8b2a0; stroke-width: .5; } .pt-monde { cursor: pointer; } .pt-monde circle { stroke: #fff; stroke-width: 1.5px; vector-effect: non-scaling-stroke; } .pt-monde:hover circle, .pt-monde:focus circle, .pt-monde.sel circle { stroke: #11110F; stroke-width: 3px; }
 .champs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; } .champs label { font-weight: 600; font-size: .9rem; } .champs input[type=number] { width: 5.5em; padding: 6px 10px; border: 2px solid var(--noir); border-radius: 999px; font: 600 .95rem var(--f-txt); }
 .sections { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin-top: 10px; } .sections section { background: #fff; border: 2px solid var(--noir); border-radius: 20px; padding: 12px 16px; } .sections h3 { font: 600 .8rem/1 ui-monospace, Menlo, monospace; text-transform: uppercase; letter-spacing: .06em; margin: 2px 0 8px; } .sections p { margin: 0; font-size: .96rem; }
 .question { background: var(--acide); border-radius: 18px; padding: 10px 16px; margin-top: 8px; font-weight: 600; }
@@ -712,26 +714,69 @@ document.addEventListener("keydown", ev => {
 
 /* ---------- Carte mondiale ---------- */
 const MONDE = { fam: new Set(D.families.map(f => f.id)), sel: null, terres: null };
-function vueMonde(sel) { if (sel && E[sel]) { MONDE.sel = sel; MONDE.fam.add(E[sel].family); }
+function vueMonde(sel) { if (sel && E[sel]) { MONDE.sel = sel; MONDE.fam.add(E[sel].family); MONDE.centrer = sel; }
   return `<span class="etiq">Carte mondiale</span><h1>Où les musiques sont nées</h1><p class="lead">Chaque point est une musique placée là où elle est née ou s'est développée. ${D.entries.filter(e => e.geo).length} entrées ont un lieu ; les autres, comme les genres internationaux, n'en ont pas.</p>
   <div class="pastilles" id="mfiltres">${D.families.map(f => `<button type="button" class="pastille" data-f="${f.id}" style="--c:${COUL[f.id]}" aria-pressed="${MONDE.fam.has(f.id)}">${esc(f.name.split(",")[0])}</button>`).join("")}</div>
-  <div class="monde-wrap"><svg id="msvg" viewBox="0 0 ${D.carte.w} ${D.carte.h}" role="group" aria-label="Carte du monde des musiques"><rect width="${D.carte.w}" height="${D.carte.h}" fill="#dfe9f0"/><path id="terres" class="terre" d=""/><g id="mpts"></g></svg></div>
+  <div class="monde-wrap"><svg id="msvg" viewBox="0 0 ${D.carte.w} ${D.carte.h}" role="group" aria-label="Carte du monde des musiques"><rect width="${D.carte.w}" height="${D.carte.h}" fill="#dfe9f0"/><path id="terres" class="terre" d=""/><g id="mpts"></g><g id="mnoms"></g></svg><div class="monde-ctrl" role="group" aria-label="Zoom de la carte"><button type="button" data-z="in" aria-label="Zoomer">+</button><button type="button" data-z="out" aria-label="Dézoomer">−</button><button type="button" data-z="all">Monde entier</button></div></div>
+  <p class="petit">Glisse pour te déplacer, molette, pincement ou double clic pour zoomer ; les noms apparaissent quand on s'approche.</p>
   <div id="detail" style="margin-top:14px"></div><h2>La liste</h2><div class="pastilles" id="mliste"></div>`;
 }
 function dessinerMonde() {
   const L = D.entries.filter(e => e.geo && MONDE.fam.has(e.family));
   const dec = {}; // petit décalage quand plusieurs points tombent au même endroit
   $("#mpts").innerHTML = L.map(e => { const k = e.geo.join(","); const n = dec[k] = (dec[k] || 0) + 1; const a = n * 2.4, dx = n > 1 ? Math.cos(a) * 5 * Math.ceil(n / 6) : 0, dy = n > 1 ? Math.sin(a) * 5 * Math.ceil(n / 6) : 0;
-    return `<g class="pt-monde${e.id === MONDE.sel ? " sel" : ""}" tabindex="0" role="button" aria-label="${esc(e.name)}, ${esc(e.region)}" data-id="${e.id}"><circle cx="${e.geo[0] + dx}" cy="${e.geo[1] + dy}" r="${e.id === MONDE.sel ? 8 : 5}" fill="${COUL[e.family]}"/></g>`; }).join("");
+    const kz = mZoom(), x = e.geo[0] + dx / kz, y = e.geo[1] + dy / kz; e.__m = [x, y];
+    return `<g class="pt-monde${e.id === MONDE.sel ? " sel" : ""}" tabindex="0" role="button" aria-label="${esc(e.name)}, ${esc(e.region)}" data-id="${e.id}"><circle cx="${x}" cy="${y}" r="${(e.id === MONDE.sel ? 8 : 5) / Math.pow(kz, .8)}" fill="${COUL[e.family]}"/></g>`; }).join("");
+  mNoms(L);
   $("#mliste").innerHTML = L.map(e => `<a class="pastille clair" href="#e/${e.id}">${esc(e.name)}</a>`).join("");
-  document.querySelectorAll(".pt-monde").forEach(n => { const go = () => { MONDE.sel = n.dataset.id; dessinerMonde(); detailMonde(); }; n.onclick = go; n.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); go(); } }; });
+  document.querySelectorAll(".pt-monde").forEach(n => { const go = () => { MONDE.sel = n.dataset.id; dessinerMonde(); detailMonde(); }; n.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); go(); } }; });
+}
+/* Zoom et déplacement : on change le viewBox du SVG (le fond de carte reste net). Les points gardent à peu près leur taille à l'écran ; les noms apparaissent quand on s'approche, sans se chevaucher. */
+function mVb() { if (!MONDE.vb) MONDE.vb = { x: 0, y: 0, w: D.carte.w, h: D.carte.h }; return MONDE.vb; }
+const mZoom = () => D.carte.w / mVb().w;
+function mAppliquer() {
+  const v = mVb(), W = D.carte.w, H = D.carte.h; v.w = Math.max(W / 16, Math.min(W, v.w)); v.h = v.w * H / W;
+  v.x = Math.max(0, Math.min(W - v.w, v.x)); v.y = Math.max(0, Math.min(H - v.h, v.y));
+  const sv = $("#msvg"); if (sv) sv.setAttribute("viewBox", `${v.x} ${v.y} ${v.w} ${v.h}`);
+  window.MONDE_VUE = { zoom: +mZoom().toFixed(2), vb: [v.x, v.y, v.w, v.h].map(n => Math.round(n)), noms: document.querySelectorAll("#mnoms text").length };
+}
+function mZoomer(f, cx, cy) {   // cx, cy : point fixe en coordonnées de carte
+  const v = mVb(); cx = cx ?? v.x + v.w / 2; cy = cy ?? v.y + v.h / 2; const w2 = Math.max(D.carte.w / 16, Math.min(D.carte.w, v.w / f)), r = w2 / v.w;
+  v.x = cx - (cx - v.x) * r; v.y = cy - (cy - v.y) * r; v.w = w2; mAppliquer(); dessinerMonde();
+}
+function mNoms(L) {
+  const g = $("#mnoms"); if (!g) return; const k = mZoom(), v = mVb();
+  if (k < 2.2) { g.innerHTML = ""; if (window.MONDE_VUE) window.MONDE_VUE.noms = 0; return; }
+  const deg = id => REL.sort[id].length + REL.ent[id].length, pris = [], fs = 11 / k, out = [];
+  const vis = L.filter(e => e.__m && e.__m[0] >= v.x && e.__m[0] <= v.x + v.w && e.__m[1] >= v.y && e.__m[1] <= v.y + v.h).sort((a, b) => (b.id === MONDE.sel) - (a.id === MONDE.sel) || deg(b.id) - deg(a.id));
+  for (const e of vis) { if (out.length >= 60) break; const w = e.name.length * fs * 0.55, x = e.__m[0] + 7 / k, y = e.__m[1] + fs * 0.35, b = [x, y - fs, w, fs * 1.2];
+    if (pris.some(q => b[0] < q[0] + q[2] && b[0] + b[2] > q[0] && b[1] < q[1] + q[3] && b[1] + b[3] > q[1])) continue; pris.push(b);
+    out.push(`<text class="m-nom" x="${x}" y="${y}" style="font-size:${fs}px;stroke-width:${3 / k}px">${esc(e.name)}</text>`); }
+  g.innerHTML = out.join(""); if (window.MONDE_VUE) window.MONDE_VUE.noms = out.length;
+}
+function brancherZoomMonde() {
+  const sv = $("#msvg"), ptr = new Map(); let dernier = null, dep = 0, pince = 0;
+  const carte = (cx, cy) => { const r = sv.getBoundingClientRect(), v = mVb(); return [v.x + (cx - r.left) / r.width * v.w, v.y + (cy - r.top) / r.height * v.h]; };
+  sv.addEventListener("pointerdown", e => { sv.setPointerCapture(e.pointerId); ptr.set(e.pointerId, [e.clientX, e.clientY]); dep = 0; dernier = [e.clientX, e.clientY]; if (ptr.size === 2) { const [a, b] = [...ptr.values()]; pince = Math.hypot(a[0] - b[0], a[1] - b[1]); } });
+  sv.addEventListener("pointermove", e => { if (!ptr.has(e.pointerId)) return; ptr.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptr.size === 2) { const [a, b] = [...ptr.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pince > 0) { const [cx, cy] = carte((a[0] + b[0]) / 2, (a[1] + b[1]) / 2); mZoomer(d / pince, cx, cy); } pince = d; dep = 99; return; }
+    const dx = e.clientX - dernier[0], dy = e.clientY - dernier[1]; dep += Math.abs(dx) + Math.abs(dy); dernier = [e.clientX, e.clientY];
+    if (dep > 4) { const r = sv.getBoundingClientRect(), v = mVb(); v.x -= dx / r.width * v.w; v.y -= dy / r.height * v.h; mAppliquer(); sv.classList.add("glisse"); } });
+  const fin = e => { ptr.delete(e.pointerId); if (ptr.size < 2) pince = 0; sv.classList.remove("glisse");
+    if (ptr.size === 0 && dep <= 4) { const t = document.elementFromPoint(e.clientX, e.clientY), g = t && t.closest && t.closest(".pt-monde"); if (g) { MONDE.sel = g.dataset.id; dessinerMonde(); detailMonde(); } }
+    if (ptr.size === 0 && dep > 4) dessinerMonde(); };
+  sv.addEventListener("pointerup", fin); sv.addEventListener("pointercancel", e => { ptr.delete(e.pointerId); pince = 0; });
+  sv.addEventListener("wheel", e => { e.preventDefault(); const [cx, cy] = carte(e.clientX, e.clientY); mZoomer(Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.002)), cx, cy); }, { passive: false });
+  sv.addEventListener("dblclick", e => { const [cx, cy] = carte(e.clientX, e.clientY); mZoomer(2, cx, cy); });
+  $(".monde-ctrl").addEventListener("click", e => { const b = e.target.closest("[data-z]"); if (!b) return; if (b.dataset.z === "in") mZoomer(1.6); else if (b.dataset.z === "out") mZoomer(1 / 1.6); else { MONDE.vb = null; mAppliquer(); dessinerMonde(); } });
 }
 function detailMonde() { const e = MONDE.sel && E[MONDE.sel]; $("#detail").innerHTML = e ? `<div class="fiche-tete" style="--c:${coul(e)}"><h3 style="font:400 1.5rem var(--f-aff)">${esc(e.name)}</h3><div class="meta"><span>${esc(e.region)}</span><span>${esc(periode(e))}</span></div><p>${esc(e.description)}</p><div class="pastilles"><a class="pastille clair" href="#e/${e.id}">Comprendre cette musique &#8250;</a></div></div>` : `<p class="petit">Choisis un point pour voir la musique.</p>`; }
 function brancherMonde() {
   const fond = d => { MONDE.terres = d.terres; $("#terres").setAttribute("d", d.terres); };
   if (MONDE.terres) fond({ terres: MONDE.terres }); else fetch("../monde/carte.json").then(r => r.json()).then(d => { if ($("#terres")) fond(d); }).catch(() => {});
   $("#mfiltres").querySelectorAll("[data-f]").forEach(b => b.onclick = () => { const f = b.dataset.f; if (MONDE.fam.has(f)) { if (MONDE.fam.size > 1) MONDE.fam.delete(f); } else MONDE.fam.add(f); b.setAttribute("aria-pressed", MONDE.fam.has(f)); dessinerMonde(); });
-  dessinerMonde(); detailMonde();
+  if (MONDE.centrer && E[MONDE.centrer] && E[MONDE.centrer].geo) { const [x, y] = E[MONDE.centrer].geo, w = D.carte.w / 4; MONDE.vb = { x: x - w / 2, y: y - w * D.carte.h / D.carte.w / 2, w, h: 0 }; MONDE.centrer = null; }
+  mAppliquer(); brancherZoomMonde(); dessinerMonde(); detailMonde(); mAppliquer();
 }
 
 /* ---------- Laboratoire des techniques ---------- */
