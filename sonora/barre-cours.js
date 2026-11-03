@@ -23,10 +23,11 @@
   document.querySelectorAll("a.retour").forEach(a => { a.href = retourU; if (titre) a.setAttribute("aria-label", "Retour : " + titre); });
 
   let xp = null; if (espace === "eleves") { const j = lire(localStorage, "jeu"); if (j && typeof j.xp === "number") xp = j.xp; }
-  const rub = [["semaine", "Semaine"], ["cours", "Cours"], ["ecouter", "Écouter"], ["jouer", "Jouer"], ["labo", "Labo"]];
+  const rub = [["semaine", "Semaine"], ["cours", espace === "eleves" ? "Réviser" : "Cours"],  // l'espace élève n'a plus le détail des cours (03/11/2026) : « Cours » y mène aux révisions
+    ["ecouter", "Écouter"], ["jouer", "Jouer"], ["labo", "Labo"]];
   const nav = document.createElement("nav"); nav.className = "barre-cours"; nav.setAttribute("aria-label", "Revenir au cours");
   nav.innerHTML = `<a class="bc-retour" href="${esc(retourU)}"><span class="bc-fl" aria-hidden="true"></span>${titre ? `<span class="bc-pre">Retour :</span><span class="bc-t">${esc(titre)}</span>` : "Choisir son espace"}</a>`
-    + (base ? `<a class="bc-b" href="${esc(coursU)}">Mon cours</a>` : "")
+    + (base ? `<a class="bc-b" href="${esc(coursU)}">${espace === "eleves" ? "Mes révisions" : "Mon cours"}</a>` : "")
     + (espace === "eleves" ? `<a class="bc-b" href="${esc(base)}#parcours">Mon parcours${xp !== null ? ` <span class="bc-xp">${xp} XP</span>` : ""}</a>` : "")
     + (base ? `<span class="bc-rub">${rub.map(([h, t]) => `<a href="${esc(base)}#${h}">${t}</a>`).join("")}</span>` : "");
   const css = document.createElement("style");

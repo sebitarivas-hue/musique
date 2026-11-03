@@ -1,5 +1,9 @@
 /* Service worker : réseau d'abord pour la page, cache pour l'usage hors ligne */
+<<<<<<< HEAD
 const PREFIXE = "eleves-", CACHE = PREFIXE + "ce4533e8";
+=======
+const PREFIXE = "eleves-", CACHE = PREFIXE + "42201237";
+>>>>>>> 1e51e5f (Publication : l'espace élève n'a plus le détail des cours ni les fiches d'évaluation ; espace enseignant avec code)
 const CORE = ["index.html", "manifest.json", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k.startsWith(PREFIXE)).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
