@@ -6,7 +6,7 @@ const nouvelId = p => p + Date.now().toString(36) + (compteur++).toString(36);
 export function nouveauProjet({ titre = "Sans titre", tempo = 100, temps = 4 } = {}) {
   return { format: "sonora-pistes", version: 1, titre, tempo, temps, pistes: [nouvellePiste("Piste 1"), nouvellePiste("Piste 2")], sons: {} };
 }
-export function nouvellePiste(nom) { return { id: nouvelId("p"), nom, volume: 0.8, pan: 0, muet: false, solo: false, clips: [], effets: effetsParDefaut(), rack: [] }; }
+export function nouvellePiste(nom) { return { id: nouvelId("p"), nom, volume: 0.8, pan: 0, muet: false, solo: false, clips: [], effets: effetsParDefaut(), rack: [], enveloppe: [] }; }
 // Effets d'une piste : filtre, écho, réverbération. Chacun a un interrupteur et des réglages ; ils s'appliquent à toute la piste, avant le volume.
 export const effetsParDefaut = () => ({ filtre: { actif: false, type: "passe-bas", frequence: 1500 }, echo: { actif: false, temps: 0.35, retour: 0.4, melange: 0.35 }, reverb: { actif: false, duree: 2, aigus: 6000, melange: 0.3 } });
 export function effetsDe(pi) { const d = effetsParDefaut(), e = pi.effets || {}; return { filtre: { ...d.filtre, ...(e.filtre || {}) }, echo: { ...d.echo, ...(e.echo || {}) }, reverb: { ...d.reverb, ...(e.reverb || {}) } }; }
@@ -70,6 +70,30 @@ export function pisteLibre(p, pisteId, debut, duree) {
 export function sonsInutiles(p) { const vus = new Set(p.pistes.flatMap(pi => pi.clips.map(c => c.son))); return Object.keys(p.sons).filter(id => !vus.has(id)); }
 export const dureeTotale = p => Math.max(0, ...p.pistes.flatMap(pi => pi.clips.map(c => c.debut + c.duree)));
 
+// Enveloppe de volume d'une piste (automation) : des points { t, v } (t en secondes, v le gain de 0 à 1,5 qui multiplie le volume de la piste), reliés par des segments droits.
+// Sans point, le gain est 1 partout. Avant le premier point, c'est le gain du premier ; après le dernier, celui du dernier.
+export const ENV_MAX = 1.5;
+export const enveloppeDe = pi => (Array.isArray(pi.enveloppe) ? pi.enveloppe : []).filter(q => Number.isFinite(q.t) && Number.isFinite(q.v)).map(q => ({ t: Math.max(0, q.t), v: Math.min(ENV_MAX, Math.max(0, q.v)) })).sort((a, b) => a.t - b.t);
+export function gainEnveloppe(pi, t) {
+  const L = enveloppeDe(pi); if (!L.length) return 1; if (t <= L[0].t) return L[0].v; if (t >= L[L.length - 1].t) return L[L.length - 1].v;
+  let i = 1; while (L[i].t < t) i++; const a = L[i - 1], b = L[i]; return b.t === a.t ? b.v : a.v + (b.v - a.v) * (t - a.t) / (b.t - a.t);
+}
+export function ajouterPointEnv(pi, t, v) { pi.enveloppe = enveloppeDe(pi); const q = { t: Math.max(0, t), v: Math.min(ENV_MAX, Math.max(0, v)) }; pi.enveloppe.push(q); pi.enveloppe.sort((a, b) => a.t - b.t); return q; }
+export function deplacerPointEnv(pi, q, t, v) { q.t = Math.max(0, t); q.v = Math.min(ENV_MAX, Math.max(0, v)); pi.enveloppe.sort((a, b) => a.t - b.t); return q; }
+export function supprimerPointEnv(pi, q) { pi.enveloppe = enveloppeDe(pi).filter(x => !(x.t === q.t && x.v === q.v)); return true; }
+export function viderEnveloppe(pi) { pi.enveloppe = []; }
+
+// Enregistrement multipiste : le capteur envoie des morceaux ; chaque morceau est un tableau de canaux (Float32Array), ou, pour un ancien capteur, un seul Float32Array (mono).
+// On rassemble le canal i de tous les morceaux, bout à bout. Renvoie [Float32Array, ...], un par canal vu, le nombre de canaux étant celui du premier morceau (une entrée ne change pas de nombre de canaux en cours de prise).
+export function assemblerCanaux(morceaux) {
+  const vue = m => (m instanceof Float32Array ? [m] : Array.isArray(m) ? m : []), premier = morceaux.map(vue).find(m => m.length); if (!premier) return [];
+  const k = premier.length, n = Array.from({ length: k }, () => 0);
+  for (const m of morceaux) { const c = vue(m); for (let i = 0; i < k; i++) n[i] += (c[i] || c[0] || []).length; }
+  const sortie = n.map(t => new Float32Array(t)), o = Array.from({ length: k }, () => 0);
+  for (const m of morceaux) { const c = vue(m); for (let i = 0; i < k; i++) { const x = c[i] || c[0]; if (!x) continue; sortie[i].set(x, o[i]); o[i] += x.length; } }
+  return sortie;
+}
+
 // Ce qui sonne : une piste muette se tait ; si au moins une piste est en solo, seules les pistes en solo sonnent.
 export function pistesAudibles(p) { const solo = p.pistes.some(x => x.solo); return p.pistes.filter(x => !x.muet && (!solo || x.solo)); }
 // Plan de lecture à partir de l'instant `depuis` : pour chaque clip audible, quand il démarre (relatif à `depuis`), où il commence dans le son, combien de temps.
@@ -90,11 +114,11 @@ export function gainsPan(pan) { const a = (Math.max(-1, Math.min(1, pan)) + 1) *
 export function mixer(p, sons, sr = 44100, { fondu = 0.005 } = {}) {
   const n = Math.ceil(dureeTotale(p) * sr), g = new Float32Array(n), d = new Float32Array(n), f = Math.max(1, Math.round(fondu * sr));
   for (const e of planLecture(p, 0)) {
-    const s = sons[e.son]; if (!s) continue; const [gl, gr] = gainsPan(e.pan), k = s.sr / sr, d0 = Math.round(e.quand * sr), m = Math.round(e.duree * sr);
+    const s = sons[e.son]; if (!s) continue; const pe = enveloppeDe(trouverPiste(p, e.piste) || {}).length ? trouverPiste(p, e.piste) : null; const [gl, gr] = gainsPan(e.pan), k = s.sr / sr, d0 = Math.round(e.quand * sr), m = Math.round(e.duree * sr);
     const L = s.canaux[0], R = s.canaux[1] || s.canaux[0];
     for (let i = 0; i < m && d0 + i < n; i++) {
       const pos = (e.decalage * sr + i) * k, j = Math.floor(pos), fr = pos - j; if (j + 1 >= L.length) break;
-      const env = Math.min(1, i / f, (m - 1 - i) / f) * e.gain;
+      const env = Math.min(1, i / f, (m - 1 - i) / f) * e.gain * (pe ? gainEnveloppe(pe, e.quand + i / sr) : 1);
       g[d0 + i] += (L[j] + (L[j + 1] - L[j]) * fr) * env * gl; d[d0 + i] += (R[j] + (R[j + 1] - R[j]) * fr) * env * gr;
     }
   }

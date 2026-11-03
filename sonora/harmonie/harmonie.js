@@ -1,18 +1,20 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=f449dbf2ea";
-import { rendreSuite, evenementsProgression, INSTRUMENTS } from "./son.js?v=f449dbf2ea";
-import { heros, etatBouton } from "../studio/heros.js?v=f449dbf2ea";
-import { encoderWAV } from "../studio/wav.js?v=f449dbf2ea";
-import { dessinerOscillo } from "../studio/visuels.js?v=f449dbf2ea";
-import * as P from "../pistes/projet.js?v=f449dbf2ea";
-import { Stockage } from "../pistes/stockage.js?v=f449dbf2ea";
-import * as A from "./accords.js?v=f449dbf2ea";
-import * as V from "./voicings.js?v=f449dbf2ea";
-import * as G from "./grille.js?v=f449dbf2ea";
-import { partitionSVG } from "./partition.js?v=f449dbf2ea";
+import * as H from "./theorie.js?v=5a32811e0b";
+import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=5a32811e0b";
+import { BANQUE, preparer } from "./echantillons.js?v=5a32811e0b";
+import { heros, etatBouton } from "../studio/heros.js?v=5a32811e0b";
+import { encoderWAV } from "../studio/wav.js?v=5a32811e0b";
+import { dessinerOscillo } from "../studio/visuels.js?v=5a32811e0b";
+import * as P from "../pistes/projet.js?v=5a32811e0b";
+import { Stockage } from "../pistes/stockage.js?v=5a32811e0b";
+import * as A from "./accords.js?v=5a32811e0b";
+import * as V from "./voicings.js?v=5a32811e0b";
+import * as G from "./grille.js?v=5a32811e0b";
+import { partitionSVG } from "./partition.js?v=5a32811e0b";
 
 const $ = id => document.getElementById(id);
+const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const SR = 44100;
 const etat = { vue: "explorer", ctx: null, source: null, analyseur: null, tonique: 0, mode: "ionien", sons: 3, prog: H.PROGRESSIONS[0].id, tonP: 0, tempo: 90, style: "plaque", instrument: "piano", lecture: false, compo: [], tonC: 0, modeC: "ionien", jeu: null, grille: [], dispo: "choral", pulse: "aucune", sel: -1, vivant: null, fond: null, dernier: [] };
@@ -26,13 +28,19 @@ function contexte() { if (!etat.ctx) { etat.ctx = new (window.AudioContext || wi
 function stop() { if (etat.source) { try { etat.source.stop(); } catch (_) {} etat.source = null; } etat.lecture = false; etat.suivi = null; etat.vivant = null; majVivant([], -1); document.querySelectorAll(".jouer-pseudo").forEach(b => etatBouton(b, false)); document.querySelectorAll(".carte-acc.actif").forEach(c => c.classList.remove("actif")); badge("prêt"); }
 function jouerCanaux(canaux, { boucle = false, suivi = null, bouton = null, evenements = null, colonnes = null } = {}) {
   stop(); const ctx = contexte(), buf = ctx.createBuffer(canaux.length, canaux[0].length, SR); canaux.forEach((c, i) => buf.copyToChannel(c, i));
-  const s = ctx.createBufferSource(); s.buffer = buf; s.loop = boucle; s.connect(etat.analyseur); const t0 = ctx.currentTime + 0.03; s.start(t0);
+  const s = ctx.createBufferSource(); s.buffer = buf; s.loop = boucle; s.connect(etat.analyseur); const t0 = ctx.currentTime + 0.03; s.start(t0); etat.finSon = boucle ? Infinity : t0 + buf.duration;
   s.onended = () => { if (etat.source === s) stop(); };
   etat.source = s; etat.lecture = true; etat.vivant = evenements ? { evenements, colonnes, t0, duree: buf.duration, boucle, cle: "" } : null; etat.suivi = suivi ? { ...suivi, t0, duree: buf.duration } : null; if (bouton) etatBouton(bouton, true); badge("en écoute", "marche");
   etat.dernierRendu = { duree: buf.duration, canaux: canaux.length };
 }
 const jouerEv = (ev, opts = {}) => jouerCanaux(rendreSuite(ev, { instrument: etat.instrument }), { ...opts, evenements: ev });
 const jouerNotes = (notes, { arpege = false, duree = 1.6 } = {}) => jouerEv(arpege ? notes.map((m, i) => ({ t: i * 0.32, duree: 0.3, notes: [m] })) : [{ t: 0, duree, notes }]);
+
+// Changer d'instrument : on garde le choix, on lance le chargement, on relance tout de suite (son de secours), puis une seconde fois quand l'instrument réel est prêt si l'on écoute encore.
+function changerInstr(valeur, relancer = null) {
+  etat.instrument = valeur; garder("instrument", valeur); const pret = sonReel(valeur) || !BANQUE[valeur], c = chargerInstr(valeur); if (relancer) relancer();
+  if (!pret) c.then(() => { if (etat.lecture && etat.instrument === valeur && relancer) relancer(); });
+}
 
 // ---------------------------------------------------------------- ce que tu entends : clavier et partition en temps réel
 const NOIRES = [1, 3, 6, 8, 10];
@@ -65,7 +73,14 @@ function boucle() {
 // ---------------------------------------------------------------- explorer
 const optionsToniques = (sel) => H.TONIQUES.map((t, i) => `<option value="${i}"${i === sel ? " selected" : ""}>${t.nom}</option>`).join("");
 const optionsModes = (sel, heptaSeul) => { const fam = {}; for (const [k, m] of Object.entries(H.MODES)) if (!heptaSeul || m.pas.length === 7) (fam[m.famille] ||= []).push([k, m]); return Object.entries(fam).map(([f, l]) => `<optgroup label="${esc(f)}">${l.map(([k, m]) => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(m.nom)}</option>`).join("")}</optgroup>`).join(""); };
-const optionsInstr = sel => Object.entries(INSTRUMENTS).map(([k, i]) => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(i.nom)}</option>`).join("");
+const optionsInstr = sel => TOUS.map(k => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(NOMS_INSTR[k])}</option>`).join("");
+// De vrais instruments (la banque du site) : on charge celui qu'on a choisi ; en attendant, un son de secours joue. L'état dit lequel on entend.
+let enChargement = null;
+function chargerInstr(cle = etat.instrument) {
+  const b = BANQUE[cle]; if (!b || sonReel(cle)) { etat.sonReel = sonReel(cle); return Promise.resolve(); }
+  etat.sonReel = false; badge("chargement : " + NOMS_INSTR[cle].toLowerCase() + "…", ""); const mien = enChargement = preparer(b, new OfflineAudioContext(1, 1, SR));
+  return mien.then(L => { if (L) mettreTampons(b, L); etat.sonReel = sonReel(etat.instrument); if (enChargement === mien) badge(L ? "instrument prêt" : "son de secours (enregistrements indisponibles)", ""); }).catch(() => { badge("son de secours (enregistrements indisponibles)", ""); });
+}
 const NOMS_CLAVIER = ["do", "do♯", "ré", "mi♭", "mi", "fa", "fa♯", "sol", "la♭", "la", "si♭", "si"];
 function clavierHtml(g) {
   const dans = new Map(g.map(n => [n.midi, n.nom])), blancs = [], noirs = [];
@@ -84,7 +99,7 @@ function vueExplorer() {
   $("b-gamme").dataset.libelle = "Écouter la gamme"; $("b-gamme").onclick = () => etat.lecture ? stop() : jouerEv([...g, { midi: g[0].midi + 12 }].map((n, i) => ({ t: i * 0.3, duree: 0.28, notes: [n.midi] })), { bouton: $("b-gamme") });
   $("ex-ton").onchange = e => { etat.tonique = +e.target.value; garder("tonique", etat.tonique); vueExplorer(); };
   $("ex-mode").onchange = e => { etat.mode = e.target.value; garder("mode", etat.mode); vueExplorer(); };
-  $("ex-instr").onchange = e => { etat.instrument = e.target.value; garder("instrument", etat.instrument); };
+  $("ex-instr").onchange = e => changerInstr(e.target.value);
   if ($("ex-sons")) $("ex-sons").onchange = e => { etat.sons = +e.target.value; vueExplorer(); };
   $("clavier-h").querySelectorAll("[data-midi]").forEach(k => { const j = () => { jouerNotes([+k.dataset.midi], { duree: 0.9 }); k.classList.add("joue"); setTimeout(() => k.classList.remove("joue"), 250); }; k.onclick = j; k.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); j(); } }; });
   document.querySelectorAll("#acc-ex .carte-acc").forEach(c => c.onclick = () => { const a = H.accordDegre(H.gamme(t, etat.mode, 3), +c.dataset.d, etat.sons), v = H.voicing([a])[0]; jouerNotes([v.basse, ...v.voix]); document.querySelectorAll("#acc-ex .carte-acc").forEach(x => x.classList.toggle("actif", x === c)); etat.dernierAccord = a; });
@@ -106,7 +121,7 @@ function vueProgressions() {
   $("b-prog").onclick = () => { if (etat.lecture) return stop(); const x = rendreProgression(prog, t); jouerCanaux(x.canaux, { boucle: true, bouton: $("b-prog"), evenements: x.r.evenements, colonnes: true, suivi: { mesure: x.r.mesure, selecteur: "#acc-prog .carte-acc", i: -1 } }); };
   const relancer = () => { const jouait = etat.lecture; vueProgressions(); if (jouait) $("b-prog").click(); };
   $("pr-ton").onchange = e => { etat.tonP = +e.target.value; relancer(); }; $("pr-tempo").onchange = e => { etat.tempo = Math.max(40, Math.min(200, +e.target.value || 90)); relancer(); };
-  $("pr-style").onchange = e => { etat.style = e.target.value; relancer(); }; $("pr-instr").onchange = e => { etat.instrument = e.target.value; garder("instrument", etat.instrument); relancer(); };
+  $("pr-style").onchange = e => { etat.style = e.target.value; relancer(); }; $("pr-instr").onchange = e => changerInstr(e.target.value, relancer);
   document.querySelectorAll("[data-prog]").forEach(b => b.onclick = () => { stop(); etat.prog = b.dataset.prog; vueProgressions(); window.scrollTo(0, 0); });
   $("b-pr-wav").onclick = () => { const x = rendreProgression(prog, t); telecharger(x.canaux, `${prog.id}-${t.nom}`); $("msg-prog").textContent = `WAV exporté : ${x.acc.length} mesures, ${x.r.duree.toFixed(1).replace(".", ",")} s.`; };
   $("b-pr-pistes").onclick = () => versPistes(() => rendreProgression(prog, t).canaux, `${prog.nom} en ${t.nom}`, $("msg-prog"), $("b-pr-pistes"));
@@ -147,24 +162,27 @@ function vueJeu() {
   $("b-jeu-ecoute").onclick = () => etat.lecture ? stop() : jouerQuestion();
   document.querySelectorAll("#choix-jeu [data-rep]").forEach(b => b.onclick = () => repondre(b.dataset.rep));
   if ($("b-suivante")) $("b-suivante").onclick = () => { nouvelleQuestion(); vueJeu(); jouerQuestion(); };
-  if ($("b-rejouer")) $("b-rejouer").onclick = () => { etat.jeu = { ...j, n: 0, score: 0, serie: 0, repondu: false }; nouvelleQuestion(); vueJeu(); jouerQuestion(); };
+  if ($("b-rejouer")) $("b-rejouer").onclick = () => { etat.jeu = { ...j, n: 0, score: 0, serie: 0, repondu: false, tropTot: false, entendue: false, finQuestion: 0 }; nouvelleQuestion(); vueJeu(); jouerQuestion(); };
   $("b-quitter").onclick = () => { stop(); etat.jeu = null; vueJeu(); };
   if (j.repondu) { marquer(); $("retour-jeu").textContent = j.retour; }
 }
 function nouvelleQuestion() { const j = etat.jeu; j.n++; j.repondu = false; j.question = j.genre === "accord" ? H.questionAccord(j.niveau) : j.genre === "cadence" ? H.questionCadence() : H.questionMode(j.niveau); }
 function jouerQuestion() {
+  { const j = etat.jeu; if (j && j.finQuestion && etat.ctx && etat.ctx.currentTime >= j.finQuestion) j.entendue = true; } // déjà entendue une fois en entier avant de réécouter
   const q = etat.jeu.question;
   if (q.genre === "accord") jouerNotes(q.notes, { duree: 1.8 });
   else if (q.genre === "mode") jouerEv(q.notes.map((m, i) => ({ t: i * 0.33, duree: 0.31, notes: [m] })));
   else { const v = H.voicing(q.accords), r = evenementsProgression(v, { tempo: 100, style: "plaque" }); jouerEv(r.evenements); }
   const b = $("b-jeu-ecoute"); if (b) etatBouton(b, true);
+  if (etat.jeu) etat.jeu.finQuestion = etat.finSon;
 }
 const EXPLIC = { majeur: "tierce majeure puis tierce mineure", mineur: "tierce mineure puis tierce majeure", "diminué": "deux tierces mineures", "augmenté": "deux tierces majeures", "septième de dominante": "accord majeur et septième mineure", "majeur septième": "accord majeur et septième majeure", "mineur septième": "accord mineur et septième mineure" };
 function repondre(rep) {
   const j = etat.jeu; if (j.repondu) return; const q = j.question, juste = rep === q.bonne; j.repondu = true; j.reponse = rep;
+  if (!(j.entendue || (j.finQuestion && etat.ctx && etat.ctx.currentTime >= j.finQuestion))) j.tropTot = true; j.entendue = false; j.finQuestion = 0; // points : chaque question écoutée jusqu'au bout
   if (juste) { j.score++; j.serie++; } else j.serie = 0;
   j.retour = (juste ? "Juste. " : `Non : c'était ${libelle(q.genre, q.bonne)}. `) + (q.genre === "accord" ? `Un accord ${q.bonne} : ${EXPLIC[q.bonne]}.` : q.genre === "cadence" ? `En ${q.tonique} : ${q.accords.map(a => a.nom).join(", ")}.` : H.MODES[q.bonne].texte);
-  if (j.n >= 10) { const k = `record:${j.genre}:${j.niveau}`; if (j.score > lire(k, 0)) garder(k, j.score); j.retour += ` Partie finie : ${j.score} sur 10.`; }
+  if (j.n >= 10) { if (!j.tropTot) { points(`harmonie:partie:${j.genre}:${j.niveau}`, 3, "sonora"); if (j.score >= 7) points(`harmonie:7sur10:${j.genre}:${j.niveau}`, 10, "sonora"); } else j.retour += " Pas de points pour cette partie : réponds seulement après avoir écouté chaque question jusqu'au bout."; const k = `record:${j.genre}:${j.niveau}`; if (j.score > lire(k, 0)) garder(k, j.score); j.retour += ` Partie finie : ${j.score} sur 10.`; }
   etat.journalJeu = (etat.journalJeu || []).concat([{ bonne: q.bonne, rep, juste }]); vueJeu();
 }
 function marquer() { const j = etat.jeu; document.querySelectorAll("#choix-jeu [data-rep]").forEach(b => { b.disabled = true; if (b.dataset.rep === j.question.bonne) b.classList.add("juste"); else if (b.dataset.rep === j.reponse) b.classList.add("faux"); }); }
@@ -237,7 +255,7 @@ function vueComposer() {
   const relancer = () => { const jouait = etat.lecture; vueComposer(); if (jouait && etat.grille.length) $("b-compo").click(); };
   $("co-tempo").onchange = e => { etat.tempo = Math.max(40, Math.min(200, +e.target.value || 90)); garder("tempo", etat.tempo); relancer(); };
   $("co-style").onchange = e => { etat.style = e.target.value; relancer(); }; $("co-pulse").onchange = e => { etat.pulse = e.target.value; garder("pulse", etat.pulse); relancer(); };
-  $("co-dispo").onchange = e => { etat.dispo = e.target.value; garder("dispo", etat.dispo); relancer(); }; $("co-instr").onchange = e => { etat.instrument = e.target.value; garder("instrument", etat.instrument); relancer(); };
+  $("co-dispo").onchange = e => { etat.dispo = e.target.value; garder("dispo", etat.dispo); relancer(); }; $("co-instr").onchange = e => changerInstr(e.target.value, relancer);
   $("b-compo").dataset.libelle = "Écouter en boucle";
   $("b-compo").onclick = () => { if (etat.lecture) return stop(); if (!plan) { $("msg-compo").textContent = "Ajoute d'abord des accords."; return; } jouerCanaux(rendreGrille(plan), { boucle: true, bouton: $("b-compo"), evenements: plan.p.evenements, colonnes: true }); };
   $("b-vider").onclick = () => { etat.sel = -1; change([]); };
@@ -250,7 +268,7 @@ const VUES = { explorer: vueExplorer, progressions: vueProgressions, jeu: vueJeu
 function vue(v) { stop(); etat.vue = v; for (const k of Object.keys(VUES)) $("v-" + k).hidden = k !== v; document.querySelectorAll("#onglets button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.v === v))); montrerFond(null); VUES[v](); history.replaceState(null, "", "#" + v); }
 document.querySelectorAll("#onglets button").forEach(b => b.onclick = () => vue(b.dataset.v));
 document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); });
-etat.tonique = lire("tonique", 0); etat.mode = H.MODES[lire("mode", "ionien")] ? lire("mode", "ionien") : "ionien"; etat.instrument = INSTRUMENTS[lire("instrument", "piano")] ? lire("instrument", "piano") : "piano"; etat.compo = (lire("compo", []) || []).filter(d => Number.isInteger(d) && d >= 0 && d < 7).slice(0, 16);
+etat.tonique = lire("tonique", 0); etat.mode = H.MODES[lire("mode", "ionien")] ? lire("mode", "ionien") : "ionien"; etat.instrument = TOUS.includes(lire("instrument", "piano")) ? lire("instrument", "piano") : "piano"; etat.compo = (lire("compo", []) || []).filter(d => Number.isInteger(d) && d >= 0 && d < 7).slice(0, 16);
 etat.tempo = Math.max(40, Math.min(200, +lire("tempo", 90) || 90)); etat.pulse = G.STYLES_PULSATION.some(p => p[0] === lire("pulse", "aucune")) ? lire("pulse", "aucune") : "aucune"; etat.dispo = V.DISPOSITIONS.some(d => d.id === lire("dispo", "choral")) ? lire("dispo", "choral") : "choral";
 { const g = lire("grille", null); etat.grille = g ? G.normaliser(g) : G.depuisDegres(etat.compo, H.TONIQUES[0], "ionien", 3); }
 if ($("viv-clavier")) $("viv-clavier").innerHTML = clavierVivant();
@@ -260,5 +278,6 @@ if ($("viv-clavier")) $("viv-clavier").innerHTML = clavierVivant();
   if (H.MODES[prm.get("mode")]) etat.mode = prm.get("mode");
   if (H.PROGRESSIONS.some(x => x.id === prm.get("prog"))) etat.prog = prm.get("prog");
   vue(VUES[v] ? v : "explorer"); }
+chargerInstr();
 requestAnimationFrame(boucle);
 window.HARMONIE_PRET = true;

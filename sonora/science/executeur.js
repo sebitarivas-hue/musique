@@ -1,9 +1,9 @@
 // Exécution d'une expérience : compile le programme SONORA, le rend hors ligne avec les réglages demandés (le même noyau que le moteur temps réel),
 // puis mesure le signal obtenu. Sans DOM : tourne dans Node (tests) comme dans le navigateur.
-import { compiler } from "../src/index.js?v=f449dbf2ea";
-import { rendre } from "../src/rendu.js?v=f449dbf2ea";
-import { SR } from "./experiences.js?v=f449dbf2ea";
-import * as A from "./analyse.js?v=f449dbf2ea";
+import { compiler } from "../src/index.js?v=5a32811e0b";
+import { rendre } from "../src/rendu.js?v=5a32811e0b";
+import { SR } from "./experiences.js?v=5a32811e0b";
+import * as A from "./analyse.js?v=5a32811e0b";
 
 export function preparer(programme) {
   const r = compiler(programme);
@@ -18,7 +18,7 @@ export function rendreCanaux(module, valeurs, secondes, options = {}) {
 
 // Mesure une expérience standard : renvoie { lignes, vues, serie, interpretation, ok, canaux }
 export function mesurer(exp, module, valeurs) {
-  const canaux = rendreCanaux(module, valeurs, exp.duree);
+  const canaux = rendreCanaux(module, valeurs, exp.duree, exp.notes ? { notes: exp.notes(valeurs) } : {});  // exp.notes : une note tenue pour les instruments à voix
   const ctx = { canaux, sr: SR, valeurs, module, refaire: idx => rendreCanaux(module, { ...valeurs, intervalle: idx }, exp.duree)[0] };
   const res = exp.mesurer(ctx);
   res.interpretation = exp.interpreter(res, valeurs);

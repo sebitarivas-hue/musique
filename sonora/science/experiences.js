@@ -1,8 +1,8 @@
-import { programmeTimbre } from "./microtonalite.js?v=f449dbf2ea";
+import { programmeTimbre } from "./microtonalite.js?v=5a32811e0b";
 // Les expériences de SONORA Science. Chaque expérience est un programme SONORA (le même langage que le Studio) plus une analyse.
 // Règle : tout résultat affiché est calculé à partir des échantillons que le programme produit, jamais recopié d'une formule.
 // La « théorie » est la valeur attendue d'après la physique ; l'écart et le verdict viennent de la comparaison avec la mesure.
-import * as A from "./analyse.js?v=f449dbf2ea";
+import * as A from "./analyse.js?v=5a32811e0b";
 
 export const SR = 44100;
 const arrondi = (v, d = 2) => { const t = Math.abs(v) >= 100 ? v.toFixed(Math.max(0, d - 2)) : v.toFixed(d); return (t.includes(".") ? t.replace(/\.?0+$/, "") : t) || "0"; }; // les zéros ne sont retirés qu'après une virgule : 440 reste 440
@@ -74,6 +74,50 @@ instrument Niveau {
     },
     interpreter(r, v) { const cr = r.lignes[0].mesure; return `Avec ${v.niveau} dB, l'amplitude vaut ${fmt(cr, 4)} (soit ${fmt(cr * 100, 2)} % du maximum). Chaque fois que tu enlèves 6 dB, l'amplitude est à peu près divisée par 2 ; enlever 20 dB la divise par 10 : le décibel est un rapport, pas une quantité.`; },
     approfondissement: "Mets le niveau à -6, -12, -18 dB : note l'amplitude à chaque fois. Quelle est la suite ? Pourquoi la perception de l'intensité ne suit-elle pas exactement l'amplitude (voir l'expérience sur le masquage) ?" },
+
+  { id: "enveloppe-adsr", domaine: "Acoustique", titre: "L'enveloppe d'amplitude : attaque, déclin, soutien, relâche (ADSR)",
+    question: "Comment le volume d'un son évolue-t-il entre le moment où l'on appuie et celui où le son s'éteint ?",
+    explication: ["Un son n'a pas seulement une hauteur et un timbre : il a une forme dans le temps, son enveloppe d'amplitude. On la décrit en quatre étapes. A, l'attaque : le temps que met le volume pour monter de zéro à son maximum. D, le déclin : le temps pour redescendre jusqu'au niveau de soutien. S, le soutien : un niveau (et non un temps), gardé tant que la touche reste enfoncée. R, la relâche : le temps pour retomber à zéro quand on lâche.",
+      "Les instruments se reconnaissent beaucoup à leur enveloppe : une percussion a une attaque très courte et pas de soutien ; une flûte ou un orgue ont un soutien tenu ; une cloche a une longue relâche. Ici le son est un simple sinus à 220 Hz : seule l'enveloppe change. Ce que tu entends et ce qui est mesuré vient donc de l'enveloppe seule."],
+    programme: `/// Un sinus à 220 Hz mis en forme par une enveloppe ADSR : rien d'autre ne change.
+instrument Enveloppe {
+    entree notes : Evenement<Note>
+    reglage attaque : s = 100 ms dans 1 ms .. 1.5 s courbe log etiquette "A, attaque"
+    reglage declin : s = 300 ms dans 5 ms .. 1.5 s courbe log etiquette "D, déclin"
+    reglage soutien : Ratio = 60% dans 0 .. 100% etiquette "S, soutien (niveau)"
+    reglage relache : s = 400 ms dans 5 ms .. 2 s courbe log etiquette "R, relâche"
+    polyphonie 1 voix vol(plus_ancienne)
+    voix (n : Note) {
+        soit forme = adsr(porte: n.porte, attaque: attaque, declin: declin, soutien: soutien, relache: relache)
+        sortie = sinus(220 Hz) * forme * 0.5
+    }
+    sortie = voix.somme
+}
+`, duree: 6,
+    // une note tenue : la touche s'enfonce à 0,1 s et se relève une demi-seconde après la fin du déclin
+    notes: v => { const SRn = SR, on = 0.1, off = on + v.attaque + v.declin + 0.5; return [{ a: Math.round(on * SRn), on: 1, hauteur: 220, vitesse: 1 }, { a: Math.round(off * SRn), off: 1 }]; },
+    cycle: { tenue: 2.2, pause: 1.6 },
+    mesurer(c) {
+      const x = cana(c), { env, fe } = A.enveloppe(x, c.sr, 400 * 1000 / c.sr) /* deux périodes de 220 Hz : le niveau efficace d'un sinus est alors sans ondulation */, pic = Math.max(...env), v = c.valeurs, on = 0.1, off = on + v.attaque + v.declin + 0.5;
+      const t = i => i / fe, idx = s => Math.max(0, Math.min(env.length - 1, Math.round(s * fe)));
+      let iPic = 0; for (let i = 0; i < env.length; i++) if (env[i] >= 0.995 * pic) { iPic = i; break; }
+      let i10 = 0; for (let i = 0; i < env.length; i++) if (env[i] >= 0.1 * pic) { i10 = i; break; }
+      let i90 = i10; for (let i = i10; i < env.length; i++) if (env[i] >= 0.9 * pic) { i90 = i; break; }
+      const avant = A.rms(Array.from(env), idx(off - 0.15), idx(off - 0.02)) / pic, niveauS = v.soutien;
+      const lignes = [L("Durée de montée de 10 % à 90 % du maximum (la théorie : 80 % de l'attaque réglée)", (t(i90) - t(i10)) * 1000, 0.8 * v.attaque * 1000, { unite: "ms", tol: 0.05, tolAbs: 15, d: 0 })];
+      if (v.soutien < 0.95) {
+        const seuilD = v.soutien + 0.1 * (1 - v.soutien); let iD = iPic; for (let i = iPic; i < env.length; i++) if (env[i] / pic <= seuilD) { iD = i; break; }
+        lignes.push(L("Durée du déclin, du maximum à 10 % au-dessus du soutien (la théorie : 90 % du déclin réglé)", (t(iD) - t(iPic)) * 1000, 0.9 * v.declin * 1000, { unite: "ms", tol: 0.05, tolAbs: 15, d: 0 }));
+      }
+      lignes.push(L("Niveau de soutien mesuré, par rapport au maximum", avant, niveauS, { tolAbs: 0.03, d: 2 }));
+      if (v.soutien > 0.03) {
+        const base = avant * pic; let iR = idx(off); for (let i = idx(off); i < env.length; i++) if (env[i] <= 0.1 * base) { iR = i; break; }
+        lignes.push(L("Durée de relâche, de la touche relevée à 10 % du niveau de soutien (la théorie : 90 % de la relâche réglée)", (t(iR) - off) * 1000, 0.9 * v.relache * 1000, { unite: "ms", tol: 0.05, tolAbs: 15, d: 0 }));
+      }
+      return { lignes, vues: ["enveloppe", "oscillo"], serie: { env, fe } };
+    },
+    interpreter(r, v) { const ms = x => x < 1000 ? `${fmt(x, 0)} ms` : `${fmt(x / 1000, 2)} s`; return `Attaque de ${ms(v.attaque * 1000)} : ${v.attaque < 0.02 ? "le son claque, comme une percussion" : v.attaque > 0.4 ? "le son se lève lentement, comme une nappe" : "une attaque douce, comme un instrument à archet ou à vent"}. Soutien à ${fmt(v.soutien * 100, 0)} % : ${v.soutien < 0.05 ? "le son s'éteint seul, même si on tient la touche, comme un piano" : "le volume est tenu tant que la touche reste enfoncée"}. Relâche de ${ms(v.relache * 1000)} : ${v.relache < 0.08 ? "le son s'arrête net" : v.relache > 1 ? "le son s'étire longuement après la touche, comme dans une grande salle" : "le son retombe sans brutalité"}. Les durées mesurées sur le signal confirment les réglages : l'enveloppe est bien ce que tu as dessiné.`; },
+    approfondissement: "Reproduis de mémoire trois sons : une percussion (A très court, S à zéro), un orgue (A court, S à 100 %, R court) et une cloche (A très court, S à zéro, R long). Puis cherche ce qui change quand on coupe le début d'un son enregistré : Pierre Schaeffer s'est servi de cette idée pour montrer que l'attaque suffit à reconnaître un instrument (voir la fiche « Le solfège de l'objet sonore »)." },
 
   { id: "phase-interference", domaine: "Acoustique", titre: "Phase et interférences",
     question: "Que se passe-t-il quand on additionne deux sons purs de même fréquence mais décalés dans le temps ?",

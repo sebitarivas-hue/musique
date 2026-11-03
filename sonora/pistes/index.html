@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=f449dbf2ea">
-<link rel="stylesheet" href="pistes.css?v=f449dbf2ea">
+<link rel="stylesheet" href="../studio/studio.css?v=5a32811e0b">
+<link rel="stylesheet" href="pistes.css?v=5a32811e0b">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -26,6 +26,8 @@
     <label class="mini">Tempo<input type="number" id="tempo" min="40" max="240" value="100"></label>
     <label class="mini">Aimant<select id="aimant"><option value="0">aucun</option><option value="1" selected>temps</option><option value="0.5">demi-temps</option><option value="0.25">double croche</option></select></label>
     <label class="mini case"><input type="checkbox" id="metro"> Métronome</label>
+    <label class="mini case" title="Enregistrer plusieurs pistes à la fois : un canal de l'entrée par piste armée"><input type="checkbox" id="multi"> Plusieurs pistes</label>
+    <label class="mini">Entrée<select id="entree-audio" aria-label="Entrée audio"><option value="">Entrée par défaut</option></select></label>
     <span class="espace"></span>
     <button type="button" id="b-zoom-moins" aria-label="Dézoomer">&minus;</button><button type="button" id="b-zoom-plus" aria-label="Zoomer">+</button>
   </section>
@@ -34,8 +36,33 @@
     <label class="mini">Son SONORA<select id="choix-sonora"><option value="">Choisir…</option></select></label>
     <button type="button" id="b-ajout-sonora">Ajouter</button>
     <button type="button" id="b-piste">Ajouter une piste</button>
+    <button type="button" id="b-midi" aria-expanded="false" aria-controls="midi">Jouer un instrument</button>
+    <button type="button" id="b-moteurs" aria-expanded="false" aria-controls="moteurs">Faust, Csound et Pure Data</button>
     <button type="button" id="b-export">Exporter en WAV</button>
     <button type="button" id="b-nouveau">Nouveau projet</button>
+  </section>
+  <section class="midi" id="midi" aria-label="Jouer un instrument" hidden>
+    <div class="midi-haut"><h2>Jouer un instrument</h2><button type="button" class="croix-b" id="midi-fermer" aria-label="Fermer le clavier"><span class="croix" aria-hidden="true"></span></button></div>
+    <p class="petit">Joue avec un clavier MIDI, avec le clavier de l'ordinateur (rangée Q S D F G H J K L M, avec 2 3 5 6 7 pour les noires) ou avec les touches ci-dessous. « Enregistrer les notes » lance la lecture des autres pistes et garde ce que tu joues : à l'arrêt, les notes sont rendues avec l'instrument en un clip sur la piste choisie.</p>
+    <div class="midi-rang"><label class="mini">Instrument<select id="midi-instrument" aria-label="Instrument"></select></label>
+      <label class="mini">Octave <button type="button" id="midi-oct-moins" aria-label="Octave plus basse">&minus;</button><output id="midi-oct" aria-live="polite">4</output><button type="button" id="midi-oct-plus" aria-label="Octave plus haute">+</button></label>
+      <label class="mini case"><input type="checkbox" id="midi-ordi" checked> Clavier de l'ordinateur</label>
+      <label class="mini">Gamme<select id="midi-gamme" aria-label="Gamme du clavier"></select></label>
+      <button type="button" id="b-midi-brancher">Brancher un clavier MIDI</button>
+      <button type="button" id="b-notes" class="enreg" aria-pressed="false"><span class="pastille-rec" aria-hidden="true"></span> Enregistrer les notes</button></div>
+    <p class="petit" id="midi-etat" role="status" aria-live="polite">Aucun clavier MIDI branché : utilise le clavier de l'ordinateur ou les touches de l'écran.</p>
+    <div class="midi-clavier" id="midi-clavier" role="group" aria-label="Touches de piano"></div>
+  </section>
+  <section class="moteurs" id="moteurs" aria-label="Faust, Csound et Pure Data" hidden>
+    <div class="midi-haut"><h2>Faust, Csound et Pure Data</h2><button type="button" class="croix-b" id="mot-fermer" aria-label="Fermer Faust et Csound"><span class="croix" aria-hidden="true"></span></button></div>
+    <p class="petit">Écris un programme dans un autre langage de synthèse et rends-le en clip sur la piste choisie. Faust est compilé ici même et rendu à l'échantillon près ; un programme Faust qui a une entrée (un effet) transforme le clip choisi. Csound est joué en direct puis enregistré : le clip dure autant que la durée demandée. Pure Data (par WebPd, en version alpha, qui ne connaît qu'une partie des objets) est rendu comme Faust ; un patch avec adc~ transforme le clip choisi. Rien n'est envoyé nulle part.</p>
+    <div class="midi-rang" role="group" aria-label="Moteur"><button type="button" class="chip-m" data-mot="faust" aria-pressed="true">Faust</button><button type="button" class="chip-m" data-mot="csound" aria-pressed="false">Csound</button><button type="button" class="chip-m" data-mot="pd" aria-pressed="false">Pure Data</button>
+      <label class="mini">Exemple<select id="mot-ex" aria-label="Exemple"></select></label><label class="mini">Durée (s)<input type="number" id="mot-duree" min="1" max="30" value="3"></label></div>
+    <label class="mot-champ"><span id="mot-code-lib">Programme Faust</span><textarea id="mot-code" spellcheck="false" rows="8" autocapitalize="off" autocomplete="off"></textarea></label>
+    <label class="mot-champ" id="mot-score-zone" hidden><span>Partition Csound (une ligne i par note : i1 début durée hauteur)</span><textarea id="mot-score" spellcheck="false" rows="3" autocapitalize="off"></textarea></label>
+    <div id="mot-params" class="fx-boutons mot-params" aria-label="Réglages du programme"></div>
+    <div class="midi-rang"><button type="button" id="b-mot-compiler">Compiler</button><button type="button" id="b-mot-rendre" class="principal">Rendre en clip</button></div>
+    <p class="petit mot-etat" id="mot-etat" role="status" aria-live="polite">Choisis un exemple, ou écris ton programme.</p>
   </section>
   <section class="selection" id="selection" aria-label="Clip choisi" hidden>
     <b id="sel-nom"></b>
@@ -51,7 +78,8 @@
   </div>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=f449dbf2ea"></script>
-<script src="../retour.js?v=f449dbf2ea"></script>
+<script type="module" src="pistes.js?v=5a32811e0b"></script>
+<script src="../barre-cours.js?v=5a32811e0b"></script>
+<script src="../retour.js?v=5a32811e0b"></script>
 </body>
 </html>

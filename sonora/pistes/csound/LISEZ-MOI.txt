@@ -1,0 +1,4 @@
+Csound pour le navigateur (@csound/browser 7.0.0), tel que publié sur npm, sans modification.
+Licence : Apache 2.0 (voir LICENCE-csound.txt). Les composants tiers sont listés par le projet dans THIRD_PARTY.md :
+https://github.com/csound/csound
+Le fichier est chargé seulement quand on utilise Csound dans SONORA Pistes (panneau « Faust et Csound »).

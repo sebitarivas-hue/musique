@@ -1,11 +1,11 @@
 // SONORA Academy : leçons, exercices corrigés sur le son produit. La progression reste dans le navigateur (aucun compte, rien n'est envoyé).
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=f449dbf2ea";
-import { Editeur } from "../studio/editeur.js?v=f449dbf2ea";
-import { UNITES, LECONS, parId } from "./parcours.js?v=f449dbf2ea";
-import { verifier } from "./correcteur.js?v=f449dbf2ea";
-import { preparer } from "../science/executeur.js?v=f449dbf2ea";
-import { heros, etatBouton } from "../studio/heros.js?v=f449dbf2ea";
-import { dessinerOscillo } from "../studio/visuels.js?v=f449dbf2ea";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=5a32811e0b";
+import { Editeur } from "../studio/editeur.js?v=5a32811e0b";
+import { UNITES, LECONS, parId } from "./parcours.js?v=5a32811e0b";
+import { verifier } from "./correcteur.js?v=5a32811e0b";
+import { preparer } from "../science/executeur.js?v=5a32811e0b";
+import { heros, etatBouton } from "../studio/heros.js?v=5a32811e0b";
+import { dessinerOscillo } from "../studio/visuels.js?v=5a32811e0b";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -17,6 +17,7 @@ const etat = { lecon: null, moteur: null, marche: false, ed: null, essais: 0, de
 window.ACADEMIE = etat;
 const badge = (t, c = "") => { const e = $("etat"); e.textContent = t; e.className = "etat " + c; };
 
+const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 function progression() { const p = lire(); const n = LECONS.filter(l => p[l.id] && p[l.id].reussi).length; $("progres").textContent = `${n} leçon${n > 1 ? "s" : ""} réussie${n > 1 ? "s" : ""} sur ${LECONS.length}`; return p; }
 function liste() {
   const p = progression(), z = $("nav-exp"); z.innerHTML = "";
@@ -39,10 +40,13 @@ async function ecouter(code, bouton, msg) {
     if (!etat.moteur) etat.moteur = new Moteur().on("analyse", a => { etat.tampon = a.tampon; }); await etat.moteur.demarrer(); etat.moteur.activerAnalyse(true); await etat.moteur.charger(module);
     if (module.voix) etat.moteur.accord([[48, 220, 0.8], [49, 277.18, 0.8], [50, 329.63, 0.8]]);
     if (module.entrees.some(e => e.genre === "audio")) { const ctx = etat.moteur.ctx, n = ctx.sampleRate, buf = ctx.createBuffer(1, n, ctx.sampleRate), x = buf.getChannelData(0); x[0] = 0.9; x[Math.floor(n / 2)] = 0.6; const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.connect(etat.moteur.noeud); s.start(); etat.source = s; }
-    etat.marche = true; etat.bouton = bouton; etatBouton(bouton, true); badge("en écoute", "marche");
+    etat.marche = true; etat.bouton = bouton; etat.ecoutePropre = bouton && bouton.id === "b-ecouter" ? performance.now() : 0; etatBouton(bouton, true); badge("en écoute", "marche");
   } catch (e) { msg.textContent = e instanceof ErreurMoteur ? e.message : String(e && e.message || e); badge("erreur", "erreur"); }
 }
+// Plus longue écoute de son propre programme (bouton Écouter de l'exercice, pas l'exemple), en secondes, pour la leçon ouverte.
+const ecoutePropre = () => Math.max(etat.ecoutePropreMax || 0, etat.marche && etat.ecoutePropre ? (performance.now() - etat.ecoutePropre) / 1000 : 0);
 async function arreter(bouton) {
+  etat.ecoutePropreMax = ecoutePropre(); etat.ecoutePropre = 0;
   if (etat.source) { try { etat.source.stop(); etat.source.disconnect(); } catch (_) {} etat.source = null; }
   if (etat.moteur && etat.marche) await etat.moteur.arreter(); etat.marche = false;
   const b = bouton || etat.bouton; if (b) etatBouton(b, false); badge("prêt");
@@ -50,7 +54,7 @@ async function arreter(bouton) {
 
 // ---- leçon
 function ouvrir(id) {
-  const l = parId(id) || LECONS[0]; arreter(); etat.lecon = l; etat.essais = 0; etat.dernier = null;
+  const l = parId(id) || LECONS[0]; arreter(); etat.ecoutePropreMax = 0; etat.lecon = l; etat.essais = 0; etat.dernier = null;
   document.querySelectorAll("#nav-exp button").forEach(b => b.setAttribute("aria-current", String(b.dataset.id === l.id)));
   document.title = l.titre + ", SONORA Academy"; panneau("fiche"); window.scrollTo(0, 0);
   const i = LECONS.indexOf(l), u = UNITES.find(x => x.id === l.unite), p = lire()[l.id], ex = l.exercice;
@@ -85,7 +89,7 @@ function corriger(l) {
       const bons = r.resultats.filter(x => x.ok).length;
       z.innerHTML = `<ul class="criteres">${r.resultats.map(x => `<li class="${x.ok ? "ok" : "non"}"><span aria-hidden="true">${x.ok ? "✓" : "✗"}</span><span>${esc(x.texte)}<span class="sr-seul">${x.ok ? " : réussi" : " : à corriger"}</span></span><span class="detail">${esc(x.detail)}</span></li>`).join("")}</ul>
       <p class="verdict-global ${r.reussi ? "ok" : "non"}" id="verdict">${r.reussi ? "Exercice réussi." : `${bons} critère${bons > 1 ? "s" : ""} sur ${r.resultats.length}.`}</p><p class="petit">Mesuré en ${(performance.now() - t0).toFixed(0)} ms sur 4 s de signal.</p>`;
-      if (r.reussi) { const p = lire(); p[l.id] = { reussi: true, essais: (p[l.id]?.essais || 0) + etat.essais, date: Date.now() }; ecrire(p); liste(); document.querySelectorAll("#nav-exp button").forEach(b => b.setAttribute("aria-current", String(b.dataset.id === l.id))); }
+      if (r.reussi) { if (ecoutePropre() >= 4) points("academy:" + l.id, 10, "sonora"); else if (window.COURS_POINTS && !window.COURS_POINTS.deja("academy:" + l.id)) z.insertAdjacentHTML("beforeend", `<p class="petit">Pour gagner les points : écoute ton son au moins 4 secondes avec « Écouter », puis vérifie à nouveau.</p>`); const p = lire(); p[l.id] = { reussi: true, essais: (p[l.id]?.essais || 0) + etat.essais, date: Date.now() }; ecrire(p); liste(); document.querySelectorAll("#nav-exp button").forEach(b => b.setAttribute("aria-current", String(b.dataset.id === l.id))); }
     }
     badge("prêt");
   }, 30);
