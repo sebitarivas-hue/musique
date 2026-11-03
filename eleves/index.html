@@ -5506,7 +5506,7 @@ function eclore(app) {
   });
 }
 /* Espace enseignant protégé par un code (retour du 03/11/2026) : D.code est l'empreinte SHA-256 de « sel + code ». Le site est statique et public : cela arrête quelqu'un qui clique, pas quelqu'un qui lit le code de la page. */
-const SEL_CODE = "cours-sacre-coeur:";
+const SEL_CODE = "cours-sacre-coeur:"; let PROF_OK = false;
 async function empreinte(texte) { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(SEL_CODE + texte)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join(""); }
 function vueCode() {
   return `<section class="accueil code-prof"><div class="choix-haut">${HEXA}</div><div class="blk" style="max-width:30rem;margin:24px auto"><h1 class="h2" style="margin:0 0 8px">Espace enseignant</h1><p class="small">Cet espace est réservé au professeur. Entre le code pour l'ouvrir.</p>
@@ -5514,10 +5514,10 @@ function vueCode() {
     <p class="small" id="m-code" role="alert" style="min-height:1.4em;margin-top:10px"></p></div></section>`;
 }
 function rendre() {
-  if (D.prof && D.code && get("prof-ok", "") !== D.code && !/^#(monde|faust|fiche)/.test(location.hash)) {  /* la carte des musiques du monde, le labo Faust et les fiches de notions restent ouverts : ce ne sont pas le détail des cours */
+  if (D.prof && D.code && !PROF_OK && get("prof-ok", "") !== D.code && !/^#(monde|faust|fiche)/.test(location.hash)) {  /* la carte des musiques du monde, le labo Faust et les fiches de notions restent ouverts : ce ne sont pas le détail des cours */
     barre("semaine"); menu(""); app.innerHTML = vueCode(); window.scrollTo(0, 0);
     document.getElementById("f-code").onsubmit = async ev => { ev.preventDefault(); const v = document.getElementById("i-code").value.trim(); let h = ""; try { h = await empreinte(v); } catch (_) { document.getElementById("m-code").textContent = "Ce navigateur ne peut pas vérifier le code (connexion non sécurisée)."; return; }
-      if (h === D.code) { set("prof-ok", D.code); rendre(); } else { document.getElementById("m-code").textContent = "Ce code n'est pas le bon."; document.getElementById("i-code").select(); } };
+      if (h === D.code) { PROF_OK = true; set("prof-ok", D.code); rendre(); }  /* PROF_OK : en mémoire aussi, pour que ça marche quand le navigateur refuse le stockage (navigation privée) */ else { document.getElementById("m-code").textContent = "Ce code n'est pas le bon."; document.getElementById("i-code").select(); } };
     return; }
   if (METRO) { clearInterval(METRO); METRO = null; }
   if (PROJ && !/^#proj-/.test(location.hash)) { const el = document.getElementById("proj"); if (el) el.remove(); PROJ = null; }
