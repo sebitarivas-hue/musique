@@ -348,7 +348,7 @@ function uneHtml() {
    ${porte("#tout", "Explorer", "Artistes, œuvres, genres et territoires", [["#arbre", "Arbre"], ["#monde", "Carte"], ["#frise", "Frise"], ["#graphe", "Graphe"]])}
    ${porte("#techniques", "Apprendre", "Comprendre les musiques et leurs langages", [["#parcours", "Trajets"], ["#ecoute", "Écoute"], ["#passerelles", "Passerelles"]])}
    ${porte("../eleves/#labo", "Expérimenter", "Créer, manipuler, écouter autrement", [["../sonora/science/index.html", "SONORA Science"], ["../sonora/studio/index.html", "Studio"], ["../eleves/#labo", "Labo Faust"]])}
-   ${porte("../index.html", "Enseigner", "Des ressources prêtes pour la classe", [["../index.html", "Espace enseignant"], ["#sources", "Sources et méthode"]])}
+   ${porte("#sources", "Sources", "Comment l'Atlas est construit et vérifié", [["#sources", "Sources et méthode"]])}
   </nav>
   ${(D.une || []).length ? `<section aria-labelledby="pass-titre"><div class="pass-bande"><h2 id="pass-titre">Passerelles</h2><p>Écouter, comparer, relier les musiques</p><a href="#passerelles">Toutes les passerelles (${D.passerelles.length}) &#8250;</a></div>
   <div class="pass-rang">${D.une.map(u => { const p = passe(u.id); return `<a class="pass-carte" href="#pa/${u.id}"><img src="${esc(u.image)}" alt="" width="171" height="89" loading="lazy"><b>${esc(u.a)} <span aria-hidden="true">${SYMB[p.nature] || "/"}</span> ${esc(u.b)}</b><small>${esc(p.nature)}, proposition à relire</small></a>`; }).join("")}</div></section>` : ""}`;
