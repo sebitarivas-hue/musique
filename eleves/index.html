@@ -121,6 +121,7 @@ td.box, th.box { width: 26px; padding-inline: 4px; text-align: center; color: va
 .evt td:nth-child(2), .evt th:nth-child(2) { width: 40px; padding-inline: 6px; }
 code { font-family: var(--f-mono); font-size: .88em; }
 
+body.porte nav.tabs, body.porte header.haut nav.actions, body.porte #barre { display: none !important; }
 nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--surface); border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
 nav.tabs ul { list-style: none; margin: 0 auto; padding: 0; max-width: 700px; display: grid; grid-template-columns: repeat(6, 1fr); height: var(--nav-h); }
@@ -5576,6 +5577,8 @@ function vueClasse() {
     <p class="small" id="m-classe" role="alert" style="min-height:1.4em;margin-top:10px"></p></div></section>`;
 }
 function rendre() {
+  /* Tant qu'une porte (code de classe ou code du professeur) est fermée, les menus sont cachés : ils ne mèneraient qu'à la porte. */
+  document.body.classList.toggle("porte", !!((D.eleves && D.codes && !CLASSE_OK && !classeOk()) || (D.prof && D.code && !PROF_OK && get("prof-ok", "") !== D.code && !/^#(monde|faust|fiche)/.test(location.hash))));
   if (D.eleves && D.codes && !CLASSE_OK && !classeOk()) {
     barre("semaine"); menu(""); app.innerHTML = vueClasse(); window.scrollTo(0, 0);
     const f = document.getElementById("f-classe"), choix = () => (f.querySelector("input[name=classe]:checked") || {}).value;
