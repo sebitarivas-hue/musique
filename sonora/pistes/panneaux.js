@@ -1,0 +1,52 @@
+// Les deux panneaux ajoutés à Pistes : la bibliothèque de sons et de rythmes, et le séquenceur à pas. Ils fabriquent de l'audio (bibliotheque.js) et le placent sur une piste.
+// Rien ne quitte l'appareil. Le son se prépare dans la page ; le clip est ensuite un clip comme les autres (couper, déplacer, effets, export).
+import * as B from "./bibliotheque.js?v=be46a1af21";
+
+export function monterPanneaux({ $, esc, etat, P, ajouterAudio, changer, message }) {
+  const els = B.elements(), SR = 44100; let ctx = null, source = null, famille = "batterie";
+  const contexte = () => { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); return ctx; };
+  const arreter = () => { if (source) { try { source.stop(); } catch (_) {} source = null; } };
+  const jouer = (canaux, sr, boucle = false) => { arreter(); const c = contexte(), buf = c.createBuffer(canaux.length, canaux[0].length, sr); canaux.forEach((x, i) => buf.copyToChannel(x, i)); const s = c.createBufferSource(); s.buffer = buf; s.loop = boucle; s.connect(c.destination); s.start(); source = s; s.onended = () => { if (source === s) source = null; }; return { debut: c.currentTime, duree: buf.duration }; };
+  const placer = (r, msg) => { const pi = P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0], id = ajouterAudio(r.nom, r.canaux, r.sr), t0 = P.aimanter(etat.projet, etat.tete, +$("aimant").value), d = r.canaux[0].length / r.sr;
+    P.placerClip(etat.projet, P.pisteLibre(etat.projet, pi.id, t0, d), id, t0); message(msg || `« ${r.nom} » ajouté sur ${pi.nom}, au curseur rouge.`); changer(); };
+  const ouvrir = (id, bouton) => { for (const [x, b] of [["biblio", "b-biblio"], ["pas", "b-pas"]]) { const o = x === id && $(x).hidden; $(x).hidden = !o; $(b).setAttribute("aria-expanded", String(o)); } if (!$(id).hidden && id === "pas") dessinerGrille(); if (!$(id).hidden && id === "biblio") listerBiblio(); if ($(id).hidden) arreter(); };
+  $("b-biblio").onclick = () => ouvrir("biblio"); $("b-pas").onclick = () => ouvrir("pas");
+  $("biblio-fermer").onclick = () => { $("biblio").hidden = true; $("b-biblio").setAttribute("aria-expanded", "false"); arreter(); $("b-biblio").focus(); };
+  $("pas-fermer").onclick = () => { $("pas").hidden = true; $("b-pas").setAttribute("aria-expanded", "false"); arreter(); $("b-pas").focus(); };
+
+  // ---------------------------------------------------------------- la bibliothèque
+  $("biblio-onglets").innerHTML = B.CATEGORIES.map(([k, n]) => `<button type="button" role="tab" data-fam="${k}" aria-selected="${k === famille}">${n}</button>`).join("");
+  $("biblio-note").innerHTML = B.NOTES.map(m => `<option value="${m}">${B.NOM_NOTE(m)}</option>`).join("");
+  $("biblio-onglets").onclick = e => { const b = e.target.closest("[data-fam]"); if (!b) return; famille = b.dataset.fam; $("biblio-onglets").querySelectorAll("button").forEach(x => x.setAttribute("aria-selected", String(x === b))); listerBiblio(); };
+  $("biblio-chercher").oninput = () => listerBiblio();
+  function listerBiblio() {
+    const q = $("biblio-chercher").value.trim().toLowerCase(), L = els.filter(e => e.famille === famille && (!q || e.nom.toLowerCase().includes(q)));
+    $("biblio-reglages").hidden = famille !== "sons"; $("biblio-info").textContent = famille === "rythmes" ? `Les rythmes durent deux mesures et suivent le tempo du projet (${etat.projet.tempo} par minute).` : famille === "batterie" ? "Un coup de batterie : place-le où tu veux, ou construis un motif dans le séquenceur à pas." : "Choisis la note et la durée, puis écoute ou ajoute.";
+    $("biblio-liste").innerHTML = L.map(e => `<li data-id="${esc(e.id)}"><span class="bl-n">${esc(e.nom)}</span><span class="petit bl-t">${e.type === "coup" ? "un coup" : e.type === "boucle" ? "rythme, 2 mesures" : "son"}</span><span class="lp-act"><button type="button" data-a="ecouter">Écouter</button><button type="button" data-a="ajouter">Ajouter</button>${e.type === "boucle" ? '<button type="button" data-a="modifier">Modifier</button>' : ""}</span></li>`).join("") || "<li>Rien ne correspond.</li>";
+  }
+  const fab = e => B.fabriquer(e, { tempo: etat.projet.tempo, note: +$("biblio-note").value, duree: +$("biblio-duree").value, sr: SR });
+  $("biblio-liste").onclick = e => { const b = e.target.closest("button[data-a]"), li = e.target.closest("li[data-id]"); if (!b || !li) return; const el = els.find(x => x.id === li.dataset.id); if (!el) return;
+    try { if (b.dataset.a === "ecouter") { const r = fab(el); jouer(r.canaux, r.sr); $("msg-biblio").textContent = `Écoute : ${r.nom}.`; }
+      else if (b.dataset.a === "ajouter") placer(fab(el)); else if (b.dataset.a === "modifier") { chargerMotif(el); ouvrir("pas"); } } catch (err) { $("msg-biblio").textContent = "Cela n'a pas pu se fabriquer : " + err.message; } };
+
+  // ---------------------------------------------------------------- le séquenceur à pas
+  const S = { pas: 16, kit: "909", swing: 0, mesures: 2, grille: B.grilleVide(16), nom: "Motif" };
+  $("pas-longueur").innerHTML = B.PAS_LONGUEURS.map(n => `<option value="${n}"${n === 16 ? " selected" : ""}>${n} pas</option>`).join("");
+  $("pas-jeu").innerHTML = Object.entries({ "909": "Boîte à rythmes sèche", "808": "Boîte à rythmes grave", acoustique: "Batterie douce" }).map(([k, n]) => `<option value="${k}">${n}</option>`).join("");
+  function chargerMotif(el) { const g = B.grilleDe(el); S.grille = g.grille; S.pas = g.pas; S.kit = g.kit; S.swing = g.swing; S.nom = el.nom; $("pas-longueur").value = String(S.pas); if (![...$("pas-longueur").options].some(o => +o.value === S.pas)) $("pas-longueur").insertAdjacentHTML("beforeend", `<option value="${S.pas}">${S.pas} pas</option>`), $("pas-longueur").value = String(S.pas); $("pas-jeu").value = S.kit; $("pas-swing").value = String(Math.round(S.swing * 100)); $("pas-sw").textContent = Math.round(S.swing * 100) + " %"; $("msg-pas").textContent = `Rythme chargé : ${el.nom}. Modifie-le, puis ajoute-le au projet.`; }
+  function dessinerGrille() {
+    $("pas-grille").style.setProperty("--n", S.pas); $("pas-grille").innerHTML = Object.keys(S.grille).map(p => `<div class="pas-ligne"><span class="pas-nom">${esc(B.NOMS_PIECES[p])}</span>${Array.from({ length: S.pas }, (_, i) => `<button type="button" class="pas-case${i % 4 === 0 ? " t1" : ""}" data-p="${p}" data-i="${i}" data-e="${S.grille[p][i]}" aria-label="${esc(B.NOMS_PIECES[p])}, pas ${i + 1}" aria-pressed="${S.grille[p][i] !== "."}"></button>`).join("")}</div>`).join("");
+  }
+  $("pas-grille").onclick = e => { const b = e.target.closest(".pas-case"); if (!b) return; B.basculer(S.grille, b.dataset.p, +b.dataset.i); const v = S.grille[b.dataset.p][+b.dataset.i]; b.dataset.e = v; b.setAttribute("aria-pressed", String(v !== ".")); if (v === "x" && !S.boucle) { const r = B.rendreGrille({ ...B.grilleVide(S.pas), [b.dataset.p]: "x".padEnd(S.pas, ".") }, { pas: S.pas, tempo: 240, kit: S.kit, mesures: 1, sr: SR }); if (r) jouer([r.canaux[0].slice(0, Math.round(SR * 0.5))], SR); } };
+  $("pas-longueur").onchange = e => { S.pas = +e.target.value; S.grille = B.redimensionner(S.grille, S.pas); dessinerGrille(); };
+  $("pas-jeu").onchange = e => { S.kit = e.target.value; };
+  $("pas-swing").oninput = e => { S.swing = +e.target.value / 100; $("pas-sw").textContent = e.target.value + " %"; };
+  $("pas-mesures").onchange = e => { S.mesures = +e.target.value; };
+  const fabGrille = () => B.rendreGrille(S.grille, { pas: S.pas, tempo: etat.projet.tempo, swing: S.swing, kit: S.kit, mesures: S.mesures, sr: SR, nom: `${S.nom === "Motif" ? "Motif" : S.nom}, ${S.pas} pas` });
+  $("pas-vider").onclick = () => { S.grille = B.grilleVide(S.pas); S.nom = "Motif"; dessinerGrille(); $("msg-pas").textContent = "Grille vidée."; };
+  $("pas-ecouter").onclick = () => { if (S.boucle) { S.boucle = false; arreter(); $("pas-ecouter").textContent = "Écouter en boucle"; cancelAnimationFrame(S.raf); document.querySelectorAll(".pas-case.curseur").forEach(x => x.classList.remove("curseur")); return; }
+    const r = fabGrille(); if (!r) { $("msg-pas").textContent = "La grille est vide : allume quelques cases."; return; } const { debut } = jouer(r.canaux, r.sr, true); S.boucle = true; $("pas-ecouter").textContent = "Arrêter";
+    const dur = 60 / etat.projet.tempo / 4; const suivre = () => { if (!S.boucle || !source) { $("pas-ecouter").textContent = "Écouter en boucle"; return; } const t = ((ctx.currentTime - debut) % (S.pas * dur)), k = Math.floor(t / dur); document.querySelectorAll(".pas-case.curseur").forEach(x => x.classList.remove("curseur")); document.querySelectorAll(`.pas-case[data-i="${k}"]`).forEach(x => x.classList.add("curseur")); S.raf = requestAnimationFrame(suivre); }; suivre(); };
+  $("pas-ajouter").onclick = () => { const r = fabGrille(); if (!r) { $("msg-pas").textContent = "La grille est vide : allume quelques cases."; return; } placer(r, `« ${r.nom} » ajouté : ${S.mesures} mesure${S.mesures > 1 ? "s" : ""} au tempo du projet.`); $("msg-pas").textContent = `Motif ajouté au projet (${S.mesures} mesure${S.mesures > 1 ? "s" : ""}). Tu peux continuer à le modifier et en ajouter un autre.`; };
+  window.PISTES_PANNEAUX = { S, elements: els };
+}

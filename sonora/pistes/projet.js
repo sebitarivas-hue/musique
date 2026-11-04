@@ -4,7 +4,7 @@ let compteur = 0;
 const nouvelId = p => p + Date.now().toString(36) + (compteur++).toString(36);
 
 export function nouveauProjet({ titre = "Sans titre", tempo = 100, temps = 4 } = {}) {
-  return { format: "sonora-pistes", version: 1, titre, tempo, temps, pistes: [nouvellePiste("Piste 1"), nouvellePiste("Piste 2")], sons: {} };
+  return { format: "sonora-pistes", version: 1, id: nouvelId("j"), titre, tempo, temps, pistes: [nouvellePiste("Piste 1"), nouvellePiste("Piste 2")], sons: {} };
 }
 export function nouvellePiste(nom) { return { id: nouvelId("p"), nom, volume: 0.8, pan: 0, muet: false, solo: false, clips: [], effets: effetsParDefaut(), rack: [], enveloppe: [] }; }
 // Effets d'une piste : filtre, écho, réverbération. Chacun a un interrupteur et des réglages ; ils s'appliquent à toute la piste, avant le volume.
@@ -129,5 +129,16 @@ export function mixer(p, sons, sr = 44100, { fondu = 0.005 } = {}) {
 export function verifierProjet(o) {
   if (!o || o.format !== "sonora-pistes" || o.version !== 1 || !Array.isArray(o.pistes) || typeof o.sons !== "object") throw new Error("Ce n'est pas un projet de pistes SONORA.");
   for (const pi of o.pistes) for (const c of pi.clips || []) if (!o.sons[c.son]) throw new Error("Un clip renvoie à un son absent du projet.");
+  if (!o.id) o.id = nouvelId("j");  // les projets d'avant les « Mes projets » n'avaient pas d'identifiant
+  if (!o.titre) o.titre = "Sans titre";
   return o;
 }
+
+// ---------------------------------------------------------------- plusieurs projets (« Mes projets »)
+// Les identifiants des sons d'un projet : c'est ce qui permet de savoir quels sons rangés ne servent plus à personne quand on supprime un projet.
+export const idsSons = p => Object.keys(p.sons || {});
+// Une copie indépendante d'un projet, avec un nouvel identifiant et un nouveau titre. Les sons (leur audio est rangé à part) restent partagés avec l'original.
+export function copierProjet(p, titre) { const c = JSON.parse(JSON.stringify(p)); c.id = nouvelId("j"); c.titre = String(titre || p.titre + " (copie)").slice(0, 80); return c; }
+// Le résumé qu'on affiche dans la liste : titre, nombre de pistes et de clips, durée du dernier clip.
+export function resume(p) { let clips = 0, fin = 0; for (const pi of p.pistes || []) for (const c of pi.clips || []) { clips++; fin = Math.max(fin, c.debut + c.duree); } return { id: p.id, titre: p.titre || "Sans titre", pistes: (p.pistes || []).length, clips, duree: fin, tempo: p.tempo }; }
+export const renommerProjet = (p, titre) => { p.titre = String(titre || "").trim().slice(0, 80) || "Sans titre"; return p.titre; };

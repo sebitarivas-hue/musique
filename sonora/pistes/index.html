@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=9e2e1d643b">
-<link rel="stylesheet" href="pistes.css?v=9e2e1d643b">
+<link rel="stylesheet" href="../studio/studio.css?v=be46a1af21">
+<link rel="stylesheet" href="pistes.css?v=be46a1af21">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -39,7 +39,34 @@
     <button type="button" id="b-midi" aria-expanded="false" aria-controls="midi">Jouer un instrument</button>
     <button type="button" id="b-moteurs" aria-expanded="false" aria-controls="moteurs">Faust, Csound et Pure Data</button>
     <button type="button" id="b-export">Exporter en WAV</button>
+    <button type="button" id="b-biblio" aria-expanded="false" aria-controls="biblio">Bibliothèque</button>
+    <button type="button" id="b-pas" aria-expanded="false" aria-controls="pas">Séquenceur à pas</button>
+    <label class="mini">Projet <input id="titre-projet" maxlength="80" aria-label="Titre du projet" autocomplete="off"></label>
+    <button type="button" id="b-projets" aria-expanded="false" aria-controls="projets">Mes projets</button>
     <button type="button" id="b-nouveau">Nouveau projet</button>
+  </section>
+  <section class="midi biblio" id="biblio" aria-label="Bibliothèque de sons et de rythmes" hidden>
+    <div class="midi-haut"><h2>Bibliothèque de sons et de rythmes</h2><button type="button" class="croix-b" id="biblio-fermer" aria-label="Fermer la bibliothèque"><span class="croix" aria-hidden="true"></span></button></div>
+    <p class="petit">Des coups de batterie, des rythmes du monde et des neuf genres d'Harmonie, des sons de synthèse. Écoute, puis ajoute sur la piste choisie, au curseur rouge. Tout est fabriqué dans ta page, rien n'est téléchargé.</p>
+    <div class="biblio-onglets" role="tablist" id="biblio-onglets" aria-label="Familles"></div>
+    <div class="midi-rang"><label class="mini">Chercher<input id="biblio-chercher" type="search" autocomplete="off" aria-label="Chercher dans la bibliothèque"></label>
+      <span id="biblio-reglages" hidden><label class="mini">Note<select id="biblio-note" aria-label="Note"></select></label><label class="mini">Durée<select id="biblio-duree" aria-label="Durée"><option value="0.4">0,4 s</option><option value="0.8">0,8 s</option><option value="1.5" selected>1,5 s</option><option value="3">3 s</option></select></label></span></div>
+    <p class="petit" id="biblio-info"></p><ul class="liste-biblio" id="biblio-liste"></ul><p class="petit" id="msg-biblio" role="status"></p>
+  </section>
+  <section class="midi pas" id="pas" aria-label="Séquenceur à pas" hidden>
+    <div class="midi-haut"><h2>Séquenceur à pas</h2><button type="button" class="croix-b" id="pas-fermer" aria-label="Fermer le séquenceur à pas"><span class="croix" aria-hidden="true"></span></button></div>
+    <p class="petit">Allume des cases pour fabriquer un rythme : un clic pour un coup, deux pour un coup doux, trois pour effacer. Le motif suit le tempo du projet ; « Ajouter au projet » en fait un clip.</p>
+    <div class="midi-rang"><label class="mini">Longueur<select id="pas-longueur" aria-label="Nombre de pas"></select></label><label class="mini">Jeu de sons<select id="pas-jeu" aria-label="Jeu de sons"></select></label>
+      <label class="mini">Swing <output id="pas-sw">0 %</output><input type="range" id="pas-swing" min="0" max="50" value="0" aria-label="Swing"></label>
+      <label class="mini">Mesures<select id="pas-mesures" aria-label="Nombre de mesures"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option></select></label></div>
+    <div class="pas-grille" id="pas-grille" role="group" aria-label="Grille du séquenceur"></div>
+    <div class="midi-rang"><button type="button" id="pas-ecouter">Écouter en boucle</button><button type="button" id="pas-ajouter">Ajouter au projet</button><button type="button" id="pas-vider">Vider</button></div><p class="petit" id="msg-pas" role="status"></p>
+  </section>
+  <section class="midi projets" id="projets" aria-label="Mes projets" hidden>
+    <div class="midi-haut"><h2>Mes projets</h2><button type="button" class="croix-b" id="projets-fermer" aria-label="Fermer la liste des projets"><span class="croix" aria-hidden="true"></span></button></div>
+    <p class="petit">Chaque projet est gardé dans ce navigateur, avec ses sons, jusqu'à ce que tu le supprimes. Ouvre-en un autre sans perdre celui-ci. Pour garder un projet ailleurs ou le passer à un autre appareil, exporte-le dans un fichier.</p>
+    <div class="midi-rang"><button type="button" id="projets-nouveau">Nouveau projet</button><button type="button" id="projets-importer">Ouvrir un fichier de projet</button><input type="file" id="projets-fichier" accept=".json,.sonora-pistes" hidden></div>
+    <ul class="liste-projets" id="liste-projets"></ul><p class="petit" id="msg-projets" role="status"></p>
   </section>
   <section class="midi" id="midi" aria-label="Jouer un instrument" hidden>
     <div class="midi-haut"><h2>Jouer un instrument</h2><button type="button" class="croix-b" id="midi-fermer" aria-label="Fermer le clavier"><span class="croix" aria-hidden="true"></span></button></div>
@@ -78,8 +105,8 @@
   </div>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=9e2e1d643b"></script>
-<script src="../barre-cours.js?v=9e2e1d643b"></script>
-<script src="../retour.js?v=9e2e1d643b"></script>
+<script type="module" src="pistes.js?v=be46a1af21"></script>
+<script src="../barre-cours.js?v=be46a1af21"></script>
+<script src="../retour.js?v=be46a1af21"></script>
 </body>
 </html>

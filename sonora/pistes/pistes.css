@@ -123,3 +123,17 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .chip-m { min-height: 38px; padding: 0 16px; font-weight: 700; } .chip-m[aria-pressed="true"] { background: var(--noir); color: var(--acide); }
 .mot-champ[hidden] { display: none; } .mot-champ { display: block; margin: 8px 0; font: 600 .8rem var(--f-body); } .mot-champ textarea { display: block; width: 100%; box-sizing: border-box; margin-top: 4px; font: 500 .85rem/1.45 var(--f-mono); border: 2px solid var(--noir); padding: 8px; background: var(--papier); resize: vertical; }
 .mot-params { flex-wrap: wrap; justify-content: flex-start; padding-left: 0; } .mot-params:empty { display: none; } .mot-etat { white-space: pre-wrap; }
+
+.liste-projets { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.liste-projets li { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr) auto; gap: 6px 12px; align-items: center; padding: 8px 10px; border: 1.5px solid currentColor; }
+.liste-projets li.courant { background: rgba(214, 255, 0, .16); border-width: 3px; }
+.liste-projets .lp-titre { font: inherit; padding: 6px 8px; min-width: 0; } .liste-projets .lp-act { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 700px) { .liste-projets li { grid-template-columns: 1fr; } }
+
+.biblio-onglets { display: flex; gap: 6px; margin: 8px 0; } .biblio-onglets button[aria-selected="true"] { background: #D6FF00; color: #11110F; }
+.liste-biblio { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; max-height: 340px; overflow: auto; }
+.liste-biblio li { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, .8fr) auto; gap: 6px 10px; align-items: center; padding: 6px 8px; border: 1px solid currentColor; }
+.pas-grille { display: grid; gap: 4px; margin: 10px 0; overflow-x: auto; } .pas-ligne { display: grid; grid-template-columns: 9.5rem repeat(var(--n, 16), minmax(22px, 1fr)); gap: 3px; align-items: center; min-width: min-content; } .pas-nom { font-size: .85rem; }
+.pas-case { height: 30px; min-width: 22px; padding: 0; border: 1.5px solid currentColor; background: transparent; border-radius: 4px; } .pas-case.t1 { border-width: 2.5px; }
+.pas-case[data-e="x"] { background: #FF5638; } .pas-case[data-e="o"] { background: #BEBDB4; } .pas-case.curseur { outline: 3px solid #D6FF00; }
+@media (max-width: 700px) { .liste-biblio li { grid-template-columns: 1fr; } .pas-ligne { grid-template-columns: 6.5rem repeat(var(--n, 16), minmax(24px, 1fr)); } }

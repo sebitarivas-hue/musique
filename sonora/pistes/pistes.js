@@ -1,18 +1,19 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=9e2e1d643b";
-import * as Ed from "./editions.js?v=9e2e1d643b";
-import * as P from "./projet.js?v=9e2e1d643b";
-import { Stockage } from "./stockage.js?v=9e2e1d643b";
-import { creerBouton } from "./bouton.js?v=9e2e1d643b";
-import * as MI from "./midi.js?v=9e2e1d643b";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=9e2e1d643b";
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=9e2e1d643b";
-import * as MO from "./moteurs.js?v=9e2e1d643b";
-import { encoderWAV } from "../studio/wav.js?v=9e2e1d643b";
-import { ENTREES } from "../library/catalogue.js?v=9e2e1d643b";
-import { compiler } from "../src/index.js?v=9e2e1d643b";
-import { rendre } from "../src/rendu.js?v=9e2e1d643b";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=be46a1af21";
+import * as Ed from "./editions.js?v=be46a1af21";
+import * as P from "./projet.js?v=be46a1af21";
+import { Stockage } from "./stockage.js?v=be46a1af21";
+import { creerBouton } from "./bouton.js?v=be46a1af21";
+import * as MI from "./midi.js?v=be46a1af21";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=be46a1af21";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=be46a1af21";
+import * as MO from "./moteurs.js?v=be46a1af21";
+import { monterPanneaux } from "./panneaux.js?v=be46a1af21";
+import { encoderWAV } from "../studio/wav.js?v=be46a1af21";
+import { ENTREES } from "../library/catalogue.js?v=be46a1af21";
+import { compiler } from "../src/index.js?v=be46a1af21";
+import { rendre } from "../src/rendu.js?v=be46a1af21";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -41,7 +42,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=9e2e1d643b"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=be46a1af21"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -643,7 +644,7 @@ try { navigator.mediaDevices && navigator.mediaDevices.addEventListener("devicec
 listerEntrees();
 $("b-enreg").onclick = enregistrer; $("b-export").onclick = exporter;
 $("b-piste").onclick = () => { etat.projet.pistes.push(P.nouvellePiste(`Piste ${etat.projet.pistes.length + 1}`)); changer(); };
-$("b-nouveau").onclick = async () => { if (!confirm("Commencer un nouveau projet ? L'ancien et ses sons seront effacés de ce navigateur.")) return; if (etat.lecture) arreter(); await Stockage.toutEffacer().catch(() => {}); etat.projet = P.nouveauProjet(); etat.buffers = {}; etat.tete = 0; etat.choisi = null; etat.arme = etat.projet.pistes[0].id; histo.pile = []; histo.refaire = []; histo.snap = JSON.stringify(etat.projet); changer(); message("Nouveau projet."); };
+$("b-nouveau").onclick = () => nouveauProjet();
 $("fichiers").onchange = e => { const pi = P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0]; importer(e.target.files, pi.id, P.aimanter(etat.projet, etat.tete, +$("aimant").value)).then(() => { e.target.value = ""; }); };
 $("tempo").onchange = e => { etat.projet.tempo = Math.max(40, Math.min(240, +e.target.value || 100)); changer(); };
 $("b-zoom-plus").onclick = () => { etat.pxs = Math.min(400, etat.pxs * 1.5); afficher(); }; $("b-zoom-moins").onclick = () => { etat.pxs = Math.max(10, etat.pxs / 1.5); afficher(); };
@@ -699,6 +700,70 @@ document.addEventListener("keydown", e => {
 });
 document.addEventListener("visibilitychange", () => { if (document.hidden && etat.lecture) arreter(); });
 
+
+monterPanneaux({ $, esc, etat, P, ajouterAudio, changer, message });  // la bibliothèque et le séquenceur à pas
+
+// ---------------------------------------------------------------- Mes projets : plusieurs projets gardés dans le navigateur
+// Un projet qu'on quitte reste rangé avec ses sons ; « Nouveau projet » n'efface plus rien. La sauvegarde du projet ouvert est continue (changer, ranger).
+async function chargerProjet(p) {
+  if (etat.lecture) arreter();
+  etat.projet = P.verifierProjet(p); etat.buffers = {};
+  for (const id of Object.keys(etat.projet.sons)) { try { const d = await Stockage.lireSon(id); if (d) etat.buffers[id] = d; } catch (_) {} }
+  const perdus = Object.keys(etat.projet.sons).filter(id => !etat.buffers[id]); if (perdus.length) message(`${perdus.length} son${perdus.length > 1 ? "s" : ""} de ce projet n'ont pas été retrouvés dans ce navigateur.`);
+  etat.tete = 0; etat.choisi = null; etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; histo.pile = []; histo.refaire = []; histo.snap = JSON.stringify(etat.projet);
+  $("titre-projet").value = etat.projet.titre || ""; afficher();
+}
+async function nouveauProjet() {
+  await Stockage.ecrireProjet(etat.projet).catch(() => {}); const n = (await Stockage.listerProjets().catch(() => [])).length + 1, p = P.nouveauProjet({ titre: `Projet ${n}` });
+  await Stockage.ecrireProjet(p).catch(() => {}); await chargerProjet(p); message("Nouveau projet. L'autre est gardé dans « Mes projets »."); if (!$("projets").hidden) listerProjets();
+}
+const dateCourte = t => { try { return new Date(t).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (_) { return ""; } };
+async function listerProjets() {
+  const ul = $("liste-projets"); let L = []; try { await Stockage.ecrireProjet(etat.projet); L = await Stockage.listerProjets(); } catch (e) { $("msg-projets").textContent = "Le navigateur ne range pas les projets : " + e.message; }
+  ul.innerHTML = L.map(x => `<li data-id="${esc(x.id)}"${x.id === etat.projet.id ? ' class="courant" aria-current="true"' : ""}><input class="lp-titre" value="${esc(x.titre)}" maxlength="80" aria-label="Titre du projet"><span class="petit">${x.pistes} piste${x.pistes > 1 ? "s" : ""}, ${x.clips} clip${x.clips > 1 ? "s" : ""}, ${Math.round(x.duree)} s, tempo ${x.tempo}. ${esc(dateCourte(x.date))}</span>
+    <span class="lp-act"><button type="button" data-a="ouvrir"${x.id === etat.projet.id ? " disabled" : ""}>${x.id === etat.projet.id ? "Ouvert" : "Ouvrir"}</button><button type="button" data-a="copier">Dupliquer</button><button type="button" data-a="fichier">Exporter</button><button type="button" data-a="supprimer">Supprimer</button></span></li>`).join("") || "<li>Aucun projet pour l'instant.</li>";
+}
+$("b-projets").onclick = () => { const ouvert = $("projets").hidden; $("projets").hidden = !ouvert; $("b-projets").setAttribute("aria-expanded", String(ouvert)); if (ouvert) listerProjets(); };
+$("projets-fermer").onclick = () => { $("projets").hidden = true; $("b-projets").setAttribute("aria-expanded", "false"); $("b-projets").focus(); };
+$("projets-nouveau").onclick = () => nouveauProjet();
+$("titre-projet").onchange = e => { P.renommerProjet(etat.projet, e.target.value); e.target.value = etat.projet.titre; changer(); if (!$("projets").hidden) setTimeout(listerProjets, 400); };
+$("liste-projets").onchange = async e => { const li = e.target.closest("li[data-id]"); if (!li || !e.target.classList.contains("lp-titre")) return; const id = li.dataset.id;
+  if (id === etat.projet.id) { P.renommerProjet(etat.projet, e.target.value); $("titre-projet").value = etat.projet.titre; changer(); } else { const q = await Stockage.lireProjetId(id); if (q) { P.renommerProjet(q, e.target.value); await Stockage.ecrireProjet(q); await Stockage.ecrireProjet(etat.projet); } } listerProjets(); };
+$("liste-projets").onclick = async e => { const b = e.target.closest("button[data-a]"), li = e.target.closest("li[data-id]"); if (!b || !li) return; const id = li.dataset.id, m = $("msg-projets");
+  try {
+    if (b.dataset.a === "ouvrir") { await Stockage.ecrireProjet(etat.projet); await chargerProjet(await Stockage.choisirProjet(id)); m.textContent = `« ${etat.projet.titre} » est ouvert.`; listerProjets(); }
+    else if (b.dataset.a === "copier") { await Stockage.ecrireProjet(etat.projet); const q = await Stockage.lireProjetId(id); await Stockage.ecrireProjet(P.copierProjet(q)); m.textContent = "Projet dupliqué : la copie a ses propres pistes, et partage les sons."; listerProjets(); }
+    else if (b.dataset.a === "fichier") { const q = id === etat.projet.id ? etat.projet : await Stockage.lireProjetId(id); await exporterFichierProjet(q); m.textContent = "Fichier de projet exporté."; }
+    else if (b.dataset.a === "supprimer") {
+      const q = await Stockage.lireProjetId(id); if (!confirm(`Supprimer le projet « ${q ? q.titre : ""} » et ses sons ? Cela ne peut pas être annulé.`)) return;
+      const courant = id === etat.projet.id; await Stockage.supprimerProjet(id);
+      if (courant) { const reste = await Stockage.listerProjets(); if (reste.length) await chargerProjet(await Stockage.choisirProjet(reste[0].id)); else { const p = P.nouveauProjet(); await Stockage.ecrireProjet(p); await chargerProjet(p); } }
+      m.textContent = "Projet supprimé."; listerProjets();
+    }
+  } catch (err) { m.textContent = "Cela n'a pas pu se faire : " + err.message; }
+};
+// Un projet dans un fichier : le projet et l'audio de chaque son (entiers sur 16 bits, en base64). Pour le garder ailleurs ou le passer à un autre appareil.
+const versBase64 = oct => { let s = ""; for (let i = 0; i < oct.length; i += 8192) s += String.fromCharCode.apply(null, oct.subarray(i, i + 8192)); return btoa(s); };
+const depuisBase64 = t => { const s = atob(t), o = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) o[i] = s.charCodeAt(i); return o; };
+async function exporterFichierProjet(p) {
+  const sons = {}; for (const id of Object.keys(p.sons)) { const d = etat.buffers[id] && p.id === etat.projet.id ? etat.buffers[id] : await Stockage.lireSon(id); if (!d) continue;
+    sons[id] = { sr: d.sr, canaux: d.canaux.map(c => { const i16 = new Int16Array(c.length); for (let i = 0; i < c.length; i++) i16[i] = Math.max(-32768, Math.min(32767, Math.round(c[i] * 32767))); return versBase64(new Uint8Array(i16.buffer)); }) }; }
+  const blob = new Blob([JSON.stringify({ format: "sonora-pistes-fichier", version: 1, projet: p, sons })], { type: "application/json" }), a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = (p.titre || "projet").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9_-]+/g, "-") + ".sonora-pistes.json"; document.body.appendChild(a); a.click(); a.remove(); etat.dernierFichier = { octets: blob.size };
+}
+async function importerFichierProjet(fichier) {
+  const m = $("msg-projets"); try {
+    const o = JSON.parse(await fichier.text()); if (!o || o.format !== "sonora-pistes-fichier" || !o.projet) throw new Error("ce n'est pas un fichier de projet de Pistes");
+    const p = P.copierProjet(P.verifierProjet(o.projet), o.projet.titre || "Projet importé"), table = {};
+    // les sons reçoivent de nouveaux identifiants : un projet importé ne peut pas écraser le son d'un autre projet
+    const sons = {}; for (const [id, s] of Object.entries(p.sons)) { const nid = "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); table[id] = nid; sons[nid] = { ...s, id: nid }; const d = (o.sons || {})[id];
+      if (d) { const canaux = d.canaux.map(t => { const i16 = new Int16Array(depuisBase64(t).buffer.slice(0)), f = new Float32Array(i16.length); for (let i = 0; i < i16.length; i++) f[i] = i16[i] / 32767; return f; }); await Stockage.ecrireSon(nid, { canaux, sr: d.sr }); } }
+    p.sons = sons; for (const pi of p.pistes) for (const c of pi.clips) c.son = table[c.son] || c.son;
+    await Stockage.ecrireProjet(etat.projet); await Stockage.ecrireProjet(p); await chargerProjet(await Stockage.choisirProjet(p.id)); m.textContent = `« ${p.titre} » est importé et ouvert.`; listerProjets();
+  } catch (err) { m.textContent = "Ce fichier n'a pas pu être ouvert : " + err.message; }
+}
+$("projets-importer").onclick = () => $("projets-fichier").click(); $("projets-fichier").onchange = e => { if (e.target.files[0]) importerFichierProjet(e.target.files[0]).then(() => { e.target.value = ""; }); };
+
 // ---------------------------------------------------------------- démarrage : on reprend le projet rangé, avec ses sons
 // Les sons envoyés par le Studio (bouton « Envoyer vers Pistes ») : ils attendent dans le rangement local, on les place sur une piste libre, au début.
 async function recevoirDuStudio() {
@@ -718,7 +783,7 @@ async function demarrer() {
   try { const lu = await Stockage.lireProjet(); if (lu) p = P.verifierProjet(lu); } catch (_) { p = null; rangement = false; }
   if (p) { for (const id of Object.keys(p.sons)) { try { const d = await Stockage.lireSon(id); if (d) etat.buffers[id] = d; } catch (_) {} } const perdus = Object.keys(p.sons).filter(id => !etat.buffers[id]); if (perdus.length) message(`${perdus.length} son${perdus.length > 1 ? "s" : ""} n'ont pas été retrouvés dans ce navigateur.`); }
   if (!rangement) message("Le navigateur ne range pas le projet (stockage indisponible ou bloqué) : tu peux travailler, mais il ne sera pas conservé à la fermeture. Exporte en WAV pour garder ton travail.");
-  etat.projet = p || P.nouveauProjet(); histo.snap = JSON.stringify(etat.projet); construireMenus(); majMenus(); etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id;
+  etat.projet = p || P.nouveauProjet(); $("titre-projet").value = etat.projet.titre || ""; histo.snap = JSON.stringify(etat.projet); construireMenus(); majMenus(); etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id;
   await recevoirDuStudio(); afficher(); requestAnimationFrame(boucle); window.PISTES_PRET = true;
 }
 demarrer();
