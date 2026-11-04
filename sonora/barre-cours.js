@@ -6,12 +6,17 @@
   "use strict";
   const lire = (stock, k) => { try { const v = stock.getItem(k); return v ? JSON.parse(v) : null; } catch (_) { return null; } };
   const racine = location.href.split(/\/(?:sonora|atlas)\//)[0] + "/";
+  /* Fermeture de l'espace élève (même règle que fermeEleve() dans le site ; elle est copiée dans le navigateur à la première visite du site élève). */
+  const ferme = () => { const F = lire(localStorage, "fermeture"); if (!F || window.TEST_SANS_FERMETURE) return false; const d = new Date(), j = d.getDay(); if (j === 0 || j === 6) return false;
+    const p = n => String(n).padStart(2, "0"), iso = d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+    if (iso < F.saison[0] || iso > F.saison[1] || F.ouvert.some(a => iso >= a[0] && iso <= a[1])) return false; return d.getHours() >= F.debut || d.getHours() < F.fin; };
   const memeSite = u => { try { return new URL(u).origin === location.origin; } catch (_) { return false; } };
   let origine = lire(sessionStorage, "cours:origine") || lire(localStorage, "cours:origine");
   if (origine && !memeSite(origine.u)) origine = null;
   // repli : la page précédente transmise par le navigateur, si elle est du site et hors de SONORA et de l'Atlas (sans le « # », donc moins précise)
   if (!origine) { try { const r = document.referrer && new URL(document.referrer); if (r && r.origin === location.origin && !/\/(sonora|atlas)\//.test(r.pathname)) { origine = { u: r.href, t: "", espace: /\/eleves\//.test(r.pathname) ? "eleves" : "prof" }; sessionStorage.setItem("cours:origine", JSON.stringify(origine)); } } catch (_) {} }
   const espace = (origine && origine.espace) || (() => { try { return localStorage.getItem("cours:espace"); } catch (_) { return null; } })();
+  if (espace === "eleves" && ferme()) { location.replace(racine + "eleves/index.html"); return; }
   const base = espace === "prof" ? racine + "index.html" : espace === "eleves" ? racine + "eleves/index.html" : null;
   // Chaque classe a ses outils (03/11/2026) : un élève dont la classe est plus petite que celle de l'outil est ramené au Labo. Le professeur et les adresses sans classe connue ne sont pas touchés.
   { const MIN = { science: "4e", studio: "4e", library: "5e", academy: "3e" }, I = { "6e": 0, "5e": 1, "4e": 2, "3e": 3 }, outil = (location.pathname.match(/\/sonora\/(science|studio|library|academy)\//) || [])[1];

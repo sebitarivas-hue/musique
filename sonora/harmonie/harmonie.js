@@ -1,18 +1,18 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=de48906a16";
-import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=de48906a16";
-import { BANQUE, preparer } from "./echantillons.js?v=de48906a16";
-import { GENRES, LISTE_GENRES, rendreGenre } from "./genres.js?v=de48906a16";
-import { heros, etatBouton } from "../studio/heros.js?v=de48906a16";
-import { encoderWAV } from "../studio/wav.js?v=de48906a16";
-import { dessinerOscillo } from "../studio/visuels.js?v=de48906a16";
-import * as P from "../pistes/projet.js?v=de48906a16";
-import { Stockage } from "../pistes/stockage.js?v=de48906a16";
-import * as A from "./accords.js?v=de48906a16";
-import * as V from "./voicings.js?v=de48906a16";
-import * as G from "./grille.js?v=de48906a16";
-import { partitionSVG } from "./partition.js?v=de48906a16";
+import * as H from "./theorie.js?v=0639c5e8d0";
+import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=0639c5e8d0";
+import { BANQUE, preparer } from "./echantillons.js?v=0639c5e8d0";
+import { GENRES, LISTE_GENRES, rendreGenre } from "./genres.js?v=0639c5e8d0";
+import { heros, etatBouton } from "../studio/heros.js?v=0639c5e8d0";
+import { encoderWAV } from "../studio/wav.js?v=0639c5e8d0";
+import { dessinerOscillo } from "../studio/visuels.js?v=0639c5e8d0";
+import * as P from "../pistes/projet.js?v=0639c5e8d0";
+import { Stockage } from "../pistes/stockage.js?v=0639c5e8d0";
+import * as A from "./accords.js?v=0639c5e8d0";
+import * as V from "./voicings.js?v=0639c5e8d0";
+import * as G from "./grille.js?v=0639c5e8d0";
+import { partitionSVG } from "./partition.js?v=0639c5e8d0";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)

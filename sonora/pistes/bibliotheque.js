@@ -4,10 +4,10 @@
 //              joués à deux mesures, au tempo du projet ;
 //   Sons       les neuf sons de synthèse d'Harmonie (basse 808, sous-basse, lead, nappe, piano électrique, pincé, orgue rock, cloches, stab) sur la note et la durée de son choix.
 // Tout est fabriqué à la demande, sans fichier ni réseau, et reproductible. Sans DOM : testé dans Node.
-import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS } from "../harmonie/batterie.js?v=de48906a16";
-import { GENRES } from "../harmonie/genres.js?v=de48906a16";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=de48906a16";
-import { rendreSuite } from "../harmonie/son.js?v=de48906a16";
+import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS } from "../harmonie/batterie.js?v=0639c5e8d0";
+import { GENRES } from "../harmonie/genres.js?v=0639c5e8d0";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=0639c5e8d0";
+import { rendreSuite } from "../harmonie/son.js?v=0639c5e8d0";
 
 export const NOMS_PIECES = { kick: "Grosse caisse", snare: "Caisse claire", clap: "Clap", hatc: "Charleston fermé", hato: "Charleston ouvert", rim: "Rimshot", tom: "Tom", cow: "Cloche", shaker: "Shaker" };
 // Des rythmes du monde, sur seize pas (huit, neuf ou douze quand le rythme l'exige). Les mêmes que ceux de l'atelier sonore du cours.

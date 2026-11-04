@@ -5649,7 +5649,26 @@ function vueClasse() {
     <label class="small" for="i-classe" style="display:block;margin-top:12px">Code de la classe</label><input id="i-classe" type="password" autocomplete="off" style="display:block;width:100%;margin:6px 0 10px;padding:10px;font:inherit;border:2px solid currentColor"><button type="submit" class="btn-main">Entrer</button></form>
     <p class="small" id="m-classe" role="alert" style="min-height:1.4em;margin-top:10px"></p></div></section>`;
 }
+/* Fermeture de l'espace élève : de 20 h à 8 h du lundi au vendredi, ouvert le week-end et pendant les vacances (dates : FERMETURE dans donnees.py).
+   Elle suit l'horloge de l'appareil : un élève qui change l'heure de son téléphone la contourne, et c'est assumé. Le site du professeur n'est jamais fermé. */
+function fermeEleve(d = new Date()) {
+  const F = D.fermeture; if (!D.eleves || !F || window.TEST_SANS_FERMETURE) return false;  /* TEST_SANS_FERMETURE : posé par les tests de navigateur, pour qu'ils ne dépendent pas de l'heure à laquelle on les lance */
+  const j = d.getDay(); if (j === 0 || j === 6) return false;
+  const p = n => String(n).padStart(2, "0"), iso = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  if (iso < F.saison[0] || iso > F.saison[1] || F.ouvert.some(([a, b]) => iso >= a && iso <= b)) return false;
+  return d.getHours() >= F.debut || d.getHours() < F.fin;
+}
+try { if (D.eleves && D.fermeture) localStorage.setItem("fermeture", JSON.stringify(D.fermeture)); } catch (_) {}  /* SONORA et l'Atlas (barre-cours.js) lisent la même règle */
+function vueFerme() {
+  const F = D.fermeture;
+  return `<section class="accueil code-prof"><div class="choix-haut">${HEXA}</div><div class="blk" style="max-width:30rem;margin:24px auto"><h1 class="h2" style="margin:0 0 8px">C'est l'heure de se reposer</h1>
+    <p>L'espace élève est fermé le soir et la nuit, de ${F.debut} h à ${F.fin} h, du lundi au vendredi. Il rouvre à ${F.fin} h.</p><p class="small">Le week-end et pendant les vacances, il reste ouvert.</p></div></section>`;
+}
+let FERME_ETAT = null;
+setInterval(() => { const f = fermeEleve(); if (FERME_ETAT !== null && f !== FERME_ETAT) rendre(); }, 30000);
 function rendre() {
+  if (fermeEleve()) { FERME_ETAT = true; document.body.classList.add("porte"); toutArreter(); barre("semaine"); menu(""); app.innerHTML = vueFerme(); window.scrollTo(0, 0); return; }
+  FERME_ETAT = false;
   /* Tant qu'une porte (code de classe ou code du professeur) est fermée, les menus sont cachés : ils ne mèneraient qu'à la porte. */
   document.body.classList.toggle("porte", !!((D.eleves && D.codes && !CLASSE_OK && !classeOk()) || (D.prof && D.code && !PROF_OK && get("prof-ok", "") !== D.code && !/^#(monde|faust|fiche)/.test(location.hash))));
   if (D.eleves && D.codes && !CLASSE_OK && !classeOk()) {
