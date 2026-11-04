@@ -1,19 +1,19 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=be46a1af21";
-import * as Ed from "./editions.js?v=be46a1af21";
-import * as P from "./projet.js?v=be46a1af21";
-import { Stockage } from "./stockage.js?v=be46a1af21";
-import { creerBouton } from "./bouton.js?v=be46a1af21";
-import * as MI from "./midi.js?v=be46a1af21";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=be46a1af21";
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=be46a1af21";
-import * as MO from "./moteurs.js?v=be46a1af21";
-import { monterPanneaux } from "./panneaux.js?v=be46a1af21";
-import { encoderWAV } from "../studio/wav.js?v=be46a1af21";
-import { ENTREES } from "../library/catalogue.js?v=be46a1af21";
-import { compiler } from "../src/index.js?v=be46a1af21";
-import { rendre } from "../src/rendu.js?v=be46a1af21";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=de48906a16";
+import * as Ed from "./editions.js?v=de48906a16";
+import * as P from "./projet.js?v=de48906a16";
+import { Stockage } from "./stockage.js?v=de48906a16";
+import { creerBouton } from "./bouton.js?v=de48906a16";
+import * as MI from "./midi.js?v=de48906a16";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=de48906a16";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=de48906a16";
+import * as MO from "./moteurs.js?v=de48906a16";
+import { monterPanneaux } from "./panneaux.js?v=de48906a16";
+import { encoderWAV } from "../studio/wav.js?v=de48906a16";
+import { ENTREES } from "../library/catalogue.js?v=de48906a16";
+import { compiler } from "../src/index.js?v=de48906a16";
+import { rendre } from "../src/rendu.js?v=de48906a16";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -42,7 +42,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=be46a1af21"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=de48906a16"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -701,6 +701,7 @@ document.addEventListener("keydown", e => {
 document.addEventListener("visibilitychange", () => { if (document.hidden && etat.lecture) arreter(); });
 
 
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (_) {}  // le navigateur est prié de ne pas effacer les projets
 monterPanneaux({ $, esc, etat, P, ajouterAudio, changer, message });  // la bibliothèque et le séquenceur à pas
 
 // ---------------------------------------------------------------- Mes projets : plusieurs projets gardés dans le navigateur

@@ -68,12 +68,15 @@
     if (!t) { t = document.createElement("div"); t.id = "bc-toast"; t.setAttribute("role", "status"); t.setAttribute("aria-live", "polite"); t.style.cssText = "position:fixed;right:14px;bottom:14px;z-index:9999;background:#D6FF00;color:#11110F;border:2px solid #11110F;font:700 14px monospace;padding:8px 12px;box-shadow:4px 4px 0 #11110F;transition:opacity .3s"; document.body.appendChild(t); }
     cumul += x; t.textContent = `+${cumul} XP`; t.style.opacity = "1"; clearTimeout(toastT); toastT = setTimeout(() => { t.style.opacity = "0"; cumul = 0; }, 2200); // les points gagnés ensemble s'additionnent
   }
+  /* La seconde copie de l'XP (voir SAUV dans le site) : même base IndexedDB, même clé. */
+  function miroir(j) { try { const r = indexedDB.open("musique-sauvegarde", 1); r.onupgradeneeded = () => r.result.createObjectStore("k"); r.onsuccess = () => { try { const d = r.result, t = d.transaction("k", "readwrite"); let classe = ""; try { classe = localStorage.getItem("classe") || ""; } catch (_) {} t.objectStore("k").put({ t: Date.now(), jeu: j, classe }, "jeu"); t.oncomplete = t.onerror = t.onabort = () => d.close(); } catch (_) {} }; } catch (_) {} }
   function gagner(cle, points, compteur) {
     if (espace !== "eleves" || !jeuOn()) return false;
     const j = Object.assign({ xp: 0, faits: {}, badges: {}, c: {}, pays: {}, jours: [], serie: 0 }, lire(localStorage, "jeu") || {}); j.faits = j.faits || {}; j.c = j.c || {};
     if (cle && j.faits[cle]) return false;
     if (cle) j.faits[cle] = 1; if (compteur) j.c[compteur] = (j.c[compteur] || 0) + 1; j.xp = (j.xp || 0) + (points || 0);
     try { localStorage.setItem("jeu", JSON.stringify(j)); } catch (_) { return false; }
+    miroir(j);
     const puce = nav.querySelector(".bc-xp"); if (puce) puce.textContent = j.xp + " XP"; else { const mp = [...nav.querySelectorAll("a")].find(a => /Mon parcours/.test(a.textContent)); if (mp) mp.insertAdjacentHTML("beforeend", ` <span class="bc-xp">${j.xp} XP</span>`); }
     window.BARRE_COURS.xp = j.xp; if (points) annoncer(points); return true;
   }

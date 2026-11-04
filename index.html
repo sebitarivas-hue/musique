@@ -4347,7 +4347,64 @@ function jeu() {
   ["sons", "parts", "seances", "quiz", "parfaits", "oreille", "oreille10", "clavier", "instr", "frise", "rythme", "faust", "code", "fiches", "semaines"].forEach(k => PARC.c[k] = PARC.c[k] || 0);
   return PARC;
 }
-const sauverJeu = () => { try { localStorage.setItem("jeu", JSON.stringify(PARC)); } catch (_) {} };
+const sauverJeu = () => { try { localStorage.setItem("jeu", JSON.stringify(PARC)); } catch (_) {} SAUV.copier(); };
+/* L'XP ne se perd jamais (consigne de Sébastien, 04/11/2026). Pas de compte, rien n'est envoyé : trois protections locales.
+   1. Une seconde copie dans IndexedDB, qui survit quand le navigateur vide le localStorage. À l'ouverture, les deux copies sont fusionnées : on garde le plus, jamais le moins.
+   2. navigator.storage.persist() : le navigateur est prié de ne pas effacer ces données quand il manque de place.
+   3. Un fichier de sauvegarde et un code à copier, pour retrouver son parcours sur un autre appareil ou après un effacement complet.
+   Limite dite aux élèves : ce qui est gardé sur l'appareil peut se modifier à la main ; la sauvegarde protège de la perte, pas de la triche, et les XP ne servent à rien d'autre qu'à se repérer. */
+const SAUV = (() => {
+  const BD = "musique-sauvegarde", MAX = 2e6;
+  const ouvrir = () => new Promise((ok, ko) => { try { const r = indexedDB.open(BD, 1); r.onupgradeneeded = () => r.result.createObjectStore("k"); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); } catch (e) { ko(e); } });
+  const acces = async (mode, f) => { const d = await ouvrir(); return new Promise((ok, ko) => { const t = d.transaction("k", mode), q = f(t.objectStore("k")); t.oncomplete = () => { d.close(); ok(q && q.result); }; t.onerror = t.onabort = () => { d.close(); ko(t.error); }; }); };
+  const lireLS = () => { try { return JSON.parse(localStorage.getItem("jeu") || "null"); } catch (_) { return null; } };
+  const nombre = x => (typeof x === "number" && isFinite(x) && x >= 0 ? x : 0);
+  const objet = x => (x && typeof x === "object" && !Array.isArray(x) ? x : {});
+  /* Fusion : on ne perd rien. Le plus grand XP, tous les faits, tous les badges, le plus grand de chaque compteur. */
+  const fusion = (a, b) => {
+    a = objet(a); b = objet(b); const o = JEU_VIDE(); o.xp = Math.max(nombre(a.xp), nombre(b.xp)); o.serie = Math.max(nombre(a.serie), nombre(b.serie));
+    for (const k of ["faits", "badges", "pays"]) o[k] = Object.assign({}, objet(a[k]), objet(b[k]));
+    const cs = Object.assign({}, objet(a.c), objet(b.c)); for (const k in cs) o.c[k] = Math.max(nombre(objet(a.c)[k]), nombre(objet(b.c)[k]));
+    o.jours = [...new Set([].concat(Array.isArray(a.jours) ? a.jours : [], Array.isArray(b.jours) ? b.jours : []))].sort();
+    return o;
+  };
+  const vide = j => !j || (!nombre(j.xp) && !Object.keys(objet(j.faits)).length && !Object.keys(objet(j.badges)).length);
+  let minuteur = 0, persistDemande = false;
+  const demanderPersistance = () => { if (persistDemande) return; persistDemande = true; try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (_) {} };
+  /* copie : LS -> IndexedDB, un peu après le dernier changement */
+  const copier = () => { demanderPersistance(); clearTimeout(minuteur); minuteur = setTimeout(copierMaintenant, 400); };
+  const copierMaintenant = async () => { try { const j = lireLS(); if (!j) return; await acces("readwrite", st => st.put({ t: Date.now(), jeu: j, classe: get("classe", "") }, "jeu")); } catch (_) {} };
+  const effacer = async () => { clearTimeout(minuteur); try { await acces("readwrite", st => st.delete("jeu")); } catch (_) {} };
+  /* à l'ouverture : fusionner la copie IndexedDB avec le localStorage et réparer celui qui est en retard */
+  const restaurer = async () => {
+    try {
+      const c = await acces("readonly", st => st.get("jeu")), a = lireLS(), b = c && c.jeu;
+      if (vide(b)) { if (a) copier(); return false; }
+      const m = fusion(a, b); if (JSON.stringify(m) === JSON.stringify(Object.assign(JEU_VIDE(), objet(a)))) { copier(); return false; }
+      try { localStorage.setItem("jeu", JSON.stringify(m)); } catch (_) { return false; }
+      if (c.classe && !get("classe", "")) { set("classe", c.classe); set("niv", c.classe); }
+      PARC = null; copier(); return true;
+    } catch (_) { return false; }
+  };
+  /* fichier et code */
+  const somme = t => { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
+  const contenu = () => { const j = JSON.stringify(Object.assign(JEU_VIDE(), objet(jeu()))); return JSON.stringify({ sauvegarde: "musique-xp", v: 1, classe: get("classe", ""), jeu: j, somme: somme(j) }); };
+  const code = () => { const t = contenu(); return "XP1." + btoa(unescape(encodeURIComponent(t))); };
+  const lire = texte => {
+    texte = String(texte || "").trim(); if (!texte || texte.length > MAX) throw new Error("vide ou trop long");
+    if (/^XP1\./.test(texte)) texte = decodeURIComponent(escape(atob(texte.slice(4).replace(/\s+/g, ""))));
+    const o = JSON.parse(texte); if (!o || o.sauvegarde !== "musique-xp" || typeof o.jeu !== "string") throw new Error("ce n'est pas une sauvegarde de parcours");
+    if (somme(o.jeu) !== o.somme) throw new Error("la sauvegarde est abîmée (elle a été coupée ou modifiée)");
+    const j = JSON.parse(o.jeu); if (!j || typeof j.xp !== "number" || typeof j.faits !== "object") throw new Error("parcours illisible");
+    return { jeu: j, classe: String(o.classe || "") };
+  };
+  /* importer = fusionner : retrouver son parcours ne peut jamais faire perdre ce qu'on a déjà */
+  const importer = texte => { const { jeu: j, classe } = lire(texte); const m = fusion(lireLS(), j); localStorage.setItem("jeu", JSON.stringify(m)); if (classe && !get("classe", "")) { set("classe", classe); set("niv", classe); } PARC = null; copierMaintenant(); return m; };
+  return { copier, copierMaintenant, restaurer, effacer, code, contenu, importer, lire, fusion };
+})();
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") SAUV.copierMaintenant(); });
+window.addEventListener("pagehide", () => SAUV.copierMaintenant());
+SAUV.restaurer().then(ok => { if (ok) { try { majPuce(); } catch (_) {} if (/^#parcours/.test(location.hash)) rendre(); } });
 /* SONORA et l'Atlas ajoutent aussi des points (sonora/barre-cours.js) : si un autre onglet les change, on relit au lieu d'écraser. */
 window.addEventListener("storage", e => { if (e.key === "jeu") PARC = null; });
 const jeuActif = () => role() === "eleve" && modeJeu();
@@ -5283,7 +5340,13 @@ function vueParcours() {
   h += `<h2 class="sec">Les niveaux</h2><ol class="niveaux-l">${NIVEAUX_JEU.map(([x, nom, d], i) => `<li class="${i <= n ? "atteint" : ""}"><span class="lvlbadge" style="background:${i <= n ? "#0b0b0b" : "transparent"};color:${i <= n ? "#fff" : "var(--muted)"};border:1.5px solid ${i <= n ? "#0b0b0b" : "var(--line)"}">${i + 1}</span><span><b>${esc(nom)}</b><span class="small">${x} XP. ${esc(d)}</span></span></li>`).join("")}</ol>`;
   h += `<h2 class="sec">Comment gagner des XP</h2><p class="small">Les points sont là pour garder une trace de ce que tu as fait, pas pour faire un concours. Ils ne se gagnent qu'en travaillant vraiment : on ne peut pas en gagner en cliquant vite, en revenant chaque jour ou en rejouant le même jeu.</p><ul class="plain"><li>Une séance : 10 XP, une seule fois, quand tu l'as lue en entier.</li><li>Un son : 5 XP, une seule fois, quand tu l'as écouté jusqu'au bout. Une partition suivie jusqu'au bout : 15 XP.</li><li>Une bonne réponse au quiz : 10 XP, une seule fois par question, et 30 XP de bonus pour un quiz sans faute.</li><li>Les jeux : chaque jeu et chaque niveau rapportent une seule fois. Les jeux d'oreille, de clavier, d'instruments et de mystère ont un plafond : une fois atteint, tu peux continuer à t'entraîner, sans plus de points.</li><li>Venir sur le site, venir plusieurs jours de suite ou y passer du temps ne rapporte rien.</li></ul>`;
   h += `<p style="margin-top:14px"><button type="button" class="btn2" onclick="guide()">Revoir « Comment ça marche »</button> <a class="btn2" href="#guide">Le guide du site</a></p>`;
-  h += `<p class="small" style="margin-top:14px">Ton parcours reste sur cet appareil : rien n'est envoyé, personne d'autre ne le voit. <button type="button" class="lien-btn" id="raz-jeu">Tout recommencer à zéro</button></p>`;
+  h += `<h2 class="sec" id="sauvegarde" tabindex="-1">Garder mon parcours</h2><p class="small">Ton parcours reste sur cet appareil, dans deux mémoires du navigateur : rien n'est envoyé, personne d'autre ne le voit. Pour ne jamais le perdre, ou le retrouver sur un autre appareil, garde une sauvegarde.</p>
+    <p><button type="button" class="btn2" id="sv-fichier">Enregistrer dans un fichier</button> <button type="button" class="btn2" id="sv-code">Copier mon code</button></p>
+    <details class="lab-avance"><summary>Retrouver mon parcours</summary><p class="small">Choisis ton fichier de sauvegarde, ou colle ton code. Ce que tu as déjà sur cet appareil est gardé : le plus grand score et tous les badges restent.</p>
+    <p><label class="small">Mon fichier <input type="file" id="sv-lire" accept=".json,application/json"></label></p>
+    <p><label class="small">Mon code <textarea id="sv-texte" rows="3" spellcheck="false" style="width:100%"></textarea></label></p><p><button type="button" class="btn2" id="sv-importer">Retrouver mon parcours</button></p></details>
+    <p class="small" id="sv-msg" role="status"></p>
+    <p class="small" style="margin-top:14px"><button type="button" class="lien-btn" id="raz-jeu">Tout recommencer à zéro</button></p>`;
   h += `<p style="margin-top:14px"><a class="btn2" href="#plus">Plus de ressources</a></p>`;
   return h;
 }
@@ -5695,7 +5758,13 @@ function rendre() {
     app.querySelectorAll(".etapes [role=tab]").forEach(t => t.setAttribute("aria-selected", t.dataset.etape === id));
     app.querySelectorAll(".panneau").forEach(p => p.hidden = p.id !== "pa-" + id);
     if (b.closest(".suite")) { const nav = app.querySelector(".etapes"); nav.scrollIntoView({ block: "start" }); document.getElementById("et-" + id).focus({ preventScroll: true }); } });
-  { const z = document.getElementById("raz-jeu"); if (z) z.onclick = () => { if (confirm("Effacer tout ton parcours (XP, badges) sur cet appareil ?")) { PARC = JEU_VIDE(); sauverJeu(); rendre(); } }; }
+  { const z = document.getElementById("raz-jeu"); if (z) z.onclick = async () => { if (confirm("Effacer tout ton parcours (XP, badges) sur cet appareil ? Ta sauvegarde en fichier, si tu en as une, ne sera pas touchée.")) { PARC = JEU_VIDE(); try { localStorage.setItem("jeu", JSON.stringify(PARC)); } catch (_) {} await SAUV.effacer(); rendre(); } }; }
+  { const msg = t => { const m = document.getElementById("sv-msg"); if (m) m.textContent = t; };
+    const bf = document.getElementById("sv-fichier"); if (bf) bf.onclick = () => { try { const u = URL.createObjectURL(new Blob([SAUV.contenu()], { type: "application/json" })), a = document.createElement("a"); a.href = u; a.download = "mon-parcours-musique.json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 2000); msg("Fichier enregistré. Garde-le dans un endroit sûr."); } catch (e) { msg("Cela n'a pas marché : " + e.message); } };
+    const bc = document.getElementById("sv-code"); if (bc) bc.onclick = async () => { const c = SAUV.code(); try { await navigator.clipboard.writeText(c); msg("Code copié. Colle-le dans un message pour toi, ou dans une note."); } catch (_) { const t = document.getElementById("sv-texte"); if (t) { t.value = c; t.select(); } msg("Ton code est dans la case « Mon code » : copie-le à la main."); } };
+    const fait = m => { msg(`Parcours retrouvé : ${m.xp} XP, ${Object.keys(m.badges).length} badge${Object.keys(m.badges).length > 1 ? "s" : ""}.`); majPuce(); setTimeout(rendre, 1200); };
+    const bi = document.getElementById("sv-importer"); if (bi) bi.onclick = () => { try { fait(SAUV.importer(document.getElementById("sv-texte").value)); } catch (e) { msg("Cela n'a pas marché : " + e.message + "."); } };
+    const bl = document.getElementById("sv-lire"); if (bl) bl.onchange = () => { const f = bl.files && bl.files[0]; if (!f) return; if (f.size > 2e6) return msg("Ce fichier est trop gros pour être une sauvegarde."); const fr = new FileReader(); fr.onload = () => { try { fait(SAUV.importer(fr.result)); } catch (e) { msg("Cela n'a pas marché : " + e.message + "."); } }; fr.readAsText(f); }; }
   { let m; if ((m = v.match(/^seance-(\w+)-(\d+)-(\d+)$/))) lectureSite(app, `seance:${m[1]}-${m[2]}-${m[3]}`, 10, "seances", verifierSemaine);
     if (v.startsWith("fiche-")) lectureSite(app, "fiche:" + v.slice(6), 5, "fiches");
     if (v.startsWith("faust-") && atelierDe(v.slice(6))) lectureSite(app, "faust:" + v.slice(6), 10, "faust"); }
