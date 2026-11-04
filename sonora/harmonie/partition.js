@@ -1,6 +1,6 @@
 // Partition en accords (grand portée : clé de sol et clé de fa), dessinée en SVG. Sans DOM : testé dans Node.
 // Une colonne par accord, avec son nom au-dessus ; les altérations sont écrites devant chaque note altérée (pas d'armure : choix simple et lisible).
-import { nomNote } from "./theorie.js?v=5a32811e0b";
+import { nomNote } from "./theorie.js?v=7a39be9f20";
 const NATURELS = [0, 2, 4, 5, 7, 9, 11], pc = m => ((m % 12) + 12) % 12;
 const ESPACE = 10, PAS = ESPACE / 2;
 // Écrit une hauteur midi avec l'orthographe de l'accord (Fa♯ ou Sol♭ selon l'accord) : { lettre, alt, octave, n } où n est le numéro diatonique (do4 = 28).
