@@ -1368,6 +1368,7 @@ html.signal .en-bloc b { font: 600 11px/1.2 var(--f-body); text-transform: upper
 html.signal .en-bloc span { font: 400 10px/1.25 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: #BEBDB4; }
 html.signal .en-prof b { position: relative; } html.signal .en-prof { border-right: 0; }
 html.signal .en-an { margin-left: auto; display: flex; flex-direction: column; align-items: center; gap: 3px; font: 400 11px/1 var(--f-mono); letter-spacing: .08em; color: #D3D2CA; padding-left: 12px; border-left: 1px solid #3A3A35; }
+html.signal .en-parents { margin-left: auto; align-self: center; font: 500 11px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: #D3D2CA; text-decoration: none; border: 1px solid #5A5A53; padding: 7px 10px; } html.signal .en-parents + .en-an { margin-left: 8px; } html.signal .en-parents:hover, html.signal .en-parents:focus-visible { background: #D6FF00; color: #11110F; border-color: #D6FF00; outline: none; }
 html.signal .en-an i { width: 12px; height: 1px; background: #D3D2CA; }
 html.signal .en-menu { display: none; }
 @media (max-width: 420px) { html.signal .en-bloc b { font-size: 10px; white-space: normal; } html.signal .en-bloc span { font-size: 9px; } html.signal .en-prof span { max-width: 15ch; } }
@@ -1667,6 +1668,7 @@ function entete(tab, r) {
     <a class="en-bloc en-ecole" href="${esc(D.choix || "#accueil")}" title="Choisir : élève ou enseignant"><b>${esc(ecole.replace(/Coeur/, "Cœur")).replace(/-/g, "\u2011")}</b><span>${esc(ville || "").replace(/-/g, "\u2011")}</span></a>
     <div class="en-bloc en-prof"><b>${esc(D.professeur || "")}</b><span>Professeur d'éducation musicale</span></div>
     ${r ? `<nav class="en-menu" aria-label="Rubriques"><ul>${D.nav.rubriques[r].map(([t, , lib]) => `<li><a href="#${t}"${t === tab ? ' aria-current="page"' : ""}>${esc(lib)}</a></li>`).join("")}</ul></nav>` : ""}${modeHtml()}${puceHtml()}
+    ${D.eleves ? `<a class="en-parents" href="${esc((D.choix || "").replace("choix.html", "parents/"))}">Parents</a>` : ""}
     <div class="en-an" aria-label="Année ${esc(D.annee)}"><span>${esc(a1 || "")}</span><i aria-hidden="true"></i><span>${esc(a2 || "")}</span></div></div>`;
 }
 function menu(tab) {
