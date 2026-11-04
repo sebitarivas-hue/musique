@@ -1,8 +1,9 @@
 // Le son du jeu d'harmonie : les accords sont joués par des instruments écrits en SONORA, rendus hors ligne (timing exact, boucle sans couture).
 // Sans DOM : testé dans Node (on vérifie les hauteurs entendues par analyse du spectre).
-import { compiler } from "../src/index.js?v=09b9602da1";
-import { rendre } from "../src/rendu.js?v=09b9602da1";
-import { BANQUE, rendreSuiteEch } from "./echantillons.js?v=09b9602da1";
+import { compiler } from "../src/index.js?v=9e2e1d643b";
+import { rendre } from "../src/rendu.js?v=9e2e1d643b";
+import { BANQUE, rendreSuiteEch } from "./echantillons.js?v=9e2e1d643b";
+import { SONS_SYNTHESE } from "./sons_synthese.js?v=9e2e1d643b";
 
 export const INSTRUMENTS = {
   piano: { nom: "Piano doux", code: `instrument PianoDoux {
@@ -40,8 +41,9 @@ export const INSTRUMENTS = {
     sortie = voix.somme
 }` },
 };
+Object.assign(INSTRUMENTS, SONS_SYNTHESE);  // les sons de synthèse pour le rap, le pop, la house (sons_synthese.js)
 // Les instruments proposés dans le jeu : ceux qui ont un son de secours écrit en SONORA, puis ceux qui n'existent qu'enregistrés (banque du site).
-export const NOMS_INSTR = { piano: "Piano", orgue: "Orgue", cordes: "Cordes", harpe: "Harpe", guitare: "Guitare", clavecin: "Clavecin", violoncelle: "Violoncelle", flute: "Flûte" };
+export const NOMS_INSTR = { piano: "Piano", orgue: "Orgue", cordes: "Cordes", harpe: "Harpe", guitare: "Guitare", clavecin: "Clavecin", violoncelle: "Violoncelle", flute: "Flûte", ...Object.fromEntries(Object.entries(SONS_SYNTHESE).map(([k, v]) => [k, v.nom])) };
 export const TOUS = Object.keys(NOMS_INSTR);
 // Les enregistrements décodés, par instrument de la banque. Tant qu'un instrument n'est pas chargé, le son de secours (SONORA) joue à sa place :
 // le piano, l'orgue et les cordes ont le leur ; les autres jouent avec celui du piano.

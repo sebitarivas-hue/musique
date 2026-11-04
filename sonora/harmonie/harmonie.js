@@ -1,23 +1,24 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=09b9602da1";
-import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=09b9602da1";
-import { BANQUE, preparer } from "./echantillons.js?v=09b9602da1";
-import { heros, etatBouton } from "../studio/heros.js?v=09b9602da1";
-import { encoderWAV } from "../studio/wav.js?v=09b9602da1";
-import { dessinerOscillo } from "../studio/visuels.js?v=09b9602da1";
-import * as P from "../pistes/projet.js?v=09b9602da1";
-import { Stockage } from "../pistes/stockage.js?v=09b9602da1";
-import * as A from "./accords.js?v=09b9602da1";
-import * as V from "./voicings.js?v=09b9602da1";
-import * as G from "./grille.js?v=09b9602da1";
-import { partitionSVG } from "./partition.js?v=09b9602da1";
+import * as H from "./theorie.js?v=9e2e1d643b";
+import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=9e2e1d643b";
+import { BANQUE, preparer } from "./echantillons.js?v=9e2e1d643b";
+import { GENRES, LISTE_GENRES, rendreGenre } from "./genres.js?v=9e2e1d643b";
+import { heros, etatBouton } from "../studio/heros.js?v=9e2e1d643b";
+import { encoderWAV } from "../studio/wav.js?v=9e2e1d643b";
+import { dessinerOscillo } from "../studio/visuels.js?v=9e2e1d643b";
+import * as P from "../pistes/projet.js?v=9e2e1d643b";
+import { Stockage } from "../pistes/stockage.js?v=9e2e1d643b";
+import * as A from "./accords.js?v=9e2e1d643b";
+import * as V from "./voicings.js?v=9e2e1d643b";
+import * as G from "./grille.js?v=9e2e1d643b";
+import { partitionSVG } from "./partition.js?v=9e2e1d643b";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const SR = 44100;
-const etat = { vue: "explorer", ctx: null, source: null, analyseur: null, tonique: 0, mode: "ionien", sons: 3, prog: H.PROGRESSIONS[0].id, tonP: 0, tempo: 90, style: "plaque", instrument: "piano", lecture: false, compo: [], tonC: 0, modeC: "ionien", jeu: null, grille: [], dispo: "choral", pulse: "aucune", sel: -1, vivant: null, fond: null, dernier: [] };
+const etat = { vue: "explorer", ctx: null, source: null, analyseur: null, tonique: 0, mode: "ionien", sons: 3, prog: H.PROGRESSIONS[0].id, tonP: 0, tempo: 90, style: "plaque", instrument: "piano", genre: "aucun", variation: 0, lecture: false, compo: [], tonC: 0, modeC: "ionien", jeu: null, grille: [], dispo: "choral", pulse: "aucune", sel: -1, vivant: null, fond: null, dernier: [] };
 window.HARMONIE = etat;
 const badge = (t, c = "") => { const e = $("etat"); e.textContent = t; e.className = "etat " + c; };
 const lire = (k, d) => { try { const v = localStorage.getItem("sonora:harmonie:" + k); return v === null ? d : JSON.parse(v); } catch (_) { return d; } };
@@ -106,22 +107,35 @@ function vueExplorer() {
 }
 
 // ---------------------------------------------------------------- progressions
-function rendreProgression(prog, t) { const acc = H.accordsProgression(prog, t), v = H.voicing(acc), r = evenementsProgression(v, { tempo: etat.tempo, style: etat.style }); return { acc, r, canaux: rendreSuite(r.evenements, { instrument: etat.instrument, duree: r.duree, boucle: true }) }; }
+function rendreProgression(prog, t) {
+  const acc = H.accordsProgression(prog, t), v = H.voicing(acc);
+  if (GENRES[etat.genre]) { const g = rendreGenre(v, etat.genre, { tempo: etat.tempo, variation: etat.variation, instrument: etat.instrument, sr: SR, boucle: true }); return { acc, r: { evenements: g.evenements, mesure: g.mesure, duree: g.duree }, canaux: g.canaux }; }
+  const r = evenementsProgression(v, { tempo: etat.tempo, style: etat.style }); return { acc, r, canaux: rendreSuite(r.evenements, { instrument: etat.instrument, duree: r.duree, boucle: true }) };
+}
+// La mesure (en secondes) pour l'affichage des accords : celle du genre choisi, ou celle du style d'accords seuls.
+const mesureDe = v => GENRES[etat.genre] ? (GENRES[etat.genre].pas || 16) * 60 / etat.tempo / 4 : evenementsProgression(v, { tempo: etat.tempo, style: etat.style }).mesure;
+const noteGenre = () => { const G = GENRES[etat.genre]; if (!G) return ""; const V = G.variations[etat.variation % G.variations.length];
+  return `<p class="petit" id="pr-genre-note"><b>${esc(G.nom)}, ${esc(V.nom.toLowerCase())}.</b> ${esc(G.texte)} Tempo conseillé : de ${G.plage[0]} à ${G.plage[1]}.${G.atlas ? ` <a href="../../atlas/index.html#e/${G.atlas}">Dans l'Atlas des musiques</a>` : ""}</p>`; };
 function vueProgressions() {
   const prog = H.PROGRESSIONS.find(p => p.id === etat.prog), t = H.TONIQUES[etat.tonP], acc = H.accordsProgression(prog, t);
   const fams = [...new Set(H.PROGRESSIONS.map(p => p.famille))];
   $("v-progressions").innerHTML = heros({ etiquette: prog.famille, titre: prog.nom, texte: prog.texte, bouton: "b-prog", libelle: "Écouter en boucle", aide: "Les accords s'allument au fil de la musique. Change la tonalité, le tempo ou le style : tout est recalculé." })
     + `<div class="accords" id="acc-prog">${acc.map(a => `<div class="carte-acc"><span class="rom">${esc(a.romain)}</span><span class="nm">${esc(a.nom)}</span><span class="ql">${esc(a.qualite)}</span></div>`).join("")}</div>
     <div class="rang-h"><label>Tonalité<select id="pr-ton">${optionsToniques(etat.tonP)}</select></label><label>Tempo<input type="number" id="pr-tempo" min="40" max="200" value="${etat.tempo}"></label>
-    <label>Style<select id="pr-style">${[["plaque", "Accords plaqués"], ["arpege", "Arpèges"], ["pop", "Pop (basse et accords)"], ["valse", "Valse (trois temps)"]].map(([k, n]) => `<option value="${k}"${k === etat.style ? " selected" : ""}>${n}</option>`).join("")}</select></label>
-    <label>Instrument<select id="pr-instr">${optionsInstr(etat.instrument)}</select></label><button type="button" id="b-pr-wav">Exporter en WAV</button><button type="button" id="b-pr-pistes">Ajouter à mes Pistes</button></div><p class="petit" id="msg-prog" role="status"></p>
+    <label>Genre<select id="pr-genre"><option value="aucun"${etat.genre === "aucun" ? " selected" : ""}>Accords seuls</option>${LISTE_GENRES.map(([k, n]) => `<option value="${k}"${k === etat.genre ? " selected" : ""}>${esc(n)}</option>`).join("")}</select></label>
+    <label${GENRES[etat.genre] ? " hidden" : ""}>Style<select id="pr-style">${[["plaque", "Accords plaqués"], ["arpege", "Arpèges"], ["pop", "Pop (basse et accords)"], ["valse", "Valse (trois temps)"]].map(([k, n]) => `<option value="${k}"${k === etat.style ? " selected" : ""}>${n}</option>`).join("")}</select></label>
+    <button type="button" id="b-pr-var"${GENRES[etat.genre] ? "" : " hidden"}>Variation</button>
+    <label>Instrument<select id="pr-instr">${optionsInstr(etat.instrument)}</select></label><button type="button" id="b-pr-wav">Exporter en WAV</button><button type="button" id="b-pr-pistes">Ajouter à mes Pistes</button></div><p class="petit" id="msg-prog" role="status"></p>${noteGenre()}
     <h2>Toutes les progressions</h2><div class="liste-prog">${fams.map(f => `<p class="fam">${esc(f)}</p>${H.PROGRESSIONS.filter(p => p.famille === f).map(p => `<button type="button" data-prog="${p.id}" aria-pressed="${p.id === etat.prog}"><b>${esc(p.nom)}</b><br><span class="petit">${esc(H.accordsProgression(p, H.TONIQUES[0]).map(a => a.romain).join(", "))}</span></button>`).join("")}`).join("")}</div>`;
-  { const v = H.voicing(acc), m = evenementsProgression(v, { tempo: etat.tempo, style: etat.style }).mesure; montrerFond(v.map((x, i) => ({ nom: acc[i].nom, notes: [x.basse, ...x.voix], duree: 4, de: i * m, a: (i + 1) * m }))); }
+  { const v = H.voicing(acc), m = mesureDe(v); montrerFond(v.map((x, i) => ({ nom: acc[i].nom, notes: [x.basse, ...x.voix], duree: 4, de: i * m, a: (i + 1) * m }))); }
   $("b-prog").dataset.libelle = "Écouter en boucle";
   $("b-prog").onclick = () => { if (etat.lecture) return stop(); const x = rendreProgression(prog, t); jouerCanaux(x.canaux, { boucle: true, bouton: $("b-prog"), evenements: x.r.evenements, colonnes: true, suivi: { mesure: x.r.mesure, selecteur: "#acc-prog .carte-acc", i: -1 } }); };
   const relancer = () => { const jouait = etat.lecture; vueProgressions(); if (jouait) $("b-prog").click(); };
   $("pr-ton").onchange = e => { etat.tonP = +e.target.value; relancer(); }; $("pr-tempo").onchange = e => { etat.tempo = Math.max(40, Math.min(200, +e.target.value || 90)); relancer(); };
-  $("pr-style").onchange = e => { etat.style = e.target.value; relancer(); }; $("pr-instr").onchange = e => changerInstr(e.target.value, relancer);
+  $("pr-style").onchange = e => { etat.style = e.target.value; relancer(); };
+  /* Choisir un genre règle le tempo, la batterie, la basse et le son des accords ; on peut ensuite tout changer à la main. */
+  $("pr-genre").onchange = e => { etat.genre = e.target.value; garder("genre", etat.genre); etat.variation = 0; const G = GENRES[etat.genre]; if (G) { etat.tempo = G.tempo; garder("tempo", etat.tempo); changerInstr(G.accords, relancer); } else relancer(); };
+  $("b-pr-var").onclick = () => { etat.variation = (etat.variation + 1) % 3; relancer(); }; $("pr-instr").onchange = e => changerInstr(e.target.value, relancer);
   document.querySelectorAll("[data-prog]").forEach(b => b.onclick = () => { stop(); etat.prog = b.dataset.prog; vueProgressions(); window.scrollTo(0, 0); });
   $("b-pr-wav").onclick = () => { const x = rendreProgression(prog, t); telecharger(x.canaux, `${prog.id}-${t.nom}`); $("msg-prog").textContent = `WAV exporté : ${x.acc.length} mesures, ${x.r.duree.toFixed(1).replace(".", ",")} s.`; };
   $("b-pr-pistes").onclick = () => versPistes(() => rendreProgression(prog, t).canaux, `${prog.nom} en ${t.nom}`, $("msg-prog"), $("b-pr-pistes"));
@@ -269,7 +283,7 @@ function vue(v) { stop(); etat.vue = v; for (const k of Object.keys(VUES)) $("v-
 document.querySelectorAll("#onglets button").forEach(b => b.onclick = () => vue(b.dataset.v));
 document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); });
 etat.tonique = lire("tonique", 0); etat.mode = H.MODES[lire("mode", "ionien")] ? lire("mode", "ionien") : "ionien"; etat.instrument = TOUS.includes(lire("instrument", "piano")) ? lire("instrument", "piano") : "piano"; etat.compo = (lire("compo", []) || []).filter(d => Number.isInteger(d) && d >= 0 && d < 7).slice(0, 16);
-etat.tempo = Math.max(40, Math.min(200, +lire("tempo", 90) || 90)); etat.pulse = G.STYLES_PULSATION.some(p => p[0] === lire("pulse", "aucune")) ? lire("pulse", "aucune") : "aucune"; etat.dispo = V.DISPOSITIONS.some(d => d.id === lire("dispo", "choral")) ? lire("dispo", "choral") : "choral";
+etat.tempo = Math.max(40, Math.min(200, +lire("tempo", 90) || 90)); etat.genre = GENRES[lire("genre", "aucun")] ? lire("genre", "aucun") : "aucun"; etat.pulse = G.STYLES_PULSATION.some(p => p[0] === lire("pulse", "aucune")) ? lire("pulse", "aucune") : "aucune"; etat.dispo = V.DISPOSITIONS.some(d => d.id === lire("dispo", "choral")) ? lire("dispo", "choral") : "choral";
 { const g = lire("grille", null); etat.grille = g ? G.normaliser(g) : G.depuisDegres(etat.compo, H.TONIQUES[0], "ionien", 3); }
 if ($("viv-clavier")) $("viv-clavier").innerHTML = clavierVivant();
 // Lien direct depuis un diaporama : #explorer?ton=fa♯&mode=pentaMajeure (tonique par son nom, mode par sa clé)
