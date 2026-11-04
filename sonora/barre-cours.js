@@ -26,12 +26,14 @@
   // la flèche des pages SONORA et le lien de l'Atlas mènent au même endroit que « Retour »
   document.querySelectorAll("a.retour").forEach(a => { a.href = retourU; if (titre) a.setAttribute("aria-label", "Retour : " + titre); });
 
-  let xp = null; if (espace === "eleves") { const j = lire(localStorage, "jeu"); if (j && typeof j.xp === "number") xp = j.xp; }
+  // Deux modes (03/11/2026) : Réviser (calme, par défaut) et Jouer (points, badges). Hors du mode Jouer, aucun point n'est donné ni montré, dans SONORA comme sur le site du cours.
+  const jeuOn = () => { try { return localStorage.getItem("mode") === "jouer" && localStorage.getItem("gamification") !== "non"; } catch (_) { return false; } };
+  let xp = null; if (espace === "eleves" && jeuOn()) { const j = lire(localStorage, "jeu"); if (j && typeof j.xp === "number") xp = j.xp; }
   const rub = [["semaine", "Semaine"], ["cours", "Cours"], ["ecouter", "Écouter"], ["jouer", "Jouer"], ["labo", "Labo"]];
   const nav = document.createElement("nav"); nav.className = "barre-cours"; nav.setAttribute("aria-label", "Revenir au cours");
   nav.innerHTML = `<a class="bc-retour" href="${esc(retourU)}"><span class="bc-fl" aria-hidden="true"></span>${titre ? `<span class="bc-pre">Retour :</span><span class="bc-t">${esc(titre)}</span>` : "Choisir son espace"}</a>`
     + (base ? `<a class="bc-b" href="${esc(coursU)}">Mon cours</a>` : "")
-    + (espace === "eleves" ? `<a class="bc-b" href="${esc(base)}#parcours">Mon parcours${xp !== null ? ` <span class="bc-xp">${xp} XP</span>` : ""}</a>` : "")
+    + (espace === "eleves" && jeuOn() ? `<a class="bc-b" href="${esc(base)}#parcours">Mon parcours${xp !== null ? ` <span class="bc-xp">${xp} XP</span>` : ""}</a>` : "")
     + (base ? `<span class="bc-rub">${rub.map(([h, t]) => `<a href="${esc(base)}#${h}">${t}</a>`).join("")}</span>` : "");
   const css = document.createElement("style");
   css.textContent = `.barre-cours{display:flex;align-items:center;gap:6px;padding:5px 10px;background:#11110F;color:#F0EFE8;border-bottom:1px solid #3A3A35;overflow-x:auto;scrollbar-width:none;font:600 13px/1.2 "Instrument Sans","Helvetica Neue",Arial,sans-serif;position:relative;z-index:40}
@@ -67,7 +69,7 @@
     cumul += x; t.textContent = `+${cumul} XP`; t.style.opacity = "1"; clearTimeout(toastT); toastT = setTimeout(() => { t.style.opacity = "0"; cumul = 0; }, 2200); // les points gagnés ensemble s'additionnent
   }
   function gagner(cle, points, compteur) {
-    if (espace !== "eleves") return false;
+    if (espace !== "eleves" || !jeuOn()) return false;
     const j = Object.assign({ xp: 0, faits: {}, badges: {}, c: {}, pays: {}, jours: [], serie: 0 }, lire(localStorage, "jeu") || {}); j.faits = j.faits || {}; j.c = j.c || {};
     if (cle && j.faits[cle]) return false;
     if (cle) j.faits[cle] = 1; if (compteur) j.c[compteur] = (j.c[compteur] || 0) + 1; j.xp = (j.xp || 0) + (points || 0);
@@ -80,7 +82,7 @@
   // à 3,5 mots par seconde, au moins 15 secondes et au plus 4 minutes. condition() : une exigence de plus (une écoute, une mesure), vérifiée au moment de donner les points.
   // Renvoie une fonction qui annule la surveillance (à appeler quand la zone est remplacée).
   function lecture(el, cle, points, compteur, { condition = null, apres = null } = {}) {
-    if (espace !== "eleves" || !el || deja(cle)) return () => {};
+    if (espace !== "eleves" || !jeuOn() || !el || deja(cle)) return () => {};
     const mots = (el.innerText || el.textContent || "").split(/\s+/).filter(Boolean).length, besoin = Math.min(240, Math.max(15, mots / 3.5)) * 1000;
     let vu = false, temps = 0, t0 = document.hidden ? 0 : performance.now(), fini = false;
     const fin = document.createElement("span"); fin.className = "bc-fin"; fin.setAttribute("aria-hidden", "true"); fin.style.cssText = "display:block;height:1px;width:1px"; el.appendChild(fin);

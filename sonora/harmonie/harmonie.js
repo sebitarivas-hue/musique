@@ -1,17 +1,17 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=7a39be9f20";
-import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=7a39be9f20";
-import { BANQUE, preparer } from "./echantillons.js?v=7a39be9f20";
-import { heros, etatBouton } from "../studio/heros.js?v=7a39be9f20";
-import { encoderWAV } from "../studio/wav.js?v=7a39be9f20";
-import { dessinerOscillo } from "../studio/visuels.js?v=7a39be9f20";
-import * as P from "../pistes/projet.js?v=7a39be9f20";
-import { Stockage } from "../pistes/stockage.js?v=7a39be9f20";
-import * as A from "./accords.js?v=7a39be9f20";
-import * as V from "./voicings.js?v=7a39be9f20";
-import * as G from "./grille.js?v=7a39be9f20";
-import { partitionSVG } from "./partition.js?v=7a39be9f20";
+import * as H from "./theorie.js?v=09b9602da1";
+import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=09b9602da1";
+import { BANQUE, preparer } from "./echantillons.js?v=09b9602da1";
+import { heros, etatBouton } from "../studio/heros.js?v=09b9602da1";
+import { encoderWAV } from "../studio/wav.js?v=09b9602da1";
+import { dessinerOscillo } from "../studio/visuels.js?v=09b9602da1";
+import * as P from "../pistes/projet.js?v=09b9602da1";
+import { Stockage } from "../pistes/stockage.js?v=09b9602da1";
+import * as A from "./accords.js?v=09b9602da1";
+import * as V from "./voicings.js?v=09b9602da1";
+import * as G from "./grille.js?v=09b9602da1";
+import { partitionSVG } from "./partition.js?v=09b9602da1";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)

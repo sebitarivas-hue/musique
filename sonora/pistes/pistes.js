@@ -1,18 +1,18 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=7a39be9f20";
-import * as Ed from "./editions.js?v=7a39be9f20";
-import * as P from "./projet.js?v=7a39be9f20";
-import { Stockage } from "./stockage.js?v=7a39be9f20";
-import { creerBouton } from "./bouton.js?v=7a39be9f20";
-import * as MI from "./midi.js?v=7a39be9f20";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=7a39be9f20";
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=7a39be9f20";
-import * as MO from "./moteurs.js?v=7a39be9f20";
-import { encoderWAV } from "../studio/wav.js?v=7a39be9f20";
-import { ENTREES } from "../library/catalogue.js?v=7a39be9f20";
-import { compiler } from "../src/index.js?v=7a39be9f20";
-import { rendre } from "../src/rendu.js?v=7a39be9f20";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=09b9602da1";
+import * as Ed from "./editions.js?v=09b9602da1";
+import * as P from "./projet.js?v=09b9602da1";
+import { Stockage } from "./stockage.js?v=09b9602da1";
+import { creerBouton } from "./bouton.js?v=09b9602da1";
+import * as MI from "./midi.js?v=09b9602da1";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=09b9602da1";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=09b9602da1";
+import * as MO from "./moteurs.js?v=09b9602da1";
+import { encoderWAV } from "../studio/wav.js?v=09b9602da1";
+import { ENTREES } from "../library/catalogue.js?v=09b9602da1";
+import { compiler } from "../src/index.js?v=09b9602da1";
+import { rendre } from "../src/rendu.js?v=09b9602da1";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -41,7 +41,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=7a39be9f20"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=09b9602da1"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
