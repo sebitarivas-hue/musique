@@ -130,6 +130,7 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .liste-projets .lp-titre { font: inherit; padding: 6px 8px; min-width: 0; } .liste-projets .lp-act { display: flex; flex-wrap: wrap; gap: 6px; }
 @media (max-width: 700px) { .liste-projets li { grid-template-columns: 1fr; } }
 
+.alerte-rangement { position: sticky; top: 0; z-index: 40; margin: 0; padding: 10px 14px; background: #FF5638; color: #11110F; border: 3px solid #11110F; font-weight: 700; } .alerte-rangement p { margin: 0 0 6px; } .alerte-rangement[hidden] { display: none; } .alerte-act { display: flex; gap: 8px; flex-wrap: wrap; } .alerte-act button { background: #11110F; color: #F0EFE8; border: 0; padding: 10px 14px; font: inherit; min-height: 44px; cursor: pointer; }
 .biblio-onglets { display: flex; gap: 6px; margin: 8px 0; } .biblio-onglets button[aria-selected="true"] { background: #D6FF00; color: #11110F; }
 .liste-biblio { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; max-height: 340px; overflow: auto; }
 .liste-biblio li { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, .8fr) auto; gap: 6px 10px; align-items: center; padding: 6px 8px; border: 1px solid currentColor; }
@@ -137,3 +138,54 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .pas-case { height: 30px; min-width: 22px; padding: 0; border: 1.5px solid currentColor; background: transparent; border-radius: 4px; } .pas-case.t1 { border-width: 2.5px; }
 .pas-case[data-e="x"] { background: #FF5638; } .pas-case[data-e="o"] { background: #BEBDB4; } .pas-case.curseur { outline: 3px solid #D6FF00; }
 @media (max-width: 700px) { .liste-biblio li { grid-template-columns: 1fr; } .pas-ligne { grid-template-columns: 6.5rem repeat(var(--n, 16), minmax(24px, 1fr)); } }
+
+/* ---------------------------------------------------------------- Téléphone (chantier d'ergonomie du 04/11/2026, audit/SONORA_RESPONSIVE_AUDIT.md)
+   Une barre d'actions fixe en bas, à portée du pouce : Lire, Enregistrer, + Ajouter, Réglages. « + Ajouter » et « Réglages » ouvrent une feuille où TOUT se voit d'un coup : pas de liste déroulante, pas de menu replié.
+   Les vrais boutons sont déplacés dans ces feuilles (pistes.js, deplacerPourTelephone) : même code, mêmes réglages, rien n'est copié. */
+.btn-m, .b-plus, .b-piste-m { display: none; }
+.feuille { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: #fff; border-top: 3px solid var(--noir); box-shadow: 0 -8px 24px rgba(0,0,0,.25); max-height: 78vh; overflow: auto; } .feuille[hidden] { display: none; } .feuille-in { padding: 12px 16px 18px; }
+.feuille-r { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; margin: 12px 0; font-weight: 600; } .feuille-r input[type=range] { grid-column: 1 / -1; width: 100%; height: 44px; margin: 0; } .feuille-r output { font: .8rem var(--f-mono); }
+.feuille .alerte-act button:not(.notion) { background: var(--noir); color: #F0EFE8; border: 0; padding: 10px 14px; font: inherit; font-weight: 600; min-height: 44px; cursor: pointer; }
+.tuiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; } .tuiles > button, .tuiles > .bouton-fichier { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 64px; padding: 8px; border: 2px solid var(--noir); background: #fff; font: inherit; font-weight: 600; cursor: pointer; } .tuiles > .bouton-fichier { background: var(--acide); }
+.tuiles .tuile-son { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; } .tuiles .tuile-son label { flex: 1; display: flex; align-items: center; gap: 8px; } .tuiles .tuile-son select { flex: 1; min-height: 48px; } .tuiles .tuile-son button { min-height: 48px; padding: 0 16px; border: 2px solid var(--noir); background: var(--acide); font: inherit; font-weight: 600; }
+.reglages-liste { display: grid; gap: 4px; margin-top: 6px; } .reglages-liste .mini { display: flex; justify-content: space-between; align-items: center; min-height: 52px; font-size: 1rem; border-bottom: 1px solid var(--gris); } .reglages-liste .mini input[type=number] { width: 5.5em; min-height: 44px; font-size: 1rem; } .reglages-liste .mini select { min-height: 44px; max-width: 60%; }
+.reglages-liste .mini.case input { width: 28px; height: 28px; } .reglages-liste .rl-groupe { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; border-bottom: 1px solid var(--gris); } .reglages-liste .rl-groupe button { min-width: 56px; min-height: 48px; font-size: 1.2rem; }
+.reglages-liste > button { min-height: 52px; border: 2px solid var(--noir); background: #fff; font: inherit; font-weight: 600; margin-top: 4px; } .reglages-liste #b-export { background: var(--acide); }
+@media (min-width: 701px) { .feuille { display: none !important; } }
+@media (max-width: 700px) {
+  .bandeau-page { display: none; } body { padding-bottom: 96px; } #pistes-app { padding: 4px; }
+  .feuille { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 44; max-height: calc(100vh - 70px - 110px); } /* la barre d'actions reste visible et touchable : on peut lancer la lecture pendant qu'on règle */
+  .transport { position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; margin: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); border: 0; border-top: 3px solid var(--acide); flex-wrap: nowrap; gap: 6px; align-items: center; justify-content: space-between; }
+  .transport .btn-m { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; border: 2px solid #F0EFE8; background: transparent; color: #F0EFE8; font: inherit; font-weight: 700; } .transport .btn-ajouter { background: var(--acide); color: var(--noir); border-color: var(--acide); flex: 1; }
+  .transport button { white-space: nowrap; } .transport #b-lire, .transport #b-enreg { min-height: 52px; padding: 0 10px; } .transport .btn-m { padding: 0 8px; } .transport #b-reglages-m { flex: 0 0 52px; }
+  .transport .position { position: absolute; top: -30px; right: 8px; background: var(--noir); color: var(--acide); padding: 3px 8px; font: 500 .8rem var(--f-mono); } .transport .vu { position: absolute; top: -30px; left: 8px; }
+  .outils { gap: 8px; } .outils .mini { flex: 1; } .outils .mini input { flex: 1; }
+  .b-piste-m { display: block; width: 100%; margin: 8px 0; min-height: 52px; border: 2px solid var(--noir); background: var(--acide); font-weight: 600; }
+  .barre-menus { gap: 0; } .menu-b { padding: 8px 3px; min-width: 44px; font-size: .64rem; letter-spacing: 0; }
+  .ligne { grid-template-columns: 102px minmax(0, 1fr); --h-piste: 136px; }
+  .entete { padding: 4px 3px; gap: 4px; } .entete .ent-k, .entete .b-fx, .entete .b-env { display: none; } .entete .b-plus { display: inline-flex; align-items: center; justify-content: center; }
+  .entete input[type=text] { min-height: 28px; width: 100%; } .ent-b { gap: 3px; } .entete button, .entete .ent-b button { min-height: 44px; min-width: 44px; padding: 2px 4px; }
+}
+@media (pointer: coarse) { button, select, summary, .lien-bouton, .menu-b, .bouton-fichier, .mini.case { min-height: 44px; } .mini input:not([type=checkbox]):not([type=range]) { min-height: 44px; } }
+
+.annuler-groupe { display: inline-flex; gap: 6px; } .annuler-groupe button { font-weight: 600; } .annuler-groupe button:disabled { opacity: .45; }
+@media (max-width: 700px) { .annuler-groupe { flex: 1 0 100%; } .annuler-groupe button { flex: 1; min-height: 48px; } }
+/* Faust, Csound et Pure Data : on choisit un but, on touche une carte (04/11/2026) */
+.mot-but, #mot-niveaux { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; } .mot-filtre { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; } .mot-filtre input { min-height: 38px; }
+.mot-cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; max-height: 280px; overflow: auto; margin: 8px 0; }
+.mot-carte { display: grid; gap: 4px; text-align: left; align-content: start; min-height: 88px; padding: 10px; border: 2px solid var(--noir); background: var(--papier); font: 500 .8rem/1.35 var(--f-body); cursor: pointer; }
+.mot-carte b { font-size: .9rem; } .mot-carte em { font-style: normal; font-size: .72rem; opacity: .75; } .mot-carte[aria-pressed="true"] { background: var(--noir); color: var(--acide); }
+.mot-voir { min-height: 44px; margin: 6px 0; }
+.moteurs.sans-code .mot-champ, .moteurs.sans-code #mot-score-zone { display: none; }
+@media (max-width: 700px) { .mot-cartes { grid-template-columns: 1fr; max-height: 340px; } .mot-carte { min-height: 64px; } }
+/* Faust, Csound et Pure Data sur téléphone : un seul geste (choisir une carte), le reste derrière « Voir le code » (05/11/2026) */
+@media (max-width: 700px) {
+  .mot-filtre { display: none; }
+  .mot-but { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .mot-but .chip-m { min-height: 48px; padding: 0 8px; }
+  .moteurs.sans-code .midi-rang[aria-label="Moteur"] .chip-m { display: none; }
+  .moteurs .midi-rang button { min-height: 48px; }
+}
+.mini[hidden] { display: none; }
+@media (max-width: 700px) { .croix-b { min-width: 44px; min-height: 44px; } }
+@media (max-width: 700px) { #moteurs > p.petit:not(.mot-etat):not(#mot-vide) { display: none; } .mot-but .chip-m:last-child { grid-column: 1 / -1; } }
+@media (max-width: 700px) { .moteurs .notion, #mot-duree { min-width: 44px; min-height: 44px; } }

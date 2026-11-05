@@ -1,7 +1,7 @@
 // Éditeur de code SONORA : une zone de texte transparente au-dessus d'un calque coloré. Aucune dépendance.
 // Coloration syntaxique, numéros de ligne, soulignement des erreurs, autocomplétion, mot sous le curseur (pour l'aide contextuelle).
-import { MOTS } from "../src/lexeur.js?v=0639c5e8d0";
-import { MODULES, MATHS } from "../src/index.js?v=0639c5e8d0";
+import { MOTS } from "../src/lexeur.js?v=21d4829a8e";
+import { MODULES, MATHS } from "../src/index.js?v=21d4829a8e";
 
 const RE = /(\/\/[^\n]*)|(\/\*[\s\S]*?(?:\*\/|$))|("(?:[^"\\\n]|\\.)*"?)|(\b\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?(?:[ \t]?(?:kHz|Hz|ms|ech|dB|tour|rad|deg|dt|ct|bpm|s)\b|%)?)|(\b(?:do|re|mi|fa|sol|la|si)[#b]?-?\d\b)|([\p{L}_][\p{L}\p{N}_]*)|(->|[=<>!]=|\.\.|[+\-*/%^<>(){}\[\],:.=])/gu;
 const echapper = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -62,7 +62,7 @@ export class Editeur {
     this.indice = 0; this.maj();
   }
   get valeur() { return this.ta.value; }
-  set valeur(v) { this.ta.value = v; this.marques = []; this.lignesErreur.clear(); this.maj(); this.fermerAuto(); }
+  set valeur(v) { if (this.options.onRemplace && !this._silence && this.ta.value !== v) this.options.onRemplace(this.ta.value); this.ta.value = v; this.marques = []; this.lignesErreur.clear(); this.maj(); this.fermerAuto(); }
   focus() { this.ta.focus(); }
 
   maj() {

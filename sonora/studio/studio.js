@@ -1,15 +1,15 @@
 // SONORA Studio : l'interface de programmation. Elle ne calcule aucun son : elle compile (Worker), envoie au moteur (AudioWorklet),
 // et affiche ce que le moteur renvoie.
-import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=0639c5e8d0";
-import { compiler, MODULES, MATHS } from "../src/index.js?v=0639c5e8d0";
-import { MOTS } from "../src/lexeur.js?v=0639c5e8d0";
-import { Editeur, inserer } from "./editeur.js?v=0639c5e8d0";
-import { formater, vers, depuis } from "./reglages-commun.js?v=0639c5e8d0";
-import { EXEMPLES } from "./exemples.js?v=0639c5e8d0";
-import { Projets } from "./projets.js?v=0639c5e8d0";
-import { installerCreation } from "./creation.js?v=0639c5e8d0";
-import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=0639c5e8d0";
-import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=0639c5e8d0";
+import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=21d4829a8e";
+import { compiler, MODULES, MATHS } from "../src/index.js?v=21d4829a8e";
+import { MOTS } from "../src/lexeur.js?v=21d4829a8e";
+import { Editeur, inserer } from "./editeur.js?v=21d4829a8e";
+import { formater, vers, depuis } from "./reglages-commun.js?v=21d4829a8e";
+import { EXEMPLES } from "./exemples.js?v=21d4829a8e";
+import { Projets } from "./projets.js?v=21d4829a8e";
+import { installerCreation } from "./creation.js?v=21d4829a8e";
+import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=21d4829a8e";
+import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=21d4829a8e";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -77,6 +77,7 @@ const ed = new Editeur($("editeur"), {
   candidats,
   onChange: () => { etat.exempleId = etat.exempleId; brouillon(); clearTimeout(minuteur); minuteur = setTimeout(verifierEnDirect, 350); },
   onCurseur: aideMot,
+  onRemplace: avant => { Projets.precedents.empiler(avant, ($("p-titre") || {}).value); majRetour(); },   // le code qu'on remplace est mis de côté : « Revenir au code d'avant »
 });
 
 // vérification en direct, sans bruit dans la console : marque l'éditeur et dessine le graphe
@@ -316,9 +317,12 @@ function ouvrirProjet(id) {
   verifierEnDirect(); compilerPuis(false); journal("info", `Projet ouvert : ${esc(p.titre)}.`); remplirProjets();
 }
 function reglagesActuels() { return { ...etat.valeurs }; }
+function majRetour() { const n = Projets.precedents.liste().length, b = $("p-retour"); if (b) { b.disabled = !n; b.textContent = n > 1 ? `\u21B6 Revenir au code d'avant (${n})` : "\u21B6 Revenir au code d'avant"; } const c = Projets.corbeille(), r = $("p-corbeille"); if (r) { r.hidden = !c.length; r.textContent = c.length ? `\u21B6 Rétablir « ${c[0].titre} »` : "Rétablir le dernier projet supprimé"; } }
+$("p-retour").onclick = () => { const x = Projets.precedents.depiler(); if (!x) return; ed._silence = true; ed.valeur = x.texte; ed._silence = false; journal("ok", "Le code d'avant est revenu."); majRetour(); verifierEnDirect(); compilerPuis(false); };
+$("p-corbeille").onclick = () => { const c = Projets.corbeille()[0]; if (!c) return; const p = Projets.retablir(c.id); if (p) { journal("ok", `Projet rétabli : ${esc(p.titre)}.`); remplirProjets(); } majRetour(); };
 $("p-enreg").onclick = () => { const p = Projets.enregistrer({ id: etat.projet.id, titre: titreCourant(), source: ed.valeur, reglages: reglagesActuels() }); if (!p) { journal("err", "Impossible d'enregistrer : le stockage du navigateur est refusé ou plein. Exporte le projet en fichier."); return; } etat.projet = { id: p.id, titre: p.titre }; journal("ok", `Projet enregistré : ${esc(p.titre)}.`); remplirProjets(); };
 $("p-dupl").onclick = () => { if (!etat.projet.id) { journal("av", "Enregistre d'abord le projet pour pouvoir le dupliquer."); return; } const p = Projets.dupliquer(etat.projet.id); if (p) { journal("ok", `Copie créée : ${esc(p.titre)}.`); remplirProjets(); } };
-$("p-suppr").onclick = () => { if (!etat.projet.id) return; if (!confirm(`Supprimer « ${etat.projet.titre} » ? Cela ne peut pas être annulé.`)) return; Projets.supprimer(etat.projet.id); etat.projet = { id: null, titre: titreCourant() }; journal("info", "Projet supprimé."); remplirProjets(); };
+$("p-suppr").onclick = () => { if (!etat.projet.id) return; const t = etat.projet.titre; Projets.supprimer(etat.projet.id); etat.projet = { id: null, titre: titreCourant() }; journal("info", `« ${esc(t)} » est à la corbeille : tu peux le rétablir avec le bouton « Rétablir ».`); remplirProjets(); majRetour(); };
 $("p-nouveau").onclick = () => { if (etat.marche) arreter(); etat.projet = { id: null, titre: "Sans titre" }; $("p-titre").value = "Sans titre"; ed.valeur = "instrument Nouveau {\n    reglage frequence : Hz = 440 Hz dans 20 Hz .. 20 kHz courbe log\n    sortie = sinus(frequence) * 0.2\n}\n"; etat.exempleId = null; verifierEnDirect(); compilerPuis(false); remplirProjets(); };
 function telecharger(nom, texte, type) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([texte], { type })); a.download = nom; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
 const nomFichier = () => titreCourant().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "projet";
@@ -374,4 +378,5 @@ if (lien && lien.source) journal("av", "Programme chargé depuis un lien de part
 else if (lien && lien.erreur) journal("err", esc(lien.erreur));
 const d = Moteur.diagnostic(); if (!d.ok) { etat.audioIndispo = true; journal("err", esc(d.raison)); etatBadge("audio indisponible", "erreur"); $("b-executer").disabled = true; }
 appliquerMode(lireMode());
+majRetour();
 window.STUDIO_PRET = true;

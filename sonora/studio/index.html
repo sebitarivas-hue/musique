@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Studio</title>
 <meta name="description" content="Programmer un son : écrire, compiler, écouter et visualiser, dans le navigateur.">
-<link rel="stylesheet" href="studio.css?v=0639c5e8d0">
+<link rel="stylesheet" href="studio.css?v=21d4829a8e">
 </head>
 <body>
 <a class="saut" href="#editeur">Aller à l'éditeur</a>
@@ -18,6 +18,7 @@
     <button type="button" id="b-compiler" title="Compiler sans jouer">Compiler</button>
     <button type="button" id="b-reset" title="Remettre les réglages à leur valeur de départ">Réinitialiser</button>
   </div>
+  <a class="lien-bouton accueil-sonora" href="../index.html">Tous les outils</a>
   <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" aria-current="page" href="index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../academy/index.html">Academy</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" href="../pistes/index.html">Pistes</a><a class="lien-bouton" href="../harmonie/index.html">Harmonie</a></nav>
   <div class="etat" id="etat" role="status" aria-live="polite">arrêté</div>
 </header>
@@ -65,6 +66,7 @@
       <div class="scene-suite"><button type="button" id="b-voir-code">Voir et modifier le programme</button><span class="petit">ou choisis un autre son dans la liste.</span></div>
     </div>
     <div id="editeur" class="editeur"></div>
+    <div class="rang rang-retour"><button type="button" id="p-retour" disabled>&#8630; Revenir au code d'avant</button><button type="button" id="p-corbeille" hidden>Rétablir le dernier projet supprimé</button></div>
     <div id="graphe" class="graphe" hidden></div>
     <div id="aide" class="aide" aria-live="polite"><p class="petit">Place le curseur sur un mot : son aide s'affiche ici. Ctrl+Espace propose des mots.</p></div>
   </section>
@@ -130,8 +132,8 @@
     </div>
   </section>
 </main>
-<script type="module" src="studio.js?v=0639c5e8d0"></script>
-<script src="../barre-cours.js?v=0639c5e8d0"></script>
-<script src="../retour.js?v=0639c5e8d0"></script>
+<script type="module" src="studio.js?v=21d4829a8e"></script>
+<script src="../barre-cours.js?v=21d4829a8e"></script>
+<script src="../retour.js?v=21d4829a8e"></script>
 </body>
 </html>

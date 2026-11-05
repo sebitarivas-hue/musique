@@ -153,3 +153,7 @@ button.mode { border-style: dashed; } button.mode[aria-pressed="true"] { border-
 .bp-titre .acide { color: var(--acide); }
 .bp-texte { margin: 0; max-width: 70ch; color: #D3D2CA; font: 400 clamp(.78rem, 1.3vw, .92rem)/1.5 var(--f-mono); letter-spacing: .03em; }
 @media (max-width: 760px) { .bandeau-page { padding: 10px 14px; } .bandeau-page::before { width: 30px; height: 34px; } .bandeau-page::after { top: 34px; width: 10px; height: 18px; } }
+
+/* Accueil SONORA (04/11/2026) : sur téléphone, les six onglets d'outils laissent la place à un seul lien « Tous les outils », qui mène à l'accueil (Créer, Explorer, Transformer, Mes projets). */
+header.haut a.accueil-sonora { display: none; }
+@media (max-width: 700px) { header.haut nav.actions[aria-label="Espaces SONORA"] { display: none; } header.haut a.accueil-sonora { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; box-sizing: border-box; margin-left: auto; padding: 4px 12px; border: 2px solid var(--papier); color: var(--papier); background: transparent; text-decoration: none; font-weight: 600; font-size: .85rem; } }

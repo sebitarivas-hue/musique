@@ -6,7 +6,7 @@
 let FAUST = null, NFAUST = 0;
 export async function chargerFaust() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=0639c5e8d0"), racine = new URL("../../faust/compilateur/", import.meta.url).href; // le dossier du compilateur du site, à la racine
+    const fw = await import("./faust/faustwasm.js?v=21d4829a8e"), racine = new URL("../../faust/compilateur/", import.meta.url).href; // le dossier du compilateur du site, à la racine
     const mod = await fw.instantiateFaustModuleFromFile(racine + "libfaust-wasm.js"), lib = new fw.LibFaust(mod);
     return { fw, comp: new fw.FaustCompiler(lib), version: lib.version() };
   })().catch(e => { FAUST = null; throw e; });
@@ -39,7 +39,7 @@ export async function rendreFaust(gen, meta, { sr = 44100, secondes = 2, entrees
 
 // ---------------------------------------------------------------- Csound
 let CSOUND = null;
-export async function chargerCsound() { if (!CSOUND) CSOUND = import("./csound/csound.js?v=0639c5e8d0").catch(e => { CSOUND = null; throw e; }); return CSOUND; }
+export async function chargerCsound() { if (!CSOUND) CSOUND = import("./csound/csound.js?v=21d4829a8e").catch(e => { CSOUND = null; throw e; }); return CSOUND; }
 // L'en-tête (sr, ksmps, nchnls, 0dbfs) est fixé par SONORA, d'après l'horloge audio de la page ; les mêmes lignes écrites par l'utilisateur sont retirées pour éviter un conflit.
 export function orchestreComplet(orc, sr) {
   const propre = String(orc).split("\n").filter(l => !/^\s*(sr|kr|ksmps|nchnls|nchnls_i|0dbfs)\s*=/.test(l)).join("\n");
@@ -57,7 +57,7 @@ export async function lancerCsound(ctx, orc, partition) {
 }
 // ---------------------------------------------------------------- Pure Data (WebPd, en version alpha : une partie seulement des objets de Pure Data)
 let PD = null;
-export async function chargerPd() { if (!PD) PD = import("./pd/webpd.js?v=0639c5e8d0").catch(e => { PD = null; throw e; }); return PD; }
+export async function chargerPd() { if (!PD) PD = import("./pd/webpd.js?v=21d4829a8e").catch(e => { PD = null; throw e; }); return PD; }
 // Les messages de WebPd en français : l'objet inconnu est le cas le plus courant.
 export function erreurPd(e) {
   const m = (Array.isArray(e) ? e : [e]).map(x => String(x && x.message || x)).join("\n"), inconnus = m.match(/unknown object types?\s+(.+)/i);
@@ -94,4 +94,44 @@ export const EXEMPLES = {
     ["Un accord", `instr 1\n  kenv linseg 0, 0.05, 1, p3 - 0.3, 0.8, 0.25, 0\n  a1 oscili 0.25 * kenv, p4\n  a2 oscili 0.12 * kenv, p4 * 2\n  outs a1 + a2, a1 + a2\nendin`, `i1 0 2 261.63\ni1 0 2 329.63\ni1 0 2 392`],
     ["Synthèse FM", `instr 1\n  kenv linseg 0, 0.01, 1, p3 - 0.01, 0\n  a1 foscili 0.4 * kenv, p4, 1, 2.5, 3 * kenv, 1\n  outs a1, a1\nendin`, `f1 0 16384 10 1\ni1 0 2 220`],
   ],
+};
+
+// ---------------------------------------------------------------- Plus d'exemples, classés par ce qu'on veut faire (relecture du 04/11/2026 : « le menu des exemples est inadapté, il manque une organisation par familles, par objectifs musicaux et par niveau »)
+// Les quatre premiers exemples de Faust, les quatre de Pure Data et les trois de Csound gardent leur place (les adresses « exemple 0, 1, 2... » ne changent pas) ; les nouveaux viennent après.
+EXEMPLES.faust.push(
+  ["Du bruit rose, doux", `import("stdfaust.lib");\nvol = hslider("volume", 0.2, 0, 0.6, 0.01);\nprocess = no.pink_noise * vol <: _, _;`],
+  ["Un trémolo (le volume qui tremble)", `import("stdfaust.lib");\nfreq = hslider("hauteur (Hz)", 330, 100, 1000, 1);\nvitesse = hslider("vitesse (Hz)", 6, 0.5, 15, 0.1);\nprofondeur = hslider("profondeur", 0.6, 0, 1, 0.01);\nprocess = os.osc(freq) * (1 - profondeur * (0.5 + 0.5 * os.osc(vitesse))) * 0.3 <: _, _;`],
+  ["Deux sons presque identiques (des battements)", `import("stdfaust.lib");\nfreq = hslider("hauteur (Hz)", 440, 100, 1000, 1);\necart = hslider("écart (Hz)", 3, 0, 20, 0.1);\nprocess = (os.osc(freq) + os.osc(freq + ecart)) * 0.15 <: _, _;`],
+  ["Une basse à dents de scie, filtrée", `import("stdfaust.lib");\nfreq = hslider("hauteur (Hz)", 55, 30, 200, 1);\nfc = hslider("coupure (Hz)", 400, 80, 3000, 1);\nq = hslider("résonance", 2, 0.5, 8, 0.1);\nprocess = os.sawtooth(freq) : fi.resonlp(fc, q, 1) * 0.3 <: _, _;`],
+  ["Un son qui glisse, monte et redescend", `import("stdfaust.lib");\ncentre = hslider("hauteur centrale (Hz)", 220, 80, 800, 1);\nvitesse = hslider("vitesse (Hz)", 0.25, 0.05, 2, 0.01);\nampleur = hslider("ampleur (octaves)", 1, 0, 2, 0.05);\nprocess = os.osc(centre * pow(2, ampleur * os.osc(vitesse))) * 0.3 <: _, _;`],
+  ["Une distorsion douce (effet : il lui faut un clip)", `import("stdfaust.lib");\ngain = hslider("gain", 3, 1, 10, 0.1);\nprocess = _ * gain : ef.cubicnl(0.5, 0) * 0.5 <: _, _;`],
+  ["Un trémolo (effet : il lui faut un clip)", `import("stdfaust.lib");\nvitesse = hslider("vitesse (Hz)", 5, 0.5, 15, 0.1);\nprofondeur = hslider("profondeur", 0.7, 0, 1, 0.01);\nprocess = _ * (1 - profondeur * (0.5 + 0.5 * os.osc(vitesse))) <: _, _;`],
+  ["Une réverbération (effet : il lui faut un clip)", `import("stdfaust.lib");\nduree = hslider("durée", 0.8, 0.3, 0.95, 0.01);\namorti = hslider("amorti", 0.5, 0, 1, 0.01);\nprocess = re.mono_freeverb(duree, duree, amorti, 23) <: _, _;`],
+);
+EXEMPLES.pd.push(
+  ["Un trémolo (le volume qui tremble)", pd(["#N canvas 0 50 450 300 12;", "#X obj 30 30 osc~ 330;", "#X obj 160 30 osc~ 6;", "#X obj 160 60 *~ 0.5;", "#X obj 160 90 +~ 0.5;", "#X obj 30 130 *~;", "#X obj 30 160 *~ 0.3;", "#X obj 30 190 dac~;", "#X connect 0 0 4 0;", "#X connect 1 0 2 0;", "#X connect 2 0 3 0;", "#X connect 3 0 4 1;", "#X connect 4 0 5 0;", "#X connect 5 0 6 0;", "#X connect 5 0 6 1;"])],
+  ["Du bruit filtré (un souffle)", pd(["#N canvas 0 50 450 300 12;", "#X obj 30 30 noise~;", "#X obj 30 70 lop~ 900;", "#X obj 30 110 *~ 0.5;", "#X obj 30 150 dac~;", "#X connect 0 0 1 0;", "#X connect 1 0 2 0;", "#X connect 2 0 3 0;", "#X connect 2 0 3 1;"])],
+  ["Un son qui monte (glissando)", pd(["#N canvas 0 50 450 300 12;", "#X obj 30 20 loadbang;", "#X msg 30 50 200, 800 2000;", "#X obj 30 80 line~;", "#X obj 30 110 osc~;", "#X obj 30 140 *~ 0.3;", "#X obj 30 170 dac~;", "#X connect 0 0 1 0;", "#X connect 1 0 2 0;", "#X connect 2 0 3 0;", "#X connect 3 0 4 0;", "#X connect 4 0 5 0;", "#X connect 4 0 5 1;"])],
+  ["Une modulation en anneau (effet : il lui faut un clip)", pd(["#N canvas 0 50 450 300 12;", "#X obj 30 30 adc~;", "#X obj 160 30 osc~ 300;", "#X obj 30 90 *~;", "#X obj 30 130 dac~;", "#X connect 0 0 2 0;", "#X connect 1 0 2 1;", "#X connect 2 0 3 0;", "#X connect 2 0 3 1;"])],
+  ["Un écho (effet : il lui faut un clip)", pd(["#N canvas 0 50 450 300 12;", "#X obj 30 30 adc~;", "#X obj 30 70 delwrite~ ecart 1000;", "#X obj 180 70 delread~ ecart 300;", "#X obj 180 110 *~ 0.6;", "#X obj 30 160 dac~;", "#X connect 0 0 1 0;", "#X connect 0 0 4 0;", "#X connect 0 0 4 1;", "#X connect 2 0 3 0;", "#X connect 3 0 4 0;", "#X connect 3 0 4 1;"])],
+);
+EXEMPLES.csound.push(
+  ["Une mélodie : la gamme de do", `instr 1\n  kenv linseg 0, 0.02, 1, p3 - 0.1, 1, 0.08, 0\n  a1 oscili 0.4 * kenv, p4\n  outs a1, a1\nendin`, ["261.63", "293.66", "329.63", "349.23", "392", "440", "493.88", "523.25"].map((f, i) => `i1 ${i * 0.5} 0.5 ${f}`).join("\n")],
+  ["Un arpège qui monte et redescend", `instr 1\n  kenv linseg 0, 0.01, 1, p3 - 0.08, 0.7, 0.07, 0\n  a1 oscili 0.35 * kenv, p4\n  outs a1, a1\nendin`, [261.63, 329.63, 392, 523.25, 392, 329.63, 261.63].map((f, i) => `i1 ${i * 0.3} 0.35 ${f}`).join("\n")],
+  ["Un son qui glisse", `instr 1\n  kenv linseg 0, 0.02, 1, p3 - 0.1, 1, 0.08, 0\n  kf linseg p4, p3, p4 * 2\n  a1 oscili 0.4 * kenv, kf\n  outs a1, a1\nendin`, `i1 0 2.5 220`],
+  ["Une basse soustractive (dents de scie filtrées)", `instr 1\n  kenv linseg 0, 0.02, 1, p3 - 0.15, 0.8, 0.13, 0\n  a1 vco2 0.5, p4, 0\n  kc linseg 2500, p3, 300\n  a2 moogladder a1, kc, 0.4\n  outs a2 * kenv, a2 * kenv\nendin`, `i1 0 1 55\ni1 1 1 65.41\ni1 2 1 73.42`],
+  ["Un son construit par harmoniques (synthèse additive)", `instr 1\n  kenv linseg 0, 0.05, 1, p3 - 0.3, 0.8, 0.25, 0\n  a1 oscili 0.30, p4\n  a2 oscili 0.15, p4 * 2\n  a3 oscili 0.10, p4 * 3\n  a4 oscili 0.07, p4 * 4\n  a5 oscili 0.05, p4 * 5\n  amix = (a1 + a2 + a3 + a4 + a5) * kenv\n  outs amix, amix\nendin`, `i1 0 3 196`],
+);
+
+// Pour chaque exemple : ce qu'on veut faire, le niveau, une phrase qui dit ce qu'on entend ou ce qu'on apprend, et s'il transforme un clip (effet). Même ordre que EXEMPLES.
+export const BUTS = ["Créer un son", "Transformer un son", "Créer un instrument", "Créer une séquence"];
+export const NIVEAUX = ["Découverte", "Programmation", "Recherche"];
+export const CATALOGUE = {
+  faust: [["Créer un son", "Découverte", "Une note pure : tu règles sa hauteur et son volume."], ["Créer un son", "Programmation", "La hauteur qui oscille légèrement : c'est le vibrato des voix et des violons."], ["Transformer un son", "Programmation", "Le clip revient plusieurs fois, de plus en plus faible."], ["Transformer un son", "Programmation", "Un filtre qui laisse passer les graves et fait ressortir une fréquence."],
+    ["Créer un son", "Découverte", "Un souffle sans hauteur, plus doux que le bruit blanc."], ["Créer un son", "Découverte", "Le volume qui monte et descend vite : un son qui tremble."], ["Créer un son", "Découverte", "Deux notes très proches : on entend le volume battre."], ["Créer un instrument", "Programmation", "Une basse : une dent de scie dont tu règles la coupure du filtre."], ["Créer un son", "Programmation", "Une note qui glisse vers l'aigu puis revient, comme une sirène."],
+    ["Transformer un son", "Découverte", "Le clip devient dur et brillant."], ["Transformer un son", "Découverte", "Le volume du clip tremble."], ["Transformer un son", "Programmation", "Le clip dans une salle : plus la durée est grande, plus la salle est vaste."]],
+  pd: [["Créer un son", "Découverte", "Une note pure, avec deux boîtes reliées."], ["Créer un son", "Découverte", "Deux notes presque pareilles : le volume bat."], ["Créer une séquence", "Programmation", "Une note qui revient deux fois par seconde."], ["Transformer un son", "Découverte", "Le clip, sans les aigus."],
+    ["Créer un son", "Découverte", "Le volume qui tremble, avec trois boîtes de plus."], ["Créer un son", "Découverte", "Un souffle : du bruit dont on retire les aigus."], ["Créer un son", "Programmation", "Une note qui monte : un message dit où aller et en combien de temps."], ["Transformer un son", "Programmation", "Le clip multiplié par une note : il devient métallique."], ["Transformer un son", "Programmation", "Le clip, puis son écho trois dixièmes de seconde plus tard."]],
+  csound: [["Créer un son", "Découverte", "Une note simple : un instrument, une partition d'une ligne."], ["Créer un instrument", "Découverte", "Trois notes en même temps : un accord."], ["Créer un instrument", "Recherche", "La synthèse FM : une note qui en modifie une autre."],
+    ["Créer une séquence", "Découverte", "Huit lignes de partition : la gamme de do."], ["Créer une séquence", "Découverte", "Sept notes, plus courtes : un arpège."], ["Créer un son", "Programmation", "La hauteur monte d'une octave pendant la note."], ["Créer un instrument", "Programmation", "Une basse : des dents de scie dont un filtre se ferme."], ["Créer un instrument", "Recherche", "Cinq harmoniques additionnées : c'est ainsi qu'on fabrique un timbre."]],
 };

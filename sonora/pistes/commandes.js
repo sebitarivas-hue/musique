@@ -18,6 +18,7 @@ export const COMMANDES = [
   { id: "reglage-transposer", menu: "Effets", libelle: "Transposer sans changer la durée…", touches: [], clip: true }, { id: "reglage-fondu", menu: "Effets", libelle: "Fondu, durées au choix…", touches: [], clip: true }, { id: "reglage-gain", menu: "Effets", libelle: "Gain, valeur au choix…", touches: [], clip: true },
   { id: "zoom-plus", menu: "Affichage", libelle: "Zoom avant", touches: ["+", "="] }, { id: "zoom-moins", menu: "Affichage", libelle: "Zoom arrière", touches: ["-"] }, { id: "zoom-tout", menu: "Affichage", libelle: "Zoom par défaut", touches: ["0"] },
   { id: "aide-raccourcis", menu: "Aide", libelle: "Raccourcis clavier", touches: ["?"] },
+  { id: "aide-notions", menu: "Aide", libelle: "Comprendre les mots de Pistes", touches: [] },
 ];
 const NOMS = { Espace: " ", Suppr: "Delete", Retour: "Backspace", "Début": "Home", "↑": "ArrowUp", "↓": "ArrowDown", "Échap": "Escape" };
 export function correspond(touche, e) {

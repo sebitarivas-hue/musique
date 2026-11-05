@@ -1,27 +1,31 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=0639c5e8d0";
-import * as Ed from "./editions.js?v=0639c5e8d0";
-import * as P from "./projet.js?v=0639c5e8d0";
-import { Stockage } from "./stockage.js?v=0639c5e8d0";
-import { creerBouton } from "./bouton.js?v=0639c5e8d0";
-import * as MI from "./midi.js?v=0639c5e8d0";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=0639c5e8d0";
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=0639c5e8d0";
-import * as MO from "./moteurs.js?v=0639c5e8d0";
-import { monterPanneaux } from "./panneaux.js?v=0639c5e8d0";
-import { encoderWAV } from "../studio/wav.js?v=0639c5e8d0";
-import { ENTREES } from "../library/catalogue.js?v=0639c5e8d0";
-import { compiler } from "../src/index.js?v=0639c5e8d0";
-import { rendre } from "../src/rendu.js?v=0639c5e8d0";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=21d4829a8e";
+import * as Ed from "./editions.js?v=21d4829a8e";
+import * as P from "./projet.js?v=21d4829a8e";
+import { Stockage } from "./stockage.js?v=21d4829a8e";
+import { creerBouton } from "./bouton.js?v=21d4829a8e";
+import * as MI from "./midi.js?v=21d4829a8e";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=21d4829a8e";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=21d4829a8e";
+import * as MO from "./moteurs.js?v=21d4829a8e";
+import { monterPanneaux } from "./panneaux.js?v=21d4829a8e";
+import { monterNotions } from "./notions.js?v=21d4829a8e";
+import { DEMOS } from "./demos.js?v=21d4829a8e";
+import * as B from "./bibliotheque.js?v=21d4829a8e";
+import { encoderWAV } from "../studio/wav.js?v=21d4829a8e";
+import { ENTREES } from "../library/catalogue.js?v=21d4829a8e";
+import { compiler } from "../src/index.js?v=21d4829a8e";
+import { rendre } from "../src/rendu.js?v=21d4829a8e";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const etat = { projet: null, buffers: {}, ctx: null, lecture: false, enreg: false, tete: 0, debutCtx: 0, debutTete: 0, sources: [], choisi: null, arme: null, pxs: 60, metro: null };
-window.PISTES = etat;
+window.PISTES = etat; window.PISTES_STOCKAGE = Stockage;
 const badge = (t, c = "") => { const e = $("etat"); e.textContent = t; e.className = "etat " + c; };
 const message = t => { $("message").textContent = t; };
+const demosAppel = {}; const notions = monterNotions({ esc, demos: demosAppel, revenir: () => revenirAMonProjet(), retour: () => etat.retourDemo });   // les mots de Pistes : « ? » partout, panneau qu'on ferme pour revenir à la création
 const fmtT = t => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0")}`;
 
 function contexte() { if (!etat.ctx) etat.ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: "interactive" }); if (etat.ctx.state === "suspended") etat.ctx.resume(); return etat.ctx; }
@@ -42,7 +46,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=0639c5e8d0"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=21d4829a8e"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -310,17 +314,41 @@ const motDire = t => { $("mot-etat").textContent = t; };
 function motExemple(i) {
   const ex = MO.EXEMPLES[mot.langage][i]; if (!ex) return; $("mot-code").value = ex[1]; $("mot-score").value = ex[2] || ""; mot.compile = null; $("mot-params").innerHTML = ""; motDire(`Exemple « ${ex[0]} » chargé.`);
 }
-function motLangage(l) {
-  mot.langage = l; mot.compile = null; document.querySelectorAll(".chip-m").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mot === l)));
+// Le catalogue : un but, un niveau, une recherche, des cartes. Toucher une carte change de moteur et charge l'exemple (le <select> caché reste synchronisé).
+const motFiltre = { but: "", niveau: "", q: "" };
+const motNorm = t => String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+function motCartes() {
+  const z = $("mot-cartes"), n = motNorm(motFiltre.q).trim(); let html = "", compte = 0;
+  for (const l of ["faust", "pd", "csound"]) MO.EXEMPLES[l].forEach((e, i) => {
+    const [but, niv, txt] = MO.CATALOGUE[l][i], eff = /effet/.test(e[0]);
+    if (motFiltre.but && but !== motFiltre.but) return; if (motFiltre.niveau && niv !== motFiltre.niveau) return;
+    if (n && !motNorm(`${e[0]} ${txt} ${but} ${niv} ${l === "pd" ? "pure data" : l}`).includes(n)) return;
+    compte++; const actif = mot.langage === l && mot.indice === i;
+    html += `<button type="button" role="listitem" class="mot-carte" data-l="${l}" data-i="${i}" aria-pressed="${actif}"><b>${esc(e[0].replace(/ \(effet : il lui faut un clip\)/, ""))}</b><span>${esc(txt)}</span><em>${l === "pd" ? "Pure Data" : l === "faust" ? "Faust" : "Csound"} · ${esc(niv)}${eff ? " · transforme un clip" : ""}</em></button>`;
+  });
+  z.innerHTML = html; $("mot-vide").hidden = compte > 0;
+}
+function motEntrees() {
+  $("mot-but").innerHTML = ["Créer un son", "Transformer un son", "Créer un instrument", "Créer une séquence", "Programmer librement"].map(b => `<button type="button" class="chip-m" data-but="${b}" aria-pressed="${motFiltre.but === b}">${b}</button>`).join("");
+  $("mot-niveaux").innerHTML = MO.NIVEAUX.map(b => `<button type="button" class="chip-m" data-niv="${b}" aria-pressed="${motFiltre.niveau === b}">${b}</button>`).join("");
+}
+$("mot-but").onclick = e => { const b = e.target.closest("[data-but]"); if (!b) return; if (b.dataset.but === "Programmer librement") { motFiltre.but = ""; $("mot-code").value = ""; $("mot-score").value = ""; mot.compile = null; $("mot-params").innerHTML = ""; mot.indice = -1; motCode(true); motDire("Page blanche : écris ton programme, puis Compiler."); $("mot-code").focus(); } else motFiltre.but = motFiltre.but === b.dataset.but ? "" : b.dataset.but; motEntrees(); motCartes(); };
+$("mot-niveaux").onclick = e => { const b = e.target.closest("[data-niv]"); if (!b) return; motFiltre.niveau = motFiltre.niveau === b.dataset.niv ? "" : b.dataset.niv; motEntrees(); motCartes(); };
+$("mot-cherche").oninput = e => { motFiltre.q = e.target.value; motCartes(); };
+$("mot-cartes").onclick = e => { const b = e.target.closest(".mot-carte"); if (!b) return; motLangage(b.dataset.l, +b.dataset.i); if (mobile.matches) $("b-mot-rendre").scrollIntoView({ block: "center", behavior: "smooth" }); };
+function motCode(voir) { $("moteurs").classList.toggle("sans-code", !voir); $("b-mot-code").setAttribute("aria-expanded", String(voir)); $("b-mot-code").textContent = voir ? "Cacher le code" : "Voir le code"; }
+$("b-mot-code").onclick = () => motCode($("moteurs").classList.contains("sans-code"));
+function motLangage(l, i = 0) {
+  mot.langage = l; mot.compile = null; document.querySelectorAll(".chip-m[data-mot]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mot === l)));
   $("mot-ex").innerHTML = MO.EXEMPLES[l].map((e, i) => `<option value="${i}">${esc(e[0])}</option>`).join(""); $("mot-score-zone").hidden = l !== "csound"; $("mot-code-lib").textContent = l === "faust" ? "Programme Faust" : l === "pd" ? "Patch Pure Data (texte .pd, tu peux coller le contenu d'un fichier)" : "Orchestre Csound (SONORA fixe sr, ksmps, nchnls et 0dbfs)";
-  $("b-mot-compiler").hidden = l === "csound"; $("mot-params").hidden = l !== "faust"; motExemple(0);
+  $("b-mot-compiler").hidden = l === "csound"; $("mot-params").hidden = l !== "faust"; $("mot-ex").value = String(i); mot.indice = i; motExemple(i); motCartes();
 }
 function basculerMoteurs(ouvrir) {
   mot.ouvert = ouvrir === undefined ? !mot.ouvert : ouvrir; $("moteurs").hidden = !mot.ouvert; $("b-moteurs").setAttribute("aria-expanded", String(mot.ouvert));
-  if (mot.ouvert) { if (!$("mot-ex").options.length) motLangage(mot.langage); $("moteurs").scrollIntoView({ block: "nearest" }); }
+  if (mot.ouvert) { if (!$("mot-ex").options.length) { motEntrees(); motLangage(mot.langage); motCode(!mobile.matches); } $("moteurs").scrollIntoView({ block: "nearest" }); }
 }
 $("b-moteurs").onclick = () => basculerMoteurs(); $("mot-fermer").onclick = () => basculerMoteurs(false);
-document.querySelectorAll(".chip-m").forEach(b => b.onclick = () => motLangage(b.dataset.mot)); $("mot-ex").onchange = e => motExemple(+e.target.value);
+document.querySelectorAll(".chip-m[data-mot]").forEach(b => b.onclick = () => motLangage(b.dataset.mot)); $("mot-ex").onchange = e => { mot.indice = +e.target.value; motExemple(+e.target.value); motCartes(); };
 $("mot-code").oninput = () => { mot.compile = null; };
 async function motCompilerPd() {
   motDire(mot.chargePd ? "Compilation…" : "Chargement du compilateur Pure Data (environ 400 Ko, une seule fois)…");
@@ -430,7 +458,7 @@ function ouvrirReglage(id) {
 // ---------------------------------------------------------------- sons
 function ajouterAudio(nom, canaux, sr) {
   const id = P.ajouterSon(etat.projet, { nom, duree: canaux[0].length / sr, sr, canaux: canaux.length });
-  etat.buffers[id] = { canaux, sr }; Stockage.ecrireSon(id, { canaux, sr }).catch(e => message("Le son n'a pas pu être rangé dans le navigateur : " + e.message)); return id;
+  etat.buffers[id] = { canaux, sr }; Stockage.ecrireSon(id, { canaux, sr }).catch(e => { message("Le son n'a pas pu être rangé dans le navigateur : " + e.message); alerteEcriture(e); }); return id;
 }
 async function decoder(fichier) {
   const ctx = contexte(), donnees = await fichier.arrayBuffer();
@@ -465,14 +493,14 @@ function dessinerOnde(cv, son, clip) {
   g.fillStyle = "#11110F"; for (let i = 0; i < w; i++) { let mn = 0, mx = 0; const s = a + Math.floor(i * pas), e2 = Math.min(x.length, s + Math.ceil(pas)); for (let j = s; j < e2; j++) { if (x[j] < mn) mn = x[j]; if (x[j] > mx) mx = x[j]; } const y0 = h / 2 - mx * h / 2 * 0.95, y1 = h / 2 - mn * h / 2 * 0.95; g.fillRect(i, y0, 1, Math.max(1, y1 - y0)); }
 }
 function afficher() {
-  const p = etat.projet, largeur = Math.max(30, P.dureeTotale(p) + 16) * etat.pxs;
+  majAnnuler(); const p = etat.projet, largeur = Math.max(30, P.dureeTotale(p) + 16) * etat.pxs;
   $("tempo").value = p.tempo;
   // règle : une marque par mesure
   const dm = P.dureeMesure(p); let r = ""; for (let m = 0; m * dm * etat.pxs < largeur; m++) r += `<span style="left:${m * dm * etat.pxs}px">${m + 1}</span>`;
   $("regle").innerHTML = r; $("regle").style.width = largeur + "px"; $("voies").style.width = largeur + "px";
   $("entetes").innerHTML = `<div class="ent-regle"></div>` + p.pistes.map(pi => { const nfx = P.rackDe(pi).length; return `<div class="entete${estArmee(pi) ? " armee" : ""}" data-piste="${pi.id}">
     <input type="text" value="${esc(pi.nom)}" aria-label="Nom de la piste" maxlength="30">
-    <div class="ent-b"><button type="button" class="b-arme" aria-pressed="${estArmee(pi)}" title="Enregistrer sur cette piste">Rec</button><button type="button" class="b-muet" aria-pressed="${pi.muet}" title="Muet">M</button><button type="button" class="b-solo" aria-pressed="${pi.solo}" title="Solo">S</button><button type="button" class="b-fx" aria-pressed="${etat.fx === pi.id}" title="Effets de la piste">Effets${nfx ? " " + nfx : ""}</button><button type="button" class="b-env" aria-pressed="${etat.env === pi.id}" title="Enveloppe de volume : des points sur la piste pour faire monter et descendre le volume">Env${P.enveloppeDe(pi).length ? " " + P.enveloppeDe(pi).length : ""}</button></div>
+    <div class="ent-b"><button type="button" class="b-arme" aria-pressed="${estArmee(pi)}" title="Enregistrer sur cette piste">Rec</button><button type="button" class="b-muet" aria-pressed="${pi.muet}" title="Muet">M</button><button type="button" class="b-solo" aria-pressed="${pi.solo}" title="Solo">S</button><button type="button" class="b-fx" aria-pressed="${etat.fx === pi.id}" title="Effets de la piste">Effets${nfx ? " " + nfx : ""}</button><button type="button" class="b-env" aria-pressed="${etat.env === pi.id}" title="Enveloppe de volume : des points sur la piste pour faire monter et descendre le volume">Env${P.enveloppeDe(pi).length ? " " + P.enveloppeDe(pi).length : ""}</button><button type="button" class="b-plus" aria-label="Plus de réglages pour ${esc(pi.nom)} : volume, panoramique, effets, enveloppe" title="Volume, panoramique, effets, enveloppe">&hellip;</button></div>
     <div class="ent-k"></div></div>`; }).join("");
   const grille = `background-size: ${P.dureeTemps(p) * etat.pxs}px 100%`;
   $("voies").innerHTML = p.pistes.map(pi => `<div class="voie" data-piste="${pi.id}" style="${grille}" aria-label="Piste ${esc(pi.nom)}">${pi.clips.map(c => `<div class="clip${etat.choisi === c.id ? " choisi" : ""}" data-clip="${c.id}" style="left:${c.debut * etat.pxs}px;width:${Math.max(4, c.duree * etat.pxs)}px" tabindex="0" aria-label="${esc((p.sons[c.son] || {}).nom || "son")}, à ${c.debut.toFixed(2)} s"><div class="nom-clip">${esc((p.sons[c.son] || {}).nom || "son")}</div><canvas></canvas></div>`).join("")}</div>`).join("");
@@ -523,8 +551,100 @@ function majSelection() {
   $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain;
 }
 let minuteur = null;
-const ranger = () => { clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(() => {}), 300); };
-function changer() { etat.toutEcoute = false; empiler(); afficher(); clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(e => message("Le projet n'a pas pu être rangé : " + e.message)), 250); if (etat.lecture && !etat.enreg && !etat.notes) { arreter(); } }
+// ---------------------------------------------------------------- Téléphone : les réglages avancés d'une piste (volume, panoramique, effets, enveloppe) s'ouvrent dans une feuille du bas
+let feuille = null;
+function ouvrirFeuille(pi) {
+  feuille = pi.id; $("feuille-titre").textContent = "Réglages : " + pi.nom; $("f-vol").value = pi.volume; $("f-pan").value = pi.pan; majFeuille(pi);
+  $("feuille-piste").hidden = false; $("f-vol").focus();
+}
+const fmtVol = v => Math.round(v * 100) + " %", fmtPan = v => Math.abs(v) < 0.005 ? "centre" : Math.round(Math.abs(v) * 100) + (v < 0 ? " G" : " D");
+const majFeuille = pi => { $("f-vol-o").textContent = fmtVol(pi.volume); $("f-pan-o").textContent = fmtPan(pi.pan); };
+function fermerFeuille() { const piste = !$("feuille-piste").hidden; let ouverte = false; for (const f of document.querySelectorAll(".feuille")) if (!f.hidden) { f.hidden = true; ouverte = true; } if (!ouverte) return; feuille = null; if (piste) afficher(); }
+$("feuille-fermer").onclick = fermerFeuille; $("fa-fermer").onclick = fermerFeuille; $("fr-fermer").onclick = fermerFeuille;
+const ouvrirFeuilleBas = id => { fermerFeuille(); $(id).hidden = false; const f = $(id).querySelector("button, input, select"); if (f) f.focus({ preventScroll: true }); };
+$("b-ajouter-m").onclick = () => ouvrirFeuilleBas("feuille-ajouter"); $("b-reglages-m").onclick = () => ouvrirFeuilleBas("feuille-reglages");
+// Un geste choisi dans « + Ajouter » ferme la feuille et amène le panneau ouvert à l'écran ; un fichier choisi la ferme aussi.
+$("fa-corps").addEventListener("click", e => { const b = e.target.closest("button"); if (!b || b.classList.contains("notion")) return; const cible = b.getAttribute("aria-controls"); setTimeout(() => { fermerFeuille(); if (cible && $(cible) && !$(cible).hidden) $(cible).scrollIntoView({ block: "start" }); }, 0); });
+$("fichiers").addEventListener("change", () => setTimeout(fermerFeuille, 0));
+$("fr-corps").addEventListener("click", e => { const b = e.target.closest("#b-export, #b-nouveau"); if (b) setTimeout(fermerFeuille, 0); });
+
+// ---------------------------------------------------------------- Téléphone : on DÉPLACE les vrais boutons (pas des copies) dans les feuilles du bas ; sur grand écran, tout revient à sa place.
+const lieux = [], mobile = matchMedia("(max-width: 700px)");
+function deplacer(el, cible) { if (!el) return; if (!lieux.some(x => x.el === el)) { const note = document.createComment("lieu"); el.parentNode.insertBefore(note, el); lieux.push({ el, note }); } cible.appendChild(el); }
+const avecAide = el => { const n = el.nextElementSibling; return n && n.classList.contains("notion") ? [el, n] : [el]; };
+const groupe = (cible, classe, ...enfants) => { const g = document.createElement("div"); g.className = classe; cible.appendChild(g); for (const e of enfants) deplacer(e, g); return g; };
+function deplacerPourTelephone() {
+  const A = $("fa-corps"), R = $("fr-corps");
+  if (mobile.matches) {
+    A.replaceChildren(); R.replaceChildren();
+    for (const id of ["fichiers"]) deplacer($(id).closest("label"), A);
+    for (const id of ["b-biblio", "b-pas", "b-midi", "b-moteurs", "b-piste"]) deplacer($(id), A);
+    const son = groupe(A, "tuile-son"); deplacer($("choix-sonora").closest("label"), son); deplacer($("b-ajout-sonora"), son);
+    for (const id of ["tempo", "aimant", "metro", "multi", "entree-audio"]) for (const e of avecAide($(id).closest("label"))) deplacer(e, R);
+    const z = document.createElement("div"); z.className = "rl-groupe"; z.innerHTML = "<span>Zoom de la règle</span>"; R.appendChild(z); deplacer($("b-zoom-moins"), z); deplacer($("b-zoom-plus"), z);
+    deplacer($("b-debut"), R); deplacer($("b-export"), R); deplacer($("b-nouveau"), R);
+  } else { fermerFeuille(); for (const { el, note } of lieux) if (note.parentNode) note.parentNode.insertBefore(el, note); }
+}
+(mobile.addEventListener ? mobile.addEventListener("change", deplacerPourTelephone) : mobile.addListener(deplacerPourTelephone)); deplacerPourTelephone();
+$("f-vol").oninput = e => { const pi = P.trouverPiste(etat.projet, feuille); if (!pi) return; pi.volume = +e.target.value; const ch = etat.lecture && etat.chaines && etat.chaines[pi.id]; if (ch) ch.vol.gain.setTargetAtTime(pi.volume, etat.ctx.currentTime, 0.02); majFeuille(pi); ranger(); };
+$("f-pan").oninput = e => { const pi = P.trouverPiste(etat.projet, feuille); if (!pi) return; pi.pan = +e.target.value; const ch = etat.lecture && etat.chaines && etat.chaines[pi.id]; if (ch && ch.pan) ch.pan.pan.setTargetAtTime(pi.pan, etat.ctx.currentTime, 0.02); majFeuille(pi); ranger(); };
+const viaEntete = classe => { const id = feuille; fermerFeuille(); const b = document.querySelector(`.entete[data-piste="${id}"] .${classe}`); if (b) b.click(); };
+$("b-piste-m").onclick = () => $("b-piste").click();
+$("f-fx").onclick = () => viaEntete("b-fx"); $("f-env").onclick = () => viaEntete("b-env");
+document.addEventListener("keydown", e => { if (e.key === "Escape") fermerFeuille(); });
+
+// ---------------------------------------------------------------- Démonstrations : Pistes fait l'exemple lui-même (demos.js). Le projet de l'élève est mis de côté dans « Mes projets ».
+async function commencerDemo(titre, tempo) {
+  if (etat.lecture) arreter();
+  for (const [x, b] of [["biblio", "b-biblio"], ["pas", "b-pas"], ["midi", "b-midi"], ["moteurs", "b-moteurs"], ["projets", "b-projets"]]) { const z = $(x); if (z && !z.hidden) { z.hidden = true; $(b).setAttribute("aria-expanded", "false"); } }
+  if (window.PISTES_PANNEAUX && window.PISTES_PANNEAUX.S.boucle) $("pas-ecouter").click();
+  const vide = etat.projet.pistes.every(p => p.clips.length === 0), enDemo = /^Démo : /.test(etat.projet.titre || "");
+  if (!vide && !enDemo && !etat.retourDemo) { await sauverMaintenant(); etat.retourDemo = { id: etat.projet.id, titre: etat.projet.titre || "Sans titre" }; }
+  const p = P.nouveauProjet({ titre, tempo }); if (enDemo || vide) p.id = etat.projet.id;
+  etat.fx = null; etat.env = null; $("metro").checked = false; await Stockage.ecrireProjet(p).catch(alerteEcriture); await chargerProjet(p); $("tempo").value = tempo;
+}
+const demoApi = {
+  commencer: commencerDemo,
+  piste(i, nom) { const L = etat.projet.pistes; while (L.length <= i) L.push(P.nouvellePiste("Piste " + (L.length + 1))); if (nom) L[i].nom = nom; return L[i]; },
+  poser(i, elId, td, { note, duree = 1.5, fin } = {}) { const el = B.elements().find(e => e.id === elId); if (!el) throw new Error("son inconnu : " + elId); const r = B.fabriquer(el, { tempo: etat.projet.tempo, note, duree, sr: 44100 }), id = ajouterAudio(r.nom, r.canaux, r.sr);
+    return P.placerClip(etat.projet, demoApi.piste(i).id, id, td * 60 / etat.projet.tempo, fin ? { duree: fin } : {}); },
+  rythme(i, id, td) { return demoApi.poser(i, id, td); },
+  note(i, id, note, td, duree) { return demoApi.poser(i, id, td, { note, duree }); },
+  melodie(i, id, notes, td, pas) { const s = pas * 60 / etat.projet.tempo; notes.forEach((n, k) => demoApi.poser(i, id, td + k * pas, { note: n, duree: s * 1.1, fin: s * 1.5 })); },
+  regler(i, r) { Object.assign(demoApi.piste(i), r); },
+  effet(i, nom, reg) { const pi = demoApi.piste(i); P.ajouterEffet(pi, nom); Object.assign(pi.effets[nom], reg, { actif: true }); },
+  enveloppe(i, pts) { const pi = demoApi.piste(i); pi.enveloppe = []; for (const [t, v] of pts) P.ajouterPointEnv(pi, t, v); },
+  ouvrirEffets(i) { etat.fx = demoApi.piste(i).id; }, montrerEnveloppe(i) { etat.env = demoApi.piste(i).id; },
+  metronome(oui) { $("metro").checked = !!oui; }, zoom(n) { for (let k = 0; k < n; k++) $("b-zoom-plus").click(); },
+  async lire() { changer(); await lire(); },
+  async motif(g) { await window.PISTES_PANNEAUX.motif(g); }, async bibliotheque(q) { await window.PISTES_PANNEAUX.bibliotheque(q); },
+};
+for (const id of Object.keys(DEMOS)) demosAppel[id] = async () => { const message = await DEMOS[id].faire(demoApi); return { message, retour: etat.retourDemo && etat.retourDemo.titre }; };
+async function revenirAMonProjet() {
+  const r = etat.retourDemo; if (!r) return false; if (etat.lecture) arreter(); await sauverMaintenant();
+  try { await chargerProjet(await Stockage.choisirProjet(r.id)); etat.retourDemo = null; message("Ton projet « " + r.titre + " » est de retour."); return true; } catch (e) { message("Je n'ai pas retrouvé ton projet : " + e.message); return false; }
+}
+
+// ---------------------------------------------------------------- Zéro perte (consigne de Sébastien, 04/11/2026 : un élève ne doit jamais perdre une heure de travail)
+// 1. Le projet est écrit peu après chaque changement, ET tout de suite quand la page se ferme ou passe en arrière-plan.
+// 2. Une écriture qui échoue ne passe jamais en silence : un bandeau dit que le travail n'est pas gardé et propose de le télécharger.
+// 3. Si le même projet est ouvert dans deux onglets, les deux le disent. 4. Les cinq dernières versions sont gardées (stockage.js, versionner).
+const alerte = { type: "" };
+function alerter(type, texte, permanent) { alerte.type = permanent ? "permanent" : type; $("alerte-texte").textContent = texte; $("alerte-rangement").hidden = false; }
+const apaiser = type => { if (alerte.type === type) { alerte.type = ""; $("alerte-rangement").hidden = true; } };
+const alerteEcriture = e => alerter("ecriture", "Ton travail n'est pas gardé : le navigateur refuse de l'enregistrer" + (e && e.message ? " (" + e.message + ")" : "") + ". Télécharge ton projet maintenant pour ne rien perdre.");
+let attente = false;
+async function sauverMaintenant() { clearTimeout(minuteur); attente = false; try { await Stockage.ecrireProjet(etat.projet); apaiser("ecriture"); Stockage.versionner(etat.projet).catch(() => {}); } catch (e) { alerteEcriture(e); } }
+const planifierRangement = d => { attente = true; clearTimeout(minuteur); minuteur = setTimeout(sauverMaintenant, d); };
+const vider = () => { if (attente) sauverMaintenant(); };
+window.addEventListener("pagehide", vider); window.addEventListener("beforeunload", vider); document.addEventListener("visibilitychange", () => { if (document.hidden) vider(); });
+$("alerte-fermer").onclick = () => { $("alerte-rangement").hidden = true; }; $("alerte-fichier").onclick = () => { exporterFichierProjet(etat.projet).catch(e => message("Le téléchargement n'a pas marché : " + e.message)); };
+const MOI = Math.random().toString(36).slice(2), canal = "BroadcastChannel" in window ? new BroadcastChannel("sonora-pistes") : null;
+const TEXTE_ONGLETS = "Ce projet est aussi ouvert dans un autre onglet. Garde un seul onglet ouvert : le dernier qui enregistre écrase l'autre.";
+const annoncerProjet = () => { if (canal) canal.postMessage({ t: "ouvert", id: etat.projet.id, de: MOI }); };
+if (canal) canal.onmessage = e => { const m = e.data || {}; if (m.de === MOI || !etat.projet || m.id !== etat.projet.id) return; if (m.t === "ouvert") canal.postMessage({ t: "present", id: m.id, de: MOI }); alerter("onglets", TEXTE_ONGLETS); };
+const ranger = () => planifierRangement(300);
+function changer() { etat.toutEcoute = false; empiler(); afficher(); planifierRangement(250); if (etat.lecture && !etat.enreg && !etat.notes) { arreter(); } }
 
 function brancherEntetes() {
   for (const el of document.querySelectorAll(".entete")) {
@@ -541,6 +661,7 @@ function brancherEntetes() {
       onInput: v => { pi.volume = v; const ch = enChaine(); if (ch) ch.vol.gain.setTargetAtTime(v, etat.ctx.currentTime, 0.02); ranger(); } }));
     k.appendChild(creerBouton({ libelle: "Pan", nom: `Panoramique de ${pi.nom} (gauche à droite)`, min: -1, max: 1, valeur: pi.pan, def: 0, pas: 0.01, bipolaire: true, classe: "r-pan", classeValeur: "o-pan", taille: 38, format: v => Math.abs(v) < 0.005 ? "centre" : Math.round(Math.abs(v) * 100) + (v < 0 ? " G" : " D"),
       onInput: v => { pi.pan = v; const ch = enChaine(); if (ch && ch.pan) ch.pan.pan.setTargetAtTime(v, etat.ctx.currentTime, 0.02); ranger(); } }));
+    el.querySelector(".b-plus").onclick = () => ouvrirFeuille(pi);
     el.querySelector(".b-env").onclick = () => { etat.env = etat.env === pi.id ? null : pi.id; if (etat.env) message("Enveloppe de volume : clique sur la piste pour poser un point, glisse-le pour monter ou descendre le volume. Double clic ou Suppr pour l'enlever. Les flèches déplacent un point au clavier."); afficher(); };
     el.querySelector(".b-fx").onclick = () => { etat.fx = etat.fx === pi.id ? null : pi.id; afficher(); if (etat.fx) $("effets").scrollIntoView({ block: "nearest", behavior: "smooth" }); };
   }
@@ -598,7 +719,7 @@ function afficherEffets() {
   const z = $("effets"), pi = etat.fx && P.trouverPiste(etat.projet, etat.fx); z.hidden = !pi; if (!pi) return;
   const e = P.effetsDe(pi), rack = P.rackDe(pi), L = P.LIMITES_EFFETS, manque = P.EFFETS_ORDRE.filter(k => !rack.includes(k));
   const relancer = () => { if (etat.lecture) { arreter(); lire(); } };
-  z.innerHTML = `<div class="fx-haut"><h2>Effets de la piste « ${esc(pi.nom)} »</h2>
+  z.innerHTML = `<div class="fx-haut"><h2>Effets de la piste « ${esc(pi.nom)} »</h2><button type="button" class="notion" data-notion="effets" aria-label="Comprendre : les effets">?</button>
     <label class="fx-ajout"><span class="sr-seul">Ajouter un effet</span><select id="fx-ajouter" aria-label="Ajouter un effet"><option value="">+ Ajouter un effet</option>${manque.map(k => `<option value="${k}">${NOMS_FX[k]}</option>`).join("")}</select></label>
     <button type="button" class="croix-b" id="fx-fermer" aria-label="Fermer les effets"><span class="croix" aria-hidden="true"></span></button></div>
     <p class="petit">Les effets s'appliquent à toute la piste, dans l'ordre filtre, puis écho et réverbération ajoutés au son direct. Ils sont aussi dans le WAV exporté. L'interrupteur éteint un effet sans perdre ses réglages ; la croix le retire du rack. Double clic sur un bouton : valeur de départ.</p>
@@ -606,7 +727,7 @@ function afficherEffets() {
   const zone = z.querySelector("#fx-rack");
   for (const k of rack) {
     const art = document.createElement("article"); art.className = "fx-device" + (e[k].actif ? "" : " eteint"); art.dataset.effet = k;
-    art.innerHTML = `<header><label class="fx-power" title="${e[k].actif ? "Éteindre" : "Allumer"} ${NOMS_FX[k].toLowerCase()}"><input type="checkbox" data-actif="${k}"${e[k].actif ? " checked" : ""} aria-label="${NOMS_FX[k]} : allumé"><span class="fx-led" aria-hidden="true"></span></label><h3>${NOMS_FX[k]}</h3><button type="button" class="croix-b" data-retirer="${k}" aria-label="Retirer ${esc(NOMS_FX[k].toLowerCase())} de la piste"><span class="croix" aria-hidden="true"></span></button></header>
+    art.innerHTML = `<header><label class="fx-power" title="${e[k].actif ? "Éteindre" : "Allumer"} ${NOMS_FX[k].toLowerCase()}"><input type="checkbox" data-actif="${k}"${e[k].actif ? " checked" : ""} aria-label="${NOMS_FX[k]} : allumé"><span class="fx-led" aria-hidden="true"></span></label><h3>${NOMS_FX[k]}</h3><button type="button" class="notion" data-notion="${k}" aria-label="Comprendre : ${NOMS_FX[k].toLowerCase()}">?</button><button type="button" class="croix-b" data-retirer="${k}" aria-label="Retirer ${esc(NOMS_FX[k].toLowerCase())} de la piste"><span class="croix" aria-hidden="true"></span></button></header>
       <canvas class="fx-viz" role="img" aria-label="${esc(SCHEMAS_FX[k])}"></canvas>${k === "filtre" ? `<label class="fx-type">Type <select data-fx="filtre.type"><option value="passe-bas"${e.filtre.type === "passe-bas" ? " selected" : ""}>passe-bas (enlève les aigus)</option><option value="passe-haut"${e.filtre.type === "passe-haut" ? " selected" : ""}>passe-haut (enlève les graves)</option></select></label>` : ""}
       <div class="fx-boutons"></div>${k === "echo" ? `<p class="fx-dist" id="fx-distance">Avec ${sec(e.echo.temps)}, la paroi serait à environ ${Math.round(P.distanceEcho(e.echo.temps))} m.</p>` : ""}
       <details class="fx-ex"><summary>À quoi ça sert ?</summary><p>${esc(P.EXPLICATIONS[k])}</p></details>`;
@@ -647,12 +768,13 @@ $("b-piste").onclick = () => { etat.projet.pistes.push(P.nouvellePiste(`Piste ${
 $("b-nouveau").onclick = () => nouveauProjet();
 $("fichiers").onchange = e => { const pi = P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0]; importer(e.target.files, pi.id, P.aimanter(etat.projet, etat.tete, +$("aimant").value)).then(() => { e.target.value = ""; }); };
 $("tempo").onchange = e => { etat.projet.tempo = Math.max(40, Math.min(240, +e.target.value || 100)); changer(); };
+$("b-annuler").onclick = () => annuler(); $("b-refaire").onclick = () => retablir();
 $("b-zoom-plus").onclick = () => { etat.pxs = Math.min(400, etat.pxs * 1.5); afficher(); }; $("b-zoom-moins").onclick = () => { etat.pxs = Math.max(10, etat.pxs / 1.5); afficher(); };
 $("regle").onpointerdown = e => { const r = $("regle").getBoundingClientRect(); etat.tete = Math.max(0, (e.clientX - r.left) / etat.pxs); if (etat.lecture) { arreter(); lire(); } };
 $("b-couper").onclick = () => { if (!etat.choisi) return; const n = P.couperClip(etat.projet, etat.choisi, etat.tete); if (!n) { message("Place le curseur rouge à l'intérieur du clip pour le couper."); return; } changer(); };
 $("b-dupliquer").onclick = () => { if (!etat.choisi) return; etat.choisi = P.dupliquerClip(etat.projet, etat.choisi); changer(); };
 $("b-supprimer").onclick = () => { if (!etat.choisi) return; P.supprimerClip(etat.projet, etat.choisi); etat.choisi = null; changer(); };
-$("sel-gain").oninput = e => { const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r) { r.clip.gain = +e.target.value; clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet), 300); } };
+$("sel-gain").oninput = e => { const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r) { r.clip.gain = +e.target.value; planifierRangement(300); } };
 for (const e of ENTREES) { const o = document.createElement("option"); o.value = e.id; o.textContent = e.titre; $("choix-sonora").appendChild(o); }
 $("b-ajout-sonora").onclick = () => { if ($("choix-sonora").value) sonSonora($("choix-sonora").value); };
 // ---------------------------------------------------------------- commandes : menus, raccourcis, aide (la table est dans commandes.js)
@@ -668,6 +790,7 @@ const EXEC = {
   "piste-muet": () => { const pi = pisteActive(); if (pi) { pi.muet = !pi.muet; changer(); } }, "piste-solo": () => { const pi = pisteActive(); if (pi) { pi.solo = !pi.solo; changer(); } },
   "zoom-plus": () => $("b-zoom-plus").click(), "zoom-moins": () => $("b-zoom-moins").click(), "zoom-tout": () => { etat.pxs = 60; afficher(); },
   "aide-raccourcis": () => ouvrirAide(),
+  "aide-notions": () => notions.ouvrirListe(),
 };
 for (const id of Object.keys(Ed.EFFETS)) EXEC[id] = () => appliquerEffet(id);
 for (const id of Object.keys(Ed.REGLABLES)) EXEC[id] = () => ouvrirReglage(id);
@@ -691,7 +814,8 @@ function construireMenus() {
 }
 function ouvrirMenu(b) { majMenus(); b.setAttribute("aria-expanded", "true"); b.parentElement.querySelector(".menu-l").hidden = false; }
 function fermerMenus() { const a = document.activeElement; if (a && a.closest && a.closest("#barre-menus")) a.blur(); document.querySelectorAll("#barre-menus .menu-b").forEach(b => b.setAttribute("aria-expanded", "false")); document.querySelectorAll("#barre-menus .menu-l").forEach(l => { l.hidden = true; }); }
-function majMenus() { document.querySelectorAll("#barre-menus [data-cmd]").forEach(b => { const id = b.dataset.cmd, c = COMMANDES.find(x => x.id === id); b.disabled = !!(ACTIF[id] && !ACTIF[id]()) || !!(c && c.clip && !etat.choisi); }); }
+const majAnnuler = () => { const a = $("b-annuler"), r = $("b-refaire"); if (a) a.disabled = !histo.pile.length; if (r) r.disabled = !histo.refaire.length; };
+function majMenus() { majAnnuler(); document.querySelectorAll("#barre-menus [data-cmd]").forEach(b => { const id = b.dataset.cmd, c = COMMANDES.find(x => x.id === id); b.disabled = !!(ACTIF[id] && !ACTIF[id]()) || !!(c && c.clip && !etat.choisi); }); }
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && document.querySelector("#barre-menus .menu-l:not([hidden])")) { fermerMenus(); e.preventDefault(); return; }
   const t = e.target; if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA" || (document.querySelector("#barre-menus .menu-l:not([hidden])")))) return;
@@ -712,15 +836,15 @@ async function chargerProjet(p) {
   for (const id of Object.keys(etat.projet.sons)) { try { const d = await Stockage.lireSon(id); if (d) etat.buffers[id] = d; } catch (_) {} }
   const perdus = Object.keys(etat.projet.sons).filter(id => !etat.buffers[id]); if (perdus.length) message(`${perdus.length} son${perdus.length > 1 ? "s" : ""} de ce projet n'ont pas été retrouvés dans ce navigateur.`);
   etat.tete = 0; etat.choisi = null; etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; histo.pile = []; histo.refaire = []; histo.snap = JSON.stringify(etat.projet);
-  $("titre-projet").value = etat.projet.titre || ""; afficher();
+  $("titre-projet").value = etat.projet.titre || ""; afficher(); annoncerProjet();
 }
 async function nouveauProjet() {
-  await Stockage.ecrireProjet(etat.projet).catch(() => {}); const n = (await Stockage.listerProjets().catch(() => [])).length + 1, p = P.nouveauProjet({ titre: `Projet ${n}` });
-  await Stockage.ecrireProjet(p).catch(() => {}); await chargerProjet(p); message("Nouveau projet. L'autre est gardé dans « Mes projets »."); if (!$("projets").hidden) listerProjets();
+  await sauverMaintenant(); const n = (await Stockage.listerProjets().catch(() => [])).length + 1, p = P.nouveauProjet({ titre: `Projet ${n}` });
+  await Stockage.ecrireProjet(p).catch(alerteEcriture); await chargerProjet(p); annoncerProjet(); message("Nouveau projet. L'autre est gardé dans « Mes projets »."); if (!$("projets").hidden) listerProjets();
 }
 const dateCourte = t => { try { return new Date(t).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (_) { return ""; } };
 async function listerProjets() {
-  const ul = $("liste-projets"); let L = []; try { await Stockage.ecrireProjet(etat.projet); L = await Stockage.listerProjets(); } catch (e) { $("msg-projets").textContent = "Le navigateur ne range pas les projets : " + e.message; }
+  listerCorbeille(); const ul = $("liste-projets"); let L = []; try { await Stockage.ecrireProjet(etat.projet); L = await Stockage.listerProjets(); } catch (e) { $("msg-projets").textContent = "Le navigateur ne range pas les projets : " + e.message; }
   ul.innerHTML = L.map(x => `<li data-id="${esc(x.id)}"${x.id === etat.projet.id ? ' class="courant" aria-current="true"' : ""}><input class="lp-titre" value="${esc(x.titre)}" maxlength="80" aria-label="Titre du projet"><span class="petit">${x.pistes} piste${x.pistes > 1 ? "s" : ""}, ${x.clips} clip${x.clips > 1 ? "s" : ""}, ${Math.round(x.duree)} s, tempo ${x.tempo}. ${esc(dateCourte(x.date))}</span>
     <span class="lp-act"><button type="button" data-a="ouvrir"${x.id === etat.projet.id ? " disabled" : ""}>${x.id === etat.projet.id ? "Ouvert" : "Ouvrir"}</button><button type="button" data-a="copier">Dupliquer</button><button type="button" data-a="fichier">Exporter</button><button type="button" data-a="supprimer">Supprimer</button></span></li>`).join("") || "<li>Aucun projet pour l'instant.</li>";
 }
@@ -736,13 +860,20 @@ $("liste-projets").onclick = async e => { const b = e.target.closest("button[dat
     else if (b.dataset.a === "copier") { await Stockage.ecrireProjet(etat.projet); const q = await Stockage.lireProjetId(id); await Stockage.ecrireProjet(P.copierProjet(q)); m.textContent = "Projet dupliqué : la copie a ses propres pistes, et partage les sons."; listerProjets(); }
     else if (b.dataset.a === "fichier") { const q = id === etat.projet.id ? etat.projet : await Stockage.lireProjetId(id); await exporterFichierProjet(q); m.textContent = "Fichier de projet exporté."; }
     else if (b.dataset.a === "supprimer") {
-      const q = await Stockage.lireProjetId(id); if (!confirm(`Supprimer le projet « ${q ? q.titre : ""} » et ses sons ? Cela ne peut pas être annulé.`)) return;
-      const courant = id === etat.projet.id; await Stockage.supprimerProjet(id);
+      const q = await Stockage.lireProjetId(id), courant = id === etat.projet.id; await Stockage.mettreALaCorbeille(id);
       if (courant) { const reste = await Stockage.listerProjets(); if (reste.length) await chargerProjet(await Stockage.choisirProjet(reste[0].id)); else { const p = P.nouveauProjet(); await Stockage.ecrireProjet(p); await chargerProjet(p); } }
-      m.textContent = "Projet supprimé."; listerProjets();
+      m.textContent = `« ${q ? q.titre : "Le projet"} » est dans la corbeille, plus bas : tu peux le rétablir pendant trente jours.`; listerProjets();
     }
   } catch (err) { m.textContent = "Cela n'a pas pu se faire : " + err.message; }
 };
+async function listerCorbeille() {
+  let C = []; try { C = await Stockage.listerCorbeille(); } catch (_) {} $("corbeille").hidden = !C.length;
+  $("liste-corbeille").innerHTML = C.map(x => `<li data-id="${esc(x.id)}"><span class="lp-titre">${esc(x.titre)}</span><span class="petit">supprimé le ${esc(dateCourte(x.supprime))}</span><span class="lp-act"><button type="button" data-a="retablir">Rétablir</button><button type="button" data-a="effacer">Supprimer pour de bon</button></span></li>`).join("");
+}
+$("liste-corbeille").onclick = async e => { const b = e.target.closest("button[data-a]"), li = e.target.closest("li[data-id]"); if (!b || !li) return; const id = li.dataset.id, m = $("msg-projets"), titre = (li.querySelector(".lp-titre") || {}).textContent || "";
+  try { if (b.dataset.a === "retablir") { await Stockage.retablirProjet(id); m.textContent = `« ${titre} » est rétabli : il est de retour dans la liste.`; }
+    else if (b.dataset.a === "effacer") { if (!confirm(`Effacer « ${titre} » pour de bon, avec ses sons ? Cela ne pourra plus être annulé.`)) return; await Stockage.supprimerProjet(id); m.textContent = "Effacé pour de bon."; }
+    listerProjets(); } catch (err) { m.textContent = "Cela n'a pas pu se faire : " + err.message; } };
 // Un projet dans un fichier : le projet et l'audio de chaque son (entiers sur 16 bits, en base64). Pour le garder ailleurs ou le passer à un autre appareil.
 const versBase64 = oct => { let s = ""; for (let i = 0; i < oct.length; i += 8192) s += String.fromCharCode.apply(null, oct.subarray(i, i + 8192)); return btoa(s); };
 const depuisBase64 = t => { const s = atob(t), o = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) o[i] = s.charCodeAt(i); return o; };
@@ -776,15 +907,17 @@ async function recevoirDuStudio() {
       Stockage.effacerSon(a.id).catch(() => {}); } catch (_) {}
   }
   try { localStorage.removeItem("pistes:arrivees"); } catch (_) {}
-  if (recus.length) { empiler(); Stockage.ecrireProjet(etat.projet).catch(() => {}); message(`Reçu du Studio : ${recus.map(n => "« " + n + " »").join(", ")}. Le son est placé au début d'une piste libre.`); }
+  if (recus.length) { empiler(); Stockage.ecrireProjet(etat.projet).catch(alerteEcriture); message(`Reçu du Studio : ${recus.map(n => "« " + n + " »").join(", ")}. Le son est placé au début d'une piste libre.`); }
 }
 async function demarrer() {
   let p = null;
   let rangement = true;
   try { const lu = await Stockage.lireProjet(); if (lu) p = P.verifierProjet(lu); } catch (_) { p = null; rangement = false; }
   if (p) { for (const id of Object.keys(p.sons)) { try { const d = await Stockage.lireSon(id); if (d) etat.buffers[id] = d; } catch (_) {} } const perdus = Object.keys(p.sons).filter(id => !etat.buffers[id]); if (perdus.length) message(`${perdus.length} son${perdus.length > 1 ? "s" : ""} n'ont pas été retrouvés dans ce navigateur.`); }
-  if (!rangement) message("Le navigateur ne range pas le projet (stockage indisponible ou bloqué) : tu peux travailler, mais il ne sera pas conservé à la fermeture. Exporte en WAV pour garder ton travail.");
+  if (!rangement) { message("Le navigateur ne range pas le projet (stockage indisponible ou bloqué) : tu peux travailler, mais il ne sera pas conservé à la fermeture. Exporte en WAV pour garder ton travail."); alerter("permanent", "Ce navigateur ne garde pas ton travail (stockage bloqué ou navigation privée) : il sera perdu à la fermeture. Télécharge ton projet régulièrement.", true); }
+  else try { const est = navigator.storage && navigator.storage.estimate && await navigator.storage.estimate(); if (est && est.quota && est.usage / est.quota > 0.85) alerter("place", "Le navigateur est presque plein : ton prochain son risque de ne pas être gardé. Télécharge ton projet et supprime les projets que tu n'utilises plus."); } catch (_) {}
   etat.projet = p || P.nouveauProjet(); $("titre-projet").value = etat.projet.titre || ""; histo.snap = JSON.stringify(etat.projet); construireMenus(); majMenus(); etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id;
-  await recevoirDuStudio(); afficher(); requestAnimationFrame(boucle); window.PISTES_PRET = true;
+  await recevoirDuStudio(); afficher(); annoncerProjet(); requestAnimationFrame(boucle); window.PISTES_PRET = true;
+  if (location.hash === "#projets") $("b-projets").click();   // venu de « Mes projets » (accueil SONORA)
 }
 demarrer();

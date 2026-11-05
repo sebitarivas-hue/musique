@@ -38,3 +38,47 @@ body { height: auto; overflow: auto; }
 .viv-partition .petit { padding: 14px; margin: 0; }
 .carte-acc.grille { position: relative; min-width: 110px; gap: 4px; } .carte-acc.grille.choisi { outline: 4px solid var(--rouge); outline-offset: 2px; } .carte-acc.cible { background: var(--acide); }
 .carte-acc.grille .outils { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; } .carte-acc.grille .outils button { min-height: 28px; padding: 2px 6px; font: .65rem var(--f-mono); }
+/* Téléphone : le bandeau de lecture tient en une bande (titre à gauche, bouton à droite) pour que les réglages soient visibles dès l'ouverture (05/11/2026) */
+@media (max-width: 700px) {
+  .vue-h .scene.heros { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-auto-flow: row; gap: 4px 12px; align-items: center; justify-items: start; text-align: left; padding: 10px 12px; min-height: 0; }
+  .vue-h .heros .scene-etiq, .vue-h .heros .scene-aide, .vue-h .heros .scene-onde { display: none; }
+  .vue-h .heros h1 { grid-column: 1; font-size: 1.25rem; max-width: none; }
+  .vue-h .heros .heros-texte { grid-column: 1; font-size: .9rem; line-height: 1.3; max-width: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .vue-h .heros .scene-jouer { grid-column: 2; grid-row: 1 / span 2; width: auto; min-width: 104px; height: 56px; padding: 0 14px; border-radius: 28px; flex-direction: row; font-size: .9rem; box-shadow: 3px 3px 0 var(--noir); }
+  .vue-h .heros .scene-jouer .scene-icone { font-size: 1.4rem; }
+}
+@media (max-width: 700px) { .vue-h select, .vue-h input, .vue-h .rang-h button, .vue-h .liste-prog button { min-height: 44px; } .vue-h .rang-h button { padding-inline: 14px; } }
+@media (max-width: 700px) { .bandeau-page .bp-texte { display: none; } .bandeau-page .bp-titre { font-size: 1.5rem; margin: 4px 0 0; } .vue-h .heros .scene-jouer { white-space: normal; text-align: center; line-height: 1.1; max-width: 150px; } }
+/* Barre d'actions du téléphone */
+.barre-h { display: none; }
+@media (max-width: 700px) {
+  .barre-h { display: flex; gap: 8px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; background: var(--noir); padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)); border-top: 3px solid var(--acide); }
+  .barre-h[hidden] { display: none; } .barre-h button { flex: 1 1 0; min-height: 48px; font-weight: 700; padding: 0 6px; font-size: .85rem; }
+  .barre-h button[aria-pressed="true"] { background: var(--rouge); color: #fff; }
+  body.avec-barre-h { padding-bottom: 78px; }
+  .vue-h .heros .scene-jouer { display: none; } .vue-h .scene.heros { grid-template-columns: minmax(0, 1fr); }
+}
+/* Le son : sur téléphone, un seul bouton ouvre une feuille avec tous les réglages (pas cinq menus à la suite) */
+.son-resume, .son-fermer { display: none; }
+@media (max-width: 700px) {
+  .son-resume { display: block; width: 100%; min-height: 48px; text-align: left; }
+  .son-feuille { display: none; }
+  body.son-ouvert .son-feuille { display: block; position: fixed; left: 0; right: 0; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); z-index: 44; background: #fff; border-top: 3px solid var(--noir); box-shadow: 0 -8px 24px rgba(0,0,0,.25); max-height: calc(100vh - 78px - 110px); overflow: auto; padding: 8px 14px 14px; }
+  body.son-ouvert .son-fermer { display: block; width: 100%; min-height: 48px; margin: 4px 0 8px; font-weight: 700; }
+}
+/* Progressions : les familles se replient sur téléphone, tout reste ouvert sur grand écran */
+.fam-tit { display: block; width: 100%; text-align: left; background: none; border: 0; border-bottom: 2px solid var(--noir); box-shadow: none; padding: 6px 0; cursor: default; font: inherit; }
+@media (max-width: 700px) {
+  .fam-tit { min-height: 48px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+  .fam-tit::after { content: ""; width: 10px; height: 10px; border-right: 3px solid currentColor; border-bottom: 3px solid currentColor; transform: rotate(45deg); transition: transform .15s; } .fam-tit[aria-expanded="true"]::after { transform: rotate(-135deg); }
+  .fam-corps:not(.ouvert) { display: none; }
+}
+/* Téléphone : le clavier et la partition vivent dans une feuille « Clavier » ouverte depuis la barre */
+@media (max-width: 700px) {
+  .vivant { display: none; }
+  body.jouer-ouvert .vivant { display: block; position: fixed; left: 0; right: 0; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); z-index: 44; background: #fff; border-top: 3px solid var(--noir); box-shadow: 0 -8px 24px rgba(0,0,0,.25); max-height: calc(100vh - 78px - 110px); overflow: auto; padding: 8px 10px 12px; margin: 0; }
+  body.jouer-ouvert .vivant .petit { display: none; }
+  .barre-h button { font-size: .8rem; }
+}
+.mots-h { margin: 6px 14px 0; text-align: right; } .vue-h label .notion, .rang-h label .notion { margin-left: 6px; vertical-align: middle; } .vue-h h2 .notion { margin-left: 8px; vertical-align: middle; }
+@media (max-width: 700px) { .mots-h .notion-lien, .vue-h .notion, #vivant .notion { min-width: 44px; min-height: 44px; } .mots-h .notion-lien { padding: 12px 8px; } }

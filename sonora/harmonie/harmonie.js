@@ -1,18 +1,20 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=0639c5e8d0";
-import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=0639c5e8d0";
-import { BANQUE, preparer } from "./echantillons.js?v=0639c5e8d0";
-import { GENRES, LISTE_GENRES, rendreGenre } from "./genres.js?v=0639c5e8d0";
-import { heros, etatBouton } from "../studio/heros.js?v=0639c5e8d0";
-import { encoderWAV } from "../studio/wav.js?v=0639c5e8d0";
-import { dessinerOscillo } from "../studio/visuels.js?v=0639c5e8d0";
-import * as P from "../pistes/projet.js?v=0639c5e8d0";
-import { Stockage } from "../pistes/stockage.js?v=0639c5e8d0";
-import * as A from "./accords.js?v=0639c5e8d0";
-import * as V from "./voicings.js?v=0639c5e8d0";
-import * as G from "./grille.js?v=0639c5e8d0";
-import { partitionSVG } from "./partition.js?v=0639c5e8d0";
+import * as H from "./theorie.js?v=21d4829a8e";
+import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=21d4829a8e";
+import { BANQUE, preparer } from "./echantillons.js?v=21d4829a8e";
+import { GENRES, LISTE_GENRES, rendreGenre } from "./genres.js?v=21d4829a8e";
+import { heros, etatBouton } from "../studio/heros.js?v=21d4829a8e";
+import { encoderWAV } from "../studio/wav.js?v=21d4829a8e";
+import { dessinerOscillo } from "../studio/visuels.js?v=21d4829a8e";
+import * as P from "../pistes/projet.js?v=21d4829a8e";
+import { Stockage } from "../pistes/stockage.js?v=21d4829a8e";
+import * as A from "./accords.js?v=21d4829a8e";
+import * as V from "./voicings.js?v=21d4829a8e";
+import * as G from "./grille.js?v=21d4829a8e";
+import { partitionSVG } from "./partition.js?v=21d4829a8e";
+import { monterNotions } from "../pistes/notions.js?v=21d4829a8e";
+import { NOTIONS_H, ORDRE_H } from "./notions.js?v=21d4829a8e";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -126,7 +128,7 @@ function vueProgressions() {
     <label${GENRES[etat.genre] ? " hidden" : ""}>Style<select id="pr-style">${[["plaque", "Accords plaqués"], ["arpege", "Arpèges"], ["pop", "Pop (basse et accords)"], ["valse", "Valse (trois temps)"]].map(([k, n]) => `<option value="${k}"${k === etat.style ? " selected" : ""}>${n}</option>`).join("")}</select></label>
     <button type="button" id="b-pr-var"${GENRES[etat.genre] ? "" : " hidden"}>Variation</button>
     <label>Instrument<select id="pr-instr">${optionsInstr(etat.instrument)}</select></label><button type="button" id="b-pr-wav">Exporter en WAV</button><button type="button" id="b-pr-pistes">Ajouter à mes Pistes</button></div><p class="petit" id="msg-prog" role="status"></p>${noteGenre()}
-    <h2>Toutes les progressions</h2><div class="liste-prog">${fams.map(f => `<p class="fam">${esc(f)}</p>${H.PROGRESSIONS.filter(p => p.famille === f).map(p => `<button type="button" data-prog="${p.id}" aria-pressed="${p.id === etat.prog}"><b>${esc(p.nom)}</b><br><span class="petit">${esc(H.accordsProgression(p, H.TONIQUES[0]).map(a => a.romain).join(", "))}</span></button>`).join("")}`).join("")}</div>`;
+    <h2>Toutes les progressions</h2><div class="liste-prog">${fams.map(f => { const ouv = f === prog.famille || (etat.famOuv || []).includes(f); return `<button type="button" class="fam fam-tit" data-fam="${esc(f)}" aria-expanded="${ouv}">${esc(f)}</button><div class="fam-corps${ouv ? " ouvert" : ""}">${H.PROGRESSIONS.filter(p => p.famille === f).map(p => `<button type="button" data-prog="${p.id}" aria-pressed="${p.id === etat.prog}"><b>${esc(p.nom)}</b><br><span class="petit">${esc(H.accordsProgression(p, H.TONIQUES[0]).map(a => a.romain).join(", "))}</span></button>`).join("")}</div>`; }).join("")}</div>`;
   { const v = H.voicing(acc), m = mesureDe(v); montrerFond(v.map((x, i) => ({ nom: acc[i].nom, notes: [x.basse, ...x.voix], duree: 4, de: i * m, a: (i + 1) * m }))); }
   $("b-prog").dataset.libelle = "Écouter en boucle";
   $("b-prog").onclick = () => { if (etat.lecture) return stop(); const x = rendreProgression(prog, t); jouerCanaux(x.canaux, { boucle: true, bouton: $("b-prog"), evenements: x.r.evenements, colonnes: true, suivi: { mesure: x.r.mesure, selecteur: "#acc-prog .carte-acc", i: -1 } }); };
@@ -136,6 +138,7 @@ function vueProgressions() {
   /* Choisir un genre règle le tempo, la batterie, la basse et le son des accords ; on peut ensuite tout changer à la main. */
   $("pr-genre").onchange = e => { etat.genre = e.target.value; garder("genre", etat.genre); etat.variation = 0; const G = GENRES[etat.genre]; if (G) { etat.tempo = G.tempo; garder("tempo", etat.tempo); changerInstr(G.accords, relancer); } else relancer(); };
   $("b-pr-var").onclick = () => { etat.variation = (etat.variation + 1) % 3; relancer(); }; $("pr-instr").onchange = e => changerInstr(e.target.value, relancer);
+  document.querySelectorAll(".fam-tit").forEach(b => b.onclick = () => { const o = b.getAttribute("aria-expanded") !== "true"; b.setAttribute("aria-expanded", String(o)); b.nextElementSibling.classList.toggle("ouvert", o); const f = b.dataset.fam; etat.famOuv = (etat.famOuv || []).filter(x => x !== f); if (o) etat.famOuv.push(f); });
   document.querySelectorAll("[data-prog]").forEach(b => b.onclick = () => { stop(); etat.prog = b.dataset.prog; vueProgressions(); window.scrollTo(0, 0); });
   $("b-pr-wav").onclick = () => { const x = rendreProgression(prog, t); telecharger(x.canaux, `${prog.id}-${t.nom}`); $("msg-prog").textContent = `WAV exporté : ${x.acc.length} mesures, ${x.r.duree.toFixed(1).replace(".", ",")} s.`; };
   $("b-pr-pistes").onclick = () => versPistes(() => rendreProgression(prog, t).canaux, `${prog.nom} en ${t.nom}`, $("msg-prog"), $("b-pr-pistes"));
@@ -204,6 +207,13 @@ function marquer() { const j = etat.jeu; document.querySelectorAll("#choix-jeu [
 // ---------------------------------------------------------------- composer
 const symbole = a => A.symboleAccord(A.racinePar(a.racine), a.type);
 const sauver = () => garder("grille", etat.grille);
+// Revenir en arrière (consigne de Sébastien, 04/11/2026 : « quand on est en création, il faut vraiment pouvoir revenir en arrière »). Chaque changement de la grille met l'ancienne grille de côté :
+// les trente dernières sont gardées dans le navigateur, donc on peut annuler même après un « Tout effacer » et même après avoir rechargé la page.
+const HG_MAX = 30, histoG = { pile: (lire("histoG", []) || []).filter(x => typeof x === "string").slice(-HG_MAX), refaire: [] };
+const grilleTexte = g => JSON.stringify(g);
+function empilerG(avant) { const t = grilleTexte(avant); if (histoG.pile[histoG.pile.length - 1] === t) return; histoG.pile.push(t); if (histoG.pile.length > HG_MAX) histoG.pile.shift(); histoG.refaire = []; garder("histoG", histoG.pile); }
+function allerG(depuis, vers) { if (!depuis.length) return false; vers.push(grilleTexte(etat.grille)); let g; try { g = G.normaliser(JSON.parse(depuis.pop())); } catch (_) { return false; } etat.grille = g; etat.sel = Math.min(etat.sel, g.length - 1); sauver(); garder("histoG", histoG.pile); return true; }
+const annulerG = () => allerG(histoG.pile, histoG.refaire), refaireG = () => allerG(histoG.refaire, histoG.pile);
 function planComposer() {
   const acc = G.accordsDe(etat.grille); let dispo = etat.dispo, note = "", v;
   try { v = V.disposer(acc, dispo); } catch (e) { dispo = "proche"; v = V.disposer(acc, "proche"); note = "Le choral à quatre voix est impossible pour l'un de ces accords (trop de notes à placer) : voix proches utilisées."; }
@@ -232,29 +242,38 @@ function vueComposer() {
   $("v-composer").innerHTML = heros({ etiquette: "Composer", titre: n ? etat.grille.map(symbole).join("  ") : "Ta grille", texte: n ? `${n} accords, ${total} temps, ${sec.toFixed(1).replace(".", ",")} s à ${etat.tempo} par minute.` : "Construis ta grille : choisis une fondamentale et un type d'accord, ou touche un accord de la gamme.", bouton: "b-compo", libelle: "Écouter en boucle", aide: "La partition en bas suit chaque accord pendant qu'il sonne." })
     + `<h2>Bâtir un accord</h2><div class="rang-h"><label>Fondamentale<select id="co-racine">${A.RACINES.map(r => `<option value="${r.nom}"${r.nom === sel.racine ? " selected" : ""}>${r.nom}</option>`).join("")}</select></label>
     <label>Type d'accord<select id="co-type">${optType}</select></label><label>Durée en temps<select id="co-duree">${G.DUREES.map(d => `<option value="${d}"${d === sel.duree ? " selected" : ""}>${d}</option>`).join("")}</select></label>
-    <button type="button" id="b-ajouter" class="principal">Ajouter à la grille</button><button type="button" id="b-modifier"${n ? "" : " disabled"}>Remplacer l'accord choisi</button></div>
+    <button type="button" id="b-ecouter-accord">Écouter cet accord</button><button type="button" id="b-ajouter" class="principal">Ajouter à la grille</button><button type="button" id="b-modifier"${n ? "" : " disabled"}>Remplacer l'accord choisi</button></div>
     <p class="texte-mode" id="co-note">${esc(A.TYPE[sel.type].note || A.TYPE[sel.type].nom)}</p>
     <h2>Ou un accord de la gamme</h2><div class="rang-h"><label>Tonalité<select id="co-ton">${optionsToniques(etat.tonC)}</select></label><label>Mode<select id="co-mode">${optionsModes(etat.modeC, true)}</select></label><label>Accords<select id="co-sons"><option value="3"${etat.sons === 3 ? " selected" : ""}>à trois sons</option><option value="4"${etat.sons === 4 ? " selected" : ""}>de septième</option></select></label></div>
-    <div class="accords" id="acc-choix">${choix.map((a, d) => `<button type="button" class="carte-acc" data-d="${d}"><span class="rom">${esc(a.romain)}</span><span class="nm">${esc(a.nom)}</span><span class="ql">${esc(a.qualite)}</span></button>`).join("")}</div>
-    <h2>Ma grille</h2><p class="petit">Glisse une carte pour la déplacer, ou utilise les flèches. Touche une carte pour l'entendre et la choisir.</p>
+    <p class="petit">Touche un accord pour l'écouter, puis ajoute-le à ta grille si tu le gardes.</p><div class="accords" id="acc-choix">${choix.map((a, d) => `<button type="button" class="carte-acc" data-d="${d}"><span class="rom">${esc(a.romain)}</span><span class="nm">${esc(a.nom)}</span><span class="ql">${esc(a.qualite)}</span></button>`).join("")}</div>
+    <div class="rang-h"><button type="button" id="b-ajouter-gamme" class="principal" disabled>Ajouter cet accord à la grille</button></div>
+    <h2>Ma grille</h2><div class="rang-h"><button type="button" id="b-annuler-g"${histoG.pile.length ? "" : " disabled"}>&#8630; Annuler</button><button type="button" id="b-refaire-g"${histoG.refaire.length ? "" : " disabled"}>&#8631; Rétablir</button></div><p class="petit">Glisse une carte pour la déplacer, ou utilise les flèches. Touche une carte pour l'entendre et la choisir.</p>
     <div class="compo" id="compo">${etat.grille.map((a, i) => `<div class="carte-acc grille${i === etat.sel ? " choisi" : ""}" draggable="true" data-i="${i}" style="flex-grow:${a.duree}"><span class="rom">${esc(rom(a))}</span><span class="nm">${esc(symbole(a))}</span><span class="ql">${a.duree} temps</span>
       <span class="outils"><button type="button" data-act="gauche" aria-label="Déplacer à gauche">←</button><button type="button" data-act="droite" aria-label="Déplacer à droite">→</button><button type="button" data-act="dup" aria-label="Dupliquer">Dupliquer</button><button type="button" data-act="retirer" aria-label="Retirer">Retirer</button></span></div>`).join("") || `<span class="petit">Vide pour l'instant.</span>`}</div>
-    <h2>Le son</h2><div class="rang-h"><label>Tempo (battements par minute)<input type="number" id="co-tempo" min="40" max="200" value="${etat.tempo}"></label>
+    <h2>Le son</h2><button type="button" id="b-son-feuille" class="son-resume" aria-expanded="false" aria-controls="son-feuille">Régler le son : ${etat.tempo} par minute</button>
+    <div class="son-feuille" id="son-feuille"><button type="button" class="son-fermer" id="b-son-fermer">Fermer</button><div class="rang-h"><label>Tempo (battements par minute)<input type="number" id="co-tempo" min="40" max="200" value="${etat.tempo}"></label>
     <label>Rythme<select id="co-style">${[["plaque", "Accords plaqués"], ["arpege", "Arpèges"], ["pop", "Basse puis accords sur chaque temps"]].map(([k, x]) => `<option value="${k}"${k === etat.style ? " selected" : ""}>${x}</option>`).join("")}</select></label>
     <label>Pulsation ou batterie<select id="co-pulse">${G.STYLES_PULSATION.map(([k, x]) => `<option value="${k}"${k === etat.pulse ? " selected" : ""}>${x}</option>`).join("")}</select></label>
     <label>Disposition des voix<select id="co-dispo">${V.DISPOSITIONS.map(d => `<option value="${d.id}"${d.id === etat.dispo ? " selected" : ""}>${esc(d.nom)}</option>`).join("")}</select></label>
     <label>Instrument<select id="co-instr">${optionsInstr(etat.instrument)}</select></label></div>
-    <p class="texte-mode" id="co-dispo-texte">${esc(V.DISPOSITIONS.find(d => d.id === etat.dispo).texte)}</p>
+    <p class="texte-mode" id="co-dispo-texte">${esc(V.DISPOSITIONS.find(d => d.id === etat.dispo).texte)}</p></div>
     <p class="petit" id="co-conduite" role="status">${plan ? esc(plan.note || rapportConduite(plan.conduite)) : ""}</p>
-    <div class="rang-h"><button type="button" id="b-vider">Tout effacer</button><button type="button" id="b-co-wav">Exporter en WAV</button><button type="button" id="b-co-pistes">Ajouter à mes Pistes</button></div><p class="petit" id="msg-compo" role="status"></p>`;
+    <div class="rang-h"><button type="button" id="b-annuler-g2"${histoG.pile.length ? "" : " disabled"}>&#8630; Annuler</button><button type="button" id="b-vider">Tout effacer</button><button type="button" id="b-co-wav">Exporter en WAV</button><button type="button" id="b-co-pistes">Ajouter à mes Pistes</button></div><p class="petit" id="msg-compo" role="status"></p>`;
   montrerFond(plan ? plan.colonnes : null);
-  const change = g => { etat.grille = g; sauver(); stop(); vueComposer(); };
+  const sonOuvrir = oui => { document.body.classList.toggle("son-ouvert", oui); $("b-son-feuille").setAttribute("aria-expanded", String(oui)); }; $("b-son-feuille").onclick = () => sonOuvrir(!document.body.classList.contains("son-ouvert")); $("b-son-fermer").onclick = () => sonOuvrir(false); sonOuvrir(document.body.classList.contains("son-ouvert"));
+  const change = (g, message) => { empilerG(etat.grille); etat.grille = g; sauver(); stop(); vueComposer(); if (message) $("msg-compo").textContent = message; };
+  const retour = (fait, texte) => { if (!fait) return; etat.sel = Math.min(etat.sel, etat.grille.length - 1); stop(); vueComposer(); $("msg-compo").textContent = texte; };
+  $("b-annuler-g").onclick = $("b-annuler-g2").onclick = () => retour(annulerG(), "Annulé : ta grille est revenue à l'état d'avant."); $("b-refaire-g").onclick = () => retour(refaireG(), "Rétabli.");
   const lu = () => ({ racine: $("co-racine").value, type: $("co-type").value, duree: +$("co-duree").value });
   const entendre = a => { const v = V.disposer(G.accordsDe([a]), "proche")[0]; jouerEv([{ t: 0, duree: 1.4, notes: [v.basse, ...v.voix] }]); };
-  $("co-racine").onchange = $("co-type").onchange = $("co-duree").onchange = () => { $("co-note").textContent = A.TYPE[$("co-type").value].note || A.TYPE[$("co-type").value].nom; };
+  $("co-racine").onchange = $("co-type").onchange = $("co-duree").onchange = () => { $("co-note").textContent = A.TYPE[$("co-type").value].note || A.TYPE[$("co-type").value].nom; entendre(lu()); };   // on entend l'accord dès qu'on le change, avant de l'ajouter
+  $("b-ecouter-accord").onclick = () => entendre(lu());
   $("b-ajouter").onclick = () => { if (n >= 32) { $("msg-compo").textContent = "Trente-deux accords au plus."; return; } etat.sel = n; change([...etat.grille, lu()]); };
   $("b-modifier").onclick = () => { if (etat.sel < 0) return; change(etat.grille.map((a, i) => i === etat.sel ? lu() : a)); };
-  document.querySelectorAll("#acc-choix .carte-acc").forEach(c => c.onclick = () => { if (n >= 32) return; const a = G.depuisDegres([+c.dataset.d], t, etat.modeC, etat.sons)[0]; if (!a) return; etat.sel = n; change([...etat.grille, a]); });
+  let pre = null;   // l'accord de la gamme qu'on vient d'écouter, pas encore ajouté
+  document.querySelectorAll("#acc-choix .carte-acc").forEach(c => c.onclick = () => { const a = G.depuisDegres([+c.dataset.d], t, etat.modeC, etat.sons)[0]; if (!a) return; pre = a; entendre(a);
+    document.querySelectorAll("#acc-choix .carte-acc").forEach(x => x.classList.toggle("choisi", x === c)); const b = $("b-ajouter-gamme"); b.disabled = n >= 32; b.textContent = "Ajouter « " + symbole(a) + " » à la grille"; });
+  $("b-ajouter-gamme").onclick = () => { if (!pre || n >= 32) return; etat.sel = n; change([...etat.grille, pre]); };
   document.querySelectorAll("#compo .carte-acc").forEach(c => {
     const i = +c.dataset.i;
     c.onclick = e => { if (e.target.closest("[data-act]")) return; etat.sel = i; entendre(etat.grille[i]); document.querySelectorAll("#compo .carte-acc").forEach(x => x.classList.toggle("choisi", x === c)); const a = etat.grille[i]; $("co-racine").value = a.racine; $("co-type").value = a.type; $("co-duree").value = a.duree; $("co-note").textContent = A.TYPE[a.type].note || A.TYPE[a.type].nom; };
@@ -272,14 +291,16 @@ function vueComposer() {
   $("co-dispo").onchange = e => { etat.dispo = e.target.value; garder("dispo", etat.dispo); relancer(); }; $("co-instr").onchange = e => changerInstr(e.target.value, relancer);
   $("b-compo").dataset.libelle = "Écouter en boucle";
   $("b-compo").onclick = () => { if (etat.lecture) return stop(); if (!plan) { $("msg-compo").textContent = "Ajoute d'abord des accords."; return; } jouerCanaux(rendreGrille(plan), { boucle: true, bouton: $("b-compo"), evenements: plan.p.evenements, colonnes: true }); };
-  $("b-vider").onclick = () => { etat.sel = -1; change([]); };
+  $("b-vider").onclick = () => { if (!n) return; etat.sel = -1; change([], "Grille effacée. Touche « Annuler » pour la retrouver : rien n'est perdu."); };
   $("b-co-wav").onclick = () => { if (!plan) return; telecharger(rendreGrille(plan), "ma-grille-" + t.nom); $("msg-compo").textContent = `WAV exporté : ${n} accords, ${plan.p.duree.toFixed(1).replace(".", ",")} s.`; };
   $("b-co-pistes").onclick = () => { if (!plan) return; versPistes(() => rendreGrille(plan), "Ma grille en " + t.nom, $("msg-compo"), $("b-co-pistes")); };
 }
 
+document.addEventListener("keydown", e => { if (etat.vue !== "composer" || !(e.ctrlKey || e.metaKey) || /^(INPUT|SELECT|TEXTAREA)$/.test((document.activeElement || {}).tagName || "")) return;
+  const k = e.key.toLowerCase(); if (k === "z" && !e.shiftKey) { e.preventDefault(); const b = $("b-annuler-g"); if (b && !b.disabled) b.click(); } else if ((k === "z" && e.shiftKey) || k === "y") { e.preventDefault(); const b = $("b-refaire-g"); if (b && !b.disabled) b.click(); } });
 // ---------------------------------------------------------------- onglets et démarrage
 const VUES = { explorer: vueExplorer, progressions: vueProgressions, jeu: vueJeu, composer: vueComposer };
-function vue(v) { stop(); etat.vue = v; for (const k of Object.keys(VUES)) $("v-" + k).hidden = k !== v; document.querySelectorAll("#onglets button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.v === v))); montrerFond(null); VUES[v](); history.replaceState(null, "", "#" + v); }
+function vue(v) { stop(); document.body.classList.remove("son-ouvert", "jouer-ouvert"); etat.vue = v; for (const k of Object.keys(VUES)) $("v-" + k).hidden = k !== v; document.querySelectorAll("#onglets button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.v === v))); montrerFond(null); VUES[v](); history.replaceState(null, "", "#" + v); }
 document.querySelectorAll("#onglets button").forEach(b => b.onclick = () => vue(b.dataset.v));
 document.addEventListener("visibilitychange", () => { if (document.hidden) stop(); });
 etat.tonique = lire("tonique", 0); etat.mode = H.MODES[lire("mode", "ionien")] ? lire("mode", "ionien") : "ionien"; etat.instrument = TOUS.includes(lire("instrument", "piano")) ? lire("instrument", "piano") : "piano"; etat.compo = (lire("compo", []) || []).filter(d => Number.isInteger(d) && d >= 0 && d < 7).slice(0, 16);
@@ -294,4 +315,27 @@ if ($("viv-clavier")) $("viv-clavier").innerHTML = clavierVivant();
   vue(VUES[v] ? v : "explorer"); }
 chargerInstr();
 requestAnimationFrame(boucle);
+// Les mots d'Harmonie : un « ? » à côté de chaque réglage, un panneau qu'on ferme pour revenir à la création (même panneau que Pistes).
+const notionsH = monterNotions({ esc, notions: NOTIONS_H, ordre: ORDRE_H, titreListe: "Les mots d'Harmonie" });
+const AIDES = { "ex-ton": "tonalite", "pr-ton": "tonalite", "co-ton": "tonalite", "ex-mode": "mode", "co-mode": "mode", "co-racine": "accord", "co-type": "typeAccord", "ex-sons": "accord", "pr-tempo": "tempo", "co-tempo": "tempo", "pr-style": "rythme", "co-style": "rythme", "pr-genre": "pulsation", "co-pulse": "pulsation", "co-dispo": "voix", "ex-instr": "instrument", "pr-instr": "instrument", "co-instr": "instrument" };
+function poserAides() {
+  for (const [id, n] of Object.entries(AIDES)) { const e = document.getElementById(id), l = e && e.closest("label"); if (!l || l.querySelector(".notion")) continue; const b = document.createElement("button"); b.type = "button"; b.className = "notion"; b.dataset.notion = n; b.setAttribute("aria-label", "Comprendre : " + NOTIONS_H[n].titre.toLowerCase()); b.textContent = "?"; l.appendChild(b); }
+  for (const h of document.querySelectorAll(".vue-h h2, #vivant h2")) { const n = /grille/i.test(h.textContent) ? "grille" : /Ce que tu entends/.test(h.textContent) ? "clavier" : /accord de la gamme/i.test(h.textContent) ? "romain" : /progressions/i.test(h.textContent) && h.closest("#v-progressions") ? "progression" : ""; if (n && !h.nextElementSibling?.classList?.contains("notion") && !h.querySelector(".notion")) { const b = document.createElement("button"); b.type = "button"; b.className = "notion"; b.dataset.notion = n; b.setAttribute("aria-label", "Comprendre : " + NOTIONS_H[n].titre.toLowerCase()); b.textContent = "?"; h.appendChild(b); } }
+}
+new MutationObserver(poserAides).observe(document.body, { childList: true, subtree: true }); poserAides();
+// Téléphone : une barre d'actions fixe en bas, à portée du pouce (05/11/2026). Ses boutons ne font que déclencher les vrais boutons de la vue : rien n'est dupliqué dans la logique.
+const BARRE = {
+  explorer: [["b-gamme", "Écouter la gamme"], ["#jouer", "Clavier"]],
+  progressions: [["b-prog", "Écouter en boucle"], ["#jouer", "Clavier"]],
+  composer: [["b-compo", "Écouter la grille"], ["b-ecouter-accord", "Cet accord"], ["+", "Ajouter"], ["b-annuler-g", "Annuler"], ["#jouer", "Clavier"]],
+};
+const barreH = document.createElement("div"); barreH.className = "barre-h"; barreH.id = "barre-h"; barreH.setAttribute("role", "toolbar"); barreH.setAttribute("aria-label", "Actions"); barreH.hidden = true; document.body.appendChild(barreH);
+const reel = id => id === "#jouer" ? barreH : id === "+" ? ($("b-ajouter-gamme") && !$("b-ajouter-gamme").disabled ? $("b-ajouter-gamme") : $("b-ajouter")) : $(id);
+barreH.onclick = e => { const b = e.target.closest("button[data-r]"); if (!b) return; if (b.dataset.r === "#jouer") { document.body.classList.toggle("jouer-ouvert"); return; } const r = reel(b.dataset.r); if (r && !r.disabled) r.click(); };
+function majBarreH() {
+  const liste = matchMedia("(max-width: 700px)").matches ? BARRE[etat.vue] : null; barreH.hidden = !liste; document.body.classList.toggle("avec-barre-h", !!liste); if (!liste) return;
+  if (barreH.dataset.vue !== etat.vue) { barreH.dataset.vue = etat.vue; barreH.innerHTML = liste.map(([id, lib]) => `<button type="button" data-r="${id}"${id === liste[0][0] || id === "+" ? ' class="principal"' : ""}></button>`).join(""); }
+  liste.forEach(([id, lib], i) => { const b = barreH.children[i], r = reel(id); if (!b) return; const lit = r && id !== "#jouer" && /Arrêter/.test(r.textContent) && i === 0; const t = lit ? "Arrêter" : (id === "+" && r && r.id === "b-ajouter-gamme" ? "Ajouter cet accord" : lib); if (b.textContent !== t) b.textContent = t; b.disabled = !r || r.disabled; b.setAttribute("aria-pressed", id === "#jouer" ? String(document.body.classList.contains("jouer-ouvert")) : i === 0 ? String(!!lit) : "false"); });
+}
+setInterval(majBarreH, 250); addEventListener("resize", majBarreH);
 window.HARMONIE_PRET = true;

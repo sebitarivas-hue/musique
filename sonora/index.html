@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONORA, créer avec le son</title>
+<meta name="description" content="SONORA : un environnement de création musicale. Créer, explorer, transformer, retrouver ses projets.">
+<style>
+@font-face { font-family: "Archivo Variable"; src: url("../polices/archivo-variable-latin.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
+@font-face { font-family: "Instrument Sans"; src: url("../polices/instrument-sans-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+:root { --noir: #11110F; --papier: #F0EFE8; --acide: #D6FF00; --tuile: #22221E; --gris: #BEBDB4; }
+* { box-sizing: border-box; } html { background: var(--noir); }
+body { margin: 0; background: var(--noir); color: var(--papier); font: 600 1rem/1.4 "Instrument Sans", Arial, sans-serif; }
+a { color: inherit; } a:focus-visible { outline: 3px solid var(--acide); outline-offset: 2px; }
+main { width: min(980px, 100%); margin: 0 auto; padding: 14px 12px 28px; }
+h1 { margin: 6px 0 2px; font: 900 clamp(2.2rem, 11vw, 4.4rem)/.9 "Archivo Variable", Arial, sans-serif; font-stretch: 62%; text-transform: uppercase; } h1 span { color: var(--acide); }
+.sous { margin: 0 0 14px; color: var(--gris); font: 400 .8rem/1.4 ui-monospace, Menlo, monospace; letter-spacing: .12em; text-transform: uppercase; }
+.tuiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tuile { display: flex; flex-direction: column; background: var(--tuile); border-radius: 14px; padding: 14px 12px 12px; min-width: 0; }
+.tuile svg { width: 30px; height: 30px; stroke: var(--acide); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tuile h2 { margin: 8px 0 2px; font: 800 1.25rem/1.1 "Archivo Variable", Arial, sans-serif; } .tuile p { margin: 0 0 10px; color: var(--gris); font-weight: 400; font-size: .85rem; line-height: 1.35; }
+.tuile ul { list-style: none; margin: auto 0 0; padding: 0; display: grid; gap: 6px; }
+.tuile a { display: flex; align-items: center; min-height: 48px; padding: 6px 10px; border: 1.5px solid #5A5A53; border-radius: 10px; text-decoration: none; font-size: .88rem; line-height: 1.2; } .tuile a:hover, .tuile a:focus-visible { border-color: var(--acide); }
+.tuile li:first-child a { background: var(--acide); color: var(--noir); border-color: var(--acide); font-weight: 700; }
+@media (min-width: 701px) { .tuiles { grid-template-columns: repeat(4, 1fr); gap: 14px; } .tuile { padding: 18px 16px 16px; } .tuile h2 { font-size: 1.5rem; } .tuile a { font-size: 1rem; } }
+@media (max-width: 340px) { .tuiles { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sonora <span>créer avec le son</span></h1>
+  <p class="sous">Environnement de création musicale</p>
+  <div class="tuiles">
+    <section class="tuile" aria-labelledby="t-creer">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16v0M9 10v12M14 5v22M19 11v10M24 8v16M29 15v2"/></svg>
+      <h2 id="t-creer">Créer</h2><p>Montage, enregistrement, composition.</p>
+      <ul><li><a href="pistes/index.html">Pistes, monter et enregistrer</a></li><li><a href="harmonie/index.html">Harmonie, accords et accompagnement</a></li></ul>
+    </section>
+    <section class="tuile" aria-labelledby="t-explorer">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 5v22M12 5v22M18 8v19M24 5l5 22"/></svg>
+      <h2 id="t-explorer">Explorer</h2><p>Sons, instruments, cultures, ressources.</p>
+      <ul><li><a href="library/index.html">Bibliothèque de sons</a></li><li><a href="../#monde">Carte des musiques du monde</a></li><li><a href="../atlas/index.html">Atlas des musiques</a></li></ul>
+    </section>
+    <section class="tuile" aria-labelledby="t-transformer">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 9h12M23 9h4M5 16h4M15 16h12M5 23h14M25 23h2"/><circle cx="20" cy="9" r="3"/><circle cx="12" cy="16" r="3"/><circle cx="22" cy="23" r="3"/></svg>
+      <h2 id="t-transformer">Transformer</h2><p>Effets, synthèse, traitements.</p>
+      <ul><li><a href="studio/index.html">Studio, fabriquer un son</a></li><li><a href="science/index.html">Science du son</a></li><li><a href="academy/index.html">Académie, apprendre le langage</a></li></ul>
+    </section>
+    <section class="tuile" aria-labelledby="t-projets">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h7l3 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <h2 id="t-projets">Mes projets</h2><p>Travaux enregistrés et exports.</p>
+      <ul><li><a href="pistes/index.html#projets">Mes projets de Pistes</a></li><li><a href="studio/index.html">Mes programmes du Studio</a></li></ul>
+    </section>
+  </div>
+</main>
+<script src="barre-cours.js?v=21d4829a8e"></script>
+</body>
+</html>

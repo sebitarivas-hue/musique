@@ -4,10 +4,11 @@
 //              joués à deux mesures, au tempo du projet ;
 //   Sons       les neuf sons de synthèse d'Harmonie (basse 808, sous-basse, lead, nappe, piano électrique, pincé, orgue rock, cloches, stab) sur la note et la durée de son choix.
 // Tout est fabriqué à la demande, sans fichier ni réseau, et reproductible. Sans DOM : testé dans Node.
-import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS } from "../harmonie/batterie.js?v=0639c5e8d0";
-import { GENRES } from "../harmonie/genres.js?v=0639c5e8d0";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=0639c5e8d0";
-import { rendreSuite } from "../harmonie/son.js?v=0639c5e8d0";
+import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS } from "../harmonie/batterie.js?v=21d4829a8e";
+import { GENRES } from "../harmonie/genres.js?v=21d4829a8e";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=21d4829a8e";
+import { rendreSuite } from "../harmonie/son.js?v=21d4829a8e";
+import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=21d4829a8e";
 
 export const NOMS_PIECES = { kick: "Grosse caisse", snare: "Caisse claire", clap: "Clap", hatc: "Charleston fermé", hato: "Charleston ouvert", rim: "Rimshot", tom: "Tom", cow: "Cloche", shaker: "Shaker" };
 // Des rythmes du monde, sur seize pas (huit, neuf ou douze quand le rythme l'exige). Les mêmes que ceux de l'atelier sonore du cours.
@@ -22,7 +23,17 @@ export const RYTHMES_MONDE = [
   { id: "iambe", nom: "Iambe : brève, longue", bpm: 100, pas: 12, kit: "909", grille: { rim: "x.....x.....", tom: "..x.....x..." } },
   { id: "dactyle", nom: "Dactyle : longue, brève, brève", bpm: 100, pas: 16, kit: "909", grille: { tom: "x.......x.......", rim: "....x.x.....x.x." } },
 ];
-export const CATEGORIES = [["batterie", "Batterie"], ["rythmes", "Rythmes"], ["sons", "Sons"]];
+// Les instruments enregistrés de la banque du site (VS Chamber Orchestra, Community Edition et VCSL, domaine public CC0, voir outils/banque_vsco.py) : de vraies notes, transposées à la hauteur demandée.
+// [nom dans la banque, nom affiché, famille, note de départ (dans l'étendue enregistrée)]
+export const INSTRUMENTS_ECH = [
+  ["clavier", "Piano", "Claviers", 60], ["orgue", "Orgue", "Claviers", 48], ["clavecin", "Clavecin", "Claviers", 60],
+  ["harpe", "Harpe", "Cordes", 60], ["guitare", "Guitare", "Cordes", 52], ["violon", "Violon", "Cordes", 69], ["cordes", "Cordes frottées, ensemble", "Cordes", 60], ["violoncelle", "Violoncelle", "Cordes", 48], ["contrebasse", "Contrebasse", "Cordes", 36],
+  ["souffle", "Flûte", "Vents", 72], ["hautbois", "Hautbois", "Vents", 69], ["anche", "Instrument à anche", "Vents", 64], ["basson", "Basson", "Vents", 48], ["cor", "Cor", "Vents", 48], ["trompette", "Trompette", "Vents", 66], ["trombone", "Trombone", "Vents", 48], ["tuba", "Tuba", "Vents", 46],
+  ["marimba", "Marimba", "Percussions à hauteurs", 60], ["vibraphone", "Vibraphone", "Percussions à hauteurs", 65], ["xylophone", "Xylophone", "Percussions à hauteurs", 79], ["glockenspiel", "Glockenspiel", "Percussions à hauteurs", 84], ["balafon", "Balafon", "Percussions à hauteurs", 65], ["kalimba", "Kalimba", "Percussions à hauteurs", 72], ["cloche", "Cloches", "Percussions à hauteurs", 72],
+  ["djembe", "Djembé", "Percussions", 48], ["timbale", "Timbale", "Percussions", 40],
+  ["voix", "Voix", "Voix", 64],
+];
+export const CATEGORIES = [["batterie", "Batterie"], ["rythmes", "Rythmes"], ["instruments", "Instruments"], ["sons", "Sons de synthèse"]];
 export const NOTES = Array.from({ length: 49 }, (_, i) => 24 + i);   // do1 à do5
 export const NOM_NOTE = m => ["do", "do♯", "ré", "ré♯", "mi", "fa", "fa♯", "sol", "sol♯", "la", "la♯", "si"][m % 12] + (Math.floor(m / 12) - 1);
 
@@ -32,12 +43,21 @@ export function elements() {
   for (const kit of Object.keys(KITS)) for (const p of SONS_BATTERIE) L.push({ id: `bat:${kit}:${p}`, famille: "batterie", nom: `${NOMS_PIECES[p]}, ${KITS[kit].toLowerCase()}`, type: "coup", kit, piece: p });
   for (const [g, G] of Object.entries(GENRES)) G.variations.forEach((V, i) => L.push({ id: `ryt:${g}:${i}`, famille: "rythmes", nom: `${G.nom}, ${V.nom.toLowerCase()}`, type: "boucle", tempo: G.tempo, genre: g, variation: i, atlas: G.atlas }));
   for (const R of RYTHMES_MONDE) L.push({ id: `ryt:monde:${R.id}`, famille: "rythmes", nom: R.nom, type: "boucle", tempo: R.bpm, monde: R.id });
+  for (const [b, nom, groupe, note] of INSTRUMENTS_ECH) L.push({ id: `ech:${b}`, famille: "instruments", nom, type: "ech", groupe, banque: b, note });
   for (const [k, S] of Object.entries(SONS_SYNTHESE)) L.push({ id: `syn:${k}`, famille: "sons", nom: S.nom, type: "note", instrument: k, note: ["basse808", "sub"].includes(k) ? 36 : k === "lead" ? 67 : k === "cloches" ? 72 : 60 });
   return L;
 }
 const mono = x => [x];
 // Gain, puis un plafond : plusieurs pièces qui tombent ensemble ne doivent pas dépasser 0,95.
 const niveau = (x, g) => { let m = 0; for (let i = 0; i < x.length; i++) { x[i] *= g; m = Math.max(m, Math.abs(x[i])); } if (m > 0.95) { const k = 0.95 / m; for (let i = 0; i < x.length; i++) x[i] *= k; } return x; };
+
+// Un instrument enregistré : charge les notes de la banque (une fois), puis joue la note demandée. `tampons` permet de fournir des notes déjà chargées (tests).
+export async function fabriquerEch(el, { note, duree = 1.5, sr = 44100, ctx, tampons } = {}) {
+  const T = tampons || await preparer(el.banque, ctx); if (!T || !T.length) throw new Error("la banque de sons n'est pas disponible");
+  const m = note ?? el.note, c = rendreSuiteEch([{ t: 0.02, duree, notes: [m], vitesse: 0.85 }], T, { instrument: el.banque, sr, duree: duree + 1.2, reverb: 0 }).slice(0, 2).map(x => Float32Array.from(x));
+  let pic = 0; for (const x of c) for (let i = 0; i < x.length; i++) pic = Math.max(pic, Math.abs(x[i])); if (pic > 0) { const k = 0.8 / pic; for (const x of c) for (let i = 0; i < x.length; i++) x[i] *= k; }   // tous les instruments au même niveau
+  return { nom: `${el.nom}, ${NOM_NOTE(m)}`, canaux: c, sr };
+}
 
 // Fabrique l'audio d'un élément : { nom, canaux: [Float32Array, ...], sr }. options : tempo (boucles), note et duree (sons de synthèse), sr.
 export function fabriquer(el, { tempo, note, duree = 1.5, sr = 44100 } = {}) {

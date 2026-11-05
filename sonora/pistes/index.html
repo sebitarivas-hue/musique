@@ -5,17 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=0639c5e8d0">
-<link rel="stylesheet" href="pistes.css?v=0639c5e8d0">
+<link rel="stylesheet" href="../studio/studio.css?v=21d4829a8e">
+<link rel="stylesheet" href="notions.css?v=21d4829a8e"><link rel="stylesheet" href="pistes.css?v=21d4829a8e">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
 <header class="haut">
   <div class="marque"><a href="../../choix.html" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Pistes</span></div>
+  <a class="lien-bouton accueil-sonora" href="../index.html">Tous les outils</a>
   <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../academy/index.html">Academy</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" aria-current="page" href="index.html">Pistes</a><a class="lien-bouton" href="../harmonie/index.html">Harmonie</a></nav>
   <div class="etat" id="etat" role="status" aria-live="polite">prêt</div>
 </header>
 <nav id="barre-menus" class="barre-menus" aria-label="Menus de SONORA Pistes" role="menubar"></nav>
+<div class="alerte-rangement" id="alerte-rangement" role="alert" hidden><p id="alerte-texte"></p><p class="alerte-act"><button type="button" id="alerte-fichier">Télécharger mon projet</button> <button type="button" id="alerte-fermer">Compris</button></p></div>
 <section class="bandeau-page" aria-label="SONORA Pistes"><span class="scene-etiq">SONORA Pistes</span><p class="bp-titre"><span>Composer avec</span> <span class="acide">vos sons</span></p><p class="bp-texte">Glisser ses sons ou s'enregistrer au micro, les placer sur des pistes, régler le volume et les effets, exporter.</p></section>
 <main id="pistes-app">
   <section class="transport" aria-label="Transport">
@@ -23,11 +25,12 @@
     <button type="button" id="b-debut" title="Revenir au début">&#9198; Début</button>
     <button type="button" id="b-enreg" class="enreg" aria-pressed="false" title="Enregistrer au micro sur la piste choisie (touche R)"><span class="pastille-rec" aria-hidden="true"></span> Enregistrer</button><span class="vu" id="vu-micro" role="meter" aria-label="Niveau du micro" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i></i></span>
     <span class="position" id="position" aria-live="off">0:00.0</span>
-    <label class="mini">Tempo<input type="number" id="tempo" min="40" max="240" value="100"></label>
-    <label class="mini">Aimant<select id="aimant"><option value="0">aucun</option><option value="1" selected>temps</option><option value="0.5">demi-temps</option><option value="0.25">double croche</option></select></label>
-    <label class="mini case"><input type="checkbox" id="metro"> Métronome</label>
-    <label class="mini case" title="Enregistrer plusieurs pistes à la fois : un canal de l'entrée par piste armée"><input type="checkbox" id="multi"> Plusieurs pistes</label>
-    <label class="mini">Entrée<select id="entree-audio" aria-label="Entrée audio"><option value="">Entrée par défaut</option></select></label>
+    <label class="mini">Tempo<input type="number" id="tempo" min="40" max="240" value="100"></label><button type="button" class="notion" data-notion="tempo" aria-label="Comprendre : le tempo">?</button>
+    <label class="mini">Aimant<select id="aimant"><option value="0">aucun</option><option value="1" selected>temps</option><option value="0.5">demi-temps</option><option value="0.25">double croche</option></select></label><button type="button" class="notion" data-notion="aimant" aria-label="Comprendre : l'aimant">?</button>
+    <label class="mini case"><input type="checkbox" id="metro"> Métronome</label><button type="button" class="notion" data-notion="metronome" aria-label="Comprendre : le métronome">?</button>
+    <label class="mini case" title="Enregistrer plusieurs pistes à la fois : un canal de l'entrée par piste armée"><input type="checkbox" id="multi"> Plusieurs pistes</label><button type="button" class="notion" data-notion="multi" aria-label="Comprendre : enregistrer plusieurs pistes à la fois">?</button>
+    <label class="mini">Entrée<select id="entree-audio" aria-label="Entrée audio"><option value="">Entrée par défaut</option></select></label><button type="button" class="notion" data-notion="entree" aria-label="Comprendre : l'entrée audio">?</button>
+    <button type="button" id="b-ajouter-m" class="btn-m btn-ajouter" aria-haspopup="dialog" aria-controls="feuille-ajouter">+ Ajouter</button><button type="button" id="b-reglages-m" class="btn-m" aria-haspopup="dialog" aria-controls="feuille-reglages" aria-label="Réglages du projet">&#9881;</button>
     <span class="espace"></span>
     <button type="button" id="b-zoom-moins" aria-label="Dézoomer">&minus;</button><button type="button" id="b-zoom-plus" aria-label="Zoomer">+</button>
   </section>
@@ -44,9 +47,23 @@
     <label class="mini">Projet <input id="titre-projet" maxlength="80" aria-label="Titre du projet" autocomplete="off"></label>
     <button type="button" id="b-projets" aria-expanded="false" aria-controls="projets">Mes projets</button>
     <button type="button" id="b-nouveau">Nouveau projet</button>
+    <span class="annuler-groupe" role="group" aria-label="Revenir en arrière"><button type="button" id="b-annuler" title="Annuler la dernière action (Ctrl+Z)" disabled>&#8630; Annuler</button><button type="button" id="b-refaire" title="Rétablir (Ctrl+Y)" disabled>&#8631; Rétablir</button></span>
   </section>
+  <div class="feuille" id="feuille-ajouter" role="dialog" aria-modal="true" aria-labelledby="fa-titre" hidden>
+    <div class="feuille-in"><div class="midi-haut"><h2 id="fa-titre">Ajouter à ton projet</h2><button type="button" class="croix-b" id="fa-fermer" aria-label="Fermer"><span class="croix" aria-hidden="true"></span></button></div><div class="tuiles" id="fa-corps"></div></div>
+  </div>
+  <div class="feuille" id="feuille-reglages" role="dialog" aria-modal="true" aria-labelledby="fr-titre" hidden>
+    <div class="feuille-in"><div class="midi-haut"><h2 id="fr-titre">Réglages du projet</h2><button type="button" class="croix-b" id="fr-fermer" aria-label="Fermer"><span class="croix" aria-hidden="true"></span></button></div><div class="reglages-liste" id="fr-corps"></div></div>
+  </div>
+  <div class="feuille" id="feuille-piste" role="dialog" aria-modal="true" aria-labelledby="feuille-titre" hidden>
+    <div class="feuille-in"><div class="midi-haut"><h2 id="feuille-titre">Réglages de la piste</h2><button type="button" class="croix-b" id="feuille-fermer" aria-label="Fermer les réglages de la piste"><span class="croix" aria-hidden="true"></span></button></div>
+      <div class="feuille-r"><span>Volume <button type="button" class="notion" data-notion="volume" aria-label="Comprendre : le volume">?</button></span><output id="f-vol-o"></output><input type="range" id="f-vol" min="0" max="1.5" step="0.01" aria-label="Volume de la piste"></div>
+      <div class="feuille-r"><span>Panoramique, de gauche à droite <button type="button" class="notion" data-notion="panoramique" aria-label="Comprendre : le panoramique">?</button></span><output id="f-pan-o"></output><input type="range" id="f-pan" min="-1" max="1" step="0.01" aria-label="Panoramique de la piste"></div>
+      <p class="alerte-act"><button type="button" id="f-fx">Effets de la piste</button><button type="button" class="notion" data-notion="effets" aria-label="Comprendre : les effets">?</button><button type="button" id="f-env">Enveloppe de volume</button><button type="button" class="notion" data-notion="enveloppe" aria-label="Comprendre : l'enveloppe de volume">?</button></p>
+      <p class="feuille-mots">Comprendre : <button type="button" class="notion-lien" data-notion="muet">Muet</button> <button type="button" class="notion-lien" data-notion="solo">Solo</button> <button type="button" class="notion-lien" data-notion="rec">Rec</button> <button type="button" class="notion-lien" data-notion="piste">Une piste</button> <button type="button" class="notion-lien" data-notion="liste">Tous les mots</button></p></div>
+  </div>
   <section class="midi biblio" id="biblio" aria-label="Bibliothèque de sons et de rythmes" hidden>
-    <div class="midi-haut"><h2>Bibliothèque de sons et de rythmes</h2><button type="button" class="croix-b" id="biblio-fermer" aria-label="Fermer la bibliothèque"><span class="croix" aria-hidden="true"></span></button></div>
+    <div class="midi-haut"><h2>Bibliothèque de sons et de rythmes</h2><button type="button" class="notion" data-notion="bibliotheque" aria-label="Comprendre : la bibliothèque de sons">?</button><button type="button" class="croix-b" id="biblio-fermer" aria-label="Fermer la bibliothèque"><span class="croix" aria-hidden="true"></span></button></div>
     <p class="petit">Des coups de batterie, des rythmes du monde et des neuf genres d'Harmonie, des sons de synthèse. Écoute, puis ajoute sur la piste choisie, au curseur rouge. Tout est fabriqué dans ta page, rien n'est téléchargé.</p>
     <div class="biblio-onglets" role="tablist" id="biblio-onglets" aria-label="Familles"></div>
     <div class="midi-rang"><label class="mini">Chercher<input id="biblio-chercher" type="search" autocomplete="off" aria-label="Chercher dans la bibliothèque"></label>
@@ -54,22 +71,23 @@
     <p class="petit" id="biblio-info"></p><ul class="liste-biblio" id="biblio-liste"></ul><p class="petit" id="msg-biblio" role="status"></p>
   </section>
   <section class="midi pas" id="pas" aria-label="Séquenceur à pas" hidden>
-    <div class="midi-haut"><h2>Séquenceur à pas</h2><button type="button" class="croix-b" id="pas-fermer" aria-label="Fermer le séquenceur à pas"><span class="croix" aria-hidden="true"></span></button></div>
+    <div class="midi-haut"><h2>Séquenceur à pas</h2><button type="button" class="notion" data-notion="sequenceur" aria-label="Comprendre : le séquenceur à pas">?</button><button type="button" class="croix-b" id="pas-fermer" aria-label="Fermer le séquenceur à pas"><span class="croix" aria-hidden="true"></span></button></div>
     <p class="petit">Allume des cases pour fabriquer un rythme : un clic pour un coup, deux pour un coup doux, trois pour effacer. Le motif suit le tempo du projet ; « Ajouter au projet » en fait un clip.</p>
     <div class="midi-rang"><label class="mini">Longueur<select id="pas-longueur" aria-label="Nombre de pas"></select></label><label class="mini">Jeu de sons<select id="pas-jeu" aria-label="Jeu de sons"></select></label>
       <label class="mini">Swing <output id="pas-sw">0 %</output><input type="range" id="pas-swing" min="0" max="50" value="0" aria-label="Swing"></label>
       <label class="mini">Mesures<select id="pas-mesures" aria-label="Nombre de mesures"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option></select></label></div>
     <div class="pas-grille" id="pas-grille" role="group" aria-label="Grille du séquenceur"></div>
-    <div class="midi-rang"><button type="button" id="pas-ecouter">Écouter en boucle</button><button type="button" id="pas-ajouter">Ajouter au projet</button><button type="button" id="pas-vider">Vider</button></div><p class="petit" id="msg-pas" role="status"></p>
+    <div class="midi-rang"><button type="button" id="pas-ecouter">Écouter en boucle</button><button type="button" id="pas-ajouter">Ajouter au projet</button><button type="button" id="pas-annuler" disabled>&#8630; Annuler</button><button type="button" id="pas-vider">Vider</button></div><p class="petit" id="msg-pas" role="status"></p>
   </section>
   <section class="midi projets" id="projets" aria-label="Mes projets" hidden>
     <div class="midi-haut"><h2>Mes projets</h2><button type="button" class="croix-b" id="projets-fermer" aria-label="Fermer la liste des projets"><span class="croix" aria-hidden="true"></span></button></div>
     <p class="petit">Chaque projet est gardé dans ce navigateur, avec ses sons, jusqu'à ce que tu le supprimes. Ouvre-en un autre sans perdre celui-ci. Pour garder un projet ailleurs ou le passer à un autre appareil, exporte-le dans un fichier.</p>
     <div class="midi-rang"><button type="button" id="projets-nouveau">Nouveau projet</button><button type="button" id="projets-importer">Ouvrir un fichier de projet</button><input type="file" id="projets-fichier" accept=".json,.sonora-pistes" hidden></div>
     <ul class="liste-projets" id="liste-projets"></ul><p class="petit" id="msg-projets" role="status"></p>
+    <div id="corbeille" hidden><h3>Corbeille</h3><p class="petit">Un projet supprimé reste ici trente jours : tu peux le rétablir.</p><ul class="liste-projets" id="liste-corbeille"></ul></div>
   </section>
   <section class="midi" id="midi" aria-label="Jouer un instrument" hidden>
-    <div class="midi-haut"><h2>Jouer un instrument</h2><button type="button" class="croix-b" id="midi-fermer" aria-label="Fermer le clavier"><span class="croix" aria-hidden="true"></span></button></div>
+    <div class="midi-haut"><h2>Jouer un instrument</h2><button type="button" class="notion" data-notion="instrument" aria-label="Comprendre : jouer un instrument">?</button><button type="button" class="croix-b" id="midi-fermer" aria-label="Fermer le clavier"><span class="croix" aria-hidden="true"></span></button></div>
     <p class="petit">Joue avec un clavier MIDI, avec le clavier de l'ordinateur (rangée Q S D F G H J K L M, avec 2 3 5 6 7 pour les noires) ou avec les touches ci-dessous. « Enregistrer les notes » lance la lecture des autres pistes et garde ce que tu joues : à l'arrêt, les notes sont rendues avec l'instrument en un clip sur la piste choisie.</p>
     <div class="midi-rang"><label class="mini">Instrument<select id="midi-instrument" aria-label="Instrument"></select></label>
       <label class="mini">Octave <button type="button" id="midi-oct-moins" aria-label="Octave plus basse">&minus;</button><output id="midi-oct" aria-live="polite">4</output><button type="button" id="midi-oct-plus" aria-label="Octave plus haute">+</button></label>
@@ -81,10 +99,15 @@
     <div class="midi-clavier" id="midi-clavier" role="group" aria-label="Touches de piano"></div>
   </section>
   <section class="moteurs" id="moteurs" aria-label="Faust, Csound et Pure Data" hidden>
-    <div class="midi-haut"><h2>Faust, Csound et Pure Data</h2><button type="button" class="croix-b" id="mot-fermer" aria-label="Fermer Faust et Csound"><span class="croix" aria-hidden="true"></span></button></div>
+    <div class="midi-haut"><h2>Faust, Csound et Pure Data</h2><button type="button" class="notion" data-notion="moteurs" aria-label="Comprendre : Faust, Csound et Pure Data">?</button><button type="button" class="croix-b" id="mot-fermer" aria-label="Fermer Faust et Csound"><span class="croix" aria-hidden="true"></span></button></div>
     <p class="petit">Écris un programme dans un autre langage de synthèse et rends-le en clip sur la piste choisie. Faust est compilé ici même et rendu à l'échantillon près ; un programme Faust qui a une entrée (un effet) transforme le clip choisi. Csound est joué en direct puis enregistré : le clip dure autant que la durée demandée. Pure Data (par WebPd, en version alpha, qui ne connaît qu'une partie des objets) est rendu comme Faust ; un patch avec adc~ transforme le clip choisi. Rien n'est envoyé nulle part.</p>
+    <div class="mot-but" id="mot-but" role="group" aria-label="Que veux-tu faire ?"></div>
+    <div class="mot-filtre"><label class="mini">Chercher<input type="search" id="mot-cherche" placeholder="souffle, écho, basse, tremble..." autocomplete="off"></label><span id="mot-niveaux" role="group" aria-label="Niveau"></span></div>
+    <div class="mot-cartes" id="mot-cartes" role="list" aria-label="Exemples"></div>
+    <p class="petit" id="mot-vide" hidden>Aucun exemple ne correspond. Efface la recherche ou change de but.</p>
+    <button type="button" class="mot-voir" id="b-mot-code" aria-expanded="true">Cacher le code</button>
     <div class="midi-rang" role="group" aria-label="Moteur"><button type="button" class="chip-m" data-mot="faust" aria-pressed="true">Faust</button><button type="button" class="chip-m" data-mot="csound" aria-pressed="false">Csound</button><button type="button" class="chip-m" data-mot="pd" aria-pressed="false">Pure Data</button>
-      <label class="mini">Exemple<select id="mot-ex" aria-label="Exemple"></select></label><label class="mini">Durée (s)<input type="number" id="mot-duree" min="1" max="30" value="3"></label></div>
+      <label class="mini" hidden>Exemple<select id="mot-ex" aria-label="Exemple"></select></label><label class="mini">Durée (s)<input type="number" id="mot-duree" min="1" max="30" value="3"></label></div>
     <label class="mot-champ"><span id="mot-code-lib">Programme Faust</span><textarea id="mot-code" spellcheck="false" rows="8" autocapitalize="off" autocomplete="off"></textarea></label>
     <label class="mot-champ" id="mot-score-zone" hidden><span>Partition Csound (une ligne i par note : i1 début durée hauteur)</span><textarea id="mot-score" spellcheck="false" rows="3" autocapitalize="off"></textarea></label>
     <div id="mot-params" class="fx-boutons mot-params" aria-label="Réglages du programme"></div>
@@ -103,10 +126,11 @@
     <div class="entetes" id="entetes"></div>
     <div class="defile" id="defile"><div class="regle" id="regle" aria-label="Règle : clique pour placer le curseur"></div><div class="voies" id="voies"></div><div class="curseur" id="curseur" aria-hidden="true"></div></div>
   </div>
+  <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=0639c5e8d0"></script>
-<script src="../barre-cours.js?v=0639c5e8d0"></script>
-<script src="../retour.js?v=0639c5e8d0"></script>
+<script type="module" src="pistes.js?v=21d4829a8e"></script>
+<script src="../barre-cours.js?v=21d4829a8e"></script>
+<script src="../retour.js?v=21d4829a8e"></script>
 </body>
 </html>
