@@ -1,23 +1,23 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=26de5448ea";
-import * as Ed from "./editions.js?v=26de5448ea";
-import * as P from "./projet.js?v=26de5448ea";
-import { Stockage } from "./stockage.js?v=26de5448ea";
-import { creerBouton } from "./bouton.js?v=26de5448ea";
-import * as MI from "./midi.js?v=26de5448ea";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=26de5448ea";
-import * as INS from "./instruments.js?v=26de5448ea";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=26de5448ea";
-import * as MO from "./moteurs.js?v=26de5448ea";
-import { monterPanneaux } from "./panneaux.js?v=26de5448ea";
-import { monterNotions } from "./notions.js?v=26de5448ea";
-import { DEMOS } from "./demos.js?v=26de5448ea";
-import * as B from "./bibliotheque.js?v=26de5448ea";
-import { encoderWAV } from "../studio/wav.js?v=26de5448ea";
-import { ENTREES } from "../library/catalogue.js?v=26de5448ea";
-import { compiler } from "../src/index.js?v=26de5448ea";
-import { rendre } from "../src/rendu.js?v=26de5448ea";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=dbbcc6e370";
+import * as Ed from "./editions.js?v=dbbcc6e370";
+import * as P from "./projet.js?v=dbbcc6e370";
+import { Stockage } from "./stockage.js?v=dbbcc6e370";
+import { creerBouton } from "./bouton.js?v=dbbcc6e370";
+import * as MI from "./midi.js?v=dbbcc6e370";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=dbbcc6e370";
+import * as INS from "./instruments.js?v=dbbcc6e370";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=dbbcc6e370";
+import * as MO from "./moteurs.js?v=dbbcc6e370";
+import { monterPanneaux } from "./panneaux.js?v=dbbcc6e370";
+import { monterNotions } from "./notions.js?v=dbbcc6e370";
+import { DEMOS } from "./demos.js?v=dbbcc6e370";
+import * as B from "./bibliotheque.js?v=dbbcc6e370";
+import { encoderWAV } from "../studio/wav.js?v=dbbcc6e370";
+import { ENTREES } from "../library/catalogue.js?v=dbbcc6e370";
+import { compiler } from "../src/index.js?v=dbbcc6e370";
+import { rendre } from "../src/rendu.js?v=dbbcc6e370";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -47,7 +47,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=26de5448ea"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=dbbcc6e370"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -113,7 +113,7 @@ async function lire() {
   etat.debutCtx = ctx.currentTime + 0.06; etat.debutTete = etat.tete;
   etat.sources = planifier(ctx, etat.projet, etat.tete, etat.debutCtx, chaines); etat.chaines = chaines; appliquerEnveloppes(etat.projet, chaines, etat.tete, etat.debutCtx);
   if ($("metro").checked) etat.metro = metronome(ctx, etat.tete, etat.debutCtx);
-  etat.lecture = true; $("b-lire").innerHTML = "&#9632; Arrêter"; badge(etat.enreg ? "enregistrement" : "lecture", etat.enreg ? "erreur" : "marche");
+  etat.lecture = true; $("b-lire").innerHTML = '<span class="ic ic-stop" aria-hidden="true"></span> Arrêter'; badge(etat.enreg ? "enregistrement" : "lecture", etat.enreg ? "erreur" : "marche");
 }
 function arreter() {
   for (const s of etat.sources) { try { s.stop(); } catch (_) {} } etat.sources = [];
@@ -121,7 +121,7 @@ function arreter() {
   if (etat.metro) { etat.metro.stop(); etat.metro = null; }
   if (etat.enreg) finirEnregistrement();
   if (etat.notes) finirNotes();
-  etat.lecture = false; $("b-lire").innerHTML = "&#9654; Lire"; badge("prêt");
+  etat.lecture = false; $("b-lire").innerHTML = '<span class="ic ic-play" aria-hidden="true"></span> Lire'; badge("prêt");
 }
 // Métronome : des clics programmés sur les temps (le premier temps de la mesure plus aigu). Il n'est jamais exporté.
 function metronome(ctx, depuis, debut) {
@@ -847,6 +847,13 @@ function construireMenus() {
     if (b && b.classList.contains("menu-b")) { const bs = [...nav.querySelectorAll(".menu-b")], i = bs.indexOf(b); if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); const n = bs[(i + (e.key === "ArrowRight" ? 1 : bs.length - 1)) % bs.length], ouvert = b.getAttribute("aria-expanded") === "true"; fermerMenus(); n.focus(); if (ouvert) ouvrirMenu(n); } else if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") { e.preventDefault(); ouvrirMenu(b); const it = items()[0]; if (it) it.focus(); } }
     else if (b && b.dataset.cmd) { const L = items(), i = L.indexOf(b); if (e.key === "ArrowDown") { e.preventDefault(); L[(i + 1) % L.length].focus(); } else if (e.key === "ArrowUp") { e.preventDefault(); L[(i + L.length - 1) % L.length].focus(); } else if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const bs = [...nav.querySelectorAll(".menu-b")], cur = b.closest(".menu").querySelector(".menu-b"), n = bs[(bs.indexOf(cur) + (e.key === "ArrowRight" ? 1 : bs.length - 1)) % bs.length]; e.preventDefault(); fermerMenus(); ouvrirMenu(n); const it = items()[0]; if (it) it.focus(); } } });
   document.addEventListener("click", e => { if (!e.target.closest("#barre-menus")) fermerMenus(); });
+  // Téléphone : les menus s'ouvrent en une feuille (tout visible, rangé par thèmes) depuis le bouton de la barre d'outils, au lieu d'une rangée de sept mots minuscules.
+  const sortirMenu = () => { document.body.classList.remove("menu-ouvert"); $("b-menu-m").setAttribute("aria-expanded", "false"); };
+  $("b-menu-m").onclick = e => { e.stopPropagation(); majMenus(); const o = document.body.classList.toggle("menu-ouvert"); $("b-menu-m").setAttribute("aria-expanded", String(o)); };
+  nav.addEventListener("click", e => { if (e.target.closest("[data-cmd]")) setTimeout(sortirMenu, 0); }, true);
+  $("b-menu-fermer").onclick = e => { e.stopPropagation(); sortirMenu(); };
+  document.addEventListener("click", e => { if (document.body.classList.contains("menu-ouvert") && !e.target.closest("#barre-menus, #b-menu-m")) sortirMenu(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("menu-ouvert")) { sortirMenu(); e.stopImmediatePropagation(); } }, true);
 }
 function ouvrirMenu(b) { majMenus(); b.setAttribute("aria-expanded", "true"); b.parentElement.querySelector(".menu-l").hidden = false; }
 function fermerMenus() { const a = document.activeElement; if (a && a.closest && a.closest("#barre-menus")) a.blur(); document.querySelectorAll("#barre-menus .menu-b").forEach(b => b.setAttribute("aria-expanded", "false")); document.querySelectorAll("#barre-menus .menu-l").forEach(l => { l.hidden = true; }); }

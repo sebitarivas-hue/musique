@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=26de5448ea">
-<link rel="stylesheet" href="notions.css?v=26de5448ea"><link rel="stylesheet" href="pistes.css?v=26de5448ea">
+<link rel="stylesheet" href="../studio/studio.css?v=dbbcc6e370">
+<link rel="stylesheet" href="pistes.css?v=dbbcc6e370"><link rel="stylesheet" href="notions.css?v=dbbcc6e370">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -17,12 +17,13 @@
   <div class="etat" id="etat" role="status" aria-live="polite">prêt</div>
 </header>
 <nav id="barre-menus" class="barre-menus" aria-label="Menus de SONORA Pistes" role="menubar"></nav>
+<button type="button" id="b-menu-fermer" class="croix-b menu-fermer" aria-label="Fermer le menu"><span class="croix" aria-hidden="true"></span></button>
 <div class="alerte-rangement" id="alerte-rangement" role="alert" hidden><p id="alerte-texte"></p><p class="alerte-act"><button type="button" id="alerte-fichier">Télécharger mon projet</button> <button type="button" id="alerte-fermer">Compris</button></p></div>
 <section class="bandeau-page" aria-label="SONORA Pistes"><span class="scene-etiq">SONORA Pistes</span><p class="bp-titre"><span>Composer avec</span> <span class="acide">vos sons</span></p><p class="bp-texte">Glisser ses sons ou s'enregistrer au micro, les placer sur des pistes, régler le volume et les effets, exporter.</p></section>
 <main id="pistes-app">
   <section class="transport" aria-label="Transport">
-    <button type="button" id="b-lire" class="principal" title="Lecture et arrêt (barre d'espace)">&#9654; Lire</button>
-    <button type="button" id="b-debut" title="Revenir au début">&#9198; Début</button>
+    <button type="button" id="b-lire" class="principal" title="Lecture et arrêt (barre d'espace)"><span class="ic ic-play" aria-hidden="true"></span> Lire</button>
+    <button type="button" id="b-debut" title="Revenir au début"><span class="ic ic-debut" aria-hidden="true"></span> Début</button>
     <button type="button" id="b-enreg" class="enreg" aria-pressed="false" title="Enregistrer au micro sur la piste choisie (touche R)"><span class="pastille-rec" aria-hidden="true"></span> Enregistrer</button><span class="vu" id="vu-micro" role="meter" aria-label="Niveau du micro" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i></i></span>
     <span class="position" id="position" aria-live="off">0:00.0</span>
     <label class="mini">Tempo<input type="number" id="tempo" min="40" max="240" value="100"></label><button type="button" class="notion" data-notion="tempo" aria-label="Comprendre : le tempo">?</button>
@@ -30,11 +31,12 @@
     <label class="mini case"><input type="checkbox" id="metro"> Métronome</label><button type="button" class="notion" data-notion="metronome" aria-label="Comprendre : le métronome">?</button>
     <label class="mini case" title="Enregistrer plusieurs pistes à la fois : un canal de l'entrée par piste armée"><input type="checkbox" id="multi"> Plusieurs pistes</label><button type="button" class="notion" data-notion="multi" aria-label="Comprendre : enregistrer plusieurs pistes à la fois">?</button>
     <label class="mini">Entrée<select id="entree-audio" aria-label="Entrée audio"><option value="">Entrée par défaut</option></select></label><button type="button" class="notion" data-notion="entree" aria-label="Comprendre : l'entrée audio">?</button>
-    <button type="button" id="b-ajouter-m" class="btn-m btn-ajouter" aria-haspopup="dialog" aria-controls="feuille-ajouter">+ Ajouter</button><button type="button" id="b-reglages-m" class="btn-m" aria-haspopup="dialog" aria-controls="feuille-reglages" aria-label="Réglages du projet">&#9881;</button>
+    <button type="button" id="b-ajouter-m" class="btn-m btn-ajouter" aria-haspopup="dialog" aria-controls="feuille-ajouter">+ Ajouter</button><button type="button" id="b-reglages-m" class="btn-m" aria-haspopup="dialog" aria-controls="feuille-reglages" aria-label="Réglages du projet"><span class="ic ic-roue" aria-hidden="true"></span></button>
     <span class="espace"></span>
     <button type="button" id="b-zoom-moins" aria-label="Dézoomer">&minus;</button><button type="button" id="b-zoom-plus" aria-label="Zoomer">+</button>
   </section>
   <section class="outils" aria-label="Sons et projet">
+    <button type="button" id="b-menu-m" class="ico-m" aria-label="Menu : fichier, édition, lecture, piste, effets, affichage, aide" aria-haspopup="dialog" aria-expanded="false"><span class="ic ic-menu" aria-hidden="true"></span></button>
     <label class="bouton-fichier">Importer des sons<input type="file" id="fichiers" accept="audio/*,.wav,.mp3,.ogg,.m4a,.flac" multiple></label>
     <label class="mini">Son SONORA<select id="choix-sonora"><option value="">Choisir…</option></select></label>
     <button type="button" id="b-ajout-sonora">Ajouter</button>
@@ -129,8 +131,8 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=26de5448ea"></script>
-<script src="../barre-cours.js?v=26de5448ea"></script>
-<script src="../retour.js?v=26de5448ea"></script>
+<script type="module" src="pistes.js?v=dbbcc6e370"></script>
+<script src="../barre-cours.js?v=dbbcc6e370"></script>
+<script src="../retour.js?v=dbbcc6e370"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@
 let FAUST = null, NFAUST = 0;
 export async function chargerFaust() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=26de5448ea"), racine = new URL("../../faust/compilateur/", import.meta.url).href; // le dossier du compilateur du site, à la racine
+    const fw = await import("./faust/faustwasm.js?v=dbbcc6e370"), racine = new URL("../../faust/compilateur/", import.meta.url).href; // le dossier du compilateur du site, à la racine
     const mod = await fw.instantiateFaustModuleFromFile(racine + "libfaust-wasm.js"), lib = new fw.LibFaust(mod);
     return { fw, comp: new fw.FaustCompiler(lib), version: lib.version() };
   })().catch(e => { FAUST = null; throw e; });
@@ -39,7 +39,7 @@ export async function rendreFaust(gen, meta, { sr = 44100, secondes = 2, entrees
 
 // ---------------------------------------------------------------- Csound
 let CSOUND = null;
-export async function chargerCsound() { if (!CSOUND) CSOUND = import("./csound/csound.js?v=26de5448ea").catch(e => { CSOUND = null; throw e; }); return CSOUND; }
+export async function chargerCsound() { if (!CSOUND) CSOUND = import("./csound/csound.js?v=dbbcc6e370").catch(e => { CSOUND = null; throw e; }); return CSOUND; }
 // L'en-tête (sr, ksmps, nchnls, 0dbfs) est fixé par SONORA, d'après l'horloge audio de la page ; les mêmes lignes écrites par l'utilisateur sont retirées pour éviter un conflit.
 export function orchestreComplet(orc, sr) {
   const propre = String(orc).split("\n").filter(l => !/^\s*(sr|kr|ksmps|nchnls|nchnls_i|0dbfs)\s*=/.test(l)).join("\n");
@@ -57,7 +57,7 @@ export async function lancerCsound(ctx, orc, partition) {
 }
 // ---------------------------------------------------------------- Pure Data (WebPd, en version alpha : une partie seulement des objets de Pure Data)
 let PD = null;
-export async function chargerPd() { if (!PD) PD = import("./pd/webpd.js?v=26de5448ea").catch(e => { PD = null; throw e; }); return PD; }
+export async function chargerPd() { if (!PD) PD = import("./pd/webpd.js?v=dbbcc6e370").catch(e => { PD = null; throw e; }); return PD; }
 // Les messages de WebPd en français : l'objet inconnu est le cas le plus courant.
 export function erreurPd(e) {
   const m = (Array.isArray(e) ? e : [e]).map(x => String(x && x.message || x)).join("\n"), inconnus = m.match(/unknown object types?\s+(.+)/i);

@@ -153,7 +153,7 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .reglages-liste > button { min-height: 52px; border: 2px solid var(--noir); background: #fff; font: inherit; font-weight: 600; margin-top: 4px; } .reglages-liste #b-export { background: var(--acide); }
 @media (min-width: 701px) { .feuille { display: none !important; } }
 @media (max-width: 700px) {
-  .bandeau-page { display: none; } body { padding-bottom: 96px; } #pistes-app { padding: 4px; }
+  .bandeau-page { display: none; } body { padding-bottom: 132px; } #pistes-app { padding: 4px; }
   .feuille { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 44; max-height: calc(100vh - 70px - 110px); } /* la barre d'actions reste visible et touchable : on peut lancer la lecture pendant qu'on règle */
   .transport { position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; margin: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); border: 0; border-top: 3px solid var(--acide); flex-wrap: nowrap; gap: 6px; align-items: center; justify-content: space-between; }
   .transport .btn-m { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; border: 2px solid #F0EFE8; background: transparent; color: #F0EFE8; font: inherit; font-weight: 700; } .transport .btn-ajouter { background: var(--acide); color: var(--noir); border-color: var(--acide); flex: 1; }
@@ -199,3 +199,84 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .point-rec { width: 8px; height: 8px; border-radius: 50%; background: #fff; display: inline-block; animation: clignote 1s steps(2, start) infinite; }
 @keyframes clignote { 50% { opacity: .15; } }
 @media (prefers-reduced-motion: reduce) { .point-rec { animation: none; } }
+/* Feuille des réglages sur téléphone : chaque « ? » se range à droite de son réglage, au lieu d'un grand cadre (une règle de bouton plus précise le transformait en bloc, retour du 05/11/2026) */
+.reglages-liste { grid-template-columns: minmax(0, 1fr) 52px; } .reglages-liste > * { grid-column: 1 / -1; } .reglages-liste > .mini { grid-column: 1; } .reglages-liste > .mini:not(:has(+ .notion)) { grid-column: 1 / -1; }
+.reglages-liste > .notion { grid-column: 2; align-self: center; justify-self: center; min-width: 48px; min-height: 52px; margin: 0; border: 0; background: none; font-size: 0; padding: 0; border-bottom: 0; }
+.reglages-liste > button:not(.notion) { grid-column: 1 / -1; }
+
+/* ---------------------------------------------------------------- Téléphone, refonte du 05/11/2026 (modèle : GarageBand sur iPad)
+   Une barre d'outils d'icônes (menu, titre du projet, projets, annuler, rétablir), des pistes à en-tête lisible (nom, puis trois grosses touches : enregistrer, muet, solo), des icônes dessinées
+   (les caractères ▶ ⏮ ⚙ deviennent des emoji bleus sur iPhone), et plus de rangée de menus minuscules : les menus s'ouvrent en une feuille depuis le bouton de gauche. */
+.ic { display: inline-block; width: 1em; height: 1em; vertical-align: -.12em; background: currentColor; -webkit-mask: var(--ic) center / contain no-repeat; mask: var(--ic) center / contain no-repeat; }
+.ic-play { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 3l15 9-15 9z'/%3E%3C/svg%3E"); }
+.ic-stop { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='5' y='5' width='14' height='14'/%3E%3C/svg%3E"); }
+.ic-debut { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 4h3v16H5zM20 4v16L9 12z'/%3E%3C/svg%3E"); }
+.ic-roue { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19.4 13a7.6 7.6 0 000-2l2-1.5-2-3.5-2.3 1a7.4 7.4 0 00-1.7-1L15 3.5h-4L10.6 6a7.4 7.4 0 00-1.7 1l-2.3-1-2 3.5 2 1.5a7.6 7.6 0 000 2l-2 1.5 2 3.5 2.3-1a7.4 7.4 0 001.7 1l.4 2.5h4l.4-2.5a7.4 7.4 0 001.7-1l2.300 1 2-3.500zM13 15.500a3.500 3.500 0 110-7 3.500 3.500 0 010 7z'/%3E%3C/svg%3E"); }
+.ic-menu { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 5h18v2.500H3zM3 10.800h18v2.500H3zM3 16.500h18V19H3z'/%3E%3C/svg%3E"); }
+.ic-annuler { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12.500 8c-2.600 0-5 1-6.800 2.700L2 7v9h9l-3.600-3.600a8 8 0 0112.800 3.600l2.300-.8C20.700 11 17 8 12.500 8z'/%3E%3C/svg%3E"); }
+.ic-refaire { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11.500 8c2.600 0 5 1 6.800 2.700L22 7v9h-9l3.600-3.600a8 8 0 00-12.800 3.600l-2.300-.8C3.300 11 7 8 11.500 8z'/%3E%3C/svg%3E"); }
+@media (max-width: 700px) { :root { --ic-dossier: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 5h7l2 2.500h9V19H3z'/%3E%3C/svg%3E"); } }
+.ic-dossier { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 5h7l2 2.500h9V19H3z'/%3E%3C/svg%3E"); }
+.ico-m { display: none; }
+@media (max-width: 700px) {
+  /* la barre d'outils : une seule rangée d'icônes */
+  .outils { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; padding: 4px; }
+  .outils .ico-m { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 48px; min-height: 48px; border: 2px solid var(--noir); background: #fff; font-size: 1.5rem; }
+  .outils > label.mini { flex: 1 1 auto; min-width: 0; font-size: 0; gap: 0; } .outils > label.mini input { flex: 1; min-width: 0; min-height: 48px; font-size: 1rem; }
+  .outils #b-projets { flex: 0 0 48px; min-height: 48px; padding: 0; font-size: 0; display: inline-flex; align-items: center; justify-content: center; } .outils #b-projets::before { content: ""; width: 24px; height: 24px; background: currentColor; -webkit-mask: var(--ic-dossier) center / contain no-repeat; mask: var(--ic-dossier) center / contain no-repeat; }
+  .outils .annuler-groupe { flex: 0 0 auto; display: inline-flex; gap: 6px; } .outils .annuler-groupe button { flex: 0 0 48px; min-height: 48px; padding: 0; font-size: 0; display: inline-flex; align-items: center; justify-content: center; }
+  .outils .annuler-groupe button::before { content: ""; width: 24px; height: 24px; background: currentColor; -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; } #b-annuler { --m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12.500 8c-2.600 0-5 1-6.800 2.700L2 7v9h9l-3.600-3.600a8 8 0 0112.800 3.600l2.300-.8C20.700 11 17 8 12.500 8z'/%3E%3C/svg%3E"); } #b-refaire { --m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11.500 8c2.600 0 5 1 6.800 2.700L22 7v9h-9l3.600-3.600a8 8 0 00-12.800 3.600l-2.300-.8C3.300 11 7 8 11.500 8z'/%3E%3C/svg%3E"); }
+  #message { font-size: .78rem; padding: 4px 8px; border-width: 0 0 1px; background: transparent; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* la rangée de menus devient une feuille, ouverte par le bouton de gauche de la barre d'outils */
+  .barre-menus { display: none; }
+  body.menu-ouvert .barre-menus { display: block; position: fixed; left: 0; right: 0; top: 0; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 60; overflow: auto; background: #fff; padding: 12px 16px 24px; border: 0; }
+  body.menu-ouvert .barre-menus .menu { display: block; margin: 0 0 14px; } body.menu-ouvert .barre-menus .menu-b { display: block; width: 100%; text-align: left; pointer-events: none; font: 700 .85rem var(--f-mono); letter-spacing: .12em; text-transform: uppercase; padding: 8px 0; border: 0; border-bottom: 2px solid var(--noir); background: none; color: var(--noir); min-height: 0; }
+  body.menu-ouvert .barre-menus .menu-l { display: block !important; position: static; box-shadow: none; border: 0; padding: 0; margin: 0; list-style: none; } body.menu-ouvert .barre-menus .menu-l[hidden] { display: block !important; }
+  body.menu-ouvert .barre-menus [data-cmd] { display: flex; width: 100%; justify-content: space-between; align-items: center; min-height: 48px; padding: 6px 4px; border: 0; border-bottom: 1px solid var(--gris); background: none; font: inherit; font-size: 1rem; text-align: left; color: var(--noir); } body.menu-ouvert .barre-menus [data-cmd]:disabled { opacity: .4; } body.menu-ouvert .barre-menus kbd, body.menu-ouvert .barre-menus .touche-m { display: none; }
+  /* les pistes : l'en-tête = le nom (et « … » pour tout régler), puis trois grosses touches : enregistrer, muet, solo */
+  .ligne { grid-template-columns: 106px minmax(0, 1fr); --h-piste: 152px; }
+  .entete { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 38px 44px 44px; gap: 5px; align-content: start; padding: 5px; } .entete .ent-b { display: contents; } .entete .ent-k { display: none; }
+  .entete input[type=text] { grid-column: 1 / 3; grid-row: 1; min-height: 38px; min-width: 0; width: 100%; font-size: .85rem; padding: 2px 5px; }
+  .entete .ent-b .b-arme, .entete .ent-b .b-muet, .entete .ent-b .b-solo, .entete .ent-b .b-plus { min-width: 44px; min-height: 44px; padding: 0; font-size: 1.05rem; font-weight: 800; }
+  .entete .ent-b .b-arme { grid-column: 1; grid-row: 2; font-size: 0; } .entete .ent-b .b-muet { grid-column: 2; grid-row: 2; } .entete .ent-b .b-solo { grid-column: 1; grid-row: 3; } .entete .ent-b .b-plus { grid-column: 2; grid-row: 3; font-size: 1.3rem; line-height: 1; }
+  .entete .b-arme::before { content: ""; display: inline-block; width: 16px; height: 16px; border-radius: 50%; background: var(--rouge); } .entete .b-arme[aria-pressed="true"]::before { background: #fff; }
+  .entete .b-muet[aria-pressed="true"] { background: var(--rouge); color: #fff; border-color: var(--rouge); } .entete .b-solo[aria-pressed="true"] { background: var(--acide); color: var(--noir); border-color: var(--noir); }
+  /* la barre du bas : les icônes sont dessinées */
+  .transport #b-lire .ic, .transport #b-debut .ic { font-size: 1.1em; } .transport #b-reglages-m .ic { font-size: 1.7rem; }
+}
+.menu-fermer { display: none; }
+@media (max-width: 700px) { body.menu-ouvert .menu-fermer { display: inline-flex; position: fixed; top: 8px; right: 8px; z-index: 61; min-width: 48px; min-height: 48px; background: #fff; } body.menu-ouvert .barre-menus { padding-top: 64px; } }
+
+/* Une couleur par piste (modèle : GarageBand, une couleur par instrument) : le clip et le bord de l'en-tête de la piste ont la même, pour retrouver d'un coup d'œil à quelle piste appartient un clip.
+   Six teintes claires de la charte, sur lesquelles la forme d'onde noire reste lisible. */
+#voies > .voie:nth-child(6n+1), #entetes > .entete:nth-child(6n+2) { --c: #D6FF00; } #voies > .voie:nth-child(6n+2), #entetes > .entete:nth-child(6n+3) { --c: #8FD3FF; }
+#voies > .voie:nth-child(6n+3), #entetes > .entete:nth-child(6n+4) { --c: #FFB36B; } #voies > .voie:nth-child(6n+4), #entetes > .entete:nth-child(6n+5) { --c: #FF9ECF; }
+#voies > .voie:nth-child(6n+5), #entetes > .entete:nth-child(6n+6) { --c: #B8F2A0; } #voies > .voie:nth-child(6n), #entetes > .entete:nth-child(6n+7) { --c: #CDB4FF; }
+.voie .clip:not(.enreg-en-cours) { background: var(--c, #D6FF00); }
+.entete { background: linear-gradient(var(--c, transparent), var(--c, transparent)) left / 7px 100% no-repeat, transparent; } .entete.armee { background: linear-gradient(var(--c, transparent), var(--c, transparent)) left / 7px 100% no-repeat, #fff1ee; box-shadow: none; }
+.entete.armee::after { content: ""; position: absolute; right: 0; top: 0; width: 0; height: 0; } .entete { position: relative; }
+
+/* ---------------------------------------------------------------- L'espace des pistes en mode « studio » (retour de Sébastien du 05/11/2026 : « des couleurs ! »)
+   Les pages du site sont crème et noires. Le montage, lui, est un autre lieu : un plan de travail sombre, où les couleurs des pistes se détachent, comme dans un vrai séquenceur.
+   Les panneaux (bibliothèque, clavier, séquenceur, effets...) restent des cartes claires posées dessus. */
+:root { --daw-fond: #151518; --daw-piste: #1e1e23; --daw-piste2: #23232a; --daw-tete: #2b2b33; --daw-trait: #3a3a44; --daw-texte: #ECEBE4; --daw-doux: #A9A8A0; }
+.outils { background: var(--daw-fond); border-radius: 0; } .outils button, .outils .bouton-fichier, .outils input, .outils select { background: var(--daw-tete); color: var(--daw-texte); border-color: var(--daw-trait); } .outils input::placeholder { color: var(--daw-doux); } .outils .mini { color: var(--daw-doux); }
+.outils button:disabled { opacity: .35; } .outils .bouton-fichier { background: var(--acide); color: var(--noir); border-color: var(--acide); }
+.ligne { border-color: var(--daw-fond); background: var(--daw-piste); box-shadow: 0 0 0 2px var(--daw-fond); }
+.entetes { border-right: 2px solid var(--daw-fond); background: var(--daw-piste2); } .entetes .ent-regle { background: var(--daw-tete); border-bottom: 1px solid var(--daw-fond); }
+.entete { border-bottom: 1px solid var(--daw-fond); color: var(--daw-texte); background: linear-gradient(var(--c, transparent), var(--c, transparent)) left / 8px 100% no-repeat, var(--daw-piste2); }
+.entete.armee { background: linear-gradient(var(--c, transparent), var(--c, transparent)) left / 8px 100% no-repeat, #3a2326; box-shadow: none; }
+.entete input[type=text] { background: transparent; color: var(--daw-texte); border: 1px solid transparent; } .entete input[type=text]:focus { background: var(--daw-fond); border-color: var(--daw-trait); }
+.entete button { background: var(--daw-tete); color: var(--daw-texte); border: 1px solid var(--daw-trait); } .entete button[aria-pressed="true"] { background: var(--acide); color: var(--noir); border-color: var(--acide); }
+.entete .b-arme[aria-pressed="true"] { background: var(--rouge); color: #fff; border-color: var(--rouge); } .entete .b-muet[aria-pressed="true"] { background: #FFB36B; color: var(--noir); border-color: #FFB36B; } .entete .b-solo[aria-pressed="true"] { background: var(--acide); color: var(--noir); }
+.entete .b-fx[aria-pressed="true"], .entete .b-env[aria-pressed="true"] { background: var(--rouge); color: #fff; border-color: var(--rouge); }
+.entete .rot-piste { stroke: var(--daw-trait); } .entete .rot-val { stroke: var(--c, var(--acide)); } .entete .rot-cap { fill: var(--daw-tete); stroke: var(--daw-texte); } .entete .rot-aig { stroke: var(--daw-texte); } .entete .rot-lib { color: var(--daw-doux); } .entete .rot-sortie { color: var(--daw-doux); }
+.regle { background: var(--daw-tete); border-bottom: 1px solid var(--daw-fond); } .regle span { border-left: 1px solid var(--daw-trait); color: var(--daw-doux); }
+.voie { border-bottom: 1px solid var(--daw-fond); background-color: var(--daw-piste); background-image: linear-gradient(to right, rgba(255,255,255,.07) 1px, transparent 1px); } .voie.survol { background-color: #2a2a14; }
+.voie .clip { border: 1px solid rgba(0,0,0,.55); border-radius: 4px; box-shadow: 0 1px 0 rgba(255,255,255,.18) inset; } .voie .clip .nom-clip { background: rgba(0,0,0,.72); } .clip.choisi { outline: 3px solid #fff; outline-offset: 0; }
+.curseur { background: #fff; width: 2px; box-shadow: 0 0 0 1px rgba(255,255,255,.25); }
+.b-piste-m { background: var(--daw-tete); color: var(--acide); border: 1px dashed var(--daw-trait); }
+#message { color: var(--daw-doux); background: transparent; border-color: var(--daw-trait); }
+#pistes-app { background: var(--daw-fond); } body { background: var(--daw-fond); }
+.selection { background: var(--daw-tete); color: var(--daw-texte); border-color: var(--daw-trait); } .selection button { background: var(--daw-piste2); color: var(--daw-texte); border-color: var(--daw-trait); }
+@media (max-width: 700px) { .outils .ico-m { background: var(--daw-tete); color: var(--daw-texte); border-color: var(--daw-trait); } }
