@@ -192,3 +192,10 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 @media (pointer: coarse) { select, input:not([type=checkbox]):not([type=file]):not([type=radio]):not([type=range]) { min-height: 44px; } input[type=checkbox] { width: 24px; height: 24px; } }
 @media (pointer: coarse) { .mini select, .mini input[type=number] { min-height: 44px; } .mini.case input[type=checkbox], .mini input[type=checkbox] { width: 24px; height: 24px; } }
 @media (pointer: coarse) and (min-width: 701px) { .entete .ent-b button { min-height: 44px; min-width: 44px; } }
+/* La prise en direct : un clip rouge clair qui grandit au curseur, avec l'onde ou les notes dessinées en temps réel */
+.clip.enreg-en-cours { background: #ffe3dd; border-color: #d1361f; cursor: default; pointer-events: none; min-width: 6px; }
+.clip.enreg-en-cours .nom-clip { background: #d1361f; color: #fff; display: flex; align-items: center; gap: 5px; }
+.clip.enreg-en-cours canvas { image-rendering: pixelated; }
+.point-rec { width: 8px; height: 8px; border-radius: 50%; background: #fff; display: inline-block; animation: clignote 1s steps(2, start) infinite; }
+@keyframes clignote { 50% { opacity: .15; } }
+@media (prefers-reduced-motion: reduce) { .point-rec { animation: none; } }

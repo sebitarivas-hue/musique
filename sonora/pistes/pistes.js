@@ -1,22 +1,23 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=6a91c57f22";
-import * as Ed from "./editions.js?v=6a91c57f22";
-import * as P from "./projet.js?v=6a91c57f22";
-import { Stockage } from "./stockage.js?v=6a91c57f22";
-import { creerBouton } from "./bouton.js?v=6a91c57f22";
-import * as MI from "./midi.js?v=6a91c57f22";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=6a91c57f22";
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=6a91c57f22";
-import * as MO from "./moteurs.js?v=6a91c57f22";
-import { monterPanneaux } from "./panneaux.js?v=6a91c57f22";
-import { monterNotions } from "./notions.js?v=6a91c57f22";
-import { DEMOS } from "./demos.js?v=6a91c57f22";
-import * as B from "./bibliotheque.js?v=6a91c57f22";
-import { encoderWAV } from "../studio/wav.js?v=6a91c57f22";
-import { ENTREES } from "../library/catalogue.js?v=6a91c57f22";
-import { compiler } from "../src/index.js?v=6a91c57f22";
-import { rendre } from "../src/rendu.js?v=6a91c57f22";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=26de5448ea";
+import * as Ed from "./editions.js?v=26de5448ea";
+import * as P from "./projet.js?v=26de5448ea";
+import { Stockage } from "./stockage.js?v=26de5448ea";
+import { creerBouton } from "./bouton.js?v=26de5448ea";
+import * as MI from "./midi.js?v=26de5448ea";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=26de5448ea";
+import * as INS from "./instruments.js?v=26de5448ea";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=26de5448ea";
+import * as MO from "./moteurs.js?v=26de5448ea";
+import { monterPanneaux } from "./panneaux.js?v=26de5448ea";
+import { monterNotions } from "./notions.js?v=26de5448ea";
+import { DEMOS } from "./demos.js?v=26de5448ea";
+import * as B from "./bibliotheque.js?v=26de5448ea";
+import { encoderWAV } from "../studio/wav.js?v=26de5448ea";
+import { ENTREES } from "../library/catalogue.js?v=26de5448ea";
+import { compiler } from "../src/index.js?v=26de5448ea";
+import { rendre } from "../src/rendu.js?v=26de5448ea";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -46,7 +47,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=6a91c57f22"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=26de5448ea"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -133,7 +134,7 @@ function boucle() {
   requestAnimationFrame(boucle);
   if (etat.lecture && etat.ctx) { etat.tete = Math.max(0, etat.debutTete + etat.ctx.currentTime - etat.debutCtx); const fin = P.dureeTotale(etat.projet); if (!etat.enreg && !etat.notes && etat.tete > fin + 0.3 && fin > 0) { finEcoute(); arreter(); } }
   $("position").textContent = fmtT(etat.tete); $("curseur").style.left = (etat.tete * etat.pxs) + "px";
-  if (etat.enreg && etat.capture) { majClipEnCours(); majNiveauMicro(); }
+  if (etat.enreg && etat.capture) { majClipEnCours(); majNiveauMicro(); } if (etat.notes) majNotesEnCours();
 }
 
 // La lecture est allée jusqu'au bout du projet sans être arrêtée : les sons entendus en entier comptent.
@@ -152,7 +153,7 @@ const CAPTEUR = `class Capteur extends AudioWorkletProcessor { process(e) { cons
 const MICRO_ERREURS = { NotAllowedError: "Micro refusé. Autorise-le : sur iPhone, Réglages, Safari (ou ton navigateur), Micro ; sur ordinateur, l'icône à gauche de la barre d'adresse.", SecurityError: "Micro refusé : la page doit être ouverte en https.", NotFoundError: "Aucun micro n'a été trouvé sur cet appareil.", NotReadableError: "Le micro est utilisé par une autre application. Ferme-la puis recommence.", OverconstrainedError: "Ce micro n'accepte pas les réglages demandés." };
 const arretRecorder = rec => new Promise(ok => { if (!rec || rec.state === "inactive") return ok(); rec.addEventListener("stop", () => ok(), { once: true }); try { rec.stop(); } catch (_) { ok(); } });
 function abandonnerCapture(texte) {
-  const c = etat.capture; etat.enreg = false; etat.capture = null; $("b-enreg").setAttribute("aria-pressed", "false"); $("vu-micro").hidden = true;
+  const c = etat.capture; etat.enreg = false; etat.capture = null; document.querySelectorAll(".clip.enreg-en-cours").forEach(x => x.remove()); $("b-enreg").setAttribute("aria-pressed", "false"); $("vu-micro").hidden = true;
   if (c) { try { c.src.disconnect(); if (c.noeud) c.noeud.disconnect(); c.muet && c.muet.disconnect(); } catch (_) {} try { c.rec && c.rec.state !== "inactive" && c.rec.stop(); } catch (_) {} c.flux.getTracks().forEach(t => t.stop()); }
   if (texte) message(texte);
 }
@@ -192,7 +193,7 @@ async function enregistrer() {
     try { if (typeof MediaRecorder !== "undefined") { rec = new MediaRecorder(flux); rec.ondataavailable = ev => { if (ev.data && ev.data.size) blocs.push(ev.data); }; rec.start(250); } } catch (_) { rec = null; }
     if (!noeud && !rec) { try { src.disconnect(); } catch (_) {} flux.getTracks().forEach(t => t.stop()); message("L'enregistrement n'est pas possible dans ce navigateur (ni AudioWorklet ni MediaRecorder)."); return; }
     etat.capture = { flux, src, noeud, muet, morceaux, rec, blocs, analyseur, piste: piste.id, pistes: armees.map(x => x.id), debut: etat.tete, sr: ctx.sampleRate, pic: 0, t0: ctx.currentTime };
-    etat.enreg = true; $("b-enreg").setAttribute("aria-pressed", "true"); $("vu-micro").hidden = false; message(armees.length > 1 ? `Enregistrement sur ${armees.length} pistes (« ${armees.map(x => x.nom).join(" », « ")} »), un canal de l'entrée par piste… Appuie sur Enregistrer ou Arrêter pour finir.` : `Enregistrement sur « ${piste.nom} »… Appuie sur Enregistrer ou Arrêter pour finir.`);
+    etat.capture.picOnde = 0; etat.enreg = true; majClipEnCours(); $("b-enreg").setAttribute("aria-pressed", "true"); $("vu-micro").hidden = false; message(armees.length > 1 ? `Enregistrement sur ${armees.length} pistes (« ${armees.map(x => x.nom).join(" », « ")} »), un canal de l'entrée par piste… Appuie sur Enregistrer ou Arrêter pour finir.` : `Enregistrement sur « ${piste.nom} »… Appuie sur Enregistrer ou Arrêter pour finir.`);
     if (!etat.lecture) await lire(); else badge("enregistrement", "erreur");
     if (!etat.lecture) { abandonnerCapture(/^Enregistrement sur/.test(document.getElementById("message").textContent) ? "La lecture n'a pas démarré : l'enregistrement est annulé. Appuie à nouveau sur Enregistrer." : null); return; }
     const verif = etat.capture; setTimeout(() => { if (etat.capture !== verif) return; const recu = verif.morceaux.length || verif.blocs.length; if (!recu) message("Le micro ne transmet encore rien. Parle ou tape dans tes mains : si la barre de niveau ne bouge pas, vérifie l'autorisation du micro et que rien d'autre ne l'utilise."); else if (verif.pic < 0.002) message("Le micro est ouvert mais ne capte aucun son : vérifie le micro choisi et son volume dans les réglages de l'appareil."); }, 2200);
@@ -203,16 +204,48 @@ function majNiveauMicro() {
   const c = etat.capture, vu = $("vu-micro"); if (!c || !c.analyseur) return; const b = new Float32Array(c.analyseur.fftSize); c.analyseur.getFloatTimeDomainData(b); let m = 0; for (const v of b) m = Math.max(m, Math.abs(v)); c.pic = Math.max(c.pic, m);
   vu.firstElementChild.style.width = Math.min(100, Math.round(Math.sqrt(m) * 100)) + "%"; vu.setAttribute("aria-valuenow", String(Math.round(m * 100)));
 }
-function majClipEnCours() {
-  const c = etat.capture, n = c.morceaux.length ? P.assemblerCanaux(c.morceaux)[0].length : 0, dur = n ? n / c.sr : Math.max(0, etat.ctx.currentTime - c.t0);
-  for (const id of c.pistes) {
-    const voie = document.querySelector(`.voie[data-piste="${id}"]`); if (!voie) continue; let el = voie.querySelector(".clip.enreg-en-cours");
-    if (!el) { el = document.createElement("div"); el.className = "clip enreg-en-cours"; el.innerHTML = `<div class="nom-clip">enregistrement</div>`; voie.appendChild(el); }
-    el.style.left = c.debut * etat.pxs + "px"; el.style.width = Math.max(4, dur * etat.pxs) + "px";
+// La prise en direct (retour de Sébastien du 05/11/2026) : dès qu'on appuie sur Enregistrer, un clip s'ouvre dans la piste, au curseur, et la forme de l'onde s'y dessine au fil de la prise.
+// Le clip posé à la fin est exactement là où il a commencé. Les pics sont gardés par colonne (une colonne = un pixel de la piste), sans relire tout l'audio à chaque image.
+function pointsEnCours(c) {
+  const sr = c.sr, colEch = sr / etat.pxs; c.cols = c.cols || c.pistes.map(() => []); c.lus = c.lus || 0; c.nEch = c.nEch || 0;
+  if (c.morceaux.length) {
+    for (; c.lus < c.morceaux.length; c.lus++) { const bloc = c.morceaux[c.lus], n = bloc[0].length;
+      c.pistes.forEach((_, i) => { const x = bloc[Math.min(i, bloc.length - 1)], cols = c.cols[i]; for (let j = 0; j < n; j++) { const k = Math.floor((c.nEch + j) / colEch), v = Math.abs(x[j]); if (!(cols[k] >= v)) cols[k] = v; if (v > c.picOnde) c.picOnde = v; } });
+      c.nEch += n; }
+  } else if (c.analyseur) {   // enregistreur de secours : pas d'échantillons, on dessine le niveau du micro image par image
+    const b = new Float32Array(c.analyseur.fftSize); c.analyseur.getFloatTimeDomainData(b); let m = 0; for (const v of b) m = Math.max(m, Math.abs(v)); const k = Math.floor((etat.ctx.currentTime - c.t0) * etat.pxs);
+    c.cols.forEach(cols => { if (!(cols[k] >= m)) cols[k] = m; }); if (m > c.picOnde) c.picOnde = m;
   }
+  return c.morceaux.length ? c.nEch / sr : Math.max(0, etat.ctx.currentTime - c.t0);
+}
+function majClipEnCours() {
+  const c = etat.capture; c.picOnde = c.picOnde || 0; const dur = pointsEnCours(c);
+  c.pistes.forEach((id, i) => {
+    const voie = document.querySelector(`.voie[data-piste="${id}"]`); if (!voie) return; let el = voie.querySelector(".clip.enreg-en-cours");
+    if (!el) { el = document.createElement("div"); el.className = "clip enreg-en-cours"; el.innerHTML = `<div class="nom-clip"><span class="point-rec" aria-hidden="true"></span> enregistrement <span class="duree-rec"></span></div><canvas aria-label="Forme de l'onde en cours d'enregistrement" role="img"></canvas>`; voie.appendChild(el); }
+    el.style.left = c.debut * etat.pxs + "px"; el.style.width = Math.max(6, dur * etat.pxs) + "px"; el.querySelector(".duree-rec").textContent = dur.toFixed(1).replace(".", ",") + " s";
+    const cv = el.querySelector("canvas"), cols = c.cols[i] || [], n = Math.min(8192, Math.max(1, Math.ceil(dur * etat.pxs))), h = 80; if (cv.width !== n) cv.width = n; if (cv.height !== h) cv.height = h;
+    const g = cv.getContext("2d"), pas = Math.max(1, Math.ceil(cols.length / n)), ech = Math.max(0.2, c.picOnde); g.clearRect(0, 0, n, h); g.fillStyle = "#d1361f";
+    for (let x = 0; x < n; x++) { let m = 0; for (let k = x * pas; k < (x + 1) * pas && k < cols.length; k++) if (cols[k] > m) m = cols[k]; const a = Math.max(1, Math.min(1, m / ech) * (h / 2 - 2)); g.fillRect(x, h / 2 - a, 1, 2 * a); }
+  });
+  suivreCurseur();
+}
+// Les notes jouées, dessinées au fur et à mesure dans la piste : un petit rectangle par note, plus haut quand la note est plus aiguë.
+function majNotesEnCours() {
+  const r = etat.notes; if (!r) return; const voie = document.querySelector(`.voie[data-piste="${etat.notesPiste}"]`); if (!voie) return; const maintenant = dateProjet(), depart = etat.notesDebut ?? 0; let el = voie.querySelector(".clip.enreg-notes");
+  if (!el) { el = document.createElement("div"); el.className = "clip enreg-en-cours enreg-notes"; el.innerHTML = `<div class="nom-clip"><span class="point-rec" aria-hidden="true"></span> notes <span class="duree-rec"></span></div><canvas aria-label="Les notes jouées" role="img"></canvas>`; voie.appendChild(el); }
+  const dur = Math.max(0, maintenant - depart); el.style.left = depart * etat.pxs + "px"; el.style.width = Math.max(6, dur * etat.pxs) + "px"; el.querySelector(".duree-rec").textContent = dur.toFixed(1).replace(".", ",") + " s";
+  const cv = el.querySelector("canvas"), n = Math.min(8192, Math.max(1, Math.ceil(dur * etat.pxs))), h = 80; if (cv.width !== n) cv.width = n; if (cv.height !== h) cv.height = h; const g = cv.getContext("2d"); g.clearRect(0, 0, n, h); g.fillStyle = "#d1361f";
+  for (const nt of r.notes) { const x = (nt.t - depart) * etat.pxs, w = Math.max(3, ((nt.fin ?? maintenant) - nt.t) * etat.pxs), y = (1 - Math.max(0, Math.min(1, (nt.note - 36) / 60))) * (h - 8); g.fillRect(Math.round(x * n / Math.max(1, dur * etat.pxs)), y, Math.max(2, w * n / Math.max(1, dur * etat.pxs)), 6); }
+  suivreCurseur();
+}
+// Pendant une prise, la piste défile avec le curseur : on voit toujours ce qui s'enregistre.
+function suivreCurseur() {
+  const d = $("defile"); if (!d) return; const x = etat.tete * etat.pxs;
+  if (x > d.scrollLeft + d.clientWidth - 60 || x < d.scrollLeft) d.scrollLeft = Math.max(0, x - d.clientWidth * 0.25);
 }
 async function finirEnregistrement() {
-  const c = etat.capture; etat.enreg = false; etat.capture = null; $("b-enreg").setAttribute("aria-pressed", "false"); $("vu-micro").hidden = true;
+  const c = etat.capture; etat.enreg = false; etat.capture = null; document.querySelectorAll(".clip.enreg-en-cours").forEach(x => x.remove()); $("b-enreg").setAttribute("aria-pressed", "false"); $("vu-micro").hidden = true;
   try { c.src.disconnect(); if (c.noeud) c.noeud.disconnect(); if (c.muet) c.muet.disconnect(); } catch (_) {}
   await arretRecorder(c.rec); c.flux.getTracks().forEach(t => t.stop());
   let canaux = P.assemblerCanaux(c.morceaux), sr = c.sr, voie = "worklet";
@@ -237,27 +270,28 @@ async function finirEnregistrement() {
 // ---------------------------------------------------------------- MIDI : jouer un instrument de la Library, enregistrer les notes, les rendre en clip
 // Le son en direct vient du moteur temps réel (le même que le Studio) ; le clip, lui, est rendu hors ligne par le noyau SONORA avec les dates des notes :
 // ce qu'on entend en jouant est ce qui est mis sur la piste. Les notes ne sont pas gardées comme des notes : le clip est de l'audio, comme les autres.
-const midi = etat.midi = { ouvert: false, octave: 4, instruments: null, courant: null, module: null, moteur: null, clavier: null, enfoncees: new Map(), acces: null };
-function listeInstruments() {
-  if (midi.instruments) return midi.instruments; midi.instruments = [];
-  for (const e of ENTREES) { if (e.type !== "instrument") continue; try { const r = compiler(e.code); if (r.ok && r.module && r.module.voix) midi.instruments.push({ id: e.id, titre: e.titre, module: r.module }); } catch (_) {} }
-  return midi.instruments;
-}
+const midi = etat.midi = { ouvert: false, octave: 4, catalogue: INS.catalogue(), courant: null, inst: null, sampleur: null, chargement: null, clavier: null, enfoncees: new Map(), acces: null };
+const entreeJeu = () => midi.catalogue.find(x => x.id === $("midi-instrument").value) || midi.catalogue.find(x => x.id === "ech:clavier") || midi.catalogue[0];
 const hauteurMidi = note => MI.frequenceGamme(note, $("midi-gamme").value || "egal");
 const dateProjet = () => Math.max(0, etat.lecture && etat.ctx ? etat.debutTete + etat.ctx.currentTime - etat.debutCtx : etat.tete); // la lecture démarre 60 ms après la commande : une note jouée avant n'a pas de date négative
+// Charge l'instrument choisi (enregistrements de la banque, ou synthèse rendue une fois) et le branche sur le clavier. Les notes jouées pendant le chargement sont ignorées, et on le dit.
 async function moteurMidi() {
-  const inst = listeInstruments().find(x => x.id === $("midi-instrument").value) || listeInstruments()[0]; if (!inst) throw new Error("Aucun instrument polyphonique dans la Library.");
-  if (!midi.moteur) { const d = Moteur.diagnostic(); if (!d.ok) throw new ErreurMoteur(d.code, d.raison); midi.moteur = new Moteur(); await midi.moteur.demarrer(); }
-  if (midi.courant !== inst.id) { midi.courant = inst.id; midi.module = inst.module; await midi.moteur.charger(inst.module); }
-  return midi.moteur;
+  const ctx = contexte(), e = entreeJeu(); if (!midi.sampleur) midi.sampleur = new INS.Sampleur(ctx, ctx.destination);
+  if (midi.courant === e.id && midi.inst) return midi.sampleur;
+  if (midi.chargement && midi.chargement.id === e.id) return midi.chargement.p;
+  const p = (async () => { $("midi-etat").textContent = `Chargement de « ${e.nom} »…`;
+    try { const inst = await INS.charger(e, ctx); if (entreeJeu().id !== e.id) return midi.sampleur;   /* l'élève a choisi un autre instrument entre-temps : on ne remplace pas son choix */ midi.inst = inst; midi.courant = e.id; midi.entree = e; midi.sampleur.utiliser(inst); $("midi-etat").textContent = `${e.nom} : prêt. Joue au clavier de l'ordinateur, à l'écran ou avec un clavier MIDI.`; return midi.sampleur; }
+    catch (err) { midi.inst = null; midi.courant = null; $("midi-etat").textContent = `« ${e.nom} » n'a pas pu être chargé : ${err && err.message || err}. Choisis un autre instrument.`; throw err; }
+    finally { if (midi.chargement && midi.chargement.id === e.id) midi.chargement = null; } })();
+  midi.chargement = { id: e.id, p }; return p;
 }
 async function noteMidi(note, vitesse, actif) {
   const t = dateProjet();
   if (actif) { if (midi.enfoncees.has(note)) return; midi.enfoncees.set(note, true); } else { if (!midi.enfoncees.has(note)) return; midi.enfoncees.delete(note); }
   document.querySelectorAll(`#midi-clavier [data-note="${note}"]`).forEach(b => b.classList.toggle("jouee", actif));
   if (etat.notes) { if (actif) etat.notes.noteOn(note, hauteurMidi(note), vitesse, t); else etat.notes.noteOff(note, t); }
-  try { const m = await moteurMidi(); if (actif) m.noteOn(note, hauteurMidi(note), vitesse); else m.noteOff(note); }
-  catch (e) { $("midi-etat").textContent = e instanceof ErreurMoteur ? e.message : "Le son en direct n'a pas pu démarrer : " + (e && e.message || e); }
+  try { const m = await moteurMidi(); if (!midi.enfoncees.has(note) && actif) return; if (actif) m.noteOn(note, hauteurMidi(note), vitesse); else m.noteOff(note); }
+  catch (e) { /* le message est déjà affiché par moteurMidi */ }
 }
 midi.clavier = new Clavier({ noteOn: (n, h, v) => noteMidi(n, v, true), noteOff: n => noteMidi(n, 1, false) });
 function dessinerClavierMidi() {
@@ -272,12 +306,12 @@ function dessinerClavierMidi() {
 }
 function basculerMidi(ouvrir) {
   midi.ouvert = ouvrir === undefined ? !midi.ouvert : ouvrir; $("midi").hidden = !midi.ouvert; $("b-midi").setAttribute("aria-expanded", String(midi.ouvert));
-  if (midi.ouvert) { const g = $("midi-gamme"); if (!g.options.length) { g.innerHTML = Object.entries(MI.GAMMES).map(([k, v]) => `<option value="${k}">${esc(v.nom)}</option>`).join(""); g.onchange = () => { $("midi-etat").textContent = g.value === "egal" ? "Tempérament égal : une touche, un demi-ton." : `Gamme choisie : chaque touche est un degré (le do central est le degré 0), l'octave revient tous les ${MI.GAMMES[g.value].cents.length} degrés.`; }; } const sel = $("midi-instrument"); if (!sel.options.length) sel.innerHTML = listeInstruments().map(i => `<option value="${esc(i.id)}">${esc(i.titre)}</option>`).join(""); dessinerClavierMidi(); $("midi").scrollIntoView({ block: "nearest" }); }
+  if (midi.ouvert) { const g = $("midi-gamme"); if (!g.options.length) { g.innerHTML = Object.entries(MI.GAMMES).map(([k, v]) => `<option value="${k}">${esc(v.nom)}</option>`).join(""); g.onchange = () => { $("midi-etat").textContent = g.value === "egal" ? "Tempérament égal : une touche, un demi-ton." : `Gamme choisie : chaque touche est un degré (le do central est le degré 0), l'octave revient tous les ${MI.GAMMES[g.value].cents.length} degrés.`; }; } const sel = $("midi-instrument"); if (!sel.options.length) { sel.innerHTML = INS.GROUPES.map(g => `<optgroup label="${esc(g)}">${midi.catalogue.filter(x => x.groupe === g).map(x => `<option value="${esc(x.id)}">${esc(x.nom)}</option>`).join("")}</optgroup>`).join(""); try { const m = localStorage.getItem("sonora:pistes:instrument"); if (m && midi.catalogue.some(x => x.id === m)) sel.value = m; else sel.value = "ech:clavier"; } catch (_) { sel.value = "ech:clavier"; } moteurMidi().catch(() => {}); } dessinerClavierMidi(); $("midi").scrollIntoView({ block: "nearest" }); }
   else { midi.clavier.toutCouper(); midi.enfoncees.clear(); if (etat.notes) arreter(); }
 }
 $("b-midi").onclick = () => basculerMidi(); $("midi-fermer").onclick = () => basculerMidi(false);
 $("midi-oct-moins").onclick = () => { midi.octave = Math.max(0, midi.octave - 1); dessinerClavierMidi(); }; $("midi-oct-plus").onclick = () => { midi.octave = Math.min(8, midi.octave + 1); dessinerClavierMidi(); };
-$("midi-instrument").onchange = () => { if (midi.moteur) moteurMidi().catch(() => {}); };
+$("midi-instrument").onchange = () => { try { localStorage.setItem("sonora:pistes:instrument", $("midi-instrument").value); } catch (_) {} if (midi.sampleur) midi.sampleur.toutCouper(); moteurMidi().catch(() => {}); };
 $("b-midi-brancher").onclick = async () => {
   if (!navigator.requestMIDIAccess) { $("midi-etat").textContent = "Ce navigateur ne sait pas lire un clavier MIDI (Chrome, Edge ou Opera sur ordinateur et Android le savent ; Safari non). Utilise le clavier de l'ordinateur."; return; }
   try { midi.acces = await navigator.requestMIDIAccess({ sysex: false }); const noms = brancherMidi(midi.acces, midi.clavier);
@@ -293,19 +327,21 @@ document.addEventListener("keydown", e => {
 document.addEventListener("keyup", e => { const k = e.key.toLowerCase(); if (midi.touches && midi.touches.has(k)) { noteMidi(midi.touches.get(k), 1, false); midi.touches.delete(k); } }, true);
 $("b-notes").onclick = async () => {
   if (etat.notes) return arreter();
-  try { await moteurMidi(); } catch (e) { $("midi-etat").textContent = e instanceof ErreurMoteur ? e.message : "Le son en direct n'a pas pu démarrer : " + (e && e.message || e); return; }
-  const piste = pistesArmees()[0]; etat.notes = new MI.EnregistreurNotes(); etat.notesPiste = piste.id; etat.notesInstrument = listeInstruments().find(x => x.id === midi.courant);
+  const piste = pistesArmees()[0]; if (!piste) return;
+  try { await moteurMidi(); } catch (e) { return; }
+  // Le curseur est le repère : la prise commence au curseur, et le clip sera posé exactement là, même si la première note vient plus tard.
+  etat.notes = new MI.EnregistreurNotes(); etat.notesPiste = piste.id; etat.notesInstrument = midi.inst; etat.notesEntree = midi.entree; etat.notesDebut = etat.lecture ? dateProjet() : etat.tete;
   $("b-notes").setAttribute("aria-pressed", "true"); if (!etat.lecture) await lire(); if (!etat.lecture) { etat.notes = null; $("b-notes").setAttribute("aria-pressed", "false"); return; }
-  badge("enregistrement des notes", "erreur"); $("midi-etat").textContent = `Enregistrement des notes sur « ${piste.nom} » avec ${etat.notesInstrument.titre}. Joue ; appuie à nouveau sur le bouton pour finir.`;
+  badge("enregistrement des notes", "erreur"); $("midi-etat").textContent = `Enregistrement des notes sur « ${piste.nom} » avec ${etat.notesEntree.nom}, depuis le curseur. Joue ; appuie à nouveau sur le bouton pour finir.`;
 };
 function finirNotes() {
-  const r = etat.notes, inst = etat.notesInstrument; etat.notes = null; $("b-notes").setAttribute("aria-pressed", "false"); r.fermer(dateProjet());
+  const r = etat.notes, inst = etat.notesInstrument, e = etat.notesEntree; etat.notes = null; $("b-notes").setAttribute("aria-pressed", "false"); r.fermer(dateProjet()); document.querySelectorAll(".clip.enreg-notes").forEach(x => x.remove());
   if (r.vide) { message("Aucune note jouée : rien n'est gardé."); return; }
   try {
-    const s = MI.rendreNotes(inst.module, r.notes, { sr: 44100 }), num = Object.values(etat.projet.sons).filter(x => x.nom.startsWith("Notes ")).length + 1;
-    const id = ajouterAudio(`Notes ${num} (${inst.titre})`, s.canaux, s.sr); P.placerClip(etat.projet, P.pisteLibre(etat.projet, etat.notesPiste, s.debut, s.duree), id, s.debut);
-    message(`${r.notes.length} note${r.notes.length > 1 ? "s" : ""} rendue${r.notes.length > 1 ? "s" : ""} avec ${inst.titre} : clip de ${s.duree.toFixed(1).replace(".", ",")} s sur la piste.`); etat.dernierMidi = { notes: r.notes.length, duree: s.duree, debut: s.debut, instrument: inst.id, detail: r.notes.map(n => ({ note: n.note, t: n.t, fin: n.fin })) }; etat.aReecouter = (etat.aReecouter || []).concat(id); changer();
-  } catch (e) { message("Les notes n'ont pas pu être rendues : " + (e && e.message || e)); }
+    const sr = 44100, depart = etat.notesDebut ?? r.debut(), c = rendreSuiteEch(INS.evenementsMixeur(r.notes, depart, inst), inst.tampons, { instrument: inst.instrument, sr, relache: inst.relache, niveau: inst.niveau, reverb: 0, strum: 0, variation: false }), canaux = c.slice(0, 2), duree = canaux[0].length / sr;
+    const num = Object.values(etat.projet.sons).filter(x => x.nom.startsWith("Notes ")).length + 1, id = ajouterAudio(`Notes ${num} (${e.nom})`, canaux, sr); P.placerClip(etat.projet, P.pisteLibre(etat.projet, etat.notesPiste, depart, duree), id, depart);
+    message(`${r.notes.length} note${r.notes.length > 1 ? "s" : ""} rendue${r.notes.length > 1 ? "s" : ""} avec ${e.nom} : clip de ${duree.toFixed(1).replace(".", ",")} s, posé là où la prise a commencé.`); etat.dernierMidi = { notes: r.notes.length, duree, debut: depart, instrument: e.id, detail: r.notes.map(n => ({ note: n.note, t: n.t, fin: n.fin })) }; etat.aReecouter = (etat.aReecouter || []).concat(id); changer();
+  } catch (err) { message("Les notes n'ont pas pu être rendues : " + (err && err.message || err)); }
 }
 
 // ---------------------------------------------------------------- Faust et Csound : un programme rendu en clip (voir moteurs.js)
