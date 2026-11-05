@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=dbbcc6e370">
-<link rel="stylesheet" href="pistes.css?v=dbbcc6e370"><link rel="stylesheet" href="notions.css?v=dbbcc6e370">
+<link rel="stylesheet" href="../studio/studio.css?v=a44f89b8f6">
+<link rel="stylesheet" href="pistes.css?v=a44f89b8f6"><link rel="stylesheet" href="notions.css?v=a44f89b8f6">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -42,7 +42,6 @@
     <button type="button" id="b-ajout-sonora">Ajouter</button>
     <button type="button" id="b-piste">Ajouter une piste</button>
     <button type="button" id="b-midi" aria-expanded="false" aria-controls="midi">Jouer un instrument</button>
-    <button type="button" id="b-moteurs" aria-expanded="false" aria-controls="moteurs">Faust, Csound et Pure Data</button>
     <button type="button" id="b-export">Exporter en WAV</button>
     <button type="button" id="b-biblio" aria-expanded="false" aria-controls="biblio">Bibliothèque</button>
     <button type="button" id="b-pas" aria-expanded="false" aria-controls="pas">Séquenceur à pas</button>
@@ -50,6 +49,7 @@
     <button type="button" id="b-projets" aria-expanded="false" aria-controls="projets">Mes projets</button>
     <button type="button" id="b-nouveau">Nouveau projet</button>
     <span class="annuler-groupe" role="group" aria-label="Revenir en arrière"><button type="button" id="b-annuler" title="Annuler la dernière action (Ctrl+Z)" disabled>&#8630; Annuler</button><button type="button" id="b-refaire" title="Rétablir (Ctrl+Y)" disabled>&#8631; Rétablir</button></span>
+    <button type="button" id="b-moteurs" aria-expanded="false" aria-controls="moteurs" title="Pour aller plus loin : écrire un programme de synthèse et le rendre en clip">Faust, Csound et Pure Data</button>
   </section>
   <div class="feuille" id="feuille-ajouter" role="dialog" aria-modal="true" aria-labelledby="fa-titre" hidden>
     <div class="feuille-in"><div class="midi-haut"><h2 id="fa-titre">Ajouter à ton projet</h2><button type="button" class="croix-b" id="fa-fermer" aria-label="Fermer"><span class="croix" aria-hidden="true"></span></button></div><div class="tuiles" id="fa-corps"></div></div>
@@ -131,8 +131,8 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=dbbcc6e370"></script>
-<script src="../barre-cours.js?v=dbbcc6e370"></script>
-<script src="../retour.js?v=dbbcc6e370"></script>
+<script type="module" src="pistes.js?v=a44f89b8f6"></script>
+<script src="../barre-cours.js?v=a44f89b8f6"></script>
+<script src="../retour.js?v=a44f89b8f6"></script>
 </body>
 </html>

@@ -1,23 +1,23 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=dbbcc6e370";
-import * as Ed from "./editions.js?v=dbbcc6e370";
-import * as P from "./projet.js?v=dbbcc6e370";
-import { Stockage } from "./stockage.js?v=dbbcc6e370";
-import { creerBouton } from "./bouton.js?v=dbbcc6e370";
-import * as MI from "./midi.js?v=dbbcc6e370";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=dbbcc6e370";
-import * as INS from "./instruments.js?v=dbbcc6e370";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=dbbcc6e370";
-import * as MO from "./moteurs.js?v=dbbcc6e370";
-import { monterPanneaux } from "./panneaux.js?v=dbbcc6e370";
-import { monterNotions } from "./notions.js?v=dbbcc6e370";
-import { DEMOS } from "./demos.js?v=dbbcc6e370";
-import * as B from "./bibliotheque.js?v=dbbcc6e370";
-import { encoderWAV } from "../studio/wav.js?v=dbbcc6e370";
-import { ENTREES } from "../library/catalogue.js?v=dbbcc6e370";
-import { compiler } from "../src/index.js?v=dbbcc6e370";
-import { rendre } from "../src/rendu.js?v=dbbcc6e370";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=a44f89b8f6";
+import * as Ed from "./editions.js?v=a44f89b8f6";
+import * as P from "./projet.js?v=a44f89b8f6";
+import { Stockage } from "./stockage.js?v=a44f89b8f6";
+import { creerBouton } from "./bouton.js?v=a44f89b8f6";
+import * as MI from "./midi.js?v=a44f89b8f6";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=a44f89b8f6";
+import * as INS from "./instruments.js?v=a44f89b8f6";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=a44f89b8f6";
+import * as MO from "./moteurs.js?v=a44f89b8f6";
+import { monterPanneaux } from "./panneaux.js?v=a44f89b8f6";
+import { monterNotions } from "./notions.js?v=a44f89b8f6";
+import { DEMOS } from "./demos.js?v=a44f89b8f6";
+import * as B from "./bibliotheque.js?v=a44f89b8f6";
+import { encoderWAV } from "../studio/wav.js?v=a44f89b8f6";
+import { ENTREES } from "../library/catalogue.js?v=a44f89b8f6";
+import { compiler } from "../src/index.js?v=a44f89b8f6";
+import { rendre } from "../src/rendu.js?v=a44f89b8f6";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -47,7 +47,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=dbbcc6e370"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=a44f89b8f6"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -537,6 +537,7 @@ function afficher() {
   $("entetes").innerHTML = `<div class="ent-regle"></div>` + p.pistes.map(pi => { const nfx = P.rackDe(pi).length; return `<div class="entete${estArmee(pi) ? " armee" : ""}" data-piste="${pi.id}">
     <input type="text" value="${esc(pi.nom)}" aria-label="Nom de la piste" maxlength="30">
     <div class="ent-b"><button type="button" class="b-arme" aria-pressed="${estArmee(pi)}" title="Enregistrer sur cette piste">Rec</button><button type="button" class="b-muet" aria-pressed="${pi.muet}" title="Muet">M</button><button type="button" class="b-solo" aria-pressed="${pi.solo}" title="Solo">S</button><button type="button" class="b-fx" aria-pressed="${etat.fx === pi.id}" title="Effets de la piste">Effets${nfx ? " " + nfx : ""}</button><button type="button" class="b-env" aria-pressed="${etat.env === pi.id}" title="Enveloppe de volume : des points sur la piste pour faire monter et descendre le volume">Env${P.enveloppeDe(pi).length ? " " + P.enveloppeDe(pi).length : ""}</button><button type="button" class="b-plus" aria-label="Plus de réglages pour ${esc(pi.nom)} : volume, panoramique, effets, enveloppe" title="Volume, panoramique, effets, enveloppe">&hellip;</button></div>
+    <input type="range" class="vol-h" min="0" max="1.5" step="0.01" value="${pi.volume}" aria-label="Volume de ${esc(pi.nom)}" title="Volume de la piste">
     <div class="ent-k"></div></div>`; }).join("");
   const grille = `background-size: ${P.dureeTemps(p) * etat.pxs}px 100%`;
   $("voies").innerHTML = p.pistes.map(pi => `<div class="voie" data-piste="${pi.id}" style="${grille}" aria-label="Piste ${esc(pi.nom)}">${pi.clips.map(c => `<div class="clip${etat.choisi === c.id ? " choisi" : ""}" data-clip="${c.id}" style="left:${c.debut * etat.pxs}px;width:${Math.max(4, c.duree * etat.pxs)}px" tabindex="0" aria-label="${esc((p.sons[c.son] || {}).nom || "son")}, à ${c.debut.toFixed(2)} s"><div class="nom-clip">${esc((p.sons[c.son] || {}).nom || "son")}</div><canvas></canvas></div>`).join("")}</div>`).join("");
@@ -614,8 +615,9 @@ function deplacerPourTelephone() {
   if (mobile.matches) {
     A.replaceChildren(); R.replaceChildren();
     for (const id of ["fichiers"]) deplacer($(id).closest("label"), A);
-    for (const id of ["b-biblio", "b-pas", "b-midi", "b-moteurs", "b-piste"]) deplacer($(id), A);
+    for (const id of ["b-biblio", "b-pas", "b-midi", "b-piste"]) deplacer($(id), A);
     const son = groupe(A, "tuile-son"); deplacer($("choix-sonora").closest("label"), son); deplacer($("b-ajout-sonora"), son);
+    deplacer($("b-moteurs"), A);   // Faust, Csound et Pure Data : pour aller plus loin, donc en dernier
     for (const id of ["tempo", "aimant", "metro", "multi", "entree-audio"]) for (const e of avecAide($(id).closest("label"))) deplacer(e, R);
     const z = document.createElement("div"); z.className = "rl-groupe"; z.innerHTML = "<span>Zoom de la règle</span>"; R.appendChild(z); deplacer($("b-zoom-moins"), z); deplacer($("b-zoom-plus"), z);
     deplacer($("b-debut"), R); deplacer($("b-export"), R); deplacer($("b-nouveau"), R);
@@ -697,6 +699,8 @@ function brancherEntetes() {
       onInput: v => { pi.volume = v; const ch = enChaine(); if (ch) ch.vol.gain.setTargetAtTime(v, etat.ctx.currentTime, 0.02); ranger(); } }));
     k.appendChild(creerBouton({ libelle: "Pan", nom: `Panoramique de ${pi.nom} (gauche à droite)`, min: -1, max: 1, valeur: pi.pan, def: 0, pas: 0.01, bipolaire: true, classe: "r-pan", classeValeur: "o-pan", taille: 38, format: v => Math.abs(v) < 0.005 ? "centre" : Math.round(Math.abs(v) * 100) + (v < 0 ? " G" : " D"),
       onInput: v => { pi.pan = v; const ch = enChaine(); if (ch && ch.pan) ch.pan.pan.setTargetAtTime(v, etat.ctx.currentTime, 0.02); ranger(); } }));
+    // Tablette : un curseur de volume horizontal dans l'en-tête (le bouton rond y est caché) ; il agit comme le bouton, et la page ne se redessine pas pendant qu'on le glisse.
+    el.querySelector(".vol-h").oninput = e => { const v = +e.target.value; pi.volume = v; const ch = enChaine(); if (ch) ch.vol.gain.setTargetAtTime(v, etat.ctx.currentTime, 0.02); ranger(); };
     el.querySelector(".b-plus").onclick = () => ouvrirFeuille(pi);
     el.querySelector(".b-env").onclick = () => { etat.env = etat.env === pi.id ? null : pi.id; if (etat.env) message("Enveloppe de volume : clique sur la piste pour poser un point, glisse-le pour monter ou descendre le volume. Double clic ou Suppr pour l'enlever. Les flèches déplacent un point au clavier."); afficher(); };
     el.querySelector(".b-fx").onclick = () => { etat.fx = etat.fx === pi.id ? null : pi.id; afficher(); if (etat.fx) $("effets").scrollIntoView({ block: "nearest", behavior: "smooth" }); };
@@ -960,7 +964,8 @@ async function demarrer() {
   if (!rangement) { message("Le navigateur ne range pas le projet (stockage indisponible ou bloqué) : tu peux travailler, mais il ne sera pas conservé à la fermeture. Exporte en WAV pour garder ton travail."); alerter("permanent", "Ce navigateur ne garde pas ton travail (stockage bloqué ou navigation privée) : il sera perdu à la fermeture. Télécharge ton projet régulièrement.", true); }
   else try { const est = navigator.storage && navigator.storage.estimate && await navigator.storage.estimate(); if (est && est.quota && est.usage / est.quota > 0.85) alerter("place", "Le navigateur est presque plein : ton prochain son risque de ne pas être gardé. Télécharge ton projet et supprime les projets que tu n'utilises plus."); } catch (_) {}
   etat.projet = p || P.nouveauProjet(); $("titre-projet").value = etat.projet.titre || ""; histo.snap = JSON.stringify(etat.projet); construireMenus(); majMenus(); etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id;
-  await recevoirDuStudio(); afficher(); annoncerProjet(); requestAnimationFrame(boucle); window.PISTES_PRET = true;
+  await recevoirDuStudio(); afficher(); annoncerProjet(); requestAnimationFrame(boucle); B.preparerBatterie().catch(() => {});   // la vraie batterie se charge en arrière-plan
+window.PISTES_PRET = true;
   if (location.hash === "#projets") $("b-projets").click();   // venu de « Mes projets » (accueil SONORA)
 }
 demarrer();

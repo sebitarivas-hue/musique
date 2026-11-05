@@ -1,0 +1,86 @@
+{
+ "kick": {
+  "x": [
+   "kick_x1",
+   "kick_x2",
+   "kick_x3"
+  ],
+  "o": [
+   "kick_o1",
+   "kick_o2"
+  ]
+ },
+ "snare": {
+  "x": [
+   "snare_x1",
+   "snare_x2",
+   "snare_x3"
+  ],
+  "o": [
+   "snare_o1",
+   "snare_o2"
+  ]
+ },
+ "rim": {
+  "x": [
+   "rim_x1",
+   "rim_x2"
+  ],
+  "o": [
+   "rim_o1",
+   "rim_o2"
+  ]
+ },
+ "hatc": {
+  "x": [
+   "hatc_x1",
+   "hatc_x2",
+   "hatc_x3"
+  ],
+  "m": [
+   "hatc_m1",
+   "hatc_m2",
+   "hatc_m3"
+  ],
+  "o": [
+   "hatc_o1",
+   "hatc_o2"
+  ]
+ },
+ "hato": {
+  "x": [
+   "hato_x1",
+   "hato_x2"
+  ],
+  "o": [
+   "hato_o1",
+   "hato_o2"
+  ]
+ },
+ "ride": {
+  "x": [
+   "ride_x1",
+   "ride_x2"
+  ],
+  "o": [
+   "ride_o1",
+   "ride_o2"
+  ]
+ },
+ "crash": {
+  "x": [
+   "crash_x1",
+   "crash_x2"
+  ]
+ },
+ "tom": {
+  "x": [
+   "tom_x1",
+   "tom_x2"
+  ],
+  "o": [
+   "tom_o1",
+   "tom_o2"
+  ]
+ }
+}
