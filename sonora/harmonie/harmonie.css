@@ -83,3 +83,7 @@ body { height: auto; overflow: auto; }
 .mots-h { margin: 6px 14px 0; text-align: right; } .vue-h label .notion, .rang-h label .notion { margin-left: 6px; vertical-align: middle; } .vue-h h2 .notion { margin-left: 8px; vertical-align: middle; }
 @media (max-width: 700px) { .mots-h .notion-lien, .vue-h .notion, #vivant .notion { min-width: 44px; min-height: 44px; } .mots-h .notion-lien { padding: 12px 8px; } }
 @media (pointer: coarse) { .vue-h select, .vue-h input:not([type=checkbox]), .vue-h .rang-h button, .vue-h .liste-prog button { min-height: 44px; } }
+/* Le « ? » se place à droite de l'intitulé du réglage, pas sous le menu */
+.vue-h label:has(> .notion) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 6px; }
+.vue-h label:has(> .notion) > select, .vue-h label:has(> .notion) > input { grid-column: 1 / -1; grid-row: 2; }
+.vue-h label:has(> .notion) > .notion { grid-column: 2; grid-row: 1; margin: 0; }
