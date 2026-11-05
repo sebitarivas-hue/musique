@@ -4,11 +4,12 @@
 //              joués à deux mesures, au tempo du projet ;
 //   Sons       les neuf sons de synthèse d'Harmonie (basse 808, sous-basse, lead, nappe, piano électrique, pincé, orgue rock, cloches, stab) sur la note et la durée de son choix.
 // Tout est fabriqué à la demande, sans fichier ni réseau, et reproductible. Sans DOM : testé dans Node.
-import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS } from "../harmonie/batterie.js?v=21d4829a8e";
-import { GENRES } from "../harmonie/genres.js?v=21d4829a8e";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=21d4829a8e";
-import { rendreSuite } from "../harmonie/son.js?v=21d4829a8e";
-import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=21d4829a8e";
+import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS } from "../harmonie/batterie.js?v=2f05acf739";
+import { GENRES } from "../harmonie/genres.js?v=2f05acf739";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=2f05acf739";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=2f05acf739";
+import { rendreSuite } from "../harmonie/son.js?v=2f05acf739";
+import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=2f05acf739";
 
 export const NOMS_PIECES = { kick: "Grosse caisse", snare: "Caisse claire", clap: "Clap", hatc: "Charleston fermé", hato: "Charleston ouvert", rim: "Rimshot", tom: "Tom", cow: "Cloche", shaker: "Shaker" };
 // Des rythmes du monde, sur seize pas (huit, neuf ou douze quand le rythme l'exige). Les mêmes que ceux de l'atelier sonore du cours.
@@ -33,7 +34,7 @@ export const INSTRUMENTS_ECH = [
   ["djembe", "Djembé", "Percussions", 48], ["timbale", "Timbale", "Percussions", 40],
   ["voix", "Voix", "Voix", 64],
 ];
-export const CATEGORIES = [["batterie", "Batterie"], ["rythmes", "Rythmes"], ["instruments", "Instruments"], ["sons", "Sons de synthèse"]];
+export const CATEGORIES = [["batterie", "Batterie"], ["rythmes", "Rythmes"], ["instruments", "Instruments"], ["percussions", "Percussions du monde"], ["effets", "Effets sonores"], ["sons", "Sons de synthèse"]];
 export const NOTES = Array.from({ length: 49 }, (_, i) => 24 + i);   // do1 à do5
 export const NOM_NOTE = m => ["do", "do♯", "ré", "ré♯", "mi", "fa", "fa♯", "sol", "sol♯", "la", "la♯", "si"][m % 12] + (Math.floor(m / 12) - 1);
 
@@ -45,6 +46,9 @@ export function elements() {
   for (const R of RYTHMES_MONDE) L.push({ id: `ryt:monde:${R.id}`, famille: "rythmes", nom: R.nom, type: "boucle", tempo: R.bpm, monde: R.id });
   for (const [b, nom, groupe, note] of INSTRUMENTS_ECH) L.push({ id: `ech:${b}`, famille: "instruments", nom, type: "ech", groupe, banque: b, note });
   for (const [k, S] of Object.entries(SONS_SYNTHESE)) L.push({ id: `syn:${k}`, famille: "sons", nom: S.nom, type: "note", instrument: k, note: ["basse808", "sub"].includes(k) ? 36 : k === "lead" ? 67 : k === "cloches" ? 72 : 60 });
+  // Percussions du monde et effets sonores : entièrement synthétisés, aucun enregistrement. Durée propre à chacun (la montée dure trois secondes, le gong cinq).
+  const DUREES = { montee: 3.4, tonnerre: 3.2, gong: 5, bol: 5, impact: 2.2, cymbale: 2.6, trianglePerc: 3.2, vent: 3, sirene: 2, laser: 0.8, goutte: 0.6, blip: 0.4, conga: 0.8, bongo: 0.6, blocBois: 0.4, tambourin: 0.5 };
+  for (const [k, S] of Object.entries(SONS_PERCUSSION)) L.push({ id: `syn:${k}`, famille: S.famille === "perc" ? "percussions" : "effets", nom: S.nom, type: "note", instrument: k, note: S.note, duree: DUREES[k] || 1.5, normaliser: true });
   return L;
 }
 const mono = x => [x];
@@ -67,8 +71,10 @@ export function fabriquer(el, { tempo, note, duree = 1.5, sr = 44100 } = {}) {
     const x = rendreBatterie(R ? R.grille : V.batterie, { bpm, swing: G ? G.swing : 0, mesures: 2, pas: R ? R.pas : (G.pas || 16), kit: R ? R.kit : G.kit, sr, parMesure: V && V.roulement ? m => (m === 1 ? { ...V.batterie, ...V.roulement } : null) : null });
     return { nom: `${el.nom}, ${Math.round(bpm)} par minute`, canaux: mono(niveau(x, 0.8)), sr };
   }
-  const m = note ?? el.note, c = rendreSuite([{ t: 0.02, duree, notes: [m], vitesse: 0.85 }], { instrument: el.instrument, sr, duree: duree + 1.3 });
-  return { nom: `${el.nom}, ${NOM_NOTE(m)}`, canaux: c.slice(0, 2).map(x => Float32Array.from(x)), sr };
+  const d = el.duree && duree === 1.5 ? el.duree : duree, m = note ?? el.note, c = rendreSuite([{ t: 0.02, duree: d, notes: [m], vitesse: 0.85 }], { instrument: el.instrument, sr, duree: d + 1.3 });
+  const canaux = c.slice(0, 2).map(x => Float32Array.from(x));
+  if (el.normaliser) { let pic = 0; for (const x of canaux) for (let i = 0; i < x.length; i++) pic = Math.max(pic, Math.abs(x[i])); if (pic > 0) { const k = 0.8 / pic; for (const x of canaux) for (let i = 0; i < x.length; i++) x[i] *= k; } }   // tous au même niveau
+  return { nom: `${el.nom}, ${NOM_NOTE(m)}`, canaux, sr };
 }
 
 // ---------------------------------------------------------------- le séquenceur à pas : une grille de pièces de batterie, qu'on remplit puis qu'on transforme en clip

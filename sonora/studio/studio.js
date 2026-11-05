@@ -1,15 +1,15 @@
 // SONORA Studio : l'interface de programmation. Elle ne calcule aucun son : elle compile (Worker), envoie au moteur (AudioWorklet),
 // et affiche ce que le moteur renvoie.
-import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=21d4829a8e";
-import { compiler, MODULES, MATHS } from "../src/index.js?v=21d4829a8e";
-import { MOTS } from "../src/lexeur.js?v=21d4829a8e";
-import { Editeur, inserer } from "./editeur.js?v=21d4829a8e";
-import { formater, vers, depuis } from "./reglages-commun.js?v=21d4829a8e";
-import { EXEMPLES } from "./exemples.js?v=21d4829a8e";
-import { Projets } from "./projets.js?v=21d4829a8e";
-import { installerCreation } from "./creation.js?v=21d4829a8e";
-import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=21d4829a8e";
-import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=21d4829a8e";
+import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=2f05acf739";
+import { compiler, MODULES, MATHS } from "../src/index.js?v=2f05acf739";
+import { MOTS } from "../src/lexeur.js?v=2f05acf739";
+import { Editeur, inserer } from "./editeur.js?v=2f05acf739";
+import { formater, vers, depuis } from "./reglages-commun.js?v=2f05acf739";
+import { EXEMPLES } from "./exemples.js?v=2f05acf739";
+import { Projets } from "./projets.js?v=2f05acf739";
+import { installerCreation } from "./creation.js?v=2f05acf739";
+import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=2f05acf739";
+import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=2f05acf739";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -379,4 +379,10 @@ else if (lien && lien.erreur) journal("err", esc(lien.erreur));
 const d = Moteur.diagnostic(); if (!d.ok) { etat.audioIndispo = true; journal("err", esc(d.raison)); etatBadge("audio indisponible", "erreur"); $("b-executer").disabled = true; }
 appliquerMode(lireMode());
 majRetour();
+// Téléphone, mode programmation : les trois gestes principaux (Exécuter, Arrêter, Compiler) dans une barre fixe en bas, à portée du pouce. Avant, ils étaient au bout d'une rangée qu'il fallait faire défiler (05/11/2026). La barre ne fait que déclencher les vrais boutons.
+const barreS = document.createElement("div"); barreS.id = "barre-s"; barreS.className = "barre-s"; barreS.setAttribute("role", "toolbar"); barreS.setAttribute("aria-label", "Actions"); barreS.hidden = true;
+barreS.innerHTML = [["b-executer", "principal"], ["b-arreter", ""], ["b-compiler", ""]].map(([id, c]) => `<button type="button" data-r="${id}"${c ? ` class="${c}"` : ""}>${$(id).textContent.trim()}</button>`).join(""); document.body.appendChild(barreS);
+barreS.onclick = e => { const b = e.target.closest("button[data-r]"); if (b) { const r = $(b.dataset.r); if (r && !r.disabled) r.click(); } };
+function majBarreS() { const oui = matchMedia("(max-width: 760px)").matches && document.body.dataset.mode === "programmation"; barreS.hidden = !oui; document.body.classList.toggle("avec-barre-s", oui); if (!oui) return; for (const b of barreS.children) { const r = $(b.dataset.r), t = r.textContent.trim(); if (b.textContent !== t) b.textContent = t; b.disabled = r.disabled; } }
+setInterval(majBarreS, 250); addEventListener("resize", majBarreS);
 window.STUDIO_PRET = true;

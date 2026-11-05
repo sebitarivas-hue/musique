@@ -131,7 +131,7 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 @media (max-width: 700px) { .liste-projets li { grid-template-columns: 1fr; } }
 
 .alerte-rangement { position: sticky; top: 0; z-index: 40; margin: 0; padding: 10px 14px; background: #FF5638; color: #11110F; border: 3px solid #11110F; font-weight: 700; } .alerte-rangement p { margin: 0 0 6px; } .alerte-rangement[hidden] { display: none; } .alerte-act { display: flex; gap: 8px; flex-wrap: wrap; } .alerte-act button { background: #11110F; color: #F0EFE8; border: 0; padding: 10px 14px; font: inherit; min-height: 44px; cursor: pointer; }
-.biblio-onglets { display: flex; gap: 6px; margin: 8px 0; } .biblio-onglets button[aria-selected="true"] { background: #D6FF00; color: #11110F; }
+.biblio-onglets { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; } .biblio-onglets button[aria-selected="true"] { background: #D6FF00; color: #11110F; }
 .liste-biblio { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; max-height: 340px; overflow: auto; }
 .liste-biblio li { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, .8fr) auto; gap: 6px 10px; align-items: center; padding: 6px 8px; border: 1px solid currentColor; }
 .pas-grille { display: grid; gap: 4px; margin: 10px 0; overflow-x: auto; } .pas-ligne { display: grid; grid-template-columns: 9.5rem repeat(var(--n, 16), minmax(22px, 1fr)); gap: 3px; align-items: center; min-width: min-content; } .pas-nom { font-size: .85rem; }
@@ -189,3 +189,6 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 @media (max-width: 700px) { .croix-b { min-width: 44px; min-height: 44px; } }
 @media (max-width: 700px) { #moteurs > p.petit:not(.mot-etat):not(#mot-vide) { display: none; } .mot-but .chip-m:last-child { grid-column: 1 / -1; } }
 @media (max-width: 700px) { .moteurs .notion, #mot-duree { min-width: 44px; min-height: 44px; } }
+@media (pointer: coarse) { select, input:not([type=checkbox]):not([type=file]):not([type=radio]):not([type=range]) { min-height: 44px; } input[type=checkbox] { width: 24px; height: 24px; } }
+@media (pointer: coarse) { .mini select, .mini input[type=number] { min-height: 44px; } .mini.case input[type=checkbox], .mini input[type=checkbox] { width: 24px; height: 24px; } }
+@media (pointer: coarse) and (min-width: 701px) { .entete .ent-b button { min-height: 44px; min-width: 44px; } }

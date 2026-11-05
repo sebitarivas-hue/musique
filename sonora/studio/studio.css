@@ -157,3 +157,20 @@ button.mode { border-style: dashed; } button.mode[aria-pressed="true"] { border-
 /* Accueil SONORA (04/11/2026) : sur téléphone, les six onglets d'outils laissent la place à un seul lien « Tous les outils », qui mène à l'accueil (Créer, Explorer, Transformer, Mes projets). */
 header.haut a.accueil-sonora { display: none; }
 @media (max-width: 700px) { header.haut nav.actions[aria-label="Espaces SONORA"] { display: none; } header.haut a.accueil-sonora { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; box-sizing: border-box; margin-left: auto; padding: 4px 12px; border: 2px solid var(--papier); color: var(--papier); background: transparent; text-decoration: none; font-weight: 600; font-size: .85rem; } }
+/* Téléphone, mode programmation : barre d'actions fixe en bas */
+.barre-s { display: none; }
+@media (max-width: 760px) {
+  .barre-s { display: flex; gap: 8px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; background: var(--noir); padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)); border-top: 3px solid var(--acide); }
+  .barre-s[hidden] { display: none; } .barre-s button { flex: 1 1 0; min-height: 48px; font-weight: 700; padding: 0 6px; }
+  body.avec-barre-s { padding-bottom: 78px; }
+  body.avec-barre-s #b-executer, body.avec-barre-s #b-arreter, body.avec-barre-s #b-compiler { display: none; }
+  #b-mode, #b-voir-code, #p-retour, [role=tab], button[data-m], button[data-p] { min-height: 44px; }
+}
+/* Tablette (761 à 1100 px) : la liste d'exemples défile dans sa colonne au lieu d'allonger la page ; le bouton Écouter reste à l'écran (05/11/2026) */
+@media (min-width: 761px) and (max-width: 1100px) {
+  #grille { grid-template-rows: min(74vh, 700px) auto auto; } #gauche, #centre { min-height: 0; overflow: auto; }
+  #b-mode, #b-voir-code, #p-retour, [role=tab], button[data-m], button[data-p] { min-height: 44px; }
+}
+@media (pointer: coarse) and (min-width: 761px) { header.haut .actions button, header.haut .lien-bouton { min-height: 44px; } }
+@media (pointer: coarse) and (min-width: 761px) { button[data-t], .champ input, .champ select, input[type=range] { min-height: 44px; } }
+@media (pointer: coarse) and (min-width: 761px) { #grille button, #grille select, #grille input:not([type=checkbox]):not([type=file]):not([type=radio]) { min-height: 44px; } }
