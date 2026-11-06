@@ -712,7 +712,7 @@ html.signal .chip[aria-pressed="true"], html.signal .chip[aria-selected="true"] 
 html.signal .play, html.signal .listen .play { background: var(--noir); color: var(--acide); border-radius: 0; }
 html.signal .lvlbadge { background: var(--noir) !important; color: var(--acide); border-radius: 0; font-family: var(--f-display); font-weight: 400; letter-spacing: -.03em; }
 html.signal .ico, html.signal .ico.vign { border-radius: 0; }
-html.signal .ico.vign.pleine, html.signal .age-img.pleine, html.signal .gimg img { filter: grayscale(1) contrast(1.12); }
+html.signal .ico.vign.pleine, html.signal .age-img.pleine, html.signal .gimg img { filter: saturate(1.12) contrast(1.04); }
 html.signal .levels a { border-radius: 0; border: 2px solid var(--noir); background: transparent; font: 400 1.25rem/1 var(--f-display); color: var(--noir); }
 html.signal .levels a[aria-current="page"] { background: var(--noir); color: var(--acide); }
 html.signal .sous-onglets a { border-radius: 0; border: 2px solid var(--noir); background: transparent; font: 500 12px var(--f-mono); text-transform: uppercase; letter-spacing: .05em; }
@@ -950,7 +950,7 @@ html.signal .hs-tete { position: absolute; top: 0; bottom: 22px; left: 62%; widt
 html.signal .hs-temps { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; font: 400 11px var(--f-mono); letter-spacing: .08em; color: #BEBDB4; }
 /* Collage : trois images documentaires en noir et blanc, et trois aplats (vert, papier, rouge). */
 html.signal .hs-collage { position: relative; display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: 1fr 1fr; gap: 0; height: clamp(240px, 70vw, 560px); margin-top: 8px; }
-html.signal .hs-img { position: relative; display: block; background: #2A2A26 center / cover no-repeat; filter: grayscale(1) contrast(1.15); }
+html.signal .hs-img { position: relative; display: block; background: #2A2A26 center / cover no-repeat; filter: saturate(1.12) contrast(1.04); }
 html.signal .hs-img em { position: absolute; left: 10px; bottom: 8px; font: 400 10.5px var(--f-mono); text-transform: uppercase; letter-spacing: .08em; color: #BEBDB4; font-style: normal; }
 html.signal .hs-img.pleine em { display: none; }
 html.signal .hs-img1 { grid-row: 1 / 3; margin-top: 12%; } html.signal .hs-img2 { grid-column: 2; } html.signal .hs-img3 { grid-column: 2; background-color: #DAD8CE; }
@@ -1093,7 +1093,7 @@ html.signal .car-titre { font-family: "Archivo Variable", var(--f-titre); font-w
 html.signal .car-titre span { display: block; } html.signal .car-titre .l2 { color: var(--acide); }
 html.signal .car-sous { margin: 0; font: 400 clamp(.82rem, 1.5vw, 1rem)/1.6 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: #D3D2CA; max-width: 34rem; }
 html.signal .car-collage { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-self: stretch; }
-html.signal .car-img { display: block; width: 100%; background-image: url("images/accueil.jpg"); background-repeat: no-repeat; background-color: #1b1b18; filter: grayscale(1) contrast(1.08); }
+html.signal .car-img { display: block; width: 100%; background-image: url("images/accueil.jpg"); background-repeat: no-repeat; background-color: #1b1b18; filter: saturate(1.12) contrast(1.04); }
 html.signal .car-img:first-child { grid-column: 1 / -1; }
 html.signal .car-collage { max-height: 360px; overflow: hidden; align-self: start; }
 html.signal .car-bloc-acide, html.signal .car-bloc-rouge { position: absolute; display: block; }
