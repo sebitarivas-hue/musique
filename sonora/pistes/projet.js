@@ -30,7 +30,11 @@ export const dureeTemps = p => 60 / p.tempo, dureeMesure = p => p.temps * 60 / p
 // Aimante un temps sur la grille (en fraction de temps : 1 = le temps, 0.25 = la double croche). grille 0 : pas d'aimant.
 export function aimanter(p, t, grille = 1) { if (!grille) return Math.max(0, t); const pas = dureeTemps(p) * grille; return Math.max(0, Math.round(t / pas) * pas); }
 
-export function ajouterSon(p, { nom, duree, sr, canaux, midi }) { const id = nouvelId("s"); p.sons[id] = { id, nom: String(nom).slice(0, 80), duree, sr, canaux }; if (midi) p.sons[id].midi = copieMidi(midi); return id; }
+export function ajouterSon(p, { nom, duree, sr, canaux, midi, source }) { const id = nouvelId("s"); p.sons[id] = { id, nom: String(nom).slice(0, 80), duree, sr, canaux }; if (midi) p.sons[id].midi = copieMidi(midi); if (source) p.sons[id].source = JSON.parse(JSON.stringify(source)); return id; }
+// Un son « de source » est fabriqué par la page à partir d'une recette qui dépend du tempo : un rythme de la Bibliothèque ({ type: "boucle", el }) ou un motif du séquenceur à pas ({ type: "pas", grille, pas, swing, kit, mesures }).
+// Comme les clips de notes, il suit le tempo : on le refait à la nouvelle vitesse, il reste sur les mêmes temps.
+export const estSource = s => !!(s && s.source && (s.source.type === "boucle" || s.source.type === "pas"));
+export const suitLeTempo = s => estMidi(s) || estSource(s);
 // Un son « MIDI » garde ses notes (écrites en temps, voir notes.js) et l'instrument qui les joue : son audio est fabriqué à partir d'elles, et refait quand elles ou le tempo changent.
 // midi : { notes: [{ t, d, n, v }], instrument: identifiant de l'instrument de Pistes, temps: durée en temps du clip }.
 export const copieMidi = m => ({ notes: (m.notes || []).map(x => ({ ...x })), instrument: m.instrument || "ech:clavier", temps: m.temps || 4, rendu: m.rendu });
@@ -60,7 +64,7 @@ export function couperClip(p, clipId, t) {
 }
 export function dupliquerClip(p, clipId) {
   const r = trouverClip(p, clipId); if (!r) return null; const c = r.clip, s = p.sons[c.son]; let son = c.son;
-  if (estMidi(s)) { son = ajouterSon(p, { nom: s.nom, duree: s.duree, sr: s.sr, canaux: s.canaux, midi: s.midi }); }   // un clip de notes copié a ses propres notes : on peut le changer sans toucher l'original
+  if (suitLeTempo(s)) { son = ajouterSon(p, { nom: s.nom, duree: s.duree, sr: s.sr, canaux: s.canaux, midi: s.midi, source: s.source }); }   // un clip de notes copié a ses propres notes : on peut le changer sans toucher l'original
   return placerClip(p, r.piste.id, son, c.debut + c.duree, { decalage: c.decalage, duree: c.duree, gain: c.gain });
 }
 export function supprimerClip(p, clipId) { const r = trouverClip(p, clipId); if (!r) return false; r.piste.clips = r.piste.clips.filter(c => c.id !== clipId); return true; }
@@ -167,13 +171,14 @@ export function changerTempo(p, tempo, { audio = true } = {}) {
   const nouveau = Math.max(20, Math.min(300, +tempo || p.tempo)), f = p.tempo / nouveau, sons = new Set();
   for (const pi of p.pistes) for (const c of pi.clips) {
     const s = p.sons[c.son];
-    if (estMidi(s)) { c.debut *= f; c.duree *= f; c.decalage *= f; sons.add(c.son); } else if (audio) c.debut *= f;
+    if (suitLeTempo(s)) { c.debut *= f; c.duree *= f; c.decalage *= f; sons.add(c.son); } else if (audio) c.debut *= f;
   }
+  for (const id of sons) p.sons[id].duree *= f;   // l'audio d'un son qui suit le tempo est refait plus tard, mais sa durée suit déjà : un clip qui le lisait en entier le lit toujours en entier
   p.tempo = nouveau; return { facteur: f, sons: [...sons] };
 }
 // Après un nouveau rendu d'un son MIDI : l'audio change, sa durée aussi ; les clips qui le lisent en entier suivent (ceux qu'on a rognés gardent leur fin).
 export function majSonMidi(p, sonId, { canaux, sr, duree }) {
-  const s = p.sons[sonId]; if (!estMidi(s)) return false; const avant = s.duree; s.canaux = Array.isArray(canaux) ? canaux.length : canaux; s.sr = sr; s.duree = duree;
+  const s = p.sons[sonId]; if (!suitLeTempo(s)) return false; const avant = s.duree; s.canaux = Array.isArray(canaux) ? canaux.length : canaux; s.sr = sr; s.duree = duree;
   for (const pi of p.pistes) for (const c of pi.clips) if (c.son === sonId) { if (Math.abs(c.decalage + c.duree - avant) < 0.02) c.duree = Math.max(0.01, duree - c.decalage); else c.duree = Math.min(c.duree, Math.max(0.01, duree - c.decalage)); }
   return true;
 }

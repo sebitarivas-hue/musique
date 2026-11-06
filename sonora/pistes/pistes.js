@@ -1,25 +1,25 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=8514c8ba45";
-import * as Ed from "./editions.js?v=8514c8ba45";
-import * as P from "./projet.js?v=8514c8ba45";
-import { Stockage } from "./stockage.js?v=8514c8ba45";
-import { creerBouton } from "./bouton.js?v=8514c8ba45";
-import * as MI from "./midi.js?v=8514c8ba45";
-import * as N from "./notes.js?v=8514c8ba45";
-import { Rouleau } from "./rouleau.js?v=8514c8ba45";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=8514c8ba45";
-import * as INS from "./instruments.js?v=8514c8ba45";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=8514c8ba45";
-import * as MO from "./moteurs.js?v=8514c8ba45";
-import { monterPanneaux } from "./panneaux.js?v=8514c8ba45";
-import { monterNotions } from "./notions.js?v=8514c8ba45";
-import { DEMOS } from "./demos.js?v=8514c8ba45";
-import * as B from "./bibliotheque.js?v=8514c8ba45";
-import { encoderWAV } from "../studio/wav.js?v=8514c8ba45";
-import { ENTREES } from "../library/catalogue.js?v=8514c8ba45";
-import { compiler } from "../src/index.js?v=8514c8ba45";
-import { rendre } from "../src/rendu.js?v=8514c8ba45";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=cb51287edf";
+import * as Ed from "./editions.js?v=cb51287edf";
+import * as P from "./projet.js?v=cb51287edf";
+import { Stockage } from "./stockage.js?v=cb51287edf";
+import { creerBouton } from "./bouton.js?v=cb51287edf";
+import * as MI from "./midi.js?v=cb51287edf";
+import * as N from "./notes.js?v=cb51287edf";
+import { Rouleau } from "./rouleau.js?v=cb51287edf";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=cb51287edf";
+import * as INS from "./instruments.js?v=cb51287edf";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=cb51287edf";
+import * as MO from "./moteurs.js?v=cb51287edf";
+import { monterPanneaux } from "./panneaux.js?v=cb51287edf";
+import { monterNotions } from "./notions.js?v=cb51287edf";
+import { DEMOS } from "./demos.js?v=cb51287edf";
+import * as B from "./bibliotheque.js?v=cb51287edf";
+import { encoderWAV } from "../studio/wav.js?v=cb51287edf";
+import { ENTREES } from "../library/catalogue.js?v=cb51287edf";
+import { compiler } from "../src/index.js?v=cb51287edf";
+import { rendre } from "../src/rendu.js?v=cb51287edf";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -49,7 +49,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=8514c8ba45"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=cb51287edf"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -357,11 +357,20 @@ async function rendreMidiSon(id) {
   const tempo = etat.projet.tempo, canaux = audioDeNotes(s, inst, tempo);
   s.midi.rendu = tempo; P.majSonMidi(etat.projet, id, { canaux, sr: SR_MIDI, duree: s.midi.temps * 60 / tempo }); rangerAudio(id, canaux); return true;
 }
+// Un rythme de la Bibliothèque ou un motif du séquenceur à pas, refait à ce tempo.
+async function refaireSource(id) {
+  const s = etat.projet.sons[id]; if (!P.estSource(s)) return false; const tempo = etat.projet.tempo, src = s.source; let r = null;
+  try {
+    if (src.type === "boucle") { const el = B.elements().find(e => e.id === src.el); if (!el) return false; r = B.fabriquer(el, { tempo, sr: 44100 }); }
+    else r = B.rendreGrille(src.grille, { pas: src.pas, tempo, swing: src.swing, kit: src.kit, mesures: src.mesures, sr: 44100, nom: s.nom });
+  } catch (err) { message("Un rythme n'a pas pu être refait à ce tempo : " + (err && err.message || err)); return false; }
+  if (!r) return false; src.rendu = tempo; P.majSonMidi(etat.projet, id, { canaux: r.canaux.length, sr: r.sr, duree: r.canaux[0].length / r.sr }); etat.buffers[id] = { canaux: r.canaux, sr: r.sr }; Stockage.ecrireSon(id, { canaux: r.canaux, sr: r.sr }).catch(alerteEcriture); return true;
+}
 // Tous les sons MIDI dont l'audio n'est pas à ce tempo (annuler, ouvrir un projet, changer le tempo) ou manque : on les refait, puis on redessine.
 let majMidiEnCours = null;
 async function remettreAJourMidi() {
-  const faire = Object.keys(etat.projet.sons).filter(id => { const s = etat.projet.sons[id]; return P.estMidi(s) && (s.midi.rendu !== etat.projet.tempo || !etat.buffers[id]); });
-  if (!faire.length) return; const p = majMidiEnCours = Promise.all(faire.map(rendreMidiSon)).then(() => { if (majMidiEnCours === p) { majMidiEnCours = null; afficher(); planifierRangement(250); } }); await p;
+  const faire = Object.keys(etat.projet.sons).filter(id => { const s = etat.projet.sons[id]; return (P.estMidi(s) && (s.midi.rendu !== etat.projet.tempo || !etat.buffers[id])) || (P.estSource(s) && (s.source.rendu !== etat.projet.tempo || !etat.buffers[id])); });
+  if (!faire.length) return; const p = majMidiEnCours = Promise.all(faire.map(id => P.estSource(etat.projet.sons[id]) ? refaireSource(id) : rendreMidiSon(id))).then(() => { if (majMidiEnCours === p) { majMidiEnCours = null; afficher(); planifierRangement(250); } }); await p;
 }
 function finirNotes() {
   const r = etat.notes, inst = etat.notesInstrument, e = etat.notesEntree; etat.notes = null; $("b-notes").setAttribute("aria-pressed", "false"); r.fermer(dateProjet()); document.querySelectorAll(".clip.enreg-notes").forEach(x => x.remove());
@@ -575,8 +584,8 @@ function ouvrirReglage(id) {
   el.querySelector("[data-p]").focus();
 }
 // ---------------------------------------------------------------- sons
-function ajouterAudio(nom, canaux, sr) {
-  const id = P.ajouterSon(etat.projet, { nom, duree: canaux[0].length / sr, sr, canaux: canaux.length });
+function ajouterAudio(nom, canaux, sr, source) {
+  const id = P.ajouterSon(etat.projet, { nom, duree: canaux[0].length / sr, sr, canaux: canaux.length, source });
   etat.buffers[id] = { canaux, sr }; Stockage.ecrireSon(id, { canaux, sr }).catch(e => { message("Le son n'a pas pu être rangé dans le navigateur : " + e.message); alerteEcriture(e); }); return id;
 }
 async function decoder(fichier) {
@@ -933,7 +942,7 @@ $("fichiers").onchange = e => { const pi = P.trouverPiste(etat.projet, etat.arme
 $("tempo").onchange = async e => {
   const p = etat.projet, v = Math.max(40, Math.min(240, +e.target.value || 100)); if (v === p.tempo) { $("tempo").value = v; return; }
   const r = P.changerTempo(p, v); $("tempo").value = p.tempo; changer();   // les clips de notes et les clips audio restent sur les mêmes temps de la grille ; les notes sont rejouées à la nouvelle vitesse
-  if (r.sons.length) { await remettreAJourMidi(); message(`Tempo ${p.tempo} : les clips de notes sont refaits à cette vitesse, les clips audio démarrent sur les mêmes temps mais gardent leur durée.`); }
+  if (r.sons.length) { await remettreAJourMidi(); message(`Tempo ${p.tempo} : les clips de notes et les rythmes de la Bibliothèque sont refaits à cette vitesse ; les enregistrements et les fichiers importés démarrent sur les mêmes temps mais gardent leur durée.`); }
 };
 $("b-annuler").onclick = () => annuler(); $("b-refaire").onclick = () => retablir();
 $("b-zoom-plus").onclick = () => { etat.pxs = Math.min(400, etat.pxs * 1.5); afficher(); }; $("b-zoom-moins").onclick = () => { etat.pxs = Math.max(10, etat.pxs / 1.5); afficher(); };
