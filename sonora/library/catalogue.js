@@ -1,6 +1,6 @@
 // Catalogue de la Library : les exemples du Studio plus des instruments et effets prêts à l'emploi.
 // Chaque entrée est un programme SONORA complet. Les tests le compilent, le rendent, et vérifient qu'il ne sature pas.
-import { EXEMPLES } from "../studio/exemples.js?v=f3a9198659";
+import { EXEMPLES } from "../studio/exemples.js?v=24cc40ce8c";
 
 const rythme = ["percussion", "rythme"];
 export const NOUVEAUX = [

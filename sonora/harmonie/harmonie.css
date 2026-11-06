@@ -87,3 +87,40 @@ body { height: auto; overflow: auto; }
 .vue-h label:has(> .notion) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 6px; }
 .vue-h label:has(> .notion) > select, .vue-h label:has(> .notion) > input { grid-column: 1 / -1; grid-row: 2; }
 .vue-h label:has(> .notion) > .notion { grid-column: 2; grid-row: 1; margin: 0; }
+
+/* ---- Composer : une interface pour des élèves de 11 à 14 ans (07/11/2026) ----
+   Chaque accord est une touche colorée : son NOM en grand (Do, Ré m, Sol7), son chiffre romain en petite pastille, sa qualité en dessous. Il garde la couleur de sa fondamentale
+   dans les touches comme dans la musique, pour qu'on reconnaisse un accord au premier coup d'oeil. Les réglages techniques sont repliés. */
+#v-composer { --r: 22px; }
+#v-composer .etape { display: flex; align-items: center; gap: 10px; margin: 22px 0 8px; font-size: 1.15rem; line-height: 1.2; text-transform: none; letter-spacing: 0; }
+#v-composer .etape .n { flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--noir); color: var(--acide); font: 700 1.05rem var(--f-display); }
+#v-composer .accords { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 12px; }
+#v-composer .carte-acc { --c: #ddd; --ombre: color-mix(in srgb, var(--c) 58%, #14130f); position: relative; background: linear-gradient(165deg, color-mix(in srgb, var(--c) 78%, #fff), var(--c)); border: 0; border-radius: var(--r); box-shadow: 0 5px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); min-height: 100px; color: #14130f; justify-content: center; gap: 1px; transition: transform .08s, box-shadow .08s, filter .12s; }
+#v-composer .carte-acc:hover { filter: brightness(1.06); }
+#v-composer .carte-acc:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); }
+#v-composer .carte-acc .nm { order: 1; font: 700 1.75rem/1.05 var(--f-display, var(--f-body)); letter-spacing: .01em; margin-top: 6px; }
+#v-composer .carte-acc .ql { order: 2; font: 600 .72rem var(--f-body); color: rgba(20, 19, 15, .7); text-transform: lowercase; }
+#v-composer .carte-acc .rom { position: absolute; top: 8px; left: 8px; order: 0; min-width: 28px; padding: 2px 8px; border-radius: 99px; background: rgba(20, 19, 15, .82); color: #fff; font: 600 .72rem/1.4 var(--f-mono); letter-spacing: 0; text-align: center; }
+#v-composer .compo { border: 3px dashed rgba(20, 19, 15, .55); border-radius: var(--r); background: #fff; padding: 12px; gap: 10px; min-height: 120px; align-content: flex-start; }
+#v-composer .compo .carte-acc.grille { min-width: 96px; min-height: 92px; box-shadow: 0 4px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); }
+#v-composer .compo .carte-acc.grille .nm { font-size: 1.55rem; }
+#v-composer .compo .carte-acc.grille .outils { display: none; }
+#v-composer .compo .carte-acc.grille.choisi .outils { display: flex; margin-top: 6px; }
+#v-composer .compo .carte-acc.grille.choisi { outline: 4px solid #14130f; outline-offset: 3px; }
+#v-composer .compo .carte-acc.grille .outils button { min-height: 40px; min-width: 40px; border-radius: 12px; border: 0; background: rgba(255, 255, 255, .85); font: 700 .8rem var(--f-body); color: #14130f; }
+#v-composer details.plus { margin: 14px 0; border: 2px solid var(--noir); border-radius: var(--r); background: #fff; }
+#v-composer details.plus > summary { cursor: pointer; min-height: 52px; display: flex; align-items: center; padding: 0 18px; font-weight: 700; list-style: none; }
+#v-composer details.plus > summary::-webkit-details-marker { display: none; }
+#v-composer details.plus > summary::after { content: "+"; margin-left: auto; font: 700 1.6rem var(--f-display); }
+#v-composer details.plus[open] > summary::after { content: "\2212"; }
+#v-composer details.plus > :not(summary) { margin-left: 16px; margin-right: 16px; } #v-composer details.plus > :last-child { margin-bottom: 14px; }
+#v-composer .rang-h select, #v-composer .rang-h input { border-radius: 14px; min-height: 46px; }
+#v-composer .rang-h button { border-radius: 14px; min-height: 46px; }
+#v-composer #b-annuler-g, #v-composer #b-refaire-g, #v-composer #b-annuler-g2, #v-composer #b-vider, #v-composer #b-co-wav, #v-composer #b-co-pistes, #v-composer .son-resume { border-radius: 16px; min-height: 50px; }
+.barre-h button { border-radius: 16px; }
+@media (max-width: 700px) {
+  #v-composer .accords { grid-template-columns: repeat(2, 1fr); gap: 12px; } #v-composer .carte-acc { min-height: 108px; }
+  #v-composer .carte-acc .nm { font-size: 2rem; }
+  #v-composer .compo .carte-acc.grille { flex: 1 1 calc(50% - 10px); }
+  #v-composer { --r: 20px; }
+}
