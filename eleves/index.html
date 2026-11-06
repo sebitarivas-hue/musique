@@ -1677,7 +1677,6 @@ function entete(tab, r) {
     <a class="en-bloc en-ecole" href="${esc(D.choix || "#accueil")}" title="Choisir : élève ou enseignant"><b>${esc(ecole.replace(/Coeur/, "Cœur")).replace(/-/g, "\u2011")}</b><span>${esc(ville || "").replace(/-/g, "\u2011")}</span></a>
     <div class="en-bloc en-prof"><b>${esc(D.professeur || "")}</b><span>Professeur d'éducation musicale</span></div>
     ${r ? `<nav class="en-menu" aria-label="Rubriques"><ul>${D.nav.rubriques[r].map(([t, , lib]) => `<li><a href="#${t}"${t === tab ? ' aria-current="page"' : ""}>${esc(lib)}</a></li>`).join("")}</ul></nav>` : ""}${modeHtml()}${puceHtml()}
-    ${D.eleves ? `<a class="en-parents" href="${esc((D.choix || "").replace("choix.html", "parents/"))}">Parents</a>` : ""}
     <div class="en-an" aria-label="Année ${esc(D.annee)}"><span>${esc(a1 || "")}</span><i aria-hidden="true"></i><span>${esc(a2 || "")}</span></div></div>`;
 }
 function menu(tab) {
