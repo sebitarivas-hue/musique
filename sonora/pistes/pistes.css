@@ -399,3 +399,5 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 @media (max-width: 700px) { .defile > .debut { padding: 6px 8px; } .debut h2 { font-size: .85rem; margin-bottom: 5px; } .debut-cartes { gap: 7px; } .debut-cartes button { padding: 8px 10px; border-radius: 16px; } }
 /* Mode simple, sur ordinateur : la rangée des autres espaces SONORA est repliée derrière « Tous les outils ». */
 @media (min-width: 701px) { body.simple nav.actions { display: none; } body.simple header.haut a.accueil-sonora { display: inline-flex; align-items: center; margin-left: 10px; } }
+.touche small { position: absolute; left: 0; right: 0; bottom: 20px; font: 600 .6rem var(--f-corps, system-ui); line-height: 1.1; text-align: center; color: inherit; pointer-events: none; padding: 0 1px; }
+.rl-nom-clair { fill: #ECEBE4; }

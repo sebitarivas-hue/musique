@@ -1,25 +1,26 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=549afeb6ae";
-import * as Ed from "./editions.js?v=549afeb6ae";
-import * as P from "./projet.js?v=549afeb6ae";
-import { Stockage } from "./stockage.js?v=549afeb6ae";
-import { creerBouton } from "./bouton.js?v=549afeb6ae";
-import * as MI from "./midi.js?v=549afeb6ae";
-import * as N from "./notes.js?v=549afeb6ae";
-import { Rouleau } from "./rouleau.js?v=549afeb6ae";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=549afeb6ae";
-import * as INS from "./instruments.js?v=549afeb6ae";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=549afeb6ae";
-import * as MO from "./moteurs.js?v=549afeb6ae";
-import { monterPanneaux } from "./panneaux.js?v=549afeb6ae";
-import { monterNotions } from "./notions.js?v=549afeb6ae";
-import { DEMOS } from "./demos.js?v=549afeb6ae";
-import * as B from "./bibliotheque.js?v=549afeb6ae";
-import { encoderWAV } from "../studio/wav.js?v=549afeb6ae";
-import { ENTREES } from "../library/catalogue.js?v=549afeb6ae";
-import { compiler } from "../src/index.js?v=549afeb6ae";
-import { rendre } from "../src/rendu.js?v=549afeb6ae";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=510b3f1dd7";
+import * as Ed from "./editions.js?v=510b3f1dd7";
+import * as P from "./projet.js?v=510b3f1dd7";
+import { Stockage } from "./stockage.js?v=510b3f1dd7";
+import { creerBouton } from "./bouton.js?v=510b3f1dd7";
+import * as MI from "./midi.js?v=510b3f1dd7";
+import * as N from "./notes.js?v=510b3f1dd7";
+import { Rouleau } from "./rouleau.js?v=510b3f1dd7";
+import * as BM from "./batterie_midi.js?v=510b3f1dd7";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=510b3f1dd7";
+import * as INS from "./instruments.js?v=510b3f1dd7";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=510b3f1dd7";
+import * as MO from "./moteurs.js?v=510b3f1dd7";
+import { monterPanneaux } from "./panneaux.js?v=510b3f1dd7";
+import { monterNotions } from "./notions.js?v=510b3f1dd7";
+import { DEMOS } from "./demos.js?v=510b3f1dd7";
+import * as B from "./bibliotheque.js?v=510b3f1dd7";
+import { encoderWAV } from "../studio/wav.js?v=510b3f1dd7";
+import { ENTREES } from "../library/catalogue.js?v=510b3f1dd7";
+import { compiler } from "../src/index.js?v=510b3f1dd7";
+import { rendre } from "../src/rendu.js?v=510b3f1dd7";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -49,7 +50,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=549afeb6ae"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=510b3f1dd7"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -304,7 +305,8 @@ midi.clavier = new Clavier({ noteOn: (n, h, v) => noteMidi(n, v, true), noteOff:
 function dessinerClavierMidi() {
   const z = $("midi-clavier"); z.innerHTML = ""; const base = 12 * (midi.octave + 1), blanches = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16], noires = { 1: 0, 3: 1, 6: 3, 8: 4, 10: 5, 13: 7, 15: 8 };
   const touches = Object.entries(MI.TOUCHES).reduce((o, [k, v]) => { o[v] = k.toUpperCase(); return o; }, {});
-  const bouton = (off, noire) => { const n = base + off, b = document.createElement("button"); b.type = "button"; b.className = "touche " + (noire ? "noire" : "blanche"); b.dataset.note = n; b.setAttribute("aria-label", MI.nomNote(n)); b.innerHTML = `<span>${touches[off] || ""}</span>`;
+  const batt = BM.estBatterie($("midi-instrument").value);   // une batterie : chaque touche porte le nom de sa pièce
+  const bouton = (off, noire) => { const n = base + off, b = document.createElement("button"); b.type = "button"; b.className = "touche " + (noire ? "noire" : "blanche"); b.dataset.note = n; b.setAttribute("aria-label", batt ? (BM.NOMS_LIGNES[BM.ligneDe(n)] || MI.nomNote(n)) : MI.nomNote(n)); b.innerHTML = `<span>${touches[off] || ""}</span>` + (batt && BM.PIECE_DE_NOTE[n] ? `<small>${esc((BM.NOMS_LIGNES[BM.ligneDe(n)] || "").replace("Charleston ", "Charl. ").replace("Cymbale ", "").replace("Grosse caisse", "Grosse c.").replace("Caisse claire", "Claire"))}</small>` : "");
     b.addEventListener("pointerdown", e => { e.preventDefault(); b.setPointerCapture(e.pointerId); noteMidi(n, 0.8, true); }); const fin = () => noteMidi(n, 1, false); b.addEventListener("pointerup", fin); b.addEventListener("pointercancel", fin); b.addEventListener("lostpointercapture", fin);
     b.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && !e.repeat) { e.preventDefault(); noteMidi(n, 0.8, true); } }); b.addEventListener("keyup", e => { if (e.key === "Enter" || e.key === " ") noteMidi(n, 1, false); }); return b; };
   blanches.forEach(off => z.appendChild(bouton(off, false)));
@@ -318,7 +320,7 @@ function basculerMidi(ouvrir) {
 }
 $("b-midi").onclick = () => basculerMidi(); $("midi-fermer").onclick = () => basculerMidi(false);
 $("midi-oct-moins").onclick = () => { midi.octave = Math.max(0, midi.octave - 1); dessinerClavierMidi(); }; $("midi-oct-plus").onclick = () => { midi.octave = Math.min(8, midi.octave + 1); dessinerClavierMidi(); };
-$("midi-instrument").onchange = () => { try { localStorage.setItem("sonora:pistes:instrument", $("midi-instrument").value); } catch (_) {} if (midi.sampleur) midi.sampleur.toutCouper(); moteurMidi().catch(() => {}); };
+$("midi-instrument").onchange = () => { try { localStorage.setItem("sonora:pistes:instrument", $("midi-instrument").value); } catch (_) {} if (midi.sampleur) midi.sampleur.toutCouper(); if (BM.estBatterie($("midi-instrument").value)) midi.octave = 2;   /* les notes de batterie commencent au do 2 (36) */ dessinerClavierMidi(); moteurMidi().catch(() => {}); };
 $("b-midi-brancher").onclick = async () => {
   if (!navigator.requestMIDIAccess) { $("midi-etat").textContent = "Ce navigateur ne sait pas lire un clavier MIDI (Chrome, Edge ou Opera sur ordinateur et Android le savent ; Safari non). Utilise le clavier de l'ordinateur."; return; }
   try { midi.acces = await navigator.requestMIDIAccess({ sysex: false }); const noms = brancherMidi(midi.acces, midi.clavier);
@@ -401,7 +403,8 @@ async function ecouterNote(n, v) {
 }
 function ouvrirRouleau(sonId) {
   const s = etat.projet.sons[sonId]; if (!P.estMidi(s)) { message("Ce clip n'est pas un clip de notes : il n'a pas de notes à modifier. Enregistre des notes avec « Jouer un instrument »."); return; }
-  rl.son = sonId; $("rouleau").hidden = false; $("rl-titre").textContent = `Notes de « ${s.nom} »`; rouleau.grille = +$("rl-grille").value; rouleau.ouvrir({ notes: s.midi.notes, temps: s.midi.temps, parMesure: etat.projet.temps, nom: s.nom }); majRouleauBarre(); $("rouleau").scrollIntoView({ block: "nearest" });
+  rl.son = sonId; $("rouleau").hidden = false; $("rl-titre").textContent = `Notes de « ${s.nom} »`; rouleau.grille = +$("rl-grille").value; const batt = BM.estBatterie(s.midi.instrument);   // une batterie : une ligne par pièce, avec son nom, au lieu du clavier de piano
+  rouleau.ouvrir({ notes: s.midi.notes, temps: s.midi.temps, parMesure: etat.projet.temps, nom: s.nom, ...(batt ? { lignes: BM.LIGNES, ligneDe: BM.ligneDe, nomLigne: n => BM.NOMS_LIGNES[n] || n } : {}) }); majRouleauBarre(); $("rouleau").scrollIntoView({ block: "nearest" });
 }
 function fermerRouleau() { clearTimeout(rl.minuteur); const id = rl.son; $("rouleau").hidden = true; rl.son = null; if (rl.lecture) { try { rl.lecture.stop(); } catch (_) {} rl.lecture = null; } if (id && P.estMidi(etat.projet.sons[id]) && etat.projet.sons[id].midi.rendu !== etat.projet.tempo) remettreAJourMidi(); }
 $("rl-fin").onclick = fermerRouleau; $("rl-suppr").onclick = () => rouleau.supprimer(); $("rl-vider").onclick = () => rouleau.effacer();

@@ -30,15 +30,15 @@ export function mixer(evenements, tampons, { sr = 44100, duree, instrument = "cl
   for (const e of evenements) { const tries = [...e.notes].sort((a, b) => a - b); for (const [k, m] of e.notes.entries()) {
     const h = e.hz && e.hz[k] ? e.hz[k] : hz(m), tp = choisir(tampons, h); if (!tp) continue;   // e.hz : hauteurs exactes (gammes non tempérées)
     const rang = tries.indexOf(m), decal = tries.length > 1 ? rang * strum : 0, taux = (h / tp.f) * (tp.sr / sr), d0 = Math.round((e.t + decal) * sr), dNote = Math.max(1, Math.round((e.duree - decal) * sr)), queue = Math.round(rel * 1.5 * sr), vit = (e.vitesse ?? 0.8) * (variation ? 1 + VARIATION[(m + rang) % VARIATION.length] : 1) * niveau * gain;
-    const x = tp.canal, debut = tp.off * tp.sr, bouclable = tp.a && tp.b && e.duree + 0.3 > tp.b, d1 = (tp.off + (tp.a || 0)) * tp.sr, d2 = (tp.off + (tp.b || 0)) * tp.sr;
+    const x = tp.canal, debut = tp.off * tp.sr, dN = tp.ponctuel ? Math.max(dNote, Math.ceil((x.length - debut) / taux)) : dNote, bouclable = tp.a && tp.b && e.duree + 0.3 > tp.b, d1 = (tp.off + (tp.a || 0)) * tp.sr, d2 = (tp.off + (tp.b || 0)) * tp.sr;
     const p = Math.max(-1, Math.min(1, (m - 60) / 36)) * etale, ang = (p + 1) * Math.PI / 4, gl = Math.cos(ang), gr = Math.sin(ang);
     let pos = debut;
-    for (let i = 0; i < dNote + queue; i++) {
+    for (let i = 0; i < dN + queue; i++) {
       if (bouclable && pos >= d2) pos = d1 + (pos - d2);
       const j = Math.floor(pos); if (j + 1 >= x.length) break;
       const o = d0 + i; if (o >= n) break; if (o < 0) { pos += taux; continue; }
       const f = pos - j, s = x[j] + (x[j + 1] - x[j]) * f;
-      const env = Math.min(1, i / att) * (i < dNote ? 1 : Math.exp(-(i - dNote) / sr / tau)), v = s * env * vit;
+      const env = Math.min(1, i / att) * (i < dN ? 1 : Math.exp(-(i - dN) / sr / tau)), v = s * env * vit;
       L[o] += v * gl; R[o] += v * gr; pos += taux;
     }
   } }

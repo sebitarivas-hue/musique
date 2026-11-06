@@ -3,16 +3,17 @@
 // Maintenant : un seul mécanisme pour tout. Chaque instrument est un jeu de notes (des « tampons ») : des enregistrements réels de la banque du site, ou des notes rendues
 // une fois par SONORA (synthèse) à plusieurs hauteurs. Le clavier les joue en direct par transposition (Sampleur) et le clip est mixé avec les mêmes tampons (mixer) :
 // ce qu'on entend est ce qui est mis sur la piste. Plus de dépendance au moteur temps réel : si le son sort ailleurs sur la page, il sort ici.
-import { compiler } from "../src/index.js?v=549afeb6ae";
-import { rendre } from "../src/rendu.js?v=549afeb6ae";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=549afeb6ae";
-import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=549afeb6ae";
-import { ENTREES } from "../library/catalogue.js?v=549afeb6ae";
-import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=549afeb6ae";
-import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=549afeb6ae";
+import { compiler } from "../src/index.js?v=510b3f1dd7";
+import { rendre } from "../src/rendu.js?v=510b3f1dd7";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=510b3f1dd7";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=510b3f1dd7";
+import { ENTREES } from "../library/catalogue.js?v=510b3f1dd7";
+import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=510b3f1dd7";
+import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=510b3f1dd7";
+import { INSTRUMENTS_BATTERIE, tamponsBatterieAsync, kitDe } from "./batterie_midi.js?v=510b3f1dd7";
 
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
-export const GROUPES = ["Claviers", "Cordes", "Orchestre", "Vents", "Voix", "Percussions à hauteurs", "Percussions du monde", "Synthés et basses", "Effets sonores"];
+export const GROUPES = ["Claviers", "Cordes", "Orchestre", "Batteries", "Vents", "Voix", "Percussions à hauteurs", "Percussions du monde", "Synthés et basses", "Effets sonores"];
 
 // Instruments de la Library choisis pour leur sonorité (les autres programmes de la Library sont des démonstrations pédagogiques, sans voix).
 // [identifiant, nom affiché, groupe, note de départ, tenue (le son se prolonge tant qu'on appuie), ponctuel (il sonne en entier, même si on relâche)]
@@ -30,6 +31,7 @@ export function catalogue() {
   const L = [];
   for (const [b, nom, groupe, note] of INSTRUMENTS_ECH) L.push({ id: `ech:${b}`, nom, groupe: groupe === "Percussions" ? "Percussions du monde" : groupe, note, tenue: !["clavier", "harpe", "guitare", "guitare-elec", "guitare-jazz", "guitare-folk", "basse", "violons-stacc", "violons-piz", "celli-piz", "basses-piz", "celesta", "clavecin", "marimba", "vibraphone", "xylophone", "glockenspiel", "balafon", "kalimba", "cloche", "djembe", "timbale"].includes(b), ponctuel: ["djembe", "timbale", "cloche"].includes(b), source: "ech", cle: b });
   for (const [k, S] of Object.entries(SONS_SYNTHESE)) { const [note, tenue, ponctuel] = SYNTHES[k] || [60, false, false]; L.push({ id: `syn:${k}`, nom: S.nom, groupe: "Synthés et basses", note, tenue, ponctuel, source: "syn", cle: k }); }
+  for (const [id, nom] of INSTRUMENTS_BATTERIE) L.push({ id, nom, groupe: "Batteries", note: 36, tenue: false, ponctuel: true, source: "batt", cle: id });   // la batterie en MIDI (batterie_midi.js)
   for (const [id, nom, groupe, note, tenue, ponctuel] of LIBRARY) L.push({ id: `lib:${id}`, nom, groupe, note, tenue, ponctuel, source: "lib", cle: id });
   for (const [k, S] of Object.entries(SONS_PERCUSSION)) L.push({ id: `syn:${k}`, nom: S.nom, groupe: S.famille === "perc" ? "Percussions du monde" : "Effets sonores", note: S.note, tenue: false, ponctuel: true, source: "syn", cle: k, duree: DUREES[k] || 2.5 });
   return L.sort((a, b) => GROUPES.indexOf(a.groupe) - GROUPES.indexOf(b.groupe));
@@ -71,6 +73,7 @@ const CACHE = {};
 export async function charger(entree, ctx) {
   if (CACHE[entree.id]) return CACHE[entree.id];
   const p = (async () => {
+    if (entree.source === "batt") { const t = await tamponsBatterieAsync(kitDe(entree.cle)); return { tampons: t, relache: 0.05, niveau: 1, instrument: "batterie", ponctuel: true }; }
     if (entree.source === "ech") { const t = await preparer(entree.cle, ctx); if (!t || !t.length) throw new Error("la banque de sons n'est pas disponible"); return { tampons: t, relache: RELACHE[entree.cle] ?? 0.4, niveau: NIVEAU[entree.cle] ?? 1, instrument: entree.cle, ponctuel: entree.ponctuel }; }
     const code = entree.source === "lib" ? (ENTREES.find(e => e.id === entree.cle) || {}).code : entree.source === "syn" ? (SONS_SYNTHESE[entree.cle] || SONS_PERCUSSION[entree.cle] || {}).code : null;
     if (!code) throw new Error("instrument introuvable"); const r = compiler(code); if (!r.ok || !r.module || !r.module.voix) throw new Error("ce programme ne se compile pas");
