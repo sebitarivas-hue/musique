@@ -1,11 +1,11 @@
 // SONORA Academy : leçons, exercices corrigés sur le son produit. La progression reste dans le navigateur (aucun compte, rien n'est envoyé).
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=9e3e5cf32c";
-import { Editeur } from "../studio/editeur.js?v=9e3e5cf32c";
-import { UNITES, LECONS, parId } from "./parcours.js?v=9e3e5cf32c";
-import { verifier } from "./correcteur.js?v=9e3e5cf32c";
-import { preparer } from "../science/executeur.js?v=9e3e5cf32c";
-import { heros, etatBouton } from "../studio/heros.js?v=9e3e5cf32c";
-import { dessinerOscillo } from "../studio/visuels.js?v=9e3e5cf32c";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=f2e8aa2a5a";
+import { Editeur } from "../studio/editeur.js?v=f2e8aa2a5a";
+import { UNITES, LECONS, parId } from "./parcours.js?v=f2e8aa2a5a";
+import { verifier } from "./correcteur.js?v=f2e8aa2a5a";
+import { preparer } from "../science/executeur.js?v=f2e8aa2a5a";
+import { heros, etatBouton } from "../studio/heros.js?v=f2e8aa2a5a";
+import { dessinerOscillo } from "../studio/visuels.js?v=f2e8aa2a5a";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

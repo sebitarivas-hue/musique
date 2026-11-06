@@ -1,0 +1,23 @@
+/* SONORA Découvertes : grand, coloré, rond. */
+body { background: #F0EFE8; }
+.decouverte { width: min(1000px, 100%); margin: 0 auto; padding: 18px 16px 40px; }
+.intro h1 { font: 900 clamp(2rem, 6vw, 3.4rem)/1 var(--f-display, sans-serif); margin: 6px 0 8px; } .intro h1 span { background: var(--acide); padding: 0 .15em; border-radius: 10px; }
+.intro p { font-size: 1.15rem; margin: 0 0 16px; color: #3b3a35; }
+.choix { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 18px; }
+.choix button { --ombre: color-mix(in srgb, var(--c) 58%, #14130f); position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; padding: 14px; min-height: 132px; border: 0; border-radius: 20px; background: var(--c); background: linear-gradient(165deg, color-mix(in srgb, var(--c) 78%, #fff), var(--c)); color: #14130f; box-shadow: 0 5px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); cursor: pointer; }
+.choix button:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ombre); } .choix button[aria-pressed="true"] { outline: 4px solid #14130f; outline-offset: 3px; }
+.choix i { font: 700 .8rem var(--f-mono, monospace); font-style: normal; background: rgba(20,19,15,.85); color: #fff; border-radius: 99px; padding: 1px 9px; } .choix b { font-size: 1.15rem; line-height: 1.1; } .choix span { font-size: .82rem; font-weight: 500; line-height: 1.25; color: rgba(20,19,15,.78); }
+.exp { background: #fff; border: 2px solid #14130f; border-radius: 24px; padding: 18px; box-shadow: 0 6px 0 rgba(17,17,15,.85); }
+.exp[hidden] { display: none; } .exp h2 { font-size: 1.6rem; } .exp h2::before { background: var(--c); width: 12px; height: 28px; } .resume { font-size: 1.1rem; margin: 0 0 12px; }
+.dessin { display: block; width: 100%; height: 150px; border-radius: 16px; background: #14130f; margin: 8px 0 14px; }
+.curseur { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; margin: 10px 0; font-weight: 700; } .curseur input { grid-column: 1 / -1; width: 100%; } .curseur output { font: 600 .95rem var(--f-mono, monospace); background: #14130f; color: var(--acide); padding: 3px 10px; border-radius: 99px; }
+.grand { --ombre: color-mix(in srgb, var(--c) 58%, #14130f); display: block; width: 100%; min-height: 64px; margin: 10px 0 16px; border: 0; border-radius: 20px; background: var(--c); font-size: 1.3rem; font-weight: 800; color: #14130f; box-shadow: 0 5px 0 var(--ombre); }
+.grand[aria-pressed="true"] { background: #14130f; color: var(--acide); box-shadow: 0 5px 0 #000; }
+.formes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 6px 0 12px; } .forme { --ombre: color-mix(in srgb, var(--c) 58%, #14130f); display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 12px; min-height: 76px; border-radius: 16px; border: 0; background: #fff; box-shadow: inset 0 0 0 2px #14130f; text-align: left; }
+.forme span { font-weight: 500; font-size: .82rem; color: #55544d; } .forme[aria-pressed="true"] { background: var(--c); box-shadow: 0 4px 0 var(--ombre); }
+.phrases { margin: 8px 0 14px; padding-left: 1.2em; font-size: 1.08rem; line-height: 1.5; } .phrases li { margin: 6px 0; }
+.quiz { background: #FFF4C2; border-radius: 18px; padding: 14px 16px; } .quiz .q { font-weight: 800; margin: 0 0 8px; } .rep { display: flex; flex-wrap: wrap; gap: 8px; }
+.rep button.juste { background: #8BD450; } .rep button.faux { background: #FFB4A8; } .retour-q { margin: 8px 0 0; font-weight: 700; min-height: 1.4em; }
+.suite { text-align: right; margin: 14px 0 0; }
+@media (max-width: 900px) { .choix { grid-template-columns: repeat(2, 1fr); } .formes { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px) { .choix button { min-height: 112px; } .exp { padding: 14px; } }
