@@ -1,23 +1,23 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=a44f89b8f6";
-import * as Ed from "./editions.js?v=a44f89b8f6";
-import * as P from "./projet.js?v=a44f89b8f6";
-import { Stockage } from "./stockage.js?v=a44f89b8f6";
-import { creerBouton } from "./bouton.js?v=a44f89b8f6";
-import * as MI from "./midi.js?v=a44f89b8f6";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=a44f89b8f6";
-import * as INS from "./instruments.js?v=a44f89b8f6";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=a44f89b8f6";
-import * as MO from "./moteurs.js?v=a44f89b8f6";
-import { monterPanneaux } from "./panneaux.js?v=a44f89b8f6";
-import { monterNotions } from "./notions.js?v=a44f89b8f6";
-import { DEMOS } from "./demos.js?v=a44f89b8f6";
-import * as B from "./bibliotheque.js?v=a44f89b8f6";
-import { encoderWAV } from "../studio/wav.js?v=a44f89b8f6";
-import { ENTREES } from "../library/catalogue.js?v=a44f89b8f6";
-import { compiler } from "../src/index.js?v=a44f89b8f6";
-import { rendre } from "../src/rendu.js?v=a44f89b8f6";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=4b2478c25a";
+import * as Ed from "./editions.js?v=4b2478c25a";
+import * as P from "./projet.js?v=4b2478c25a";
+import { Stockage } from "./stockage.js?v=4b2478c25a";
+import { creerBouton } from "./bouton.js?v=4b2478c25a";
+import * as MI from "./midi.js?v=4b2478c25a";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=4b2478c25a";
+import * as INS from "./instruments.js?v=4b2478c25a";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=4b2478c25a";
+import * as MO from "./moteurs.js?v=4b2478c25a";
+import { monterPanneaux } from "./panneaux.js?v=4b2478c25a";
+import { monterNotions } from "./notions.js?v=4b2478c25a";
+import { DEMOS } from "./demos.js?v=4b2478c25a";
+import * as B from "./bibliotheque.js?v=4b2478c25a";
+import { encoderWAV } from "../studio/wav.js?v=4b2478c25a";
+import { ENTREES } from "../library/catalogue.js?v=4b2478c25a";
+import { compiler } from "../src/index.js?v=4b2478c25a";
+import { rendre } from "../src/rendu.js?v=4b2478c25a";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -47,7 +47,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=a44f89b8f6"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=4b2478c25a"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -86,6 +86,11 @@ function appliquerEnveloppes(projet, chaines, depuis, debut) {
     const ch = chaines[pi.id], pts = P.enveloppeDe(pi); if (!ch || !ch.env || !pts.length) continue;
     ch.env.gain.setValueAtTime(P.gainEnveloppe(pi, depuis), debut);
     for (const q of pts) if (q.t > depuis) ch.env.gain.linearRampToValueAtTime(q.v, debut + (q.t - depuis));
+  }
+  for (const pi of P.pistesAudibles(projet)) {   // la courbe de panoramique pilote le panoramique de la piste
+    const ch = chaines[pi.id], pts = P.courbeDe(pi, "pan"); if (!ch || !ch.pan || !pts.length) continue;
+    ch.pan.pan.setValueAtTime(P.valeurCourbe(pi, "pan", depuis), debut);
+    for (const q of pts) if (q.t > depuis) ch.pan.pan.linearRampToValueAtTime(q.v, debut + (q.t - depuis));
   }
 }
 async function chainesProjet(ctx, projet, sortie) { const ch = {}; for (const pi of P.pistesAudibles(projet)) ch[pi.id] = await chainePiste(ctx, pi, sortie); return ch; }
@@ -536,53 +541,93 @@ function afficher() {
   $("regle").innerHTML = r; $("regle").style.width = largeur + "px"; $("voies").style.width = largeur + "px";
   $("entetes").innerHTML = `<div class="ent-regle"></div>` + p.pistes.map(pi => { const nfx = P.rackDe(pi).length; return `<div class="entete${estArmee(pi) ? " armee" : ""}" data-piste="${pi.id}">
     <input type="text" value="${esc(pi.nom)}" aria-label="Nom de la piste" maxlength="30">
-    <div class="ent-b"><button type="button" class="b-arme" aria-pressed="${estArmee(pi)}" title="Enregistrer sur cette piste">Rec</button><button type="button" class="b-muet" aria-pressed="${pi.muet}" title="Muet">M</button><button type="button" class="b-solo" aria-pressed="${pi.solo}" title="Solo">S</button><button type="button" class="b-fx" aria-pressed="${etat.fx === pi.id}" title="Effets de la piste">Effets${nfx ? " " + nfx : ""}</button><button type="button" class="b-env" aria-pressed="${etat.env === pi.id}" title="Enveloppe de volume : des points sur la piste pour faire monter et descendre le volume">Env${P.enveloppeDe(pi).length ? " " + P.enveloppeDe(pi).length : ""}</button><button type="button" class="b-plus" aria-label="Plus de réglages pour ${esc(pi.nom)} : volume, panoramique, effets, enveloppe" title="Volume, panoramique, effets, enveloppe">&hellip;</button></div>
+    <div class="ent-b"><button type="button" class="b-arme" aria-pressed="${estArmee(pi)}" title="Enregistrer sur cette piste">Rec</button><button type="button" class="b-muet" aria-pressed="${pi.muet}" title="Muet">M</button><button type="button" class="b-solo" aria-pressed="${pi.solo}" title="Solo">S</button><button type="button" class="b-fx" aria-pressed="${etat.fx === pi.id}" title="Effets de la piste">Effets${nfx ? " " + nfx : ""}</button><button type="button" class="b-env" aria-pressed="${etat.env === pi.id}" title="Courbes : dessiner sur la piste comment le volume et le panoramique changent au fil du temps"><span class="ic ic-courbe" aria-hidden="true"></span> Courbes${P.courbeDe(pi, "volume").length + P.courbeDe(pi, "pan").length ? " <i>" + (P.courbeDe(pi, "volume").length + P.courbeDe(pi, "pan").length) + "</i>" : ""}</button><button type="button" class="b-plus" aria-label="Plus de réglages pour ${esc(pi.nom)} : volume, panoramique, effets, enveloppe" title="Volume, panoramique, effets, enveloppe">&hellip;</button></div>
     <input type="range" class="vol-h" min="0" max="1.5" step="0.01" value="${pi.volume}" aria-label="Volume de ${esc(pi.nom)}" title="Volume de la piste">
     <div class="ent-k"></div></div>`; }).join("");
   const grille = `background-size: ${P.dureeTemps(p) * etat.pxs}px 100%`;
   $("voies").innerHTML = p.pistes.map(pi => `<div class="voie" data-piste="${pi.id}" style="${grille}" aria-label="Piste ${esc(pi.nom)}">${pi.clips.map(c => `<div class="clip${etat.choisi === c.id ? " choisi" : ""}" data-clip="${c.id}" style="left:${c.debut * etat.pxs}px;width:${Math.max(4, c.duree * etat.pxs)}px" tabindex="0" aria-label="${esc((p.sons[c.son] || {}).nom || "son")}, à ${c.debut.toFixed(2)} s"><div class="nom-clip">${esc((p.sons[c.son] || {}).nom || "son")}</div><canvas></canvas></div>`).join("")}</div>`).join("");
   for (const el of document.querySelectorAll(".clip[data-clip]")) { const r2 = P.trouverClip(p, el.dataset.clip); dessinerOnde(el.querySelector("canvas"), p.sons[r2.clip.son], r2.clip); }
-  brancherEntetes(); brancherVoies(); dessinerEnveloppes(); majSelection(); afficherEffets();
+  brancherEntetes(); brancherVoies(); dessinerEnveloppes(); majAuto(); majSelection(); afficherEffets();
 }
-// ---------------------------------------------------------------- enveloppe de volume : un calque SVG sur chaque piste qui a des points, éditable sur la piste choisie (bouton Env)
-const SVGNS = "http://www.w3.org/2000/svg", pcEnv = v => Math.round(v * 100) + " %";
+// ---------------------------------------------------------------- les courbes d'une piste (volume et panoramique) : un calque SVG sur la piste, éditable sur la piste choisie (bouton Courbes)
+// Un clic sur un point le choisit, un clic dans le vide en pose un nouveau, on glisse pour déplacer. La barre « Courbes » (#auto) dit ce qu'on édite et propose Supprimer le point,
+// Effacer la courbe et Terminé. « Voir les courbes » les montre ou les cache sur les pistes qu'on n'édite pas ; le son, lui, les suit toujours.
+const SVGNS = "http://www.w3.org/2000/svg", pcEnv = v => Math.round(v * 100) + " %", virg = n => n.toFixed(2).replace(".", ",");
+const ETIQ_VALEUR = (k, v) => k === "pan" ? (Math.abs(v) < 0.005 ? "au centre" : Math.round(Math.abs(v) * 100) + " % à " + (v < 0 ? "gauche" : "droite")) : "volume " + pcEnv(v);
+const RAYON_PRISE = 18;   // un clic à moins de 18 pixels d'un point le prend, au lieu d'en poser un autre
 function dessinerEnveloppes() {
   const p = etat.projet;
   for (const voie of document.querySelectorAll(".voie")) {
-    const pi = P.trouverPiste(p, voie.dataset.piste), pts = P.enveloppeDe(pi), edite = etat.env === pi.id; if (!pts.length && !edite) continue;
-    const W = parseFloat(voie.parentElement.style.width) || voie.scrollWidth, H = voie.clientHeight || 168, X = t => t * etat.pxs, Y = v => (1 - v / P.ENV_MAX) * (H - 8) + 4;
-    const svg = document.createElementNS(SVGNS, "svg"); svg.setAttribute("class", "env" + (edite ? " env-edit" : "")); svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-    svg.setAttribute("role", "group"); svg.setAttribute("aria-label", `Enveloppe de volume de ${pi.nom}, ${pts.length} point${pts.length > 1 ? "s" : ""}`);
-    const un = document.createElementNS(SVGNS, "line"); un.setAttribute("class", "env-un"); un.setAttribute("x1", 0); un.setAttribute("x2", W); un.setAttribute("y1", Y(1)); un.setAttribute("y2", Y(1)); svg.appendChild(un);
-    const ligne = document.createElementNS(SVGNS, "polyline"); ligne.setAttribute("class", "env-l"); svg.appendChild(ligne);
-    const tracer = () => { const L = P.enveloppeDe(pi); ligne.setAttribute("points", L.length ? [`0,${Y(L[0].v)}`, ...L.map(q => `${X(q.t)},${Y(q.v)}`), `${W},${Y(L[L.length - 1].v)}`].join(" ") : ""); };
-    tracer();
-    if (edite) {
-      const grille = () => P.dureeTemps(p) * (+$("aimant").value || 0.25), caler = t => P.aimanter(p, t, +$("aimant").value);
-      const txt = q => `Point à ${q.t.toFixed(2).replace(".", ",")} s, volume ${pcEnv(q.v)}`;
-      const poignee = q => {
-        const c = document.createElementNS(SVGNS, "circle"); c.setAttribute("class", "env-p"); c.setAttribute("r", 7); c.setAttribute("tabindex", "0"); c.setAttribute("role", "slider"); c.setAttribute("aria-valuemin", "0"); c.setAttribute("aria-valuemax", "150");
-        const maj = () => { c.setAttribute("cx", X(q.t)); c.setAttribute("cy", Y(q.v)); c.setAttribute("aria-valuenow", Math.round(q.v * 100)); c.setAttribute("aria-valuetext", txt(q)); c.setAttribute("aria-label", txt(q)); }; maj();
-        const lire = ev => { const r = svg.getBoundingClientRect(); return [Math.max(0, caler((ev.clientX - r.left) / etat.pxs)), P.ENV_MAX * (1 - (Math.min(H - 4, Math.max(4, ev.clientY - r.top)) - 4) / (H - 8))]; };
-        c.addEventListener("pointerdown", ev => { ev.preventDefault(); ev.stopPropagation(); c.setPointerCapture(ev.pointerId); c.focus({ preventScroll: true });
-          c.onpointermove = m => { const [t, v] = lire(m); P.deplacerPointEnv(pi, q, t, v); maj(); tracer(); }; c.onpointerup = c.onpointercancel = () => { c.onpointermove = c.onpointerup = c.onpointercancel = null; changer(); }; });
-        c.addEventListener("dblclick", ev => { ev.stopPropagation(); P.supprimerPointEnv(pi, q); changer(); });
-        c.addEventListener("keydown", ev => { const k = ev.key; let fait = true;
-          if (k === "ArrowLeft") P.deplacerPointEnv(pi, q, q.t - grille(), q.v); else if (k === "ArrowRight") P.deplacerPointEnv(pi, q, q.t + grille(), q.v);
-          else if (k === "ArrowUp") P.deplacerPointEnv(pi, q, q.t, q.v + 0.05); else if (k === "ArrowDown") P.deplacerPointEnv(pi, q, q.t, q.v - 0.05);
-          else if (k === "Delete" || k === "Backspace") { P.supprimerPointEnv(pi, q); ev.preventDefault(); ev.stopPropagation(); changer(); return; } else fait = false;
-          if (fait) { ev.preventDefault(); ev.stopPropagation(); maj(); tracer(); clearTimeout(c._t); c._t = setTimeout(changer, 400); } });
-        return c;
-      };
-      // un clic dans le vide pose un point, qu'on peut tout de suite glisser
-      svg.addEventListener("pointerdown", ev => { if (ev.target !== svg) return; ev.preventDefault(); ev.stopPropagation(); const r = svg.getBoundingClientRect(), t = Math.max(0, caler((ev.clientX - r.left) / etat.pxs)), v = P.ENV_MAX * (1 - (Math.min(H - 4, Math.max(4, ev.clientY - r.top)) - 4) / (H - 8));
-        P.ajouterPointEnv(pi, t, v); changer(); });
-      pi.enveloppe = pts; // les poignées modifient directement les points rangés dans le projet
-      for (const q of pts) svg.appendChild(poignee(q));
+    const pi = P.trouverPiste(p, voie.dataset.piste), edite = etat.env === pi.id, k = etat.courbe || "volume", C = P.COURBES[k], autre = k === "volume" ? "pan" : "volume";
+    const ptsActive = P.courbeDe(pi, k), ptsAutre = P.courbeDe(pi, autre);
+    if (!edite && etat.voirCourbes === false) continue; if (!ptsActive.length && !ptsAutre.length && !edite) continue;
+    const W = parseFloat(voie.parentElement.style.width) || voie.scrollWidth, H = voie.clientHeight || 168, X = t => t * etat.pxs, Yde = (kk, v) => { const c = P.COURBES[kk]; return (1 - (v - c.min) / (c.max - c.min)) * (H - 8) + 4; }, Y = v => Yde(k, v);
+    const svg = document.createElementNS(SVGNS, "svg"); svg.setAttribute("class", "env" + (edite ? " env-edit" : "") + " courbe-" + k); svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.setAttribute("role", "group"); svg.setAttribute("aria-label", `Courbes de ${pi.nom} : volume ${P.courbeDe(pi, "volume").length} point${P.courbeDe(pi, "volume").length > 1 ? "s" : ""}, panoramique ${P.courbeDe(pi, "pan").length} point${P.courbeDe(pi, "pan").length > 1 ? "s" : ""}`);
+    const el = (nom, at) => { const e = document.createElementNS(SVGNS, nom); for (const [a, v] of Object.entries(at)) e.setAttribute(a, v); return e; };
+    const trace = (L, kk) => L.length ? [`0,${Yde(kk, L[0].v)}`, ...L.map(q => `${X(q.t)},${Yde(kk, q.v)}`), `${W},${Yde(kk, L[L.length - 1].v)}`].join(" ") : "";
+    if (edite) {   // repères de lecture : la valeur « neutre » (volume 100 %, panoramique au centre) et les extrêmes
+      svg.appendChild(el("line", { class: "env-un", x1: 0, x2: W, y1: Y(C.def), y2: Y(C.def) }));
+      const rep = k === "pan" ? [[1, "droite"], [0, "centre"], [-1, "gauche"]] : [[1.5, "150 %"], [1, "100 %"], [0.5, "50 %"], [0, "0"]];
+      for (const [v, t] of rep) { const tx = el("text", { class: "env-rep", x: 6, y: Y(v) + (v === C.max ? 14 : v === C.min ? -4 : -4) }); tx.textContent = t; svg.appendChild(tx); }
+    } else svg.appendChild(el("line", { class: "env-un", x1: 0, x2: W, y1: Y(C.def), y2: Y(C.def) }));
+    if (ptsAutre.length) svg.appendChild(el("polyline", { class: "env-l env-autre courbe-" + autre, points: trace(ptsAutre, autre) }));
+    const ligne = el("polyline", { class: "env-l courbe-" + k, points: trace(ptsActive, k) }); svg.appendChild(ligne);
+    if (!edite) { voie.appendChild(svg); continue; }
+    const grille = () => P.dureeTemps(p) * (+$("aimant").value || 0.25), caler = t => P.aimanter(p, t, +$("aimant").value);
+    const pos = ev => { const r = svg.getBoundingClientRect(), y = Math.min(H - 4, Math.max(4, ev.clientY - r.top)); return [Math_max0(caler((ev.clientX - r.left) / etat.pxs)), C.min + (C.max - C.min) * (1 - (y - 4) / (H - 8))]; };
+    const Math_max0 = t => Math.max(0, t);
+    const pts = () => P.courbeDe(pi, k), brut = () => pi[C.cle];
+    const sel = () => etat.pointSel && etat.pointSel.piste === pi.id && etat.pointSel.k === k ? etat.pointSel : null;
+    const poignees = [], bulle = el("g", { class: "env-bulle" }), bulleFond = el("rect", { rx: 4, height: 22 }), bulleTxt = el("text", {}); bulle.append(bulleFond, bulleTxt);
+    const poignee = i => {   // une poignée par place dans la liste triée : elle montre toujours le point qui est à cette place
+      const c = el("circle", { class: "env-p", r: 9, tabindex: 0, role: "slider", "aria-valuemin": C.min * 100, "aria-valuemax": C.max * 100 }), Q = () => brut()[i];
+      const maj = () => { const q = Q(); if (!q) return; c.setAttribute("cx", X(q.t)); c.setAttribute("cy", Y(q.v)); c.setAttribute("aria-valuenow", Math.round(q.v * 100)); const t = `Point ${i + 1} sur ${brut().length}, à ${virg(q.t)} s, ${ETIQ_VALEUR(k, q.v)}`; c.setAttribute("aria-valuetext", t); c.setAttribute("aria-label", t); c.classList.toggle("choisi", !!(sel() && sel().i === i)); }; maj(); c._maj = maj;
+      c.addEventListener("focus", () => { etat.pointSel = { piste: pi.id, k, i }; majBulle(); majAuto(); poignees.forEach(h => h._maj()); });
+      c.addEventListener("keydown", ev => { const kk = ev.key; let fait = true, q = Q(); if (!q) return;
+        if (kk === "ArrowLeft") P.deplacerPoint(pi, k, q, q.t - grille(), q.v); else if (kk === "ArrowRight") P.deplacerPoint(pi, k, q, q.t + grille(), q.v);
+        else if (kk === "ArrowUp") P.deplacerPoint(pi, k, q, q.t, q.v + (k === "pan" ? 0.1 : 0.05)); else if (kk === "ArrowDown") P.deplacerPoint(pi, k, q, q.t, q.v - (k === "pan" ? 0.1 : 0.05));
+        else if (kk === "Delete" || kk === "Backspace") { P.supprimerPoint(pi, k, q); etat.pointSel = null; ev.preventDefault(); ev.stopPropagation(); changer(); return; } else fait = false;
+        if (fait) { ev.preventDefault(); ev.stopPropagation(); etat.pointSel = { piste: pi.id, k, i: brut().indexOf(q) }; ligne.setAttribute("points", trace(pts(), k)); poignees.forEach(h => h._maj()); majBulle(); clearTimeout(c._t); c._t = setTimeout(changer, 400); } });
+      return c;
+    };
+    function majBulle() {   // une étiquette près du point choisi : où il est et ce qu'il règle
+      const s = sel(), q = s && brut()[s.i]; if (!q) { bulle.setAttribute("visibility", "hidden"); return; }
+      const t = `${virg(q.t)} s, ${ETIQ_VALEUR(k, q.v)}`; bulleTxt.textContent = t; const w = t.length * 7 + 16, x = Math.min(W - w - 4, Math.max(4, X(q.t) - w / 2)), y = Y(q.v) < 44 ? Y(q.v) + 16 : Y(q.v) - 36;
+      bulleFond.setAttribute("x", x); bulleFond.setAttribute("y", y); bulleFond.setAttribute("width", w); bulleTxt.setAttribute("x", x + 8); bulleTxt.setAttribute("y", y + 15); bulle.setAttribute("visibility", "visible");
     }
+    (brut() || []).forEach((q, i) => { const h = poignee(i); poignees.push(h); svg.appendChild(h); }); svg.appendChild(bulle); majBulle();
+    // un clic : le point le plus proche (à moins de RAYON_PRISE pixels) est pris, sinon un nouveau point est posé là ; on glisse tout de suite. La page ne se redessine qu'au relâchement.
+    svg.addEventListener("pointerdown", ev => {
+      ev.preventDefault(); ev.stopPropagation(); const r = svg.getBoundingClientRect(), cx = ev.clientX - r.left, cy = ev.clientY - r.top; let i = -1, d = RAYON_PRISE, neuf = false;
+      brut().forEach((q, j) => { const dd = Math.hypot(X(q.t) - cx, Y(q.v) - cy); if (dd <= d) { d = dd; i = j; } });
+      let q;
+      if (i >= 0) q = brut()[i]; else { const [t, v] = pos(ev); q = P.ajouterPoint(pi, k, t, v); neuf = true; const h = poignee(brut().length - 1); poignees.push(h); svg.insertBefore(h, bulle); }
+      const toutMaj = () => { etat.pointSel = { piste: pi.id, k, i: brut().indexOf(q) }; ligne.setAttribute("points", trace(pts(), k)); poignees.forEach(h => h._maj()); majBulle(); majAuto(); };
+      toutMaj(); svg.setPointerCapture(ev.pointerId); let bouge = false;
+      const suit = m => { const [t, v] = pos(m); bouge = true; P.deplacerPoint(pi, k, q, t, v); toutMaj(); };
+      const fin = () => { svg.removeEventListener("pointermove", suit); svg.removeEventListener("pointerup", fin); svg.removeEventListener("pointercancel", fin); if (bouge || neuf) changer(); };
+      svg.addEventListener("pointermove", suit); svg.addEventListener("pointerup", fin); svg.addEventListener("pointercancel", fin);
+    });
     voie.appendChild(svg);
   }
 }
+// La barre « Courbes » : qui on édite, quelle courbe, le point choisi, et les gestes qui servent (supprimer, effacer, terminer).
+function majAuto() {
+  const barre = $("auto"), pi = etat.env && P.trouverPiste(etat.projet, etat.env); barre.hidden = !pi; if (!pi) return;
+  const k = etat.courbe || "volume", C = P.COURBES[k], n = P.courbeDe(pi, k).length, s = etat.pointSel && etat.pointSel.piste === pi.id && etat.pointSel.k === k ? etat.pointSel : null, q = s && pi[C.cle] && pi[C.cle][s.i];
+  $("auto-titre").textContent = `Courbes de « ${pi.nom} »`;
+  for (const kk of ["volume", "pan"]) $("auto-" + kk).setAttribute("aria-pressed", String(kk === k));
+  $("auto-voir").checked = etat.voirCourbes !== false; $("auto-sup").disabled = !q; $("auto-vider").disabled = !n;
+  $("auto-aide").textContent = q ? `Point choisi : ${virg(q.t)} s, ${ETIQ_VALEUR(k, q.v)}. Glisse-le pour le déplacer, ou « Supprimer le point ».`
+    : n ? `${k === "pan" ? "Panoramique" : "Volume"} : ${n} point${n > 1 ? "s" : ""}. Clique un point pour le choisir, ou clique dans le vide pour en poser un autre.` : `${k === "pan" ? "Panoramique" : "Volume"} : aucun point. Clique sur la piste pour poser le premier : la courbe fait bouger ${k === "pan" ? "le son de gauche à droite" : "le volume au fil du temps"}.`;
+}
+$("auto-volume").onclick = () => { etat.courbe = "volume"; etat.pointSel = null; afficher(); };
+$("auto-pan").onclick = () => { etat.courbe = "pan"; etat.pointSel = null; afficher(); };
+$("auto-voir").onchange = e => { etat.voirCourbes = e.target.checked; afficher(); };
+$("auto-fin").onclick = () => { etat.env = null; etat.pointSel = null; afficher(); };
+$("auto-sup").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env), k = etat.courbe || "volume", s = etat.pointSel, q = pi && s && pi[P.COURBES[k].cle][s.i]; if (!q) return; P.supprimerPoint(pi, k, q); etat.pointSel = null; changer(); };
+$("auto-vider").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env); if (!pi) return; P.viderCourbe(pi, etat.courbe || "volume"); etat.pointSel = null; changer(); };
 function majSelection() {
   const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); $("selection").hidden = !r; if (!r) return;
   $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain;
@@ -702,7 +747,7 @@ function brancherEntetes() {
     // Tablette : un curseur de volume horizontal dans l'en-tête (le bouton rond y est caché) ; il agit comme le bouton, et la page ne se redessine pas pendant qu'on le glisse.
     el.querySelector(".vol-h").oninput = e => { const v = +e.target.value; pi.volume = v; const ch = enChaine(); if (ch) ch.vol.gain.setTargetAtTime(v, etat.ctx.currentTime, 0.02); ranger(); };
     el.querySelector(".b-plus").onclick = () => ouvrirFeuille(pi);
-    el.querySelector(".b-env").onclick = () => { etat.env = etat.env === pi.id ? null : pi.id; if (etat.env) message("Enveloppe de volume : clique sur la piste pour poser un point, glisse-le pour monter ou descendre le volume. Double clic ou Suppr pour l'enlever. Les flèches déplacent un point au clavier."); afficher(); };
+    el.querySelector(".b-env").onclick = () => { etat.env = etat.env === pi.id ? null : pi.id; etat.pointSel = null; afficher(); if (etat.env) $("ligne").scrollIntoView({ block: "start" }); };
     el.querySelector(".b-fx").onclick = () => { etat.fx = etat.fx === pi.id ? null : pi.id; afficher(); if (etat.fx) $("effets").scrollIntoView({ block: "nearest", behavior: "smooth" }); };
   }
 }
@@ -965,6 +1010,12 @@ async function demarrer() {
   else try { const est = navigator.storage && navigator.storage.estimate && await navigator.storage.estimate(); if (est && est.quota && est.usage / est.quota > 0.85) alerter("place", "Le navigateur est presque plein : ton prochain son risque de ne pas être gardé. Télécharge ton projet et supprime les projets que tu n'utilises plus."); } catch (_) {}
   etat.projet = p || P.nouveauProjet(); $("titre-projet").value = etat.projet.titre || ""; histo.snap = JSON.stringify(etat.projet); construireMenus(); majMenus(); etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id;
   await recevoirDuStudio(); afficher(); annoncerProjet(); requestAnimationFrame(boucle); B.preparerBatterie().catch(() => {});   // la vraie batterie se charge en arrière-plan
+// Deux niveaux : « l'essentiel » (par défaut) cache ce qui n'est pas utile pour un premier morceau (aimant, métronome, plusieurs pistes, entrée audio, menus, Faust...) ;
+// « Tous les outils » montre tout. Le choix est gardé dans le navigateur. Sur téléphone, les outils avancés sont déjà rangés dans des feuilles.
+const niveauSimple = () => { try { return localStorage.getItem("pistes-simple") !== "0"; } catch (_) { return true; } };
+function appliquerNiveau() { const s = niveauSimple(); document.body.classList.toggle("simple", s); $("b-niveau").setAttribute("aria-pressed", String(!s)); $("b-niveau-t").textContent = s ? "Tous les outils" : "Seulement l'essentiel"; }
+$("b-niveau").onclick = () => { try { localStorage.setItem("pistes-simple", niveauSimple() ? "0" : "1"); } catch (_) {} appliquerNiveau(); };
+appliquerNiveau();
 window.PISTES_PRET = true;
   if (location.hash === "#projets") $("b-projets").click();   // venu de « Mes projets » (accueil SONORA)
 }

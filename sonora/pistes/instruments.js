@@ -3,16 +3,16 @@
 // Maintenant : un seul mécanisme pour tout. Chaque instrument est un jeu de notes (des « tampons ») : des enregistrements réels de la banque du site, ou des notes rendues
 // une fois par SONORA (synthèse) à plusieurs hauteurs. Le clavier les joue en direct par transposition (Sampleur) et le clip est mixé avec les mêmes tampons (mixer) :
 // ce qu'on entend est ce qui est mis sur la piste. Plus de dépendance au moteur temps réel : si le son sort ailleurs sur la page, il sort ici.
-import { compiler } from "../src/index.js?v=a44f89b8f6";
-import { rendre } from "../src/rendu.js?v=a44f89b8f6";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=a44f89b8f6";
-import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=a44f89b8f6";
-import { ENTREES } from "../library/catalogue.js?v=a44f89b8f6";
-import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=a44f89b8f6";
-import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=a44f89b8f6";
+import { compiler } from "../src/index.js?v=4b2478c25a";
+import { rendre } from "../src/rendu.js?v=4b2478c25a";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=4b2478c25a";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=4b2478c25a";
+import { ENTREES } from "../library/catalogue.js?v=4b2478c25a";
+import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=4b2478c25a";
+import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=4b2478c25a";
 
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
-export const GROUPES = ["Claviers", "Cordes", "Vents", "Voix", "Percussions à hauteurs", "Percussions du monde", "Synthés et basses", "Effets sonores"];
+export const GROUPES = ["Claviers", "Cordes", "Orchestre", "Vents", "Voix", "Percussions à hauteurs", "Percussions du monde", "Synthés et basses", "Effets sonores"];
 
 // Instruments de la Library choisis pour leur sonorité (les autres programmes de la Library sont des démonstrations pédagogiques, sans voix).
 // [identifiant, nom affiché, groupe, note de départ, tenue (le son se prolonge tant qu'on appuie), ponctuel (il sonne en entier, même si on relâche)]
@@ -28,7 +28,7 @@ const DUREES = { gong: 6.5, bol: 6.5, montee: 4.2, tonnerre: 4, trianglePerc: 4,
 // Le catalogue : { id, nom, groupe, note, tenue, ponctuel, source: "ech" | "syn" | "lib", cle }
 export function catalogue() {
   const L = [];
-  for (const [b, nom, groupe, note] of INSTRUMENTS_ECH) L.push({ id: `ech:${b}`, nom, groupe: groupe === "Percussions" ? "Percussions du monde" : groupe, note, tenue: !["clavier", "harpe", "guitare", "clavecin", "marimba", "vibraphone", "xylophone", "glockenspiel", "balafon", "kalimba", "cloche", "djembe", "timbale"].includes(b), ponctuel: ["djembe", "timbale", "cloche"].includes(b), source: "ech", cle: b });
+  for (const [b, nom, groupe, note] of INSTRUMENTS_ECH) L.push({ id: `ech:${b}`, nom, groupe: groupe === "Percussions" ? "Percussions du monde" : groupe, note, tenue: !["clavier", "harpe", "guitare", "basse", "violons-stacc", "violons-piz", "celli-piz", "basses-piz", "celesta", "clavecin", "marimba", "vibraphone", "xylophone", "glockenspiel", "balafon", "kalimba", "cloche", "djembe", "timbale"].includes(b), ponctuel: ["djembe", "timbale", "cloche"].includes(b), source: "ech", cle: b });
   for (const [k, S] of Object.entries(SONS_SYNTHESE)) { const [note, tenue, ponctuel] = SYNTHES[k] || [60, false, false]; L.push({ id: `syn:${k}`, nom: S.nom, groupe: "Synthés et basses", note, tenue, ponctuel, source: "syn", cle: k }); }
   for (const [id, nom, groupe, note, tenue, ponctuel] of LIBRARY) L.push({ id: `lib:${id}`, nom, groupe, note, tenue, ponctuel, source: "lib", cle: id });
   for (const [k, S] of Object.entries(SONS_PERCUSSION)) L.push({ id: `syn:${k}`, nom: S.nom, groupe: S.famille === "perc" ? "Percussions du monde" : "Effets sonores", note: S.note, tenue: false, ponctuel: true, source: "syn", cle: k, duree: DUREES[k] || 2.5 });
@@ -49,6 +49,23 @@ export function tamponsSynthese(module, { note = 60, tenue = false, duree = 2.5,
   return tampons;
 }
 
+// La même chose, mais une note après l'autre et en rendant la main à la page entre deux : sur un téléphone, rendre treize notes d'un coup bloquait l'écran plusieurs secondes
+// (on ne pouvait plus toucher une touche). Ici chaque pause dure le temps d'une note, et le résultat est identique (les notes sont indépendantes).
+const pause = () => new Promise(ok => setTimeout(ok, 0));
+export async function tamponsSyntheseAsync(module, { note = 60, tenue = false, duree = 2.5, sr = 44100, demiTons = 4 } = {}) {
+  const bas = Math.max(24, note - 24), haut = Math.min(100, note + 24), notes = []; for (let m = bas; m <= haut; m += demiTons) notes.push(m);
+  const seg = tenue ? 3.4 : Math.max(2.2, duree), tenueNote = tenue ? 2.4 : Math.min(0.6, seg), n = Math.round(seg * sr), tampons = []; let pic = 0;
+  for (const m of notes) {
+    const sortie = rendre(module, { sr, n, notes: [{ a: 0, on: 1, hauteur: hz(m), vitesse: 0.85 }, { a: Math.round(tenueNote * sr), off: 1 }] }), L = sortie.canaux[0], R = sortie.canaux[1] || L, canal = new Float32Array(n);
+    for (let j = 0; j < n; j++) { const v = 0.5 * (L[j] + R[j]); canal[j] = v; if (Math.abs(v) > pic) pic = Math.abs(v); }
+    const f = hz(m), t = { f, canal, sr, off: 0 };
+    if (tenue) { const p = sr / f, a = Math.round(0.9 * sr / p) * p, b = a + Math.max(1, Math.round(0.6 * sr / p)) * p; t.a = a / sr; t.b = b / sr; }
+    tampons.push(t); await pause();
+  }
+  if (pic > 1e-6) { const k = 0.9 / pic; for (const t of tampons) for (let j = 0; j < t.canal.length; j++) t.canal[j] *= k; }
+  return tampons;
+}
+
 const CACHE = {};
 // Charge un instrument : { tampons, relache, niveau, ponctuel }. Les enregistrements viennent de la banque du site (une fois), la synthèse est rendue une fois par SONORA.
 export async function charger(entree, ctx) {
@@ -57,7 +74,7 @@ export async function charger(entree, ctx) {
     if (entree.source === "ech") { const t = await preparer(entree.cle, ctx); if (!t || !t.length) throw new Error("la banque de sons n'est pas disponible"); return { tampons: t, relache: RELACHE[entree.cle] ?? 0.4, niveau: NIVEAU[entree.cle] ?? 1, instrument: entree.cle, ponctuel: entree.ponctuel }; }
     const code = entree.source === "lib" ? (ENTREES.find(e => e.id === entree.cle) || {}).code : entree.source === "syn" ? (SONS_SYNTHESE[entree.cle] || SONS_PERCUSSION[entree.cle] || {}).code : null;
     if (!code) throw new Error("instrument introuvable"); const r = compiler(code); if (!r.ok || !r.module || !r.module.voix) throw new Error("ce programme ne se compile pas");
-    return { tampons: tamponsSynthese(r.module, { note: entree.note, tenue: entree.tenue, duree: entree.duree || 2.5, sr: 44100 }), relache: entree.ponctuel ? 0.15 : 0.4, niveau: 1, instrument: "clavier", ponctuel: entree.ponctuel };
+    return { tampons: await tamponsSyntheseAsync(r.module, { note: entree.note, tenue: entree.tenue, duree: entree.duree || 2.5, sr: 44100 }), relache: entree.ponctuel ? 0.15 : 0.4, niveau: 1, instrument: "clavier", ponctuel: entree.ponctuel };
   })();
   CACHE[entree.id] = p; p.catch(() => { delete CACHE[entree.id]; }); return p;
 }

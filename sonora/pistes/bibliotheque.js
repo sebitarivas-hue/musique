@@ -4,13 +4,13 @@
 //              joués à deux mesures, au tempo du projet ;
 //   Sons       les neuf sons de synthèse d'Harmonie (basse 808, sous-basse, lead, nappe, piano électrique, pincé, orgue rock, cloches, stab) sur la note et la durée de son choix.
 // Tout est fabriqué à la demande, sans fichier ni réseau, et reproductible. Sans DOM : testé dans Node.
-import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS, chargerKit } from "../harmonie/batterie.js?v=a44f89b8f6";
+import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS, chargerKit } from "../harmonie/batterie.js?v=4b2478c25a";
 export const preparerBatterie = chargerKit;   // la vraie batterie (enregistrée) : à charger au démarrage de Pistes
-import { GENRES } from "../harmonie/genres.js?v=a44f89b8f6";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=a44f89b8f6";
-import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=a44f89b8f6";
-import { rendreSuite } from "../harmonie/son.js?v=a44f89b8f6";
-import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=a44f89b8f6";
+import { GENRES } from "../harmonie/genres.js?v=4b2478c25a";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=4b2478c25a";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=4b2478c25a";
+import { rendreSuite } from "../harmonie/son.js?v=4b2478c25a";
+import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=4b2478c25a";
 
 export const NOMS_PIECES = { kick: "Grosse caisse", snare: "Caisse claire", clap: "Clap", hatc: "Charleston fermé", hato: "Charleston ouvert", rim: "Rimshot", tom: "Tom", cow: "Cloche", shaker: "Shaker", ride: "Cymbale ride", crash: "Cymbale crash" };
 // Des rythmes du monde, sur seize pas (huit, neuf ou douze quand le rythme l'exige). Les mêmes que ceux de l'atelier sonore du cours.
@@ -34,6 +34,13 @@ export const INSTRUMENTS_ECH = [
   ["marimba", "Marimba", "Percussions à hauteurs", 60], ["vibraphone", "Vibraphone", "Percussions à hauteurs", 65], ["xylophone", "Xylophone", "Percussions à hauteurs", 79], ["glockenspiel", "Glockenspiel", "Percussions à hauteurs", 84], ["balafon", "Balafon", "Percussions à hauteurs", 65], ["kalimba", "Kalimba", "Percussions à hauteurs", 72], ["cloche", "Cloches", "Percussions à hauteurs", 72],
   ["djembe", "Djembé", "Percussions", 48], ["timbale", "Timbale", "Percussions", 40],
   ["voix", "Voix", "Voix", 64],
+  ["basse", "Basse électrique", "Cordes", 36],
+  ["violons-ens", "Violons, section", "Orchestre", 67], ["violons-stacc", "Violons, staccato", "Orchestre", 67], ["violons-piz", "Violons, pizzicato", "Orchestre", 67], ["violons-trem", "Violons, trémolo", "Orchestre", 67],
+  ["altos-ens", "Altos, section", "Orchestre", 60], ["celli-ens", "Violoncelles, section", "Orchestre", 48], ["celli-piz", "Violoncelles, pizzicato", "Orchestre", 48],
+  ["basses-ens", "Contrebasses, section", "Orchestre", 36], ["basses-piz", "Contrebasses, pizzicato", "Orchestre", 36],
+  ["cors-ens", "Cors, section", "Orchestre", 55], ["trompettes-ens", "Trompettes, section", "Orchestre", 64], ["trombones-ens", "Trombones, section", "Orchestre", 52],
+  ["flutes-ens", "Flûtes, section", "Orchestre", 72], ["hautbois-ens", "Hautbois, section", "Orchestre", 69], ["clarinettes-ens", "Clarinettes, section", "Orchestre", 62], ["bassons-ens", "Bassons, section", "Orchestre", 48],
+  ["choeur-h", "Chœur d'hommes", "Voix", 52], ["choeur-f", "Chœur de femmes", "Voix", 74], ["celesta", "Célesta", "Claviers", 72],
 ];
 export const CATEGORIES = [["batterie", "Batterie"], ["rythmes", "Rythmes"], ["instruments", "Instruments"], ["percussions", "Percussions du monde"], ["effets", "Effets sonores"], ["sons", "Sons de synthèse"]];
 export const NOTES = Array.from({ length: 49 }, (_, i) => 24 + i);   // do1 à do5
