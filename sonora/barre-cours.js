@@ -5,6 +5,7 @@
 (function () {
   "use strict";
   const lire = (stock, k) => { try { const v = stock.getItem(k); return v ? JSON.parse(v) : null; } catch (_) { return null; } };
+  const brut = k => { try { return localStorage.getItem(k) || ""; } catch (_) { return ""; } };
   const racine = location.href.split(/\/(?:sonora|atlas)\//)[0] + "/";
   /* Seul l'espace élève ferme le soir (règle dans le site élève). SONORA et l'Atlas ne ferment jamais, d'où qu'on y vienne (retour du 05/11/2026). */
   const memeSite = u => { try { return new URL(u).origin === location.origin; } catch (_) { return false; } };
@@ -46,7 +47,9 @@
 @media (max-width:700px){.barre-cours .bc-rub{display:none}.barre-cours .bc-pre{display:none}.barre-cours .bc-retour{max-width:46vw}}`;
   document.head.appendChild(css); document.body.insertBefore(nav, document.body.firstChild);
   // La recherche du site (racine/recherche.js), dont le bouton se range dans cette barre.
-  { const sc = document.createElement("script"); sc.src = racine + "recherche.js"; sc.async = true; document.head.appendChild(sc); }
+  // Seulement quand un espace est choisi ET que sa porte a été franchie (code de la classe ou du professeur déjà accepté sur cet appareil) : la recherche ne contourne aucun code.
+  { const ouvert = (espace === "eleves" && !!brut("classe-ok")) || (espace === "prof" && !!brut("prof-ok"));
+    if (ouvert) { const sc = document.createElement("script"); sc.src = racine + "recherche.js"; sc.async = true; document.head.appendChild(sc); } }
   window.BARRE_COURS = { retour: retourU, cours: coursU, espace, xp };
 
   // Points : les mêmes que ceux du site du cours (clé « jeu » du navigateur, même règle : des points une seule fois par action).

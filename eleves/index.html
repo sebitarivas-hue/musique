@@ -1595,6 +1595,7 @@ a.en-ecole { color: inherit; text-decoration: none; } a.en-ecole:hover b, a.en-e
 .tutos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 16px; margin-top: 12px }
 .tuto { border: 2px solid var(--ink, #11110F); background: #fff; display: flex; flex-direction: column } .tuto-sel { outline: 4px solid #D6FF00; outline-offset: 3px }
 .tuto-v video { display: block; width: 100%; aspect-ratio: 16 / 10; background: #11110F } .tuto-t { padding: 10px 14px 14px } .tuto-t h2 { margin: 4px 0 6px }
+body.porte #rch-b, body.sans-recherche #rch-b, body.porte .en-tuto, body.sans-recherche .en-tuto { display: none !important }
 html.signal #rch-b + .en-an { margin-left: 8px }
 @media (max-width: 560px) { html.signal .en-prof, html.signal .en-an { display: none } html.signal .en-ecole { flex: 1 1 0; min-width: 0 } html.signal .en-ecole b { font-size: 12px } html.signal .en-parents.en-tuto { margin-left: auto; padding: 8px } }
 .tutoscard { display: flex; gap: 14px; align-items: center; margin: 12px 0 } .tutoscard .ico svg { width: 24px; height: 24px }
@@ -5704,7 +5705,9 @@ function vueFerme() {
 let FERME_ETAT = null;
 setInterval(() => { const f = fermeEleve(); if (FERME_ETAT !== null && f !== FERME_ETAT) rendre(); }, 30000);
 function rendre() {
-  if (fermeEleve()) { FERME_ETAT = true; document.body.classList.add("porte"); toutArreter(); barre("semaine"); menu(""); app.innerHTML = vueFerme(); window.scrollTo(0, 0); return; }
+  /* La recherche et le lien Tutos n'existent qu'une fois la porte franchie : ni sur le choix de l'espace, ni devant le code de la classe ou du professeur, ni sur l'écran « fermé ». */
+  document.body.classList.remove("sans-recherche");
+  if (fermeEleve()) { document.body.classList.add("sans-recherche"); FERME_ETAT = true; document.body.classList.add("porte"); toutArreter(); barre("semaine"); menu(""); app.innerHTML = vueFerme(); window.scrollTo(0, 0); return; }
   FERME_ETAT = false;
   /* Tant qu'une porte (code de classe ou code du professeur) est fermée, les menus sont cachés : ils ne mèneraient qu'à la porte. */
   document.body.classList.toggle("porte", !!((D.eleves && D.codes && !CLASSE_OK && !classeOk()) || (D.prof && D.code && !PROF_OK && get("prof-ok", "") !== D.code && !/^#(monde|faust|fiche)/.test(location.hash))));
@@ -5739,6 +5742,7 @@ function rendre() {
   const lienClasse = v.match(/^classe-(6e|5e|4e|3e)$/);
   if (lienClasse) { if (D.eleves && D.codes) { set("classe-visee", lienClasse[1]); location.replace("#semaine"); return; } set("classe", lienClasse[1]); set("niv", lienClasse[1]); if (!role()) set("role", "eleve"); location.replace("#semaine"); return; }
   if (v === "accueil" || (!role() && !/^(proj|seance|fiche|quiz|faust|monde)/.test(v))) { PILE.length = 0; barre("semaine"); menu(""); app.innerHTML = vueChoix();
+    document.body.classList.add("sans-recherche");
     app.querySelectorAll(".choix-b").forEach(b => b.onclick = () => { set("role", b.dataset.role); location.hash = "#semaine"; if (location.hash === "#semaine") rendre(); });
     window.scrollTo(0, 0); return; }
   if (PILE[PILE.length - 2] === v) PILE.pop(); else if (PILE[PILE.length - 1] !== v) PILE.push(v);

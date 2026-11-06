@@ -67,7 +67,8 @@
     liens = [...z.querySelectorAll("a[data-adr]")];
   }
   function ouvrir() {
-    if (ouvert) return; ouvert = true; if (!fen.parentNode) { document.body.appendChild(fen); }
+    if (ouvert || document.body.classList.contains("porte") || document.body.classList.contains("sans-recherche")) return;   /* jamais devant une porte : code de la classe, du professeur, choix de l'espace */
+    ouvert = true; if (!fen.parentNode) { document.body.appendChild(fen); }
     fen.classList.add("on"); q().focus(); afficher(q().value);
     charger().then(() => { if (ouvert) afficher(q().value); }).catch(() => { zone().innerHTML = `<p class="rch-vide">La recherche n'a pas pu charger son index. Vérifie la connexion, puis réessaie.</p>`; });
   }
