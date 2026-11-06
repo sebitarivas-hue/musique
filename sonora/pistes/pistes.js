@@ -1,23 +1,25 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=24cc40ce8c";
-import * as Ed from "./editions.js?v=24cc40ce8c";
-import * as P from "./projet.js?v=24cc40ce8c";
-import { Stockage } from "./stockage.js?v=24cc40ce8c";
-import { creerBouton } from "./bouton.js?v=24cc40ce8c";
-import * as MI from "./midi.js?v=24cc40ce8c";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=24cc40ce8c";
-import * as INS from "./instruments.js?v=24cc40ce8c";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=24cc40ce8c";
-import * as MO from "./moteurs.js?v=24cc40ce8c";
-import { monterPanneaux } from "./panneaux.js?v=24cc40ce8c";
-import { monterNotions } from "./notions.js?v=24cc40ce8c";
-import { DEMOS } from "./demos.js?v=24cc40ce8c";
-import * as B from "./bibliotheque.js?v=24cc40ce8c";
-import { encoderWAV } from "../studio/wav.js?v=24cc40ce8c";
-import { ENTREES } from "../library/catalogue.js?v=24cc40ce8c";
-import { compiler } from "../src/index.js?v=24cc40ce8c";
-import { rendre } from "../src/rendu.js?v=24cc40ce8c";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=8514c8ba45";
+import * as Ed from "./editions.js?v=8514c8ba45";
+import * as P from "./projet.js?v=8514c8ba45";
+import { Stockage } from "./stockage.js?v=8514c8ba45";
+import { creerBouton } from "./bouton.js?v=8514c8ba45";
+import * as MI from "./midi.js?v=8514c8ba45";
+import * as N from "./notes.js?v=8514c8ba45";
+import { Rouleau } from "./rouleau.js?v=8514c8ba45";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=8514c8ba45";
+import * as INS from "./instruments.js?v=8514c8ba45";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=8514c8ba45";
+import * as MO from "./moteurs.js?v=8514c8ba45";
+import { monterPanneaux } from "./panneaux.js?v=8514c8ba45";
+import { monterNotions } from "./notions.js?v=8514c8ba45";
+import { DEMOS } from "./demos.js?v=8514c8ba45";
+import * as B from "./bibliotheque.js?v=8514c8ba45";
+import { encoderWAV } from "../studio/wav.js?v=8514c8ba45";
+import { ENTREES } from "../library/catalogue.js?v=8514c8ba45";
+import { compiler } from "../src/index.js?v=8514c8ba45";
+import { rendre } from "../src/rendu.js?v=8514c8ba45";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -47,7 +49,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=24cc40ce8c"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=8514c8ba45"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -285,7 +287,7 @@ async function moteurMidi() {
   if (midi.courant === e.id && midi.inst) return midi.sampleur;
   if (midi.chargement && midi.chargement.id === e.id) return midi.chargement.p;
   const p = (async () => { $("midi-etat").textContent = `Chargement de « ${e.nom} »…`;
-    try { const inst = await INS.charger(e, ctx); if (entreeJeu().id !== e.id) return midi.sampleur;   /* l'élève a choisi un autre instrument entre-temps : on ne remplace pas son choix */ midi.inst = inst; midi.courant = e.id; midi.entree = e; midi.sampleur.utiliser(inst); $("midi-etat").textContent = `${e.nom} : prêt. Joue au clavier de l'ordinateur, à l'écran ou avec un clavier MIDI.`; return midi.sampleur; }
+    try { const inst = await INS.charger(e, ctx); if (entreeJeu().id !== e.id) return midi.sampleur;   /* l'élève a choisi un autre instrument entre-temps : on ne remplace pas son choix */ midi.inst = inst; midi.courant = e.id; midi.entree = e; midi.sampleur.utiliser(inst); $("midi-etat").textContent = `${e.nom} : prêt. ` + (midi.claviers && midi.claviers.length ? `Clavier MIDI branché : ${midi.claviers.join(", ")}.` : "Joue au clavier de l'ordinateur, à l'écran ou avec un clavier MIDI."); return midi.sampleur; }
     catch (err) { midi.inst = null; midi.courant = null; $("midi-etat").textContent = `« ${e.nom} » n'a pas pu être chargé : ${err && err.message || err}. Choisis un autre instrument.`; throw err; }
     finally { if (midi.chargement && midi.chargement.id === e.id) midi.chargement = null; } })();
   midi.chargement = { id: e.id, p }; return p;
@@ -320,7 +322,7 @@ $("midi-instrument").onchange = () => { try { localStorage.setItem("sonora:piste
 $("b-midi-brancher").onclick = async () => {
   if (!navigator.requestMIDIAccess) { $("midi-etat").textContent = "Ce navigateur ne sait pas lire un clavier MIDI (Chrome, Edge ou Opera sur ordinateur et Android le savent ; Safari non). Utilise le clavier de l'ordinateur."; return; }
   try { midi.acces = await navigator.requestMIDIAccess({ sysex: false }); const noms = brancherMidi(midi.acces, midi.clavier);
-    $("midi-etat").textContent = noms.length ? `Clavier MIDI branché : ${noms.join(", ")}.` : "Aucun clavier MIDI détecté. Branche-le, puis appuie à nouveau sur ce bouton."; }
+    midi.claviers = noms; $("midi-etat").textContent = noms.length ? `Clavier MIDI branché : ${noms.join(", ")}.` : "Aucun clavier MIDI détecté. Branche-le, puis appuie à nouveau sur ce bouton."; }
   catch (e) { $("midi-etat").textContent = "L'accès au MIDI a été refusé : " + (e && e.message || e); }
 };
 // Le clavier de l'ordinateur : pris avant les raccourcis du séquenceur tant que le panneau est ouvert et la case cochée.
@@ -339,15 +341,91 @@ $("b-notes").onclick = async () => {
   $("b-notes").setAttribute("aria-pressed", "true"); if (!etat.lecture) await lire(); if (!etat.lecture) { etat.notes = null; $("b-notes").setAttribute("aria-pressed", "false"); return; }
   badge("enregistrement des notes", "erreur"); $("midi-etat").textContent = `Enregistrement des notes sur « ${piste.nom} » avec ${etat.notesEntree.nom}, depuis le curseur. Joue ; appuie à nouveau sur le bouton pour finir.`;
 };
+// ---------------------------------------------------------------- clips de notes : des notes en temps (notes.js), jouées par un instrument, dont l'audio est refait quand le tempo ou les notes changent
+const SR_MIDI = 44100;
+// L'audio d'un clip de notes à un tempo donné (synchrone : l'instrument est déjà chargé). Une queue d'une seconde après la fin du clip laisse mourir la dernière note ; le clip, lui, s'arrête à sa durée.
+function audioDeNotes(s, inst, tempo) {
+  const sec = 60 / tempo, c = rendreSuiteEch(N.evenementsDeNotes(s.midi.notes, tempo), inst.tampons, { instrument: inst.instrument, sr: SR_MIDI, duree: s.midi.temps * sec + 1, relache: inst.relache, niveau: inst.niveau, reverb: 0, strum: 0, variation: false });
+  return c.slice(0, 2).map(x => Float32Array.from(x));
+}
+const rangerAudio = (id, canaux) => { etat.buffers[id] = { canaux, sr: SR_MIDI }; Stockage.ecrireSon(id, { canaux, sr: SR_MIDI }).catch(e => { message("Le son n'a pas pu être rangé dans le navigateur : " + e.message); alerteEcriture(e); }); };
+// Refait l'audio d'un son MIDI avec son instrument, au tempo du projet.
+async function rendreMidiSon(id) {
+  const s = etat.projet.sons[id]; if (!P.estMidi(s)) return false;
+  const cat = INS.catalogue(), e = cat.find(x => x.id === s.midi.instrument) || cat.find(x => x.id === "ech:clavier");
+  let inst; try { inst = await INS.charger(e, contexte()); } catch (err) { message(`« ${e.nom} » n'a pas pu être chargé : ces notes gardent leur ancien son.`); return false; }
+  const tempo = etat.projet.tempo, canaux = audioDeNotes(s, inst, tempo);
+  s.midi.rendu = tempo; P.majSonMidi(etat.projet, id, { canaux, sr: SR_MIDI, duree: s.midi.temps * 60 / tempo }); rangerAudio(id, canaux); return true;
+}
+// Tous les sons MIDI dont l'audio n'est pas à ce tempo (annuler, ouvrir un projet, changer le tempo) ou manque : on les refait, puis on redessine.
+let majMidiEnCours = null;
+async function remettreAJourMidi() {
+  const faire = Object.keys(etat.projet.sons).filter(id => { const s = etat.projet.sons[id]; return P.estMidi(s) && (s.midi.rendu !== etat.projet.tempo || !etat.buffers[id]); });
+  if (!faire.length) return; const p = majMidiEnCours = Promise.all(faire.map(rendreMidiSon)).then(() => { if (majMidiEnCours === p) { majMidiEnCours = null; afficher(); planifierRangement(250); } }); await p;
+}
 function finirNotes() {
   const r = etat.notes, inst = etat.notesInstrument, e = etat.notesEntree; etat.notes = null; $("b-notes").setAttribute("aria-pressed", "false"); r.fermer(dateProjet()); document.querySelectorAll(".clip.enreg-notes").forEach(x => x.remove());
   if (r.vide) { message("Aucune note jouée : rien n'est gardé."); return; }
   try {
-    const sr = 44100, depart = etat.notesDebut ?? r.debut(), c = rendreSuiteEch(INS.evenementsMixeur(r.notes, depart, inst), inst.tampons, { instrument: inst.instrument, sr, relache: inst.relache, niveau: inst.niveau, reverb: 0, strum: 0, variation: false }), canaux = c.slice(0, 2), duree = canaux[0].length / sr;
-    const num = Object.values(etat.projet.sons).filter(x => x.nom.startsWith("Notes ")).length + 1, id = ajouterAudio(`Notes ${num} (${e.nom})`, canaux, sr); P.placerClip(etat.projet, P.pisteLibre(etat.projet, etat.notesPiste, depart, duree), id, depart);
-    message(`${r.notes.length} note${r.notes.length > 1 ? "s" : ""} rendue${r.notes.length > 1 ? "s" : ""} avec ${e.nom} : clip de ${duree.toFixed(1).replace(".", ",")} s, posé là où la prise a commencé.`); etat.dernierMidi = { notes: r.notes.length, duree, debut: depart, instrument: e.id, detail: r.notes.map(n => ({ note: n.note, t: n.t, fin: n.fin })) }; etat.aReecouter = (etat.aReecouter || []).concat(id); changer();
+    const p = etat.projet, sec = 60 / p.tempo, calage = +$("midi-calage").value || 0;
+    let depart = etat.notesDebut ?? r.debut(); if (calage) depart = Math.max(0, Math.floor(depart / sec + 1e-6) * sec);   // calé : le clip commence sur un temps, et ses notes sur la grille
+    const notes = N.notesEnTemps(r.notes, depart, p.tempo, calage), temps = N.dureeEnTemps(notes, p.temps), duree = temps * sec;
+    const num = Object.values(p.sons).filter(x => x.nom.startsWith("Notes ")).length + 1, id = P.ajouterSon(p, { nom: `Notes ${num} (${e.nom})`, duree, sr: SR_MIDI, canaux: 2, midi: { notes, instrument: e.id, temps, rendu: p.tempo } });
+    rangerAudio(id, audioDeNotes(p.sons[id], inst, p.tempo)); P.placerClip(p, P.pisteLibre(p, etat.notesPiste, depart, duree), id, depart);
+    const n = r.notes.length, cal = calage ? (calage === 1 ? ", calée sur le temps" : calage === 0.5 ? ", calée sur la croche" : ", calée sur la double croche") : "";
+    message(`${n} note${n > 1 ? "s" : ""} jouée${n > 1 ? "s" : ""} avec ${e.nom}${cal} : clip de ${temps} temps (${duree.toFixed(1).replace(".", ",")} s). Les notes suivent le tempo : change-le, elles restent sur les mêmes temps.`);
+    etat.dernierMidi = { notes: n, duree, debut: depart, instrument: e.id, temps, detail: r.notes.map(x => ({ note: x.note, t: x.t, fin: x.fin })) }; etat.aReecouter = (etat.aReecouter || []).concat(id); changer();
   } catch (err) { message("Les notes n'ont pas pu être rendues : " + (err && err.message || err)); }
 }
+
+// ---------------------------------------------------------------- le rouleau : voir et changer les notes d'un clip de notes
+const rl = { son: null, minuteur: null, samp: null, lecture: null };
+const rouleau = new Rouleau($("rl-corps"), {
+  change: (notes, temps) => { const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; s.midi.notes = notes; s.midi.temps = temps; changer(); majRouleauBarre(); clearTimeout(rl.minuteur); rl.minuteur = setTimeout(() => rendreMidiSon(rl.son).then(() => { afficher(); planifierRangement(250); }), 350); },
+  ecouter: (n, v) => ecouterNote(n, v),
+  selection: () => majRouleauBarre(),
+});
+function majRouleauBarre() { const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; $("rl-mesures").textContent = (s.midi.temps / etat.projet.temps) + (s.midi.temps / etat.projet.temps > 1 ? " mesures" : " mesure"); $("rl-suppr").disabled = rouleau.sel < 0; $("rl-moins").disabled = s.midi.temps <= etat.projet.temps; }
+async function ecouterNote(n, v) {
+  const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; const cat = INS.catalogue(), e = cat.find(x => x.id === s.midi.instrument) || cat.find(x => x.id === "ech:clavier"); const ctx = contexte();
+  try { const inst = await INS.charger(e, ctx); if (!rl.samp) rl.samp = new INS.Sampleur(ctx, ctx.destination); if (rl.samp.inst !== inst) rl.samp.utiliser(inst); rl.samp.noteOn(n, 440 * Math.pow(2, (n - 69) / 12), v); setTimeout(() => rl.samp.noteOff(n), 380); } catch (_) {}
+}
+function ouvrirRouleau(sonId) {
+  const s = etat.projet.sons[sonId]; if (!P.estMidi(s)) { message("Ce clip n'est pas un clip de notes : il n'a pas de notes à modifier. Enregistre des notes avec « Jouer un instrument »."); return; }
+  rl.son = sonId; $("rouleau").hidden = false; $("rl-titre").textContent = `Notes de « ${s.nom} »`; rouleau.grille = +$("rl-grille").value; rouleau.ouvrir({ notes: s.midi.notes, temps: s.midi.temps, parMesure: etat.projet.temps, nom: s.nom }); majRouleauBarre(); $("rouleau").scrollIntoView({ block: "nearest" });
+}
+function fermerRouleau() { clearTimeout(rl.minuteur); const id = rl.son; $("rouleau").hidden = true; rl.son = null; if (rl.lecture) { try { rl.lecture.stop(); } catch (_) {} rl.lecture = null; } if (id && P.estMidi(etat.projet.sons[id]) && etat.projet.sons[id].midi.rendu !== etat.projet.tempo) remettreAJourMidi(); }
+$("rl-fin").onclick = fermerRouleau; $("rl-suppr").onclick = () => rouleau.supprimer(); $("rl-vider").onclick = () => rouleau.effacer();
+$("rl-grille").onchange = e => rouleau.reglerGrille(+e.target.value);
+$("rl-caler").onclick = () => { const g = +$("rl-grille").value || 0.25, s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; rouleau.notes = N.quantifier(rouleau.notes, g); rouleau.sel = -1; rouleau._emettre(); rouleau.dessiner(); };
+$("rl-plus").onclick = () => { const s = etat.projet.sons[rl.son]; if (P.estMidi(s)) rouleau.longueur(s.midi.temps + etat.projet.temps); };
+$("rl-moins").onclick = () => { const s = etat.projet.sons[rl.son]; if (P.estMidi(s)) rouleau.longueur(s.midi.temps - etat.projet.temps); };
+$("rl-ecouter").onclick = async () => {
+  if (rl.lecture) { try { rl.lecture.stop(); } catch (_) {} rl.lecture = null; $("rl-ecouter").lastChild.textContent = " Écouter"; return; }
+  clearTimeout(rl.minuteur); await rendreMidiSon(rl.son); const d = etat.buffers[rl.son]; if (!d) return; const ctx = contexte(), b = ctx.createBuffer(d.canaux.length, d.canaux[0].length, d.sr); d.canaux.forEach((c, i) => b.copyToChannel(c, i));
+  const src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination); src.onended = () => { if (rl.lecture === src) { rl.lecture = null; $("rl-ecouter").lastChild.textContent = " Écouter"; } }; rl.lecture = src; src.start(); $("rl-ecouter").lastChild.textContent = " Arrêter";
+};
+$("b-modifier-notes").onclick = () => { const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r) ouvrirRouleau(r.clip.son); };
+document.addEventListener("dblclick", e => { const c = e.target.closest && e.target.closest(".clip[data-clip]"); if (!c) return; const r = P.trouverClip(etat.projet, c.dataset.clip); if (r && P.estMidi(etat.projet.sons[r.clip.son])) { etat.choisi = r.clip.id; ouvrirRouleau(r.clip.son); } });
+// MIDI : export et import de fichiers standard
+function telechargerOctets(octets, nom, type) { const u = URL.createObjectURL(new Blob([octets], { type })), a = document.createElement("a"); a.href = u; a.download = nom; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
+$("b-export-midi").onclick = () => {
+  const pistes = P.notesDesPistes(etat.projet); if (!pistes.length) { message("Il n'y a pas de clip de notes à exporter. Enregistre des notes avec « Jouer un instrument » : les clips audio n'ont pas de notes."); return; }
+  const nom = (etat.projet.titre || "projet").replace(/[^\w\u00C0-\u017F -]+/g, "").trim().replace(/\s+/g, "-") || "projet"; telechargerOctets(N.versMidi({ tempo: etat.projet.tempo, temps: etat.projet.temps, pistes }), nom + ".mid", "audio/midi");
+  const n = pistes.reduce((s, x) => s + x.notes.length, 0); message(`Fichier MIDI écrit : ${n} note${n > 1 ? "s" : ""} sur ${pistes.length} piste${pistes.length > 1 ? "s" : ""}, à ${etat.projet.tempo} par minute.`);
+};
+$("fichier-midi").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return; let m;
+  try { m = N.depuisMidi(new Uint8Array(await f.arrayBuffer())); } catch (err) { message(err.message || "Ce fichier MIDI n'a pas pu être lu."); return; }
+  if (!m.pistes.length) { message("Ce fichier MIDI ne contient aucune note."); return; }
+  const p = etat.projet, vide = p.pistes.every(x => x.clips.length === 0); if (vide && m.tempo >= 20 && m.tempo <= 300) { p.tempo = Math.round(m.tempo); $("tempo").value = p.tempo; }
+  const sec = 60 / p.tempo, ids = [];
+  for (const [i, x] of m.pistes.slice(0, 16).entries()) {
+    const temps = N.dureeEnTemps(x.notes, p.temps), id = P.ajouterSon(p, { nom: `${x.nom} (MIDI)`, duree: temps * sec, sr: SR_MIDI, canaux: 2, midi: { notes: x.notes, instrument: "ech:clavier", temps, rendu: -1 } }), piste = vide && i < p.pistes.length ? p.pistes[i].id : P.pisteLibre(p, p.pistes[0].id, 0, temps * sec);
+    P.placerClip(p, piste, id, 0); ids.push(id);
+  }
+  changer(); await remettreAJourMidi(); message(`${m.pistes.length} piste${m.pistes.length > 1 ? "s" : ""} de notes importée${m.pistes.length > 1 ? "s" : ""}, à ${p.tempo} par minute. Double-clique un clip pour voir et changer ses notes.`);
+};
 
 // ---------------------------------------------------------------- Faust et Csound : un programme rendu en clip (voir moteurs.js)
 const mot = etat.moteurs = { ouvert: false, langage: "faust", compile: null, valeurs: {}, occupe: false };
@@ -460,7 +538,7 @@ $("b-mot-rendre").onclick = async () => {
 // On range une copie du projet à chaque changement. Les sons sont immuables (un effet crée un nouveau son), donc revenir en arrière ne perd jamais d'audio.
 const histo = { pile: [], refaire: [], snap: null };
 function empiler() { const nouveau = JSON.stringify(etat.projet); if (histo.snap === null) { histo.snap = nouveau; return; } if (nouveau !== histo.snap) { histo.pile.push(histo.snap); if (histo.pile.length > 100) histo.pile.shift(); histo.refaire = []; histo.snap = nouveau; } }
-function restaurer(texte) { histo.snap = texte; etat.projet = P.verifierProjet(JSON.parse(texte)); if (etat.choisi && !P.trouverClip(etat.projet, etat.choisi)) etat.choisi = null; if (!P.trouverPiste(etat.projet, etat.arme)) etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; if (etat.lecture && !etat.enreg) arreter(); afficher(); clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(() => {}), 250); }
+function restaurer(texte) { histo.snap = texte; etat.projet = P.verifierProjet(JSON.parse(texte)); setTimeout(() => remettreAJourMidi(), 0); if (etat.choisi && !P.trouverClip(etat.projet, etat.choisi)) etat.choisi = null; if (!P.trouverPiste(etat.projet, etat.arme)) etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; if (etat.lecture && !etat.enreg) arreter(); afficher(); clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(() => {}), 250); }
 function annuler() { if (!histo.pile.length) { message("Rien à annuler."); return; } histo.refaire.push(histo.snap); restaurer(histo.pile.pop()); message("Annulé."); }
 function retablir() { if (!histo.refaire.length) { message("Rien à rétablir."); return; } histo.pile.push(histo.snap); restaurer(histo.refaire.pop()); message("Rétabli."); }
 window.PISTES_HISTO = histo;
@@ -630,7 +708,7 @@ $("auto-sup").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env)
 $("auto-vider").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env); if (!pi) return; P.viderCourbe(pi, etat.courbe || "volume"); etat.pointSel = null; changer(); };
 function majSelection() {
   const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); $("selection").hidden = !r; if (!r) return;
-  $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain;
+  $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain; $("b-modifier-notes").hidden = !P.estMidi(etat.projet.sons[r.clip.son]);
 }
 let minuteur = null;
 // ---------------------------------------------------------------- Téléphone : les réglages avancés d'une piste (volume, panoramique, effets, enveloppe) s'ouvrent dans une feuille du bas
@@ -659,13 +737,13 @@ function deplacerPourTelephone() {
   const A = $("fa-corps"), R = $("fr-corps");
   if (mobile.matches) {
     A.replaceChildren(); R.replaceChildren();
-    for (const id of ["fichiers"]) deplacer($(id).closest("label"), A);
+    for (const id of ["fichiers", "fichier-midi"]) deplacer($(id).closest("label"), A);
     for (const id of ["b-biblio", "b-pas", "b-midi", "b-piste"]) deplacer($(id), A);
     const son = groupe(A, "tuile-son"); deplacer($("choix-sonora").closest("label"), son); deplacer($("b-ajout-sonora"), son);
     deplacer($("b-moteurs"), A);   // Faust, Csound et Pure Data : pour aller plus loin, donc en dernier
     for (const id of ["tempo", "aimant", "metro", "multi", "entree-audio"]) for (const e of avecAide($(id).closest("label"))) deplacer(e, R);
     const z = document.createElement("div"); z.className = "rl-groupe"; z.innerHTML = "<span>Zoom de la règle</span>"; R.appendChild(z); deplacer($("b-zoom-moins"), z); deplacer($("b-zoom-plus"), z);
-    deplacer($("b-debut"), R); deplacer($("b-export"), R); deplacer($("b-nouveau"), R);
+    deplacer($("b-debut"), R); deplacer($("b-export"), R); deplacer($("b-export-midi"), R); deplacer($("b-nouveau"), R);
   } else { fermerFeuille(); for (const { el, note } of lieux) if (note.parentNode) note.parentNode.insertBefore(el, note); }
 }
 (mobile.addEventListener ? mobile.addEventListener("change", deplacerPourTelephone) : mobile.addListener(deplacerPourTelephone)); deplacerPourTelephone();
@@ -852,12 +930,20 @@ $("b-enreg").onclick = enregistrer; $("b-export").onclick = exporter;
 $("b-piste").onclick = () => { etat.projet.pistes.push(P.nouvellePiste(`Piste ${etat.projet.pistes.length + 1}`)); changer(); };
 $("b-nouveau").onclick = () => nouveauProjet();
 $("fichiers").onchange = e => { const pi = P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0]; importer(e.target.files, pi.id, P.aimanter(etat.projet, etat.tete, +$("aimant").value)).then(() => { e.target.value = ""; }); };
-$("tempo").onchange = e => { etat.projet.tempo = Math.max(40, Math.min(240, +e.target.value || 100)); changer(); };
+$("tempo").onchange = async e => {
+  const p = etat.projet, v = Math.max(40, Math.min(240, +e.target.value || 100)); if (v === p.tempo) { $("tempo").value = v; return; }
+  const r = P.changerTempo(p, v); $("tempo").value = p.tempo; changer();   // les clips de notes et les clips audio restent sur les mêmes temps de la grille ; les notes sont rejouées à la nouvelle vitesse
+  if (r.sons.length) { await remettreAJourMidi(); message(`Tempo ${p.tempo} : les clips de notes sont refaits à cette vitesse, les clips audio démarrent sur les mêmes temps mais gardent leur durée.`); }
+};
 $("b-annuler").onclick = () => annuler(); $("b-refaire").onclick = () => retablir();
 $("b-zoom-plus").onclick = () => { etat.pxs = Math.min(400, etat.pxs * 1.5); afficher(); }; $("b-zoom-moins").onclick = () => { etat.pxs = Math.max(10, etat.pxs / 1.5); afficher(); };
 $("regle").onpointerdown = e => { const r = $("regle").getBoundingClientRect(); etat.tete = Math.max(0, (e.clientX - r.left) / etat.pxs); if (etat.lecture) { arreter(); lire(); } };
 $("b-couper").onclick = () => { if (!etat.choisi) return; const n = P.couperClip(etat.projet, etat.choisi, etat.tete); if (!n) { message("Place le curseur rouge à l'intérieur du clip pour le couper."); return; } changer(); };
-$("b-dupliquer").onclick = () => { if (!etat.choisi) return; etat.choisi = P.dupliquerClip(etat.projet, etat.choisi); changer(); };
+$("b-dupliquer").onclick = () => {
+  if (!etat.choisi) return; const orig = P.trouverClip(etat.projet, etat.choisi), avant = new Set(Object.keys(etat.projet.sons));
+  etat.choisi = P.dupliquerClip(etat.projet, etat.choisi);
+  for (const id of Object.keys(etat.projet.sons)) if (!avant.has(id) && orig && etat.buffers[orig.clip.son]) rangerAudio(id, etat.buffers[orig.clip.son].canaux);   // un clip de notes copié a son propre son : on range une copie de l'audio
+  changer(); };
 $("b-supprimer").onclick = () => { if (!etat.choisi) return; P.supprimerClip(etat.projet, etat.choisi); etat.choisi = null; changer(); };
 $("sel-gain").oninput = e => { const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r) { r.clip.gain = +e.target.value; planifierRangement(300); } };
 for (const e of ENTREES) { const o = document.createElement("option"); o.value = e.id; o.textContent = e.titre; $("choix-sonora").appendChild(o); }
@@ -928,7 +1014,7 @@ async function chargerProjet(p) {
   for (const id of Object.keys(etat.projet.sons)) { try { const d = await Stockage.lireSon(id); if (d) etat.buffers[id] = d; } catch (_) {} }
   const perdus = Object.keys(etat.projet.sons).filter(id => !etat.buffers[id]); if (perdus.length) message(`${perdus.length} son${perdus.length > 1 ? "s" : ""} de ce projet n'ont pas été retrouvés dans ce navigateur.`);
   etat.tete = 0; etat.choisi = null; etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; histo.pile = []; histo.refaire = []; histo.snap = JSON.stringify(etat.projet);
-  $("titre-projet").value = etat.projet.titre || ""; afficher(); annoncerProjet();
+  $("titre-projet").value = etat.projet.titre || ""; afficher(); annoncerProjet(); remettreAJourMidi();
 }
 async function nouveauProjet() {
   await sauverMaintenant(); const n = (await Stockage.listerProjets().catch(() => [])).length + 1, p = P.nouveauProjet({ titre: `Projet ${n}` });

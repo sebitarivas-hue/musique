@@ -30,7 +30,11 @@ export const dureeTemps = p => 60 / p.tempo, dureeMesure = p => p.temps * 60 / p
 // Aimante un temps sur la grille (en fraction de temps : 1 = le temps, 0.25 = la double croche). grille 0 : pas d'aimant.
 export function aimanter(p, t, grille = 1) { if (!grille) return Math.max(0, t); const pas = dureeTemps(p) * grille; return Math.max(0, Math.round(t / pas) * pas); }
 
-export function ajouterSon(p, { nom, duree, sr, canaux }) { const id = nouvelId("s"); p.sons[id] = { id, nom: String(nom).slice(0, 80), duree, sr, canaux }; return id; }
+export function ajouterSon(p, { nom, duree, sr, canaux, midi }) { const id = nouvelId("s"); p.sons[id] = { id, nom: String(nom).slice(0, 80), duree, sr, canaux }; if (midi) p.sons[id].midi = copieMidi(midi); return id; }
+// Un son « MIDI » garde ses notes (écrites en temps, voir notes.js) et l'instrument qui les joue : son audio est fabriqué à partir d'elles, et refait quand elles ou le tempo changent.
+// midi : { notes: [{ t, d, n, v }], instrument: identifiant de l'instrument de Pistes, temps: durée en temps du clip }.
+export const copieMidi = m => ({ notes: (m.notes || []).map(x => ({ ...x })), instrument: m.instrument || "ech:clavier", temps: m.temps || 4, rendu: m.rendu });
+export const estMidi = s => !!(s && s.midi && Array.isArray(s.midi.notes));
 export function trouverPiste(p, id) { return p.pistes.find(x => x.id === id) || null; }
 export function trouverClip(p, id) { for (const pi of p.pistes) { const c = pi.clips.find(x => x.id === id); if (c) return { piste: pi, clip: c }; } return null; }
 
@@ -54,7 +58,11 @@ export function couperClip(p, clipId, t) {
   const second = { id: nouvelId("c"), son: c.son, debut: t, decalage: c.decalage + dedans, duree: c.duree - dedans, gain: c.gain };
   c.duree = dedans; r.piste.clips.push(second); r.piste.clips.sort((a, b) => a.debut - b.debut); return second.id;
 }
-export function dupliquerClip(p, clipId) { const r = trouverClip(p, clipId); if (!r) return null; const c = r.clip; return placerClip(p, r.piste.id, c.son, c.debut + c.duree, { decalage: c.decalage, duree: c.duree, gain: c.gain }); }
+export function dupliquerClip(p, clipId) {
+  const r = trouverClip(p, clipId); if (!r) return null; const c = r.clip, s = p.sons[c.son]; let son = c.son;
+  if (estMidi(s)) { son = ajouterSon(p, { nom: s.nom, duree: s.duree, sr: s.sr, canaux: s.canaux, midi: s.midi }); }   // un clip de notes copié a ses propres notes : on peut le changer sans toucher l'original
+  return placerClip(p, r.piste.id, son, c.debut + c.duree, { decalage: c.decalage, duree: c.duree, gain: c.gain });
+}
 export function supprimerClip(p, clipId) { const r = trouverClip(p, clipId); if (!r) return false; r.piste.clips = r.piste.clips.filter(c => c.id !== clipId); return true; }
 // Raccourcit ou rallonge un clip par sa fin, sans dépasser le son.
 export function rognerClip(p, clipId, duree) { const r = trouverClip(p, clipId); if (!r) return false; const s = p.sons[r.clip.son]; r.clip.duree = Math.max(0.01, Math.min(duree, s.duree - r.clip.decalage)); return true; }
@@ -151,3 +159,36 @@ export function copierProjet(p, titre) { const c = JSON.parse(JSON.stringify(p))
 // Le résumé qu'on affiche dans la liste : titre, nombre de pistes et de clips, durée du dernier clip.
 export function resume(p) { let clips = 0, fin = 0; for (const pi of p.pistes || []) for (const c of pi.clips || []) { clips++; fin = Math.max(fin, c.debut + c.duree); } return { id: p.id, titre: p.titre || "Sans titre", pistes: (p.pistes || []).length, clips, duree: fin, tempo: p.tempo }; }
 export const renommerProjet = (p, titre) => { p.titre = String(titre || "").trim().slice(0, 80) || "Sans titre"; return p.titre; };
+
+// Change le tempo du projet. Les clips de notes suivent le tempo : leur place et leur durée en secondes changent, pas leur place en temps (le clip qui commence au temps 5 y reste).
+// Les clips audio (enregistrés, importés) gardent leur durée mais restent calés sur la grille : ils démarrent au même temps (`audio: false` les laisse à la même seconde).
+// Renvoie { facteur, sons } : les sons MIDI dont l'audio est à refaire à ce tempo (le rendu dépend des instruments : il se fait dans la page).
+export function changerTempo(p, tempo, { audio = true } = {}) {
+  const nouveau = Math.max(20, Math.min(300, +tempo || p.tempo)), f = p.tempo / nouveau, sons = new Set();
+  for (const pi of p.pistes) for (const c of pi.clips) {
+    const s = p.sons[c.son];
+    if (estMidi(s)) { c.debut *= f; c.duree *= f; c.decalage *= f; sons.add(c.son); } else if (audio) c.debut *= f;
+  }
+  p.tempo = nouveau; return { facteur: f, sons: [...sons] };
+}
+// Après un nouveau rendu d'un son MIDI : l'audio change, sa durée aussi ; les clips qui le lisent en entier suivent (ceux qu'on a rognés gardent leur fin).
+export function majSonMidi(p, sonId, { canaux, sr, duree }) {
+  const s = p.sons[sonId]; if (!estMidi(s)) return false; const avant = s.duree; s.canaux = Array.isArray(canaux) ? canaux.length : canaux; s.sr = sr; s.duree = duree;
+  for (const pi of p.pistes) for (const c of pi.clips) if (c.son === sonId) { if (Math.abs(c.decalage + c.duree - avant) < 0.02) c.duree = Math.max(0.01, duree - c.decalage); else c.duree = Math.min(c.duree, Math.max(0.01, duree - c.decalage)); }
+  return true;
+}
+
+// Les notes de toutes les pistes, en temps depuis le début du projet, pour l'export MIDI : [{ nom, notes }]. Seuls les clips de notes comptent (un clip audio n'a pas de notes).
+// Un clip rogné ou décalé ne donne que les notes qu'on entend encore.
+export function notesDesPistes(p) {
+  const sec = 60 / p.tempo, out = [];
+  for (const pi of p.pistes) {
+    const notes = [];
+    for (const c of pi.clips) {
+      const s = p.sons[c.son]; if (!estMidi(s)) continue; const t0 = c.debut / sec, dec = c.decalage / sec, fin = dec + c.duree / sec;
+      for (const x of s.midi.notes) { if (x.t + x.d <= dec + 1e-9 || x.t >= fin - 1e-9) continue; const t = Math.max(x.t, dec), e = Math.min(x.t + x.d, fin); notes.push({ ...x, t: t0 + (t - dec), d: e - t }); }
+    }
+    if (notes.length) out.push({ nom: pi.nom, notes });
+  }
+  return out;
+}

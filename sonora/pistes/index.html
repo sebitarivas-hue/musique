@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=24cc40ce8c">
-<link rel="stylesheet" href="pistes.css?v=24cc40ce8c"><link rel="stylesheet" href="notions.css?v=24cc40ce8c">
+<link rel="stylesheet" href="../studio/studio.css?v=8514c8ba45">
+<link rel="stylesheet" href="pistes.css?v=8514c8ba45"><link rel="stylesheet" href="notions.css?v=8514c8ba45">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -39,6 +39,7 @@
     <button type="button" id="b-menu-m" class="ico-m" aria-label="Menu : fichier, édition, lecture, piste, effets, affichage, aide" aria-haspopup="dialog" aria-expanded="false"><span class="ic ic-menu" aria-hidden="true"></span></button>
     <div class="grp" role="group" aria-label="Apporter des sons"><span class="grp-t" aria-hidden="true">Sons</span>
       <label class="bouton-fichier" data-tip="Ouvrir un fichier audio de ton ordinateur (WAV, MP3...) : il arrive sur la piste choisie, au curseur"><span class="ic ic-importer" aria-hidden="true"></span> Importer des sons<input type="file" id="fichiers" accept="audio/*,.wav,.mp3,.ogg,.m4a,.flac" multiple></label>
+      <label class="bouton-fichier" data-avance data-tip="Ouvrir un fichier MIDI : chaque piste du fichier devient une piste de notes, que tu peux modifier"><span class="ic ic-importer" aria-hidden="true"></span> Importer du MIDI<input type="file" id="fichier-midi" accept=".mid,.midi,audio/midi,audio/x-midi"></label>
       <button type="button" id="b-biblio" aria-expanded="false" aria-controls="biblio" data-tip="Des batteries, des rythmes du monde, des instruments : écoute puis ajoute sur la piste"><span class="ic ic-biblio" aria-hidden="true"></span> Bibliothèque</button>
       <button type="button" id="b-midi" aria-expanded="false" aria-controls="midi" data-tip="Un clavier pour jouer un instrument et enregistrer tes notes sur la piste (clavier MIDI, ordinateur ou écran)"><span class="ic ic-piano" aria-hidden="true"></span> Jouer un instrument</button>
       <button type="button" id="b-pas" aria-expanded="false" aria-controls="pas" data-tip="Allumer des cases pour fabriquer un rythme de batterie, puis l'ajouter comme un clip"><span class="ic ic-pas" aria-hidden="true"></span> Séquenceur à pas</button>
@@ -52,6 +53,7 @@
       <label class="mini" data-avance data-tip="Le nom de ton projet">Projet <input id="titre-projet" maxlength="80" aria-label="Titre du projet" autocomplete="off"></label>
       <button type="button" id="b-projets" aria-expanded="false" aria-controls="projets" data-tip="Ouvrir un autre projet, ou retrouver un projet supprimé"><span class="ic ic-dossier" aria-hidden="true"></span> Mes projets</button>
       <button type="button" id="b-nouveau" data-avance data-tip="Commencer un projet vide (l'autre reste dans Mes projets)"><span class="ic ic-nouveau" aria-hidden="true"></span> Nouveau projet</button>
+      <button type="button" id="b-export-midi" data-avance data-tip="Fabriquer un fichier MIDI avec les notes de tes clips de notes, pour les ouvrir dans un autre logiciel"><span class="ic ic-export" aria-hidden="true"></span> Exporter en MIDI</button>
       <button type="button" id="b-export" data-tip="Fabriquer un fichier WAV avec tout ton projet, pour l'écouter ou le partager"><span class="ic ic-export" aria-hidden="true"></span> Exporter en WAV</button>
       <span class="annuler-groupe" role="group" aria-label="Revenir en arrière"><button type="button" id="b-annuler" data-tip="Annuler la dernière action (Ctrl+Z)" disabled><span class="ic ic-annuler" aria-hidden="true"></span> Annuler</button><button type="button" id="b-refaire" data-tip="Rétablir ce qu'on vient d'annuler (Ctrl+Y)" disabled><span class="ic ic-refaire" aria-hidden="true"></span> Rétablir</button></span>
     </div>
@@ -102,6 +104,7 @@
       <label class="mini">Octave <button type="button" id="midi-oct-moins" aria-label="Octave plus basse">&minus;</button><output id="midi-oct" aria-live="polite">4</output><button type="button" id="midi-oct-plus" aria-label="Octave plus haute">+</button></label>
       <label class="mini case"><input type="checkbox" id="midi-ordi" checked> Clavier de l'ordinateur</label>
       <label class="mini">Gamme<select id="midi-gamme" aria-label="Gamme du clavier"></select></label>
+      <label class="mini" data-tip="Aligner les notes que tu joues sur le rythme du projet : elles sonnent en place, même si ton jeu était un peu en avance ou en retard">Caler les notes<select id="midi-calage" aria-label="Caler les notes sur la grille"><option value="0">non, comme je joue</option><option value="1">sur le temps</option><option value="0.5" selected>sur la croche</option><option value="0.25">sur la double croche</option></select></label>
       <button type="button" id="b-midi-brancher">Brancher un clavier MIDI</button>
       <button type="button" id="b-notes" class="enreg" aria-pressed="false"><span class="pastille-rec" aria-hidden="true"></span> Enregistrer les notes</button></div>
     <p class="petit" id="midi-etat" role="status" aria-live="polite">Aucun clavier MIDI branché : utilise le clavier de l'ordinateur ou les touches de l'écran.</p>
@@ -125,10 +128,24 @@
   </section>
   <section class="selection" id="selection" aria-label="Clip choisi" hidden>
     <b id="sel-nom"></b>
+    <button type="button" id="b-modifier-notes" hidden data-tip="Voir les notes de ce clip et les changer : en poser, en déplacer, en enlever"><span class="ic ic-piano" aria-hidden="true"></span> Modifier les notes</button>
     <button type="button" id="b-couper" data-tip="Couper le clip en deux, là où est le curseur rouge (touche S)"><span class="ic ic-ciseaux" aria-hidden="true"></span> Couper au curseur</button>
     <button type="button" id="b-dupliquer" data-tip="Faire une copie du clip juste après lui (touche D)"><span class="ic ic-copie" aria-hidden="true"></span> Dupliquer</button>
     <button type="button" id="b-supprimer" data-tip="Enlever le clip de la piste (touche Suppr)"><span class="ic ic-corbeille" aria-hidden="true"></span> Supprimer</button>
     <label class="mini">Gain<input type="range" id="sel-gain" min="0" max="2" step="0.01"></label>
+  </section>
+  <section class="rouleau" id="rouleau" aria-label="Notes du clip" hidden>
+    <div class="rl-haut"><b id="rl-titre">Notes</b>
+      <button type="button" id="rl-ecouter" data-tip="Écouter les notes de ce clip, une fois"><span class="ic ic-play" aria-hidden="true"></span> Écouter</button>
+      <label class="mini" data-tip="Le pas des notes : elles se posent et se déplacent de cette valeur">Grille<select id="rl-grille" aria-label="Grille des notes"><option value="1">le temps</option><option value="0.5" selected>la croche</option><option value="0.25">la double croche</option><option value="0">libre</option></select></label>
+      <span class="rl-groupe" role="group" aria-label="Longueur du clip"><button type="button" id="rl-moins" data-tip="Raccourcir le clip d'une mesure">&minus; mesure</button><output id="rl-mesures" aria-live="polite"></output><button type="button" id="rl-plus" data-tip="Allonger le clip d'une mesure">+ mesure</button></span>
+      <button type="button" id="rl-caler" data-tip="Remettre toutes les notes sur la grille choisie"><span class="ic ic-ok" aria-hidden="true"></span> Caler tout</button>
+      <button type="button" id="rl-suppr" disabled data-tip="Enlever la note choisie (touche Suppr)"><span class="ic ic-corbeille" aria-hidden="true"></span> Supprimer la note</button>
+      <button type="button" id="rl-vider" data-tip="Enlever toutes les notes de ce clip"><span class="ic ic-gomme" aria-hidden="true"></span> Tout effacer</button>
+      <button type="button" id="rl-fin" class="principal"><span class="ic ic-ok" aria-hidden="true"></span> Terminé</button>
+    </div>
+    <p class="petit" id="rl-aide">Clique dans la grille pour poser une note. Clique une note pour la choisir, glisse-la pour la déplacer, tire son bord droit pour l'allonger. Les flèches la déplacent, + et - l'allongent.</p>
+    <div id="rl-corps" class="rl"></div>
   </section>
   <section class="auto" id="auto" aria-label="Courbes de la piste" hidden>
     <b id="auto-titre"></b>
@@ -148,8 +165,8 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=24cc40ce8c"></script>
-<script src="../barre-cours.js?v=24cc40ce8c"></script>
-<script src="../retour.js?v=24cc40ce8c"></script>
+<script type="module" src="pistes.js?v=8514c8ba45"></script>
+<script src="../barre-cours.js?v=8514c8ba45"></script>
+<script src="../retour.js?v=8514c8ba45"></script>
 </body>
 </html>

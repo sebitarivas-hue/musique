@@ -369,3 +369,20 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
   body.simple .outils .grp-t { display: none; } body.simple .outils .grp { padding: 5px 8px; }
 }
 @media (max-width: 700px) { .outils .niveau { display: none; } }
+
+/* Le rouleau de notes (clip MIDI) : même univers sombre que les pistes ; une couleur par note. */
+.rouleau { margin: 8px 0; padding: 10px 12px; border: 2px solid var(--acide); border-radius: 12px; background: var(--daw-tete); color: var(--daw-texte); }
+.rouleau[hidden] { display: none; }
+.rl-haut { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; } .rl-haut b { font-size: 1.05rem; margin-right: 6px; }
+.rl-haut button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 13px; border-radius: 8px; background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); font-weight: 600; cursor: pointer; }
+.rl-haut button:hover:not(:disabled) { border-color: var(--acide); } .rl-haut button:disabled { opacity: .4; cursor: default; } .rl-haut .ic { font-size: 1.25em; color: var(--acide); }
+.rl-haut .principal { background: var(--acide); color: var(--noir); border-color: var(--acide); margin-left: auto; } .rl-haut .principal .ic { color: var(--noir); }
+.rl-haut .mini { color: var(--daw-texte); } .rl-groupe { display: inline-flex; align-items: center; gap: 4px; } .rl-groupe output { min-width: 5.5em; text-align: center; font-weight: 600; }
+.rouleau .petit { margin: 6px 0; color: var(--daw-doux); font-size: .85rem; }
+.rl-corps { display: flex; align-items: flex-start; max-height: 340px; overflow-y: auto; border-radius: 10px; background: #151518; border: 1px solid var(--daw-trait); }
+.rl-clavier { flex: none; position: sticky; left: 0; z-index: 2; } .rl-defil { flex: 1; overflow-x: auto; overflow-y: hidden; } .rl-notes { display: block; touch-action: pan-x pan-y; outline: none; cursor: crosshair; }
+.rl-notes:focus-visible { box-shadow: inset 0 0 0 2px var(--acide); }
+.rl-rang { fill: #1f1f25; } .rl-noire { fill: #17171b; } .rl-sub { stroke: rgba(255,255,255,.06); } .rl-temps { stroke: rgba(255,255,255,.16); } .rl-mesure { stroke: rgba(255,255,255,.4); stroke-width: 1.5; }
+.rl-touche { stroke: #6a6a74; stroke-width: 1; cursor: pointer; } .rl-tb { fill: #ECEBE4; } .rl-tn { fill: #26262c; } .rl-nom { font: 700 10px system-ui, sans-serif; fill: #14130f; pointer-events: none; }
+.rl-note { stroke: #14130f; stroke-width: 1; cursor: grab; touch-action: none; } .rl-note.rl-choisie { stroke: #fff; stroke-width: 2.5; filter: drop-shadow(0 0 4px rgba(0,0,0,.7)); }
+@media (hover: none) { [data-tip]::after, [data-tip]::before { display: none !important; } }
