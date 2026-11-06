@@ -1,26 +1,26 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=510b3f1dd7";
-import * as Ed from "./editions.js?v=510b3f1dd7";
-import * as P from "./projet.js?v=510b3f1dd7";
-import { Stockage } from "./stockage.js?v=510b3f1dd7";
-import { creerBouton } from "./bouton.js?v=510b3f1dd7";
-import * as MI from "./midi.js?v=510b3f1dd7";
-import * as N from "./notes.js?v=510b3f1dd7";
-import { Rouleau } from "./rouleau.js?v=510b3f1dd7";
-import * as BM from "./batterie_midi.js?v=510b3f1dd7";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=510b3f1dd7";
-import * as INS from "./instruments.js?v=510b3f1dd7";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=510b3f1dd7";
-import * as MO from "./moteurs.js?v=510b3f1dd7";
-import { monterPanneaux } from "./panneaux.js?v=510b3f1dd7";
-import { monterNotions } from "./notions.js?v=510b3f1dd7";
-import { DEMOS } from "./demos.js?v=510b3f1dd7";
-import * as B from "./bibliotheque.js?v=510b3f1dd7";
-import { encoderWAV } from "../studio/wav.js?v=510b3f1dd7";
-import { ENTREES } from "../library/catalogue.js?v=510b3f1dd7";
-import { compiler } from "../src/index.js?v=510b3f1dd7";
-import { rendre } from "../src/rendu.js?v=510b3f1dd7";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=60187a4d33";
+import * as Ed from "./editions.js?v=60187a4d33";
+import * as P from "./projet.js?v=60187a4d33";
+import { Stockage } from "./stockage.js?v=60187a4d33";
+import { creerBouton } from "./bouton.js?v=60187a4d33";
+import * as MI from "./midi.js?v=60187a4d33";
+import * as N from "./notes.js?v=60187a4d33";
+import { Rouleau } from "./rouleau.js?v=60187a4d33";
+import * as BM from "./batterie_midi.js?v=60187a4d33";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=60187a4d33";
+import * as INS from "./instruments.js?v=60187a4d33";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=60187a4d33";
+import * as MO from "./moteurs.js?v=60187a4d33";
+import { monterPanneaux } from "./panneaux.js?v=60187a4d33";
+import { monterNotions } from "./notions.js?v=60187a4d33";
+import { DEMOS } from "./demos.js?v=60187a4d33";
+import * as B from "./bibliotheque.js?v=60187a4d33";
+import { encoderWAV } from "../studio/wav.js?v=60187a4d33";
+import { ENTREES } from "../library/catalogue.js?v=60187a4d33";
+import { compiler } from "../src/index.js?v=60187a4d33";
+import { rendre } from "../src/rendu.js?v=60187a4d33";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -50,7 +50,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=510b3f1dd7"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=60187a4d33"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -302,8 +302,21 @@ async function noteMidi(note, vitesse, actif) {
   catch (e) { /* le message est déjà affiché par moteurMidi */ }
 }
 midi.clavier = new Clavier({ noteOn: (n, h, v) => noteMidi(n, v, true), noteOff: n => noteMidi(n, 1, false) });
+// Les pièces de la batterie en pavés : une ligne de pavés colorés, chacun avec son nom et sa lettre au clavier (au lieu d'un clavier de piano où huit noms se chevauchent).
+const PAVES = [[49, "#FFC53D"], [51, "#D8E043"], [46, "#8BD450"], [42, "#3FC79A"], [56, "#35BFD3"], [70, "#4C9BF5"], [39, "#7A7CF0"], [37, "#A86CF0"], [41, "#D766D8"], [38, "#F26BA3"], [36, "#FF6B57"]];
+function dessinerPaves(z) {
+  z.innerHTML = ""; z.classList.add("pads"); const lettres = Object.entries(MI.TOUCHES).reduce((o, [k, v]) => { o[12 * (midi.octave + 1) + v] = k.toUpperCase(); return o; }, {});
+  for (const [n, couleur] of PAVES) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "pad" + (n === 36 ? " pad-large" : ""); b.dataset.note = n; b.style.setProperty("--c", couleur); const nom = BM.NOMS_LIGNES[n];
+    b.setAttribute("aria-label", nom); b.innerHTML = `<i>${lettres[n] || ""}</i><b>${esc(nom)}</b>`;
+    b.addEventListener("pointerdown", e => { e.preventDefault(); b.setPointerCapture(e.pointerId); noteMidi(n, 0.8, true); }); const fin = () => noteMidi(n, 1, false); b.addEventListener("pointerup", fin); b.addEventListener("pointercancel", fin); b.addEventListener("lostpointercapture", fin);
+    b.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && !e.repeat) { e.preventDefault(); noteMidi(n, 0.8, true); } }); b.addEventListener("keyup", e => { if (e.key === "Enter" || e.key === " ") noteMidi(n, 1, false); });
+    z.appendChild(b);
+  }
+  $("midi-oct").textContent = midi.octave;
+}
 function dessinerClavierMidi() {
-  const z = $("midi-clavier"); z.innerHTML = ""; const base = 12 * (midi.octave + 1), blanches = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16], noires = { 1: 0, 3: 1, 6: 3, 8: 4, 10: 5, 13: 7, 15: 8 };
+  const z = $("midi-clavier"); if (BM.estBatterie($("midi-instrument").value)) { dessinerPaves(z); return; } z.classList.remove("pads"); z.innerHTML = ""; const base = 12 * (midi.octave + 1), blanches = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16], noires = { 1: 0, 3: 1, 6: 3, 8: 4, 10: 5, 13: 7, 15: 8 };
   const touches = Object.entries(MI.TOUCHES).reduce((o, [k, v]) => { o[v] = k.toUpperCase(); return o; }, {});
   const batt = BM.estBatterie($("midi-instrument").value);   // une batterie : chaque touche porte le nom de sa pièce
   const bouton = (off, noire) => { const n = base + off, b = document.createElement("button"); b.type = "button"; b.className = "touche " + (noire ? "noire" : "blanche"); b.dataset.note = n; b.setAttribute("aria-label", batt ? (BM.NOMS_LIGNES[BM.ligneDe(n)] || MI.nomNote(n)) : MI.nomNote(n)); b.innerHTML = `<span>${touches[off] || ""}</span>` + (batt && BM.PIECE_DE_NOTE[n] ? `<small>${esc((BM.NOMS_LIGNES[BM.ligneDe(n)] || "").replace("Charleston ", "Charl. ").replace("Cymbale ", "").replace("Grosse caisse", "Grosse c.").replace("Caisse claire", "Claire"))}</small>` : "");

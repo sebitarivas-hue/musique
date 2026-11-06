@@ -2,7 +2,7 @@
 // Clic dans le vide : une note. Clic sur une note : on la choisit ; on la glisse pour la déplacer, on tire son bord droit pour l'allonger ; Suppr l'enlève.
 // Les flèches déplacent la note choisie (gauche et droite d'un pas de grille, haut et bas d'un demi-ton), + et - la rallongent ou la raccourcissent.
 // Tout ce que fait le rouleau passe par des rappels : il ne connaît ni le projet, ni l'audio. Testé dans Chromium (tests/pistes.test.mjs).
-import { nettoyerNotes } from "./notes.js?v=510b3f1dd7";
+import { nettoyerNotes } from "./notes.js?v=60187a4d33";
 
 const SVG = "http://www.w3.org/2000/svg", H_RANGEE = 22, PX_TEMPS = 56, W_CLAVIER = 54, NOIRES = new Set([1, 3, 6, 8, 10]);
 const NOMS = ["do", "do♯", "ré", "ré♯", "mi", "fa", "fa♯", "sol", "sol♯", "la", "la♯", "si"];

@@ -401,3 +401,49 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 @media (min-width: 701px) { body.simple nav.actions { display: none; } body.simple header.haut a.accueil-sonora { display: inline-flex; align-items: center; margin-left: 10px; } }
 .touche small { position: absolute; left: 0; right: 0; bottom: 20px; font: 600 .6rem var(--f-corps, system-ui); line-height: 1.1; text-align: center; color: inherit; pointer-events: none; padding: 0 1px; }
 .rl-nom-clair { fill: #ECEBE4; }
+
+/* Batterie : des pavés ronds et colorés, un par pièce, au lieu d'un clavier de piano. */
+.midi-clavier.pads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; height: auto; max-width: 760px; margin-top: 10px; }
+.pad { --ombre: color-mix(in srgb, var(--c) 58%, #14130f); position: relative; display: flex; align-items: flex-end; justify-content: flex-start; min-height: 74px; padding: 8px 10px; border: 0; border-radius: 18px; background: linear-gradient(165deg, color-mix(in srgb, var(--c) 78%, #fff), var(--c)); color: #14130f; box-shadow: 0 4px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); cursor: pointer; font: inherit; text-align: left; transition: transform .06s, box-shadow .06s, filter .1s; touch-action: none; user-select: none; }
+.pad b { font-size: .95rem; line-height: 1.1; } .pad i { position: absolute; top: 7px; left: 9px; min-width: 22px; padding: 0 6px; border-radius: 99px; background: rgba(20, 19, 15, .82); color: #fff; font: 600 .7rem/1.5 var(--f-mono, monospace); font-style: normal; text-align: center; } .pad i:empty { display: none; }
+.pad.pad-large { grid-column: span 2; } .pad:hover { filter: brightness(1.06); }
+.pad.jouee { transform: translateY(3px); box-shadow: 0 1px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); filter: brightness(1.18) saturate(1.2); background: linear-gradient(165deg, #fff, var(--c)) !important; color: #14130f !important; }
+@media (max-width: 700px) { .midi-clavier.pads { grid-template-columns: repeat(3, 1fr); gap: 8px; } .pad { min-height: 64px; border-radius: 16px; } .pad b { font-size: .85rem; } }
+
+/* ---- Tous les panneaux du Studio dans le même univers sombre et arrondi (instrument, sons et rythmes, rythme à pas, projets, Faust, Csound, Pure Data) ---- */
+.midi, .moteurs { border: 1px solid var(--daw-trait); border-radius: 18px; background: var(--daw-tete); color: var(--daw-texte); padding: 14px 16px; margin: 8px 0; }
+.midi h2, .moteurs h2 { color: var(--daw-texte); font-size: 1.1rem; text-transform: none; letter-spacing: 0; }
+.midi .petit, .moteurs .petit, .midi p.petit { color: var(--daw-doux); }
+.midi label, .moteurs label { color: var(--daw-texte); }
+.midi select, .midi input:not([type=checkbox]):not([type=range]), .moteurs select, .moteurs input:not([type=checkbox]):not([type=range]), .moteurs textarea, .liste-projets .lp-titre { background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); border-radius: 10px; min-height: 44px; padding: 4px 10px; }
+.moteurs textarea { font-family: var(--f-mono, monospace); min-height: 0; line-height: 1.45; }
+.midi select:focus-visible, .midi input:focus-visible, .moteurs select:focus-visible, .moteurs textarea:focus-visible { outline: 2px solid var(--acide); outline-offset: 1px; }
+.midi input[type=checkbox], .moteurs input[type=checkbox], .auto input[type=checkbox] { accent-color: var(--acide); width: 18px; height: 18px; }
+.midi button:not(.notion):not(.croix-b):not(.touche):not(.pad), .moteurs button:not(.notion):not(.croix-b):not(.mot-carte), .liste-projets button { min-height: 44px; padding: 0 14px; border-radius: 10px; background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); font-weight: 600; cursor: pointer; }
+.midi button:not(.notion):not(.croix-b):not(.touche):not(.pad):hover:not(:disabled), .moteurs button:not(.notion):not(.croix-b):not(.mot-carte):hover:not(:disabled), .liste-projets button:hover:not(:disabled) { border-color: var(--acide); }
+.midi button:disabled, .moteurs button:disabled, .liste-projets button:disabled { opacity: .4; cursor: default; }
+.midi button.principal, .moteurs button.principal, .midi .enreg[aria-pressed="true"] { background: var(--acide); color: var(--noir); border-color: var(--acide); }
+.midi .enreg .pastille-rec { background: #FF5A3C; }
+.croix-b { border-radius: 50%; border: 1px solid var(--daw-trait); background: var(--daw-piste2); color: var(--daw-texte); } .croix-b:hover { background: #FF5A3C; border-color: #FF5A3C; } .croix-b .croix::before, .croix-b .croix::after { background: currentColor; }
+.midi .notion, .moteurs .notion, .auto .notion { color: var(--daw-texte); } .midi .notion::before, .moteurs .notion::before, .auto .notion::before { background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); }
+/* Sons et rythmes */
+.biblio-onglets { gap: 8px; } .biblio-onglets button { border-radius: 99px !important; padding: 0 16px !important; background: var(--daw-piste2) !important; } .biblio-onglets button[aria-selected="true"] { background: var(--acide) !important; color: var(--noir) !important; border-color: var(--acide) !important; }
+.liste-biblio { gap: 6px; max-height: 360px; } .liste-biblio li, .liste-projets li { border: 0; border-radius: 12px; background: var(--daw-piste2); padding: 8px 10px 8px 14px; box-shadow: inset 4px 0 0 var(--acide); }
+.liste-biblio li:nth-child(5n+2) { box-shadow: inset 4px 0 0 #FF8A3D; } .liste-biblio li:nth-child(5n+3) { box-shadow: inset 4px 0 0 #3FC79A; } .liste-biblio li:nth-child(5n+4) { box-shadow: inset 4px 0 0 #4C9BF5; } .liste-biblio li:nth-child(5n) { box-shadow: inset 4px 0 0 #A86CF0; }
+.liste-biblio .bl-t { color: var(--daw-doux); } .liste-biblio .lp-act button[data-a="ajouter"] { background: var(--acide); color: var(--noir); border-color: var(--acide); }
+.liste-projets li.courant { background: rgba(214, 255, 0, .12); box-shadow: inset 4px 0 0 var(--acide), 0 0 0 1px var(--acide); }
+/* Rythme à pas */
+.pas-nom { color: var(--daw-texte); font-weight: 600; }
+.pas-case { height: 34px; border: 0; border-radius: 9px; background: var(--daw-piste2); box-shadow: inset 0 0 0 1px var(--daw-trait); } .pas-case.t1 { background: #2e2e37; box-shadow: inset 0 0 0 1px #5a5a66; }
+.pas-case[data-e="x"] { background: var(--c-pas, #FF6B57); box-shadow: 0 3px 0 color-mix(in srgb, var(--c-pas, #FF6B57) 55%, #000); } .pas-case[data-e="o"] { background: color-mix(in srgb, var(--c-pas, #FF6B57) 45%, #2e2e37); }
+.pas-case.curseur { outline: 3px solid var(--acide); outline-offset: 1px; }
+.pas-ligne:nth-child(11n+1) { --c-pas: #FF6B57; } .pas-ligne:nth-child(11n+2) { --c-pas: #F26BA3; } .pas-ligne:nth-child(11n+3) { --c-pas: #D766D8; } .pas-ligne:nth-child(11n+4) { --c-pas: #3FC79A; } .pas-ligne:nth-child(11n+5) { --c-pas: #8BD450; }
+.pas-ligne:nth-child(11n+6) { --c-pas: #A86CF0; } .pas-ligne:nth-child(11n+7) { --c-pas: #D766D8; } .pas-ligne:nth-child(11n+8) { --c-pas: #35BFD3; } .pas-ligne:nth-child(11n+9) { --c-pas: #4C9BF5; } .pas-ligne:nth-child(11n+10) { --c-pas: #D8E043; } .pas-ligne:nth-child(11n) { --c-pas: #FFC53D; }
+/* Clavier de piano : dans un cadre sombre, touches arrondies en bas */
+.midi-clavier:not(.pads) { padding: 8px; border-radius: 14px; background: #151518; max-width: 780px; } .touche { border-color: #14130f; } .touche.blanche { border-radius: 0 0 8px 8px; } .touche.noire { border-radius: 0 0 6px 6px; }
+/* Faust, Csound, Pure Data */
+.chip-m { border-radius: 99px !important; } .chip-m[aria-pressed="true"] { background: var(--acide) !important; color: var(--noir) !important; border-color: var(--acide) !important; }
+.mot-carte { border: 0; border-radius: 14px; background: var(--daw-piste2); color: var(--daw-texte); box-shadow: inset 4px 0 0 #4C9BF5; } .mot-carte[aria-pressed="true"] { background: var(--acide); color: var(--noir); }
+.mot-champ { color: var(--daw-doux); } .mot-etat { color: var(--daw-doux); }
+.alerte-rangement { border-radius: 14px; }
+#message { border: 0; border-radius: 12px; background: var(--daw-piste); padding: 8px 14px; }

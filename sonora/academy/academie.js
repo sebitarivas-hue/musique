@@ -1,11 +1,11 @@
 // SONORA Academy : leçons, exercices corrigés sur le son produit. La progression reste dans le navigateur (aucun compte, rien n'est envoyé).
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=510b3f1dd7";
-import { Editeur } from "../studio/editeur.js?v=510b3f1dd7";
-import { UNITES, LECONS, parId } from "./parcours.js?v=510b3f1dd7";
-import { verifier } from "./correcteur.js?v=510b3f1dd7";
-import { preparer } from "../science/executeur.js?v=510b3f1dd7";
-import { heros, etatBouton } from "../studio/heros.js?v=510b3f1dd7";
-import { dessinerOscillo } from "../studio/visuels.js?v=510b3f1dd7";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=60187a4d33";
+import { Editeur } from "../studio/editeur.js?v=60187a4d33";
+import { UNITES, LECONS, parId } from "./parcours.js?v=60187a4d33";
+import { verifier } from "./correcteur.js?v=60187a4d33";
+import { preparer } from "../science/executeur.js?v=60187a4d33";
+import { heros, etatBouton } from "../studio/heros.js?v=60187a4d33";
+import { dessinerOscillo } from "../studio/visuels.js?v=60187a4d33";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
