@@ -1,5 +1,5 @@
 // Analyse lexicale : le texte source devient une suite de jetons positionnés.
-import { UNITES } from "./unites.js?v=db87d6f996";
+import { UNITES } from "./unites.js?v=9e3e5cf32c";
 
 export const MOTS = new Set(["utilise", "comme", "const", "fonction", "rend", "instrument", "effet", "reglage", "entree", "sortie", "soit", "rec",
   "voix", "polyphonie", "automation", "boucle", "dans", "courbe", "lissage", "etiquette", "pas", "choix", "si", "alors", "sinon", "et", "ou", "non",
@@ -52,7 +52,7 @@ export function lexer(source, diags) {
       if ((source[j] === "e" || source[j] === "E") && /^[+-]?[0-9]/.test(source.slice(j + 1, j + 3))) {
         reel = true; j++; if (source[j] === "+" || source[j] === "-") j++; while (j < n && CHIFFRE.test(source[j])) j++;
       }
-      const valeur = Number(source.slice(debut, j).replaceAll("_", ""));
+      const valeur = Number(source.slice(debut, j).split("_").join(""));
       // unité : collée au nombre (440Hz, 30%) ou après des espaces (440 Hz)
       let k = j;
       const collee = source[k] === "%" || (k < n && DEBUT_IDENT.test(source[k]));
@@ -61,7 +61,7 @@ export function lexer(source, diags) {
       if (k < n && DEBUT_IDENT.test(source[k])) {
         let m = k; while (m < n && SUITE_IDENT.test(source[m])) m++;
         const mot = source.slice(k, m);
-        if (Object.hasOwn(UNITES, mot)) { ajoute("quantite", valeur, debut, m, { unite: mot }); i = m; continue; }
+        if (Object.prototype.hasOwnProperty.call(UNITES, mot)) { ajoute("quantite", valeur, debut, m, { unite: mot }); i = m; continue; }
         if (k === j) { diags.erreur("E413", `Unité inconnue : \`${mot}\`.`, k, m, { suggestion: "les unités connues sont s, ms, ech, Hz, kHz, bpm, dB, tour, rad, deg, dt, ct et %" }); i = m; continue; }
       }
       ajoute("nombre", valeur, debut, j, { entier: !reel }); i = j; continue;

@@ -15,7 +15,7 @@
   const espace = (origine && origine.espace) || (() => { try { return localStorage.getItem("cours:espace"); } catch (_) { return null; } })();
   const base = espace === "prof" ? racine + "index.html" : espace === "eleves" ? racine + "eleves/index.html" : null;
   // Chaque classe a ses outils (03/11/2026) : un élève dont la classe est plus petite que celle de l'outil est ramené au Labo. Le professeur et les adresses sans classe connue ne sont pas touchés.
-  { const MIN = { science: "4e", studio: "4e", library: "5e", academy: "3e" }, I = { "6e": 0, "5e": 1, "4e": 2, "3e": 3 }, outil = (location.pathname.match(/\/sonora\/(science|studio|library|academy)\//) || [])[1];
+  { const MIN = { science: "4e", studio: "4e", library: "5e", academy: "4e" }, I = { "6e": 0, "5e": 1, "4e": 2, "3e": 3 }, outil = (location.pathname.match(/\/sonora\/(science|studio|library|academy)\//) || [])[1];
     let classe = ""; try { classe = localStorage.getItem("classe") || ""; } catch (_) {}
     if (espace === "eleves" && outil && I[classe] !== undefined && I[classe] < I[MIN[outil]]) { location.replace(racine + "eleves/index.html#labo"); return; } }
   const dernier = lire(localStorage, "cours:dernier");

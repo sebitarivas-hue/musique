@@ -12,7 +12,7 @@ export class Moteur {
   }
 
   constructor(options = {}) {
-    this.urlProcesseur = options.urlProcesseur || new URL("./processeur.js?v=db87d6f996", import.meta.url);
+    this.urlProcesseur = options.urlProcesseur || new URL("./processeur.js?v=9e3e5cf32c", import.meta.url);
     this.ctx = null; this.noeud = null; this.charge = null;
     this.noms = []; this.valeurs = new Map(); // dernières valeurs de réglage connues, rejouées après un changement de programme
     this.ecouteurs = {};
@@ -20,7 +20,7 @@ export class Moteur {
     this.acks = new Map(); this.numeroLot = 0;
   }
 
-  on(evenement, f) { (this.ecouteurs[evenement] ||= []).push(f); return this; }
+  on(evenement, f) { (this.ecouteurs[evenement] || (this.ecouteurs[evenement] = [])).push(f); return this; }
   emet(evenement, donnees) { (this.ecouteurs[evenement] || []).forEach(f => { try { f(donnees); } catch (e) { console.error(e); } }); }
   get etat() { return this.ctx ? this.ctx.state : "ferme"; }
   get sampleRate() { return this.ctx ? this.ctx.sampleRate : 0; }
@@ -104,8 +104,8 @@ export class Moteur {
 
 // Compile dans un Worker de module ; si le navigateur ne le permet pas, compile sur le fil principal.
 export function compilerDansWorker(source, options = {}, urls = {}) {
-  const urlWorker = urls.worker || new URL("./worker-compilation.js?v=db87d6f996", import.meta.url);
-  const direct = async () => { const { compiler } = await import("./index.js?v=db87d6f996"); const r = compiler(source, options); const { ast, graphe, ...module } = r.module || {}; return { ok: r.ok, diagnostics: r.diagnostics, source, module: r.module ? module : undefined, modules: r.modules, via: "principal" }; };
+  const urlWorker = urls.worker || new URL("./worker-compilation.js?v=9e3e5cf32c", import.meta.url);
+  const direct = async () => { const { compiler } = await import("./index.js?v=9e3e5cf32c"); const r = compiler(source, options); const { ast, graphe, ...module } = r.module || {}; return { ok: r.ok, diagnostics: r.diagnostics, source, module: r.module ? module : undefined, modules: r.modules, via: "principal" }; };
   if (typeof Worker === "undefined") return direct();
   return new Promise(ok => {
     let w;

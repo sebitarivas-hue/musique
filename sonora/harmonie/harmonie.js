@@ -1,21 +1,21 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=db87d6f996";
-import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=db87d6f996";
-import { BANQUE, preparer } from "./echantillons.js?v=db87d6f996";
-import { GENRES, LISTE_GENRES, rendreGenre, mettreReel } from "./genres.js?v=db87d6f996";
-import { chargerKit } from "./batterie.js?v=db87d6f996";
-import { heros, etatBouton } from "../studio/heros.js?v=db87d6f996";
-import { encoderWAV } from "../studio/wav.js?v=db87d6f996";
-import { dessinerOscillo } from "../studio/visuels.js?v=db87d6f996";
-import * as P from "../pistes/projet.js?v=db87d6f996";
-import { Stockage } from "../pistes/stockage.js?v=db87d6f996";
-import * as A from "./accords.js?v=db87d6f996";
-import * as V from "./voicings.js?v=db87d6f996";
-import * as G from "./grille.js?v=db87d6f996";
-import { partitionSVG } from "./partition.js?v=db87d6f996";
-import { monterNotions } from "../pistes/notions.js?v=db87d6f996";
-import { NOTIONS_H, ORDRE_H } from "./notions.js?v=db87d6f996";
+import * as H from "./theorie.js?v=9e3e5cf32c";
+import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=9e3e5cf32c";
+import { BANQUE, preparer } from "./echantillons.js?v=9e3e5cf32c";
+import { GENRES, LISTE_GENRES, rendreGenre, mettreReel } from "./genres.js?v=9e3e5cf32c";
+import { chargerKit } from "./batterie.js?v=9e3e5cf32c";
+import { heros, etatBouton } from "../studio/heros.js?v=9e3e5cf32c";
+import { encoderWAV } from "../studio/wav.js?v=9e3e5cf32c";
+import { dessinerOscillo } from "../studio/visuels.js?v=9e3e5cf32c";
+import * as P from "../pistes/projet.js?v=9e3e5cf32c";
+import { Stockage } from "../pistes/stockage.js?v=9e3e5cf32c";
+import * as A from "./accords.js?v=9e3e5cf32c";
+import * as V from "./voicings.js?v=9e3e5cf32c";
+import * as G from "./grille.js?v=9e3e5cf32c";
+import { partitionSVG } from "./partition.js?v=9e3e5cf32c";
+import { monterNotions } from "../pistes/notions.js?v=9e3e5cf32c";
+import { NOTIONS_H, ORDRE_H } from "./notions.js?v=9e3e5cf32c";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -76,7 +76,7 @@ function boucle() {
 
 // ---------------------------------------------------------------- explorer
 const optionsToniques = (sel) => H.TONIQUES.map((t, i) => `<option value="${i}"${i === sel ? " selected" : ""}>${t.nom}</option>`).join("");
-const optionsModes = (sel, heptaSeul) => { const fam = {}; for (const [k, m] of Object.entries(H.MODES)) if (!heptaSeul || m.pas.length === 7) (fam[m.famille] ||= []).push([k, m]); return Object.entries(fam).map(([f, l]) => `<optgroup label="${esc(f)}">${l.map(([k, m]) => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(m.nom)}</option>`).join("")}</optgroup>`).join(""); };
+const optionsModes = (sel, heptaSeul) => { const fam = {}; for (const [k, m] of Object.entries(H.MODES)) if (!heptaSeul || m.pas.length === 7) (fam[m.famille] || (fam[m.famille] = [])).push([k, m]); return Object.entries(fam).map(([f, l]) => `<optgroup label="${esc(f)}">${l.map(([k, m]) => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(m.nom)}</option>`).join("")}</optgroup>`).join(""); };
 const optionsInstr = sel => TOUS.map(k => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(NOMS_INSTR[k])}</option>`).join("");
 // De vrais instruments (la banque du site) : on charge celui qu'on a choisi ; en attendant, un son de secours joue. L'état dit lequel on entend.
 let enChargement = null;

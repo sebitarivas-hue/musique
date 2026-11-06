@@ -1,15 +1,15 @@
 // SONORA Studio : l'interface de programmation. Elle ne calcule aucun son : elle compile (Worker), envoie au moteur (AudioWorklet),
 // et affiche ce que le moteur renvoie.
-import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=db87d6f996";
-import { compiler, MODULES, MATHS } from "../src/index.js?v=db87d6f996";
-import { MOTS } from "../src/lexeur.js?v=db87d6f996";
-import { Editeur, inserer } from "./editeur.js?v=db87d6f996";
-import { formater, vers, depuis } from "./reglages-commun.js?v=db87d6f996";
-import { EXEMPLES } from "./exemples.js?v=db87d6f996";
-import { Projets } from "./projets.js?v=db87d6f996";
-import { installerCreation } from "./creation.js?v=db87d6f996";
-import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=db87d6f996";
-import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=db87d6f996";
+import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=9e3e5cf32c";
+import { compiler, MODULES, MATHS } from "../src/index.js?v=9e3e5cf32c";
+import { MOTS } from "../src/lexeur.js?v=9e3e5cf32c";
+import { Editeur, inserer } from "./editeur.js?v=9e3e5cf32c";
+import { formater, vers, depuis } from "./reglages-commun.js?v=9e3e5cf32c";
+import { EXEMPLES } from "./exemples.js?v=9e3e5cf32c";
+import { Projets } from "./projets.js?v=9e3e5cf32c";
+import { installerCreation } from "./creation.js?v=9e3e5cf32c";
+import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=9e3e5cf32c";
+import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=9e3e5cf32c";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -277,7 +277,7 @@ function ouvrirExemple(id) {
 }
 function remplirModules() {
   const z = $("v-modules"); z.innerHTML = ""; const fam = {};
-  for (const [n, s] of Object.entries(MODULES)) (fam[s.famille] ||= []).push([n, s]);
+  for (const [n, s] of Object.entries(MODULES)) (fam[s.famille] || (fam[s.famille] = [])).push([n, s]);
   for (const [f, liste] of Object.entries(fam)) {
     const g = document.createElement("div"); g.innerHTML = `<div class="groupe">${esc(f)}</div><ul></ul>`; const ul = g.querySelector("ul");
     for (const [n, s] of liste) { const li = document.createElement("li"); li.className = "mod"; li.innerHTML = `<button type="button" data-mod="${n}" title="${esc(s.doc)}">${esc(n)}</button><span class="etiq ${s.impl ? "" : "non"}">${s.impl ? "prêt" : "bientôt"}</span>`; const b = li.querySelector("button");

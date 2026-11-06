@@ -95,7 +95,7 @@ body { height: auto; overflow: auto; }
 #v-composer .etape { display: flex; align-items: center; gap: 10px; margin: 22px 0 8px; font-size: 1.15rem; line-height: 1.2; text-transform: none; letter-spacing: 0; }
 #v-composer .etape .n { flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--noir); color: var(--acide); font: 700 1.05rem var(--f-display); }
 #v-composer .accords { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 12px; }
-#v-composer .carte-acc { --c: #ddd; --ombre: color-mix(in srgb, var(--c) 58%, #14130f); position: relative; background: linear-gradient(165deg, color-mix(in srgb, var(--c) 78%, #fff), var(--c)); border: 0; border-radius: var(--r); box-shadow: 0 5px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); min-height: 100px; color: #14130f; justify-content: center; gap: 1px; transition: transform .08s, box-shadow .08s, filter .12s; }
+#v-composer .carte-acc { --c: #ddd; --ombre: color-mix(in srgb, var(--c) 58%, #14130f); position: relative; background: var(--c); background: linear-gradient(165deg, color-mix(in srgb, var(--c) 78%, #fff), var(--c)); border: 0; border-radius: var(--r); box-shadow: 0 5px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); min-height: 100px; color: #14130f; justify-content: center; gap: 1px; transition: transform .08s, box-shadow .08s, filter .12s; }
 #v-composer .carte-acc:hover { filter: brightness(1.06); }
 #v-composer .carte-acc:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); }
 #v-composer .carte-acc .nm { order: 1; font: 700 1.75rem/1.05 var(--f-display, var(--f-body)); letter-spacing: .01em; margin-top: 6px; }

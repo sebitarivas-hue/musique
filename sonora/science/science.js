@@ -1,16 +1,16 @@
 // SONORA Science : fiches d'expériences. Le programme de chaque fiche est du SONORA ; l'écoute passe par le moteur (AudioWorklet),
 // la mesure par le même noyau rendu hors ligne ; tous les chiffres affichés sont calculés sur ces signaux.
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=db87d6f996";
-import { formater, vers, depuis } from "../studio/reglages-commun.js?v=db87d6f996";
-import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=db87d6f996";
-import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=db87d6f996";
-import { EXEMPLES } from "../studio/exemples.js?v=db87d6f996";
-import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=db87d6f996";
-import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=db87d6f996";
-import { Escalier } from "./psychophysique.js?v=db87d6f996";
-import { heros, etatBouton } from "../studio/heros.js?v=db87d6f996";
-import * as A from "./analyse.js?v=db87d6f996";
-import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=db87d6f996";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=9e3e5cf32c";
+import { formater, vers, depuis } from "../studio/reglages-commun.js?v=9e3e5cf32c";
+import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=9e3e5cf32c";
+import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=9e3e5cf32c";
+import { EXEMPLES } from "../studio/exemples.js?v=9e3e5cf32c";
+import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=9e3e5cf32c";
+import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=9e3e5cf32c";
+import { Escalier } from "./psychophysique.js?v=9e3e5cf32c";
+import { heros, etatBouton } from "../studio/heros.js?v=9e3e5cf32c";
+import * as A from "./analyse.js?v=9e3e5cf32c";
+import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=9e3e5cf32c";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -19,8 +19,8 @@ const etat = { exp: null, module: null, valeurs: {}, moteur: null, marche: false
 window.SCIENCE = etat;
 const badge = (t, c = "") => { const e = $("etat"); e.textContent = t; e.className = "etat " + c; };
 const modules = {};
-const moduleDe = exp => (modules[exp.id] ||= preparer(exp.programme));
-const moduleTimbre = id => (modules["timbre:" + id] ||= preparer(programmeTimbre(id)));
+const moduleDe = exp => (modules[exp.id] || (modules[exp.id] = preparer(exp.programme)));
+const moduleTimbre = id => (modules["timbre:" + id] || (modules["timbre:" + id] = preparer(programmeTimbre(id))));
 const optionsTimbres = (sel = "orgue") => Object.entries(TIMBRES).map(([id, t]) => `<option value="${id}"${id === sel ? " selected" : ""}>${esc(t.nom)}</option>`).join("");
 
 // ---------------------------------------------------------------- navigation
@@ -316,7 +316,7 @@ function ficheMicro(exp) {
       <div id="e-zone" class="eventail"></div><div class="commandes"><button type="button" id="e-verif" disabled>Vérifier mon classement</button></div><div id="e-res" aria-live="polite"></div>`)
     + bloc("Les systèmes d'accord dans le monde", `<div class="cartes-systemes">${SYSTEMES.map(sy => `<article class="systeme"><h3>${esc(sy.nom)}</h3><p class="ou">${esc(sy.ou)}</p><p>${esc(sy.texte)}</p><p class="liens-atlas">Dans l'Atlas : ${sy.atlas.map(a => `<a href="${lien(a)}">${esc(NOMS_ATLAS[a])}</a>`).join(", ")}</p></article>`).join("")}</div>`) + pied(exp, programmeTimbre("cloche"));
   $("b-studio").onclick = () => ouvrirDansStudio(exp, programmeTimbre(mi.timbre));
-  const ctx = () => (mi.ctx ||= new (window.AudioContext || window.webkitAudioContext)()), nom = ([i, j]) => INTERVALLES[i].systemes[j];
+  const ctx = () => (mi.ctx || (mi.ctx = new (window.AudioContext || window.webkitAudioContext)())), nom = ([i, j]) => INTERVALLES[i].systemes[j];
   const rendre = (centsNote, sec = 0.7) => { const x = rendreCanaux(moduleTimbre(mi.timbre), { ecart: centsNote, base: mi.base }, sec)[0], n = x.length, y = new Float32Array(n), f = Math.round(0.012 * SR); for (let i = 0; i < n; i++) y[i] = x[i] * Math.min(1, i / f, (n - 1 - i) / f); return y; };
   function jouer(parties, mode) { const c = ctx(); if (c.state === "suspended") c.resume(); const gap = Math.round(0.18 * SR), total = mode === "accord" ? parties[0].length : parties.reduce((s, p) => s + p.length + gap, 0), buf = c.createBuffer(1, total, SR), d = buf.getChannelData(0);
     if (mode === "accord") parties.forEach(p => { for (let i = 0; i < p.length; i++) d[i] += p[i] * 0.7; }); else { let o = 0; for (const p of parties) { d.set(p, o); o += p.length + gap; } }
