@@ -1,26 +1,27 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=60187a4d33";
-import * as Ed from "./editions.js?v=60187a4d33";
-import * as P from "./projet.js?v=60187a4d33";
-import { Stockage } from "./stockage.js?v=60187a4d33";
-import { creerBouton } from "./bouton.js?v=60187a4d33";
-import * as MI from "./midi.js?v=60187a4d33";
-import * as N from "./notes.js?v=60187a4d33";
-import { Rouleau } from "./rouleau.js?v=60187a4d33";
-import * as BM from "./batterie_midi.js?v=60187a4d33";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=60187a4d33";
-import * as INS from "./instruments.js?v=60187a4d33";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=60187a4d33";
-import * as MO from "./moteurs.js?v=60187a4d33";
-import { monterPanneaux } from "./panneaux.js?v=60187a4d33";
-import { monterNotions } from "./notions.js?v=60187a4d33";
-import { DEMOS } from "./demos.js?v=60187a4d33";
-import * as B from "./bibliotheque.js?v=60187a4d33";
-import { encoderWAV } from "../studio/wav.js?v=60187a4d33";
-import { ENTREES } from "../library/catalogue.js?v=60187a4d33";
-import { compiler } from "../src/index.js?v=60187a4d33";
-import { rendre } from "../src/rendu.js?v=60187a4d33";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=828c214294";
+import * as Ed from "./editions.js?v=828c214294";
+import * as P from "./projet.js?v=828c214294";
+import { Stockage } from "./stockage.js?v=828c214294";
+import { creerBouton } from "./bouton.js?v=828c214294";
+import * as MI from "./midi.js?v=828c214294";
+import * as N from "./notes.js?v=828c214294";
+import { Rouleau } from "./rouleau.js?v=828c214294";
+import * as BM from "./batterie_midi.js?v=828c214294";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=828c214294";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=828c214294";
+import * as INS from "./instruments.js?v=828c214294";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=828c214294";
+import * as MO from "./moteurs.js?v=828c214294";
+import { monterPanneaux } from "./panneaux.js?v=828c214294";
+import { monterNotions } from "./notions.js?v=828c214294";
+import { DEMOS } from "./demos.js?v=828c214294";
+import * as B from "./bibliotheque.js?v=828c214294";
+import { encoderWAV } from "../studio/wav.js?v=828c214294";
+import { ENTREES } from "../library/catalogue.js?v=828c214294";
+import { compiler } from "../src/index.js?v=828c214294";
+import { rendre } from "../src/rendu.js?v=828c214294";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -50,7 +51,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=60187a4d33"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=828c214294"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -376,7 +377,8 @@ async function rendreMidiSon(id) {
 async function refaireSource(id) {
   const s = etat.projet.sons[id]; if (!P.estSource(s)) return false; const tempo = etat.projet.tempo, src = s.source; let r = null;
   try {
-    if (src.type === "boucle") { const el = B.elements().find(e => e.id === src.el); if (!el) return false; r = B.fabriquer(el, { tempo, sr: 44100 }); }
+    if (src.type === "etire") { const o = etat.buffers[src.origine]; if (!o) return false; const ratio = src.bpm / tempo, c = etirerCanaux(o.canaux, ratio, o.sr); r = { canaux: c, sr: o.sr }; }
+    else if (src.type === "boucle") { const el = B.elements().find(e => e.id === src.el); if (!el) return false; r = B.fabriquer(el, { tempo, sr: 44100 }); }
     else r = B.rendreGrille(src.grille, { pas: src.pas, tempo, swing: src.swing, kit: src.kit, mesures: src.mesures, sr: 44100, nom: s.nom });
   } catch (err) { message("Un rythme n'a pas pu être refait à ce tempo : " + (err && err.message || err)); return false; }
   if (!r) return false; src.rendu = tempo; P.majSonMidi(etat.projet, id, { canaux: r.canaux.length, sr: r.sr, duree: r.canaux[0].length / r.sr }); etat.buffers[id] = { canaux: r.canaux, sr: r.sr }; Stockage.ecrireSon(id, { canaux: r.canaux, sr: r.sr }).catch(alerteEcriture); return true;
@@ -401,6 +403,29 @@ function finirNotes() {
     etat.dernierMidi = { notes: n, duree, debut: depart, instrument: e.id, temps, detail: r.notes.map(x => ({ note: x.note, t: x.t, fin: x.fin })) }; etat.aReecouter = (etat.aReecouter || []).concat(id); changer();
   } catch (err) { message("Les notes n'ont pas pu être rendues : " + (err && err.message || err)); }
 }
+
+// ---------------------------------------------------------------- trouver le tempo d'un enregistrement et le caler sur la grille
+const tt = { analyse: null, clip: null };
+function fermerTempoTrouve() { $("tempo-trouve").hidden = true; tt.analyse = null; tt.clip = null; }
+$("b-tempo-trouver").onclick = () => {
+  const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!r) return; const d = etat.buffers[r.clip.son]; if (!d) { message("Le son de ce clip n'est pas chargé."); return; }
+  const a0 = Math.floor(r.clip.decalage * d.sr), a1 = Math.min(d.canaux[0].length, a0 + Math.floor(Math.min(r.clip.duree, 60) * d.sr)), mono = new Float32Array(a1 - a0);
+  for (const c of d.canaux) for (let i = 0; i < mono.length; i++) mono[i] += (c[a0 + i] || 0) / d.canaux.length;
+  const a = detecterTempo(mono, d.sr); $("tempo-trouve").hidden = false; tt.clip = r.clip.id;
+  if (!a) { tt.analyse = null; $("tt-texte").textContent = "Je n'ai pas trouvé de pulsation régulière dans ce son. Il faut au moins trois secondes avec des attaques nettes : une batterie, des claquements de mains, une guitare rythmique."; $("tt-caler").hidden = true; $("tt-projet").hidden = true; return; }
+  tt.analyse = { bpm: a.bpm, decalage: r.clip.decalage + a.decalage, confiance: a.confiance }; const sec = 60 / a.bpm, p = etat.projet;
+  const fiable = a.confiance >= 0.6 ? "c'est net" : a.confiance >= 0.3 ? "assez sûr" : "peu sûr : vérifie en écoutant";
+  $("tt-texte").textContent = `Ce son bat à environ ${String(a.bpm).replace(".", ",")} par minute (${fiable}). Son premier temps tombe à ${(a.decalage).toFixed(2).replace(".", ",")} s du début du clip. Le projet est à ${p.tempo} par minute.`;
+  $("tt-caler").hidden = false; $("tt-projet").hidden = false; const meme = Math.abs(a.bpm - p.tempo) < 0.5;
+  $("tt-caler").textContent = meme ? "Caler sur la grille" : `Le jouer à ${p.tempo} par minute`; $("tt-projet").textContent = `Mettre le projet à ${Math.round(a.bpm)} par minute`; $("tt-projet").hidden = meme;
+};
+$("tt-fermer").onclick = fermerTempoTrouve;
+$("tt-projet").onclick = () => { if (!tt.analyse) return; $("tempo").value = Math.round(tt.analyse.bpm); $("tempo").dispatchEvent(new Event("change")); fermerTempoTrouve(); };
+$("tt-caler").onclick = async () => {
+  if (!tt.analyse || !tt.clip) return; const p = etat.projet, r = P.calerClip(p, tt.clip, tt.analyse); if (!r) { message("Ce clip suit déjà le tempo du projet."); return; }
+  changer(); if (r.ratio !== 1) await remettreAJourMidi(); fermerTempoTrouve();
+  message(r.ratio === 1 ? `Calé : le premier temps de ce son tombe maintenant sur un temps de la grille.` : `Ce son est joué à ${p.tempo} par minute, sans changer de hauteur, et son premier temps tombe sur un temps de la grille. Change le tempo du projet : il suivra.`);
+};
 
 // ---------------------------------------------------------------- le rouleau : voir et changer les notes d'un clip de notes
 const rl = { son: null, minuteur: null, samp: null, lecture: null };
@@ -739,7 +764,7 @@ $("auto-sup").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env)
 $("auto-vider").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env); if (!pi) return; P.viderCourbe(pi, etat.courbe || "volume"); etat.pointSel = null; changer(); };
 function majSelection() {
   const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); $("selection").hidden = !r; if (!r) return;
-  $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain; $("b-modifier-notes").hidden = !P.estMidi(etat.projet.sons[r.clip.son]);
+  $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain; $("b-modifier-notes").hidden = !P.estMidi(etat.projet.sons[r.clip.son]); $("b-tempo-trouver").hidden = P.suitLeTempo(etat.projet.sons[r.clip.son]);
 }
 let minuteur = null;
 // ---------------------------------------------------------------- Téléphone : les réglages avancés d'une piste (volume, panoramique, effets, enveloppe) s'ouvrent dans une feuille du bas

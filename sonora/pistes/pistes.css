@@ -447,3 +447,8 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .mot-champ { color: var(--daw-doux); } .mot-etat { color: var(--daw-doux); }
 .alerte-rangement { border-radius: 14px; }
 #message { border: 0; border-radius: 12px; background: var(--daw-piste); padding: 8px 14px; }
+.ic-metro { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M8 21h8l-2-17h-4zM12 16L17 6M10 12h4'/%3E%3C/svg%3E"); }
+.tempo-trouve { margin: 8px 0; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--acide); background: var(--daw-tete); color: var(--daw-texte); }
+.tempo-trouve[hidden] { display: none; } .tempo-trouve p { margin: 0 0 10px; line-height: 1.45; } .tt-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.tt-actions button { min-height: 44px; padding: 0 16px; border-radius: 10px; background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); font-weight: 600; cursor: pointer; } .tt-actions button:hover { border-color: var(--acide); }
+.tt-actions .principal { background: var(--acide); color: var(--noir); border-color: var(--acide); } .tt-actions button[hidden] { display: none; }

@@ -32,8 +32,9 @@ export function aimanter(p, t, grille = 1) { if (!grille) return Math.max(0, t);
 
 export function ajouterSon(p, { nom, duree, sr, canaux, midi, source }) { const id = nouvelId("s"); p.sons[id] = { id, nom: String(nom).slice(0, 80), duree, sr, canaux }; if (midi) p.sons[id].midi = copieMidi(midi); if (source) p.sons[id].source = JSON.parse(JSON.stringify(source)); return id; }
 // Un son « de source » est fabriqué par la page à partir d'une recette qui dépend du tempo : un rythme de la Bibliothèque ({ type: "boucle", el }) ou un motif du séquenceur à pas ({ type: "pas", grille, pas, swing, kit, mesures }).
+// Un son étiré ({ type: "etire", origine, bpm }) est un enregistrement dont on a trouvé le tempo (bpm) et que l'on rend plus rapide ou plus lent, sans changer sa hauteur, pour qu'il suive celui du projet : l'enregistrement d'origine reste dans le projet.
 // Comme les clips de notes, il suit le tempo : on le refait à la nouvelle vitesse, il reste sur les mêmes temps.
-export const estSource = s => !!(s && s.source && (s.source.type === "boucle" || s.source.type === "pas"));
+export const estSource = s => !!(s && s.source && (s.source.type === "boucle" || s.source.type === "pas" || s.source.type === "etire"));
 export const suitLeTempo = s => estMidi(s) || estSource(s);
 // Un son « MIDI » garde ses notes (écrites en temps, voir notes.js) et l'instrument qui les joue : son audio est fabriqué à partir d'elles, et refait quand elles ou le tempo changent.
 // midi : { notes: [{ t, d, n, v }], instrument: identifiant de l'instrument de Pistes, temps: durée en temps du clip }.
@@ -79,7 +80,8 @@ export function pisteLibre(p, pisteId, debut, duree) {
   const n = nouvellePiste(`Piste ${p.pistes.length + 1}`); p.pistes.push(n); return n.id;
 }
 // Les sons sans clip peuvent être retirés ; on ne retire jamais un son encore employé.
-export function sonsInutiles(p) { const vus = new Set(p.pistes.flatMap(pi => pi.clips.map(c => c.son))); return Object.keys(p.sons).filter(id => !vus.has(id)); }
+export function sonsInutiles(p) { const vus = new Set(p.pistes.flatMap(pi => pi.clips.map(c => c.son))); for (const id of [...vus]) { const s = p.sons[id]; if (s && s.source && s.source.origine) vus.add(s.source.origine); }   // l'original d'un son étiré sert encore
+  return Object.keys(p.sons).filter(id => !vus.has(id)); }
 export const dureeTotale = p => Math.max(0, ...p.pistes.flatMap(pi => pi.clips.map(c => c.debut + c.duree)));
 
 // Enveloppe de volume d'une piste (automation) : des points { t, v } (t en secondes, v le gain de 0 à 1,5 qui multiplie le volume de la piste), reliés par des segments droits.
@@ -197,3 +199,17 @@ export function notesDesPistes(p) {
   }
   return out;
 }
+
+// Caler un enregistrement sur le tempo du projet. `analyse` : { bpm, decalage } trouvés par tempo.js (decalage : seconde, dans le son d'origine, du premier temps).
+// Le clip est remplacé par un clip du même son étiré (type « etire ») pour jouer au tempo du projet, et déplacé pour que son premier temps tombe sur un temps de la grille.
+// Renvoie { son, ratio, decale } : le nouveau son à fabriquer (l'audio étiré est rendu par la page) ; si le tempo est déjà le bon, pas d'étirement, seulement le décalage.
+export function calerClip(p, clipId, { bpm, decalage }) {
+  const r = trouverClip(p, clipId); if (!r) return null; const c = r.clip, s = p.sons[c.son], sec = 60 / p.tempo; if (!s || suitLeTempo(s)) return null;
+  const ratio = Math.abs(bpm - p.tempo) < 0.5 ? 1 : bpm / p.tempo, premier = c.debut + (decalage - c.decalage) * ratio;   // le premier temps, sur la ligne de temps du projet, une fois étiré
+  let debut = c.debut + (Math.round(premier / sec) * sec - premier); const decale = debut - c.debut;
+  if (ratio === 1) { c.debut = Math.max(0, debut + (debut < 0 ? sec : 0)); return { son: c.son, ratio: 1, decale }; }
+  const id = ajouterSon(p, { nom: `${s.nom} (à ${p.tempo})`.slice(0, 80), duree: s.duree * ratio, sr: s.sr, canaux: s.canaux, source: { type: "etire", origine: c.son, bpm, decalage, rendu: -1 } });
+  c.son = id; c.duree *= ratio; c.decalage *= ratio; if (debut < 0) debut += sec * Math.ceil(-debut / sec); c.debut = Math.max(0, debut);
+  pisteDe(p, clipId).clips.sort((a, b) => a.debut - b.debut); return { son: id, ratio, decale };
+}
+const pisteDe = (p, clipId) => (trouverClip(p, clipId) || {}).piste;

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=60187a4d33">
-<link rel="stylesheet" href="pistes.css?v=60187a4d33"><link rel="stylesheet" href="notions.css?v=60187a4d33">
+<link rel="stylesheet" href="../studio/studio.css?v=828c214294">
+<link rel="stylesheet" href="pistes.css?v=828c214294"><link rel="stylesheet" href="notions.css?v=828c214294">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -129,10 +129,15 @@
   <section class="selection" id="selection" aria-label="Clip choisi" hidden>
     <b id="sel-nom"></b>
     <button type="button" id="b-modifier-notes" hidden data-tip="Voir les notes de ce clip et les changer : en poser, en déplacer, en enlever"><span class="ic ic-piano" aria-hidden="true"></span> Modifier les notes</button>
+    <button type="button" id="b-tempo-trouver" hidden data-tip="Écouter ce son pour trouver son tempo, puis le caler sur la grille du projet"><span class="ic ic-metro" aria-hidden="true"></span> Trouver le tempo</button>
     <button type="button" id="b-couper" data-tip="Couper le clip en deux, là où est le curseur rouge (touche S)"><span class="ic ic-ciseaux" aria-hidden="true"></span> Couper au curseur</button>
     <button type="button" id="b-dupliquer" data-tip="Faire une copie du clip juste après lui (touche D)"><span class="ic ic-copie" aria-hidden="true"></span> Dupliquer</button>
     <button type="button" id="b-supprimer" data-tip="Enlever le clip de la piste (touche Suppr)"><span class="ic ic-corbeille" aria-hidden="true"></span> Supprimer</button>
     <label class="mini">Gain<input type="range" id="sel-gain" min="0" max="2" step="0.01"></label>
+  </section>
+  <section class="tempo-trouve" id="tempo-trouve" aria-label="Tempo du son" hidden>
+    <p id="tt-texte" role="status" aria-live="polite"></p>
+    <div class="tt-actions"><button type="button" id="tt-caler" class="principal"></button><button type="button" id="tt-projet"></button><button type="button" id="tt-fermer">Fermer</button></div>
   </section>
   <section class="rouleau" id="rouleau" aria-label="Notes du clip" hidden>
     <div class="rl-haut"><b id="rl-titre">Notes</b>
@@ -174,8 +179,8 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=60187a4d33"></script>
-<script src="../barre-cours.js?v=60187a4d33"></script>
-<script src="../retour.js?v=60187a4d33"></script>
+<script type="module" src="pistes.js?v=828c214294"></script>
+<script src="../barre-cours.js?v=828c214294"></script>
+<script src="../retour.js?v=828c214294"></script>
 </body>
 </html>
