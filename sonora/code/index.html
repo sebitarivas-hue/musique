@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONORA Code</title>
+<meta name="description" content="Le laboratoire de programmation musicale : écrire un programme de son en Faust, en Csound ou en Pure Data, l'entendre aussitôt, avec des exemples guidés pas à pas.">
+<link rel="stylesheet" href="../studio/studio.css?v=cd21cb07c9">
+<link rel="stylesheet" href="../enfants.css?v=cd21cb07c9">
+<link rel="stylesheet" href="code.css?v=cd21cb07c9">
+</head>
+<body>
+<a class="saut" href="#atelier">Aller à l'atelier</a>
+<header class="haut">
+  <div class="marque"><a href="../../choix.html" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Code</span></div>
+  <a class="lien-bouton accueil-sonora" href="../index.html">Tous les outils</a>
+  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../decouverte/index.html">Découvertes</a><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../academy/index.html">Academy</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" href="../pistes/index.html">Pistes</a><a class="lien-bouton" href="../harmonie/index.html">Harmonie</a><a class="lien-bouton" aria-current="page" href="index.html">Code</a></nav>
+  <div class="etat" id="etat" role="status" aria-live="polite">prêt</div>
+</header>
+<main class="code">
+  <section class="intro"><h1>Programmer <span>la musique</span></h1><p>Quatre langages pour fabriquer du son avec des mots, des nombres et des boîtes reliées : Faust, Csound, Pure Data et JavaScript. Choisis-en un, charge un exemple, change un nombre, écoute.</p></section>
+  <nav class="langages" id="langages" aria-label="Les langages"></nav>
+  <section class="atelier" id="atelier" aria-live="polite">
+    <div class="presentation" id="presentation"></div>
+    <div class="etapes" id="etapes"></div>
+    <div class="zone">
+      <div class="cartes-col"><h2>Les exemples, pas à pas</h2><div class="cartes" id="cartes"></div></div>
+      <div class="edition">
+        <label for="code" id="lib-code">Programme</label>
+        <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="12"></textarea>
+        <div id="zone-score" hidden><label for="score">Partition Csound (une ligne par note : i1 début durée hauteur)</label><textarea id="score" spellcheck="false" rows="4"></textarea></div>
+        <div id="params" class="params" hidden></div>
+        <div class="rang">
+          <label class="mini">Durée<select id="duree"><option value="2">2 s</option><option value="3" selected>3 s</option><option value="5">5 s</option><option value="8">8 s</option><option value="12">12 s</option></select></label>
+          <label class="mini" id="zone-entree" hidden>Son à transformer<select id="entree"><option value="notes">Notes en dents de scie</option><option value="bruit">Bruit blanc</option><option value="pulse">Pulsations</option></select></label>
+        </div>
+        <div class="rang boutons"><button type="button" id="b-ecouter" class="grand">Écouter</button><button type="button" id="b-stop">Arrêter</button><button type="button" id="b-wav">Enregistrer en WAV</button></div>
+        <canvas id="scope" class="scope" width="900" height="120" aria-label="Forme du son"></canvas>
+        <p class="message" id="message" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+    <div class="aller-plus" id="plus"></div>
+  </section>
+</main>
+<script type="module" src="code.js?v=cd21cb07c9"></script>
+<script src="../barre-cours.js?v=cd21cb07c9"></script>
+<script src="../retour.js?v=cd21cb07c9"></script>
+</body>
+</html>

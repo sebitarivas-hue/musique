@@ -1,6 +1,6 @@
 // Dispositions (voicings) et conduite des voix : plaqué proche, position ouverte (drop 2, drop 3), coquille de jazz, sans fondamentale, et choral à quatre voix
 // sans quintes ni octaves parallèles (écriture à la manière des chorals de Bach). Sans DOM : testé dans Node.
-import { voicing as proche } from "./theorie.js?v=f2e8aa2a5a";
+import { voicing as proche } from "./theorie.js?v=cd21cb07c9";
 const pc = m => ((m % 12) + 12) % 12;
 
 // Quintes et octaves parallèles entre deux accords successifs : chaque voix est un nombre midi, la même voix à la même place dans les deux accords.

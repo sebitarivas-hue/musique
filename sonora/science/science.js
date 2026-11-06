@@ -1,16 +1,16 @@
 // SONORA Science : fiches d'expériences. Le programme de chaque fiche est du SONORA ; l'écoute passe par le moteur (AudioWorklet),
 // la mesure par le même noyau rendu hors ligne ; tous les chiffres affichés sont calculés sur ces signaux.
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=f2e8aa2a5a";
-import { formater, vers, depuis } from "../studio/reglages-commun.js?v=f2e8aa2a5a";
-import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=f2e8aa2a5a";
-import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=f2e8aa2a5a";
-import { EXEMPLES } from "../studio/exemples.js?v=f2e8aa2a5a";
-import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=f2e8aa2a5a";
-import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=f2e8aa2a5a";
-import { Escalier } from "./psychophysique.js?v=f2e8aa2a5a";
-import { heros, etatBouton } from "../studio/heros.js?v=f2e8aa2a5a";
-import * as A from "./analyse.js?v=f2e8aa2a5a";
-import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=f2e8aa2a5a";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=cd21cb07c9";
+import { formater, vers, depuis } from "../studio/reglages-commun.js?v=cd21cb07c9";
+import { dessinerOscillo, dessinerSpectre } from "../studio/visuels.js?v=cd21cb07c9";
+import { EXPERIENCES, parId, fmt, SR } from "./experiences.js?v=cd21cb07c9";
+import { EXEMPLES } from "../studio/exemples.js?v=cd21cb07c9";
+import { preparer, valeursDefaut, mesurer, mesurerLibre, rendreCanaux } from "./executeur.js?v=cd21cb07c9";
+import { dessinerSignal, dessinerSpectreStatique, dessinerSpectrogramme, dessinerCourbe, dessinerEscalier } from "./visus.js?v=cd21cb07c9";
+import { Escalier } from "./psychophysique.js?v=cd21cb07c9";
+import { heros, etatBouton } from "../studio/heros.js?v=cd21cb07c9";
+import * as A from "./analyse.js?v=cd21cb07c9";
+import { TIMBRES, programmeTimbre, INTERVALLES, SYSTEMES, NOMS_ATLAS, tirerVariantes, ordreJuste, noteDe } from "./microtonalite.js?v=cd21cb07c9";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)

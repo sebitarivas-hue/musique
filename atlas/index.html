@@ -902,5 +902,6 @@ document.addEventListener("click", e => {
 document.addEventListener("click", e => { const a = e.target.closest && e.target.closest("[data-saut]"); if (!a) return; const c = document.getElementById(a.dataset.saut); if (c) { e.preventDefault(); c.scrollIntoView({ block: "start" }); } });   // sauts dans la page (thèmes des trajets)
 brancherRecherche(); window.addEventListener("hashchange", rendre); rendre();
 </script>
+<script src="../recherche.js" async></script>
 </body>
 </html>

@@ -1,0 +1,31 @@
+/* SONORA Code : le laboratoire de programmation musicale. */
+body { background: #F0EFE8; }
+.code { width: min(1180px, 100%); margin: 0 auto; padding: 18px 16px 48px; }
+.intro h1 { font: 900 clamp(2rem, 5.5vw, 3.2rem)/1 var(--f-display, sans-serif); margin: 6px 0 8px; } .intro h1 span { background: var(--acide, #D6FF00); padding: 0 .15em; border-radius: 10px; }
+.intro p { font-size: 1.1rem; margin: 0 0 16px; color: #3b3a35; max-width: 60ch; }
+.langages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+.langages button { --ombre: color-mix(in srgb, var(--c) 58%, #14130f); display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; padding: 14px 16px; min-height: 96px; border: 0; border-radius: 20px; background: var(--c); color: #14130f; box-shadow: 0 5px 0 var(--ombre); cursor: pointer; font: inherit; }
+.langages button:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ombre); } .langages button[aria-pressed="true"] { outline: 4px solid #14130f; outline-offset: 3px; }
+.langages b { font-size: 1.4rem; } .langages span { font-size: .92rem; font-weight: 500; line-height: 1.25; }
+.atelier { background: #fff; border: 2px solid #14130f; border-radius: 24px; padding: 18px; box-shadow: 0 6px 0 rgba(17,17,15,.85); }
+.presentation h2 { font-size: 1.5rem; margin: 0 0 6px; } .presentation p { margin: 4px 0; font-size: 1.02rem; max-width: 70ch; }
+.etapes { margin: 12px 0 16px; padding: 12px 16px; background: #FFF4C2; border-radius: 16px; } .etapes h3 { margin: 0 0 6px; font-size: 1rem; } .etapes ol { margin: 0; padding-left: 1.3em; line-height: 1.5; } .etapes code, .presentation code { background: rgba(20,19,15,.09); padding: 0 .3em; border-radius: 5px; font-family: var(--f-mono, monospace); }
+.zone { display: grid; grid-template-columns: minmax(240px, 330px) 1fr; gap: 18px; align-items: start; }
+.cartes-col h2 { font-size: 1.05rem; margin: 0 0 8px; } .cartes { display: grid; gap: 8px; max-height: 560px; overflow: auto; padding: 2px 4px 6px 2px; }
+.carte { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 10px 12px; border: 2px solid #14130f; border-radius: 14px; background: #fff; cursor: pointer; font: inherit; color: #14130f; }
+.carte b { font-size: .98rem; } .carte span { font-size: .84rem; color: #4a4a44; } .carte em { font-size: .72rem; font-style: normal; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #55544d; }
+.carte[aria-pressed="true"] { background: var(--c, #D6FF00); box-shadow: 0 3px 0 #14130f; } .carte:focus-visible { outline: 3px solid #14130f; outline-offset: 2px; }
+.edition label { display: block; font-weight: 700; margin: 4px 0 4px; }
+.edition textarea { width: 100%; box-sizing: border-box; font: 15px/1.45 var(--f-mono, ui-monospace, Menlo, Consolas, monospace); background: #14130f; color: #F0EFE8; border: 0; border-radius: 14px; padding: 12px 14px; resize: vertical; tab-size: 2; }
+.params { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px 14px; margin: 12px 0 4px; } .params label { font-weight: 600; font-size: .88rem; } .params output { font-family: var(--f-mono, monospace); font-weight: 700; } .params input { width: 100%; }
+.rang { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 12px 0; } .rang .mini { display: flex; gap: 8px; align-items: center; font-weight: 600; } .rang select { min-height: 40px; }
+.boutons button { min-height: 48px; padding: 0 18px; border: 2px solid #14130f; border-radius: 14px; background: #fff; font: 700 1rem inherit; cursor: pointer; }
+.boutons .grand { background: var(--acide, #D6FF00); min-width: 150px; font-size: 1.1rem; box-shadow: 0 4px 0 #14130f; } .boutons .grand:active { transform: translateY(3px); box-shadow: 0 1px 0 #14130f; } .boutons button:disabled { opacity: .5; cursor: default; }
+.scope { display: block; width: 100%; height: 110px; border-radius: 14px; background: #14130f; }
+.message { min-height: 1.5em; margin: 8px 0 0; white-space: pre-wrap; font-weight: 600; } .message.erreur { color: #B3261E; }
+.aller-plus { margin-top: 16px; padding-top: 12px; border-top: 2px dashed #bbb9ae; } .aller-plus h3 { margin: 0 0 6px; font-size: 1rem; } .aller-plus ul { margin: 0; padding-left: 1.2em; line-height: 1.6; }
+@media (max-width: 1000px) { .langages { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 900px) { .zone { grid-template-columns: 1fr; } .cartes { max-height: 260px; grid-template-columns: 1fr; } .langages { grid-template-columns: 1fr; } .langages button { min-height: 76px; } }
+@media (max-width: 700px) { .atelier { padding: 14px; } .boutons button { flex: 1 1 40%; } }
+
+[hidden] { display: none !important; }

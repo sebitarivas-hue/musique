@@ -15,7 +15,7 @@
   const espace = (origine && origine.espace) || (() => { try { return localStorage.getItem("cours:espace"); } catch (_) { return null; } })();
   const base = espace === "prof" ? racine + "index.html" : espace === "eleves" ? racine + "eleves/index.html" : null;
   // Chaque classe a ses outils (03/11/2026) : un élève dont la classe est plus petite que celle de l'outil est ramené au Labo. Le professeur et les adresses sans classe connue ne sont pas touchés.
-  { const MIN = { science: "4e", studio: "4e", library: "5e", academy: "4e" }, I = { "6e": 0, "5e": 1, "4e": 2, "3e": 3 }, outil = (location.pathname.match(/\/sonora\/(science|studio|library|academy)\//) || [])[1];
+  { const MIN = { science: "4e", studio: "4e", library: "5e", academy: "4e", code: "4e" }, I = { "6e": 0, "5e": 1, "4e": 2, "3e": 3 }, outil = (location.pathname.match(/\/sonora\/(science|studio|library|academy|code)\//) || [])[1];
     let classe = ""; try { classe = localStorage.getItem("classe") || ""; } catch (_) {}
     if (espace === "eleves" && outil && I[classe] !== undefined && I[classe] < I[MIN[outil]]) { location.replace(racine + "eleves/index.html#labo"); return; } }
   const dernier = lire(localStorage, "cours:dernier");
@@ -45,6 +45,8 @@
 .barre-cours .bc-rub{display:flex;gap:2px;margin-left:auto;padding-left:8px;border-left:1px solid #3A3A35}.barre-cours .bc-rub a{font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
 @media (max-width:700px){.barre-cours .bc-rub{display:none}.barre-cours .bc-pre{display:none}.barre-cours .bc-retour{max-width:46vw}}`;
   document.head.appendChild(css); document.body.insertBefore(nav, document.body.firstChild);
+  // La recherche du site (racine/recherche.js), dont le bouton se range dans cette barre.
+  { const sc = document.createElement("script"); sc.src = racine + "recherche.js"; sc.async = true; document.head.appendChild(sc); }
   window.BARRE_COURS = { retour: retourU, cours: coursU, espace, xp };
 
   // Points : les mêmes que ceux du site du cours (clé « jeu » du navigateur, même règle : des points une seule fois par action).
