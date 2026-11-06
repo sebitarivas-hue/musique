@@ -1,25 +1,25 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=b4ca0fe090";
-import * as Ed from "./editions.js?v=b4ca0fe090";
-import * as P from "./projet.js?v=b4ca0fe090";
-import { Stockage } from "./stockage.js?v=b4ca0fe090";
-import { creerBouton } from "./bouton.js?v=b4ca0fe090";
-import * as MI from "./midi.js?v=b4ca0fe090";
-import * as N from "./notes.js?v=b4ca0fe090";
-import { Rouleau } from "./rouleau.js?v=b4ca0fe090";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=b4ca0fe090";
-import * as INS from "./instruments.js?v=b4ca0fe090";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=b4ca0fe090";
-import * as MO from "./moteurs.js?v=b4ca0fe090";
-import { monterPanneaux } from "./panneaux.js?v=b4ca0fe090";
-import { monterNotions } from "./notions.js?v=b4ca0fe090";
-import { DEMOS } from "./demos.js?v=b4ca0fe090";
-import * as B from "./bibliotheque.js?v=b4ca0fe090";
-import { encoderWAV } from "../studio/wav.js?v=b4ca0fe090";
-import { ENTREES } from "../library/catalogue.js?v=b4ca0fe090";
-import { compiler } from "../src/index.js?v=b4ca0fe090";
-import { rendre } from "../src/rendu.js?v=b4ca0fe090";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=549afeb6ae";
+import * as Ed from "./editions.js?v=549afeb6ae";
+import * as P from "./projet.js?v=549afeb6ae";
+import { Stockage } from "./stockage.js?v=549afeb6ae";
+import { creerBouton } from "./bouton.js?v=549afeb6ae";
+import * as MI from "./midi.js?v=549afeb6ae";
+import * as N from "./notes.js?v=549afeb6ae";
+import { Rouleau } from "./rouleau.js?v=549afeb6ae";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=549afeb6ae";
+import * as INS from "./instruments.js?v=549afeb6ae";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=549afeb6ae";
+import * as MO from "./moteurs.js?v=549afeb6ae";
+import { monterPanneaux } from "./panneaux.js?v=549afeb6ae";
+import { monterNotions } from "./notions.js?v=549afeb6ae";
+import { DEMOS } from "./demos.js?v=549afeb6ae";
+import * as B from "./bibliotheque.js?v=549afeb6ae";
+import { encoderWAV } from "../studio/wav.js?v=549afeb6ae";
+import { ENTREES } from "../library/catalogue.js?v=549afeb6ae";
+import { compiler } from "../src/index.js?v=549afeb6ae";
+import { rendre } from "../src/rendu.js?v=549afeb6ae";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -49,7 +49,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=b4ca0fe090"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=549afeb6ae"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -634,7 +634,7 @@ function afficher() {
   const grille = `background-size: ${P.dureeTemps(p) * etat.pxs}px 100%`;
   $("voies").innerHTML = p.pistes.map(pi => `<div class="voie" data-piste="${pi.id}" style="${grille}" aria-label="Piste ${esc(pi.nom)}">${pi.clips.map(c => `<div class="clip${etat.choisi === c.id ? " choisi" : ""}" data-clip="${c.id}" style="left:${c.debut * etat.pxs}px;width:${Math.max(4, c.duree * etat.pxs)}px" tabindex="0" aria-label="${esc((p.sons[c.son] || {}).nom || "son")}, à ${c.debut.toFixed(2)} s"><div class="nom-clip">${esc((p.sons[c.son] || {}).nom || "son")}</div><canvas></canvas></div>`).join("")}</div>`).join("");
   for (const el of document.querySelectorAll(".clip[data-clip]")) { const r2 = P.trouverClip(p, el.dataset.clip); dessinerOnde(el.querySelector("canvas"), p.sons[r2.clip.son], r2.clip); }
-  brancherEntetes(); brancherVoies(); dessinerEnveloppes(); majAuto(); majSelection(); afficherEffets();
+  brancherEntetes(); brancherVoies(); dessinerEnveloppes(); majAuto(); majSelection(); afficherEffets(); majDebut();
 }
 // ---------------------------------------------------------------- les courbes d'une piste (volume et panoramique) : un calque SVG sur la piste, éditable sur la piste choisie (bouton Courbes)
 // Un clic sur un point le choisit, un clic dans le vide en pose un nouveau, on glisse pour déplacer. La barre « Courbes » (#auto) dit ce qu'on édite et propose Supprimer le point,
@@ -709,6 +709,12 @@ function majAuto() {
   $("auto-aide").textContent = q ? `Point choisi : ${virg(q.t)} s, ${ETIQ_VALEUR(k, q.v)}. Glisse-le pour le déplacer, ou « Supprimer le point ».`
     : n ? `${k === "pan" ? "Panoramique" : "Volume"} : ${n} point${n > 1 ? "s" : ""}. Clique un point pour le choisir, ou clique dans le vide pour en poser un autre.` : `${k === "pan" ? "Panoramique" : "Volume"} : aucun point. Clique sur la piste pour poser le premier : la courbe fait bouger ${k === "pan" ? "le son de gauche à droite" : "le volume au fil du temps"}.`;
 }
+// « Par où commencer ? » : visible tant que le projet n'a aucun clip et qu'on n'enregistre rien ; chaque carte ouvre le bon outil.
+function majDebut() { const vide = etat.projet.pistes.every(p => p.clips.length === 0) && !etat.enreg && !etat.notes; $("debut").hidden = !vide; }
+$("debut").onclick = e => { const b = e.target.closest("[data-go]"); if (!b) return; const go = b.dataset.go;
+  if (go === "instrument") { if ($("midi").hidden) $("b-midi").click(); $("midi").scrollIntoView({ block: "nearest" }); }
+  else if (go === "rythme") { if ($("biblio").hidden) $("b-biblio").click(); const t = $("biblio-onglets").querySelector("[data-fam=rythmes]"); if (t) t.click(); $("biblio").scrollIntoView({ block: "nearest" }); }
+  else if (go === "voix") $("b-enreg").click(); else if (go === "importer") $("fichiers").click(); };
 $("auto-volume").onclick = () => { etat.courbe = "volume"; etat.pointSel = null; afficher(); };
 $("auto-pan").onclick = () => { etat.courbe = "pan"; etat.pointSel = null; afficher(); };
 $("auto-voir").onchange = e => { etat.voirCourbes = e.target.checked; afficher(); };
