@@ -3,13 +3,13 @@
 // Maintenant : un seul mécanisme pour tout. Chaque instrument est un jeu de notes (des « tampons ») : des enregistrements réels de la banque du site, ou des notes rendues
 // une fois par SONORA (synthèse) à plusieurs hauteurs. Le clavier les joue en direct par transposition (Sampleur) et le clip est mixé avec les mêmes tampons (mixer) :
 // ce qu'on entend est ce qui est mis sur la piste. Plus de dépendance au moteur temps réel : si le son sort ailleurs sur la page, il sort ici.
-import { compiler } from "../src/index.js?v=4b2478c25a";
-import { rendre } from "../src/rendu.js?v=4b2478c25a";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=4b2478c25a";
-import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=4b2478c25a";
-import { ENTREES } from "../library/catalogue.js?v=4b2478c25a";
-import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=4b2478c25a";
-import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=4b2478c25a";
+import { compiler } from "../src/index.js?v=f3a9198659";
+import { rendre } from "../src/rendu.js?v=f3a9198659";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=f3a9198659";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=f3a9198659";
+import { ENTREES } from "../library/catalogue.js?v=f3a9198659";
+import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=f3a9198659";
+import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=f3a9198659";
 
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 export const GROUPES = ["Claviers", "Cordes", "Orchestre", "Vents", "Voix", "Percussions à hauteurs", "Percussions du monde", "Synthés et basses", "Effets sonores"];
@@ -28,7 +28,7 @@ const DUREES = { gong: 6.5, bol: 6.5, montee: 4.2, tonnerre: 4, trianglePerc: 4,
 // Le catalogue : { id, nom, groupe, note, tenue, ponctuel, source: "ech" | "syn" | "lib", cle }
 export function catalogue() {
   const L = [];
-  for (const [b, nom, groupe, note] of INSTRUMENTS_ECH) L.push({ id: `ech:${b}`, nom, groupe: groupe === "Percussions" ? "Percussions du monde" : groupe, note, tenue: !["clavier", "harpe", "guitare", "basse", "violons-stacc", "violons-piz", "celli-piz", "basses-piz", "celesta", "clavecin", "marimba", "vibraphone", "xylophone", "glockenspiel", "balafon", "kalimba", "cloche", "djembe", "timbale"].includes(b), ponctuel: ["djembe", "timbale", "cloche"].includes(b), source: "ech", cle: b });
+  for (const [b, nom, groupe, note] of INSTRUMENTS_ECH) L.push({ id: `ech:${b}`, nom, groupe: groupe === "Percussions" ? "Percussions du monde" : groupe, note, tenue: !["clavier", "harpe", "guitare", "guitare-elec", "guitare-jazz", "guitare-folk", "basse", "violons-stacc", "violons-piz", "celli-piz", "basses-piz", "celesta", "clavecin", "marimba", "vibraphone", "xylophone", "glockenspiel", "balafon", "kalimba", "cloche", "djembe", "timbale"].includes(b), ponctuel: ["djembe", "timbale", "cloche"].includes(b), source: "ech", cle: b });
   for (const [k, S] of Object.entries(SONS_SYNTHESE)) { const [note, tenue, ponctuel] = SYNTHES[k] || [60, false, false]; L.push({ id: `syn:${k}`, nom: S.nom, groupe: "Synthés et basses", note, tenue, ponctuel, source: "syn", cle: k }); }
   for (const [id, nom, groupe, note, tenue, ponctuel] of LIBRARY) L.push({ id: `lib:${id}`, nom, groupe, note, tenue, ponctuel, source: "lib", cle: id });
   for (const [k, S] of Object.entries(SONS_PERCUSSION)) L.push({ id: `syn:${k}`, nom: S.nom, groupe: S.famille === "perc" ? "Percussions du monde" : "Effets sonores", note: S.note, tenue: false, ponctuel: true, source: "syn", cle: k, duree: DUREES[k] || 2.5 });

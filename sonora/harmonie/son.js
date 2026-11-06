@@ -1,10 +1,10 @@
 // Le son du jeu d'harmonie : les accords sont joués par des instruments écrits en SONORA, rendus hors ligne (timing exact, boucle sans couture).
 // Sans DOM : testé dans Node (on vérifie les hauteurs entendues par analyse du spectre).
-import { compiler } from "../src/index.js?v=4b2478c25a";
-import { rendre } from "../src/rendu.js?v=4b2478c25a";
-import { BANQUE, rendreSuiteEch } from "./echantillons.js?v=4b2478c25a";
-import { SONS_SYNTHESE } from "./sons_synthese.js?v=4b2478c25a";
-import { SONS_PERCUSSION } from "./sons_percussion.js?v=4b2478c25a";
+import { compiler } from "../src/index.js?v=f3a9198659";
+import { rendre } from "../src/rendu.js?v=f3a9198659";
+import { BANQUE, rendreSuiteEch } from "./echantillons.js?v=f3a9198659";
+import { SONS_SYNTHESE } from "./sons_synthese.js?v=f3a9198659";
+import { SONS_PERCUSSION } from "./sons_percussion.js?v=f3a9198659";
 
 export const INSTRUMENTS = {
   piano: { nom: "Piano doux", code: `instrument PianoDoux {
@@ -45,7 +45,7 @@ export const INSTRUMENTS = {
 Object.assign(INSTRUMENTS, SONS_SYNTHESE, SONS_PERCUSSION);  // les percussions et effets servent la bibliothèque de Pistes ; ils ne sont pas dans NOMS_INSTR, donc pas dans les menus d'Harmonie
   // les sons de synthèse pour le rap, le pop, la house (sons_synthese.js)
 // Les instruments proposés dans le jeu : ceux qui ont un son de secours écrit en SONORA, puis ceux qui n'existent qu'enregistrés (banque du site).
-export const NOMS_INSTR = { piano: "Piano", orgue: "Orgue", cordes: "Cordes", harpe: "Harpe", guitare: "Guitare", clavecin: "Clavecin", violoncelle: "Violoncelle", flute: "Flûte", violonsOrch: "Violons, section d'orchestre", corsOrch: "Cors, section d'orchestre", clarinettesOrch: "Clarinettes, section d'orchestre", choeur: "Chœur de femmes", celesta: "Célesta", ...Object.fromEntries(Object.entries(SONS_SYNTHESE).map(([k, v]) => [k, v.nom])) };
+export const NOMS_INSTR = { piano: "Piano", orgue: "Orgue", cordes: "Cordes", harpe: "Harpe", guitare: "Guitare", clavecin: "Clavecin", violoncelle: "Violoncelle", flute: "Flûte", guitareElec: "Guitare électrique", guitareJazz: "Guitare jazz", guitareFolk: "Guitare acoustique", violonsOrch: "Violons, section d'orchestre", corsOrch: "Cors, section d'orchestre", clarinettesOrch: "Clarinettes, section d'orchestre", choeur: "Chœur de femmes", celesta: "Célesta", ...Object.fromEntries(Object.entries(SONS_SYNTHESE).map(([k, v]) => [k, v.nom])) };
 export const TOUS = Object.keys(NOMS_INSTR);
 // Les enregistrements décodés, par instrument de la banque. Tant qu'un instrument n'est pas chargé, le son de secours (SONORA) joue à sa place :
 // le piano, l'orgue et les cordes ont le leur ; les autres jouent avec celui du piano.
