@@ -1404,6 +1404,14 @@ html.signal nav.tabs a[aria-current="page"] svg { color: var(--acide); }
   html.signal .hero-signal { margin-top: 0; }
 }
 @media (min-width: 1100px) and (max-width: 1360px) { html.signal .en-prof span { display: none; } html.signal .en-menu a { padding-inline: 7px; font-size: 12px; } }
+/* Ordinateur : rien ne déborde sur son voisin (constaté le 09/11/2026 : « Cours du Sacré-Cœur » passait sous « Sebastian Rivas » et le menu, vue élève, entre 1100 et 1400 px).
+   Le nom de l'école ne rétrécit jamais ; le nom du professeur se coupe en « … » s'il le faut ; quand la barre est chargée (vue élève : menu, Réviser/Jouer, Tutos, Rechercher), on retire d'abord le bloc du professeur, puis le mot « Rechercher ». */
+@media (min-width: 1100px) {
+  html.signal .en-logo, html.signal .en-ecole { flex: none; }
+  html.signal .en-prof { flex: 0 1 auto; min-width: 0; overflow: hidden; } html.signal .en-prof b, html.signal .en-prof span { overflow: hidden; text-overflow: ellipsis; }
+}
+@media (min-width: 1100px) and (max-width: 1499px) { html.signal .entete-in:has(.mode-sw) .en-prof { display: none; } }
+@media (min-width: 1100px) and (max-width: 1279px) { html.signal .entete-in:has(.mode-sw) .rch-t { display: none; } html.signal .entete-in:has(.mode-sw) #rch-b { padding-inline: 11px; } }
 
 /* Téléphone : les blocs d'identité passent à la ligne au lieu de déborder l'un sur l'autre (constaté sur iPhone, 430 px). */
 @media (max-width: 1099px) {
