@@ -1,27 +1,28 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=06afd88475";
-import * as Ed from "./editions.js?v=06afd88475";
-import * as P from "./projet.js?v=06afd88475";
-import { Stockage } from "./stockage.js?v=06afd88475";
-import { creerBouton } from "./bouton.js?v=06afd88475";
-import * as MI from "./midi.js?v=06afd88475";
-import * as N from "./notes.js?v=06afd88475";
-import { Rouleau } from "./rouleau.js?v=06afd88475";
-import * as BM from "./batterie_midi.js?v=06afd88475";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=06afd88475";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=06afd88475";
-import * as INS from "./instruments.js?v=06afd88475";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=06afd88475";
-import * as MO from "./moteurs.js?v=06afd88475";
-import { monterPanneaux } from "./panneaux.js?v=06afd88475";
-import { monterNotions } from "./notions.js?v=06afd88475";
-import { DEMOS } from "./demos.js?v=06afd88475";
-import * as B from "./bibliotheque.js?v=06afd88475";
-import { encoderWAV } from "../studio/wav.js?v=06afd88475";
-import { ENTREES } from "../library/catalogue.js?v=06afd88475";
-import { compiler } from "../src/index.js?v=06afd88475";
-import { rendre } from "../src/rendu.js?v=06afd88475";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=07dc12c227";
+import * as Ed from "./editions.js?v=07dc12c227";
+import * as P from "./projet.js?v=07dc12c227";
+import { Stockage } from "./stockage.js?v=07dc12c227";
+import { creerBouton } from "./bouton.js?v=07dc12c227";
+import * as MI from "./midi.js?v=07dc12c227";
+import * as N from "./notes.js?v=07dc12c227";
+import { Rouleau } from "./rouleau.js?v=07dc12c227";
+import { separer, NOMS_PARTIES } from "./separation.js?v=07dc12c227";
+import * as BM from "./batterie_midi.js?v=07dc12c227";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=07dc12c227";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=07dc12c227";
+import * as INS from "./instruments.js?v=07dc12c227";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=07dc12c227";
+import * as MO from "./moteurs.js?v=07dc12c227";
+import { monterPanneaux } from "./panneaux.js?v=07dc12c227";
+import { monterNotions } from "./notions.js?v=07dc12c227";
+import { DEMOS } from "./demos.js?v=07dc12c227";
+import * as B from "./bibliotheque.js?v=07dc12c227";
+import { encoderWAV } from "../studio/wav.js?v=07dc12c227";
+import { ENTREES } from "../library/catalogue.js?v=07dc12c227";
+import { compiler } from "../src/index.js?v=07dc12c227";
+import { rendre } from "../src/rendu.js?v=07dc12c227";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -57,7 +58,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=06afd88475"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=07dc12c227"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -1024,6 +1025,24 @@ const EXEC = {
   "zoom-plus": () => $("b-zoom-plus").click(), "zoom-moins": () => $("b-zoom-moins").click(), "zoom-tout": () => { etat.pxs = 60; afficher(); },
   "aide-raccourcis": () => ouvrirAide(),
   "aide-notions": () => notions.ouvrirListe(),
+};
+// Séparer le son (méthodes classiques, voir separation.js) : le clip choisi donne un clip par partie, chacun sur une NOUVELLE piste ; l'original reste intact.
+let separationEnCours = false;
+EXEC.separer = async () => {
+  const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!r) { message("Choisis d'abord un clip : clique dessus."); return; }
+  const c = r.clip, src = etat.buffers[c.son]; if (!src) { message("Le son de ce clip n'est pas chargé."); return; }
+  if (c.boucle) { message("Un clip bouclé se sépare mal : raccourcis-le d'abord à un motif (bord droit, au milieu)."); return; }
+  if (separationEnCours) { message("Une séparation est déjà en cours."); return; } separationEnCours = true;
+  const nomClip = (etat.projet.sons[c.son] || {}).nom || "son";
+  try {
+    message("Séparation en cours : 0 %. Cela prend un moment pour un clip long ; la page reste utilisable.");
+    const parties = await separer(Ed.extrait(src, c.decalage, c.duree), { rappel: p => { message(`Séparation en cours : ${Math.round(p * 100)} %.`); } });
+    const p = etat.projet; if (!P.trouverClip(p, c.id)) { message("Le clip a été supprimé pendant la séparation : rien n'est ajouté."); return; }
+    for (const [cle, son] of Object.entries(parties)) {
+      const nom = `${nomClip.slice(0, 40)} : ${NOMS_PARTIES[cle]}`, sid = ajouterAudio(nom, son.canaux, son.sr), piste = P.nouvellePiste(NOMS_PARTIES[cle]); p.pistes.push(piste); P.placerClip(p, piste.id, sid, c.debut);
+    }
+    changer(); message(`Séparé en ${Object.keys(parties).length} parties, chacune sur une nouvelle piste. Elles s'additionnent pour redonner le son d'origine : coupe le son d'origine avec M (muet) pour n'entendre que les parties. Méthode classique, pas d'intelligence artificielle : une voix et un instrument tenus au centre restent mêlés.`);
+  } catch (e) { message(e && e.message ? e.message : "La séparation a échoué."); } finally { separationEnCours = false; }
 };
 for (const id of Object.keys(Ed.EFFETS)) EXEC[id] = () => appliquerEffet(id);
 for (const id of Object.keys(Ed.REGLABLES)) EXEC[id] = () => ouvrirReglage(id);

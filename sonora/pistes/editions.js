@@ -1,5 +1,6 @@
 // Éditions de sons pour SONORA Pistes : chaque fonction renvoie un NOUVEAU son { canaux, sr } et ne modifie jamais l'original (on peut toujours annuler).
 // Sans DOM : testé dans Node.
+import { reglablesVoix } from "./voix.js?v=07dc12c227";
 const copie = c => c.canaux.map(x => Float32Array.from(x));
 export const duree = c => c.canaux[0].length / c.sr;
 export const crete = c => { let m = 0; for (const x of c.canaux) for (let i = 0; i < x.length; i++) m = Math.max(m, Math.abs(x[i])); return m; };
@@ -93,5 +94,6 @@ export const REGLABLES = {
   "reglage-gain": { nom: "Gain", etiquette: "gain", texte: "Monte ou baisse le volume du clip. Six décibels de plus : deux fois la hauteur de l'onde.",
     params: [{ id: "db", libelle: "Gain", min: -24, max: 24, pas: 0.5, def: 6, unite: "dB" }], f: (c, v) => amplifier(c, v.db) },
 };
+Object.assign(REGLABLES, reglablesVoix(transposer));   // vocoder, chuchotement, voix de robot, double voix, harmonies (voix.js)
 export const valeurLog = (p, t) => LOG(t, p.min, p.max);          // curseur 0 à 1 vers valeur
 export const positionLog = (p, v) => Math.log(v / p.min) / Math.log(p.max / p.min);
