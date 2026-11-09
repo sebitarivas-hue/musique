@@ -1,28 +1,29 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=07dc12c227";
-import * as Ed from "./editions.js?v=07dc12c227";
-import * as P from "./projet.js?v=07dc12c227";
-import { Stockage } from "./stockage.js?v=07dc12c227";
-import { creerBouton } from "./bouton.js?v=07dc12c227";
-import * as MI from "./midi.js?v=07dc12c227";
-import * as N from "./notes.js?v=07dc12c227";
-import { Rouleau } from "./rouleau.js?v=07dc12c227";
-import { separer, NOMS_PARTIES } from "./separation.js?v=07dc12c227";
-import * as BM from "./batterie_midi.js?v=07dc12c227";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=07dc12c227";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=07dc12c227";
-import * as INS from "./instruments.js?v=07dc12c227";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=07dc12c227";
-import * as MO from "./moteurs.js?v=07dc12c227";
-import { monterPanneaux } from "./panneaux.js?v=07dc12c227";
-import { monterNotions } from "./notions.js?v=07dc12c227";
-import { DEMOS } from "./demos.js?v=07dc12c227";
-import * as B from "./bibliotheque.js?v=07dc12c227";
-import { encoderWAV } from "../studio/wav.js?v=07dc12c227";
-import { ENTREES } from "../library/catalogue.js?v=07dc12c227";
-import { compiler } from "../src/index.js?v=07dc12c227";
-import { rendre } from "../src/rendu.js?v=07dc12c227";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=cf3dab01bc";
+import * as Ed from "./editions.js?v=cf3dab01bc";
+import * as P from "./projet.js?v=cf3dab01bc";
+import { Stockage } from "./stockage.js?v=cf3dab01bc";
+import { creerBouton } from "./bouton.js?v=cf3dab01bc";
+import * as MI from "./midi.js?v=cf3dab01bc";
+import * as N from "./notes.js?v=cf3dab01bc";
+import { Rouleau } from "./rouleau.js?v=cf3dab01bc";
+import { separer, NOMS_PARTIES } from "./separation.js?v=cf3dab01bc";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=cf3dab01bc";
+import * as BM from "./batterie_midi.js?v=cf3dab01bc";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=cf3dab01bc";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=cf3dab01bc";
+import * as INS from "./instruments.js?v=cf3dab01bc";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=cf3dab01bc";
+import * as MO from "./moteurs.js?v=cf3dab01bc";
+import { monterPanneaux } from "./panneaux.js?v=cf3dab01bc";
+import { monterNotions } from "./notions.js?v=cf3dab01bc";
+import { DEMOS } from "./demos.js?v=cf3dab01bc";
+import * as B from "./bibliotheque.js?v=cf3dab01bc";
+import { encoderWAV } from "../studio/wav.js?v=cf3dab01bc";
+import { ENTREES } from "../library/catalogue.js?v=cf3dab01bc";
+import { compiler } from "../src/index.js?v=cf3dab01bc";
+import { rendre } from "../src/rendu.js?v=cf3dab01bc";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -58,7 +59,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=07dc12c227"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=cf3dab01bc"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -1025,6 +1026,42 @@ const EXEC = {
   "zoom-plus": () => $("b-zoom-plus").click(), "zoom-moins": () => $("b-zoom-moins").click(), "zoom-tout": () => { etat.pxs = 60; afficher(); },
   "aide-raccourcis": () => ouvrirAide(),
   "aide-notions": () => notions.ouvrirListe(),
+};
+// Séparer en stems par intelligence artificielle (voir stems.js) : quatre réseaux de neurones (modèles Spleeter de Deezer, licence MIT), exécutés dans la page. Le premier usage télécharge les modèles (une quarantaine de Mo, depuis ce site) ;
+// ils restent ensuite dans le navigateur. Aucun son ne quitte l'appareil. Chaque stem arrive sur une NOUVELLE piste ; l'original reste intact.
+function dialogueSeparationIA(enCache, duree) {
+  return new Promise(ok => {
+    fermerMenus(); document.getElementById("dialogue-ia")?.remove(); const el = document.createElement("div"); el.id = "dialogue-ia"; el.className = "aide-clavier"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", "Séparer en stems par intelligence artificielle");
+    const estim = Math.max(10, Math.round(duree * 0.4));
+    el.innerHTML = `<div class="ac-boite rg-boite"><div class="ac-haut"><b>Séparer en stems par intelligence artificielle</b><button type="button" class="ac-fermer">Fermer</button></div><div class="rg-corps">
+      <p class="rg-texte">Quatre réseaux de neurones séparent le clip en <b>voix</b>, <b>batterie</b>, <b>basse</b> et <b>autres instruments</b>. Chaque partie arrive sur une nouvelle piste ; le clip d'origine est gardé, et les quatre parties s'additionnent pour le redonner.</p>
+      <p class="rg-texte">${enCache ? "Les modèles sont déjà dans ce navigateur." : `Au premier usage, <b>${TAILLE_MODELES_MO} Mo</b> de modèles sont téléchargés depuis ce site, une seule fois : ils restent ensuite dans le navigateur.`} <b>Rien n'est envoyé sur Internet</b> : le calcul se fait sur cet appareil.</p>
+      <p class="rg-texte">Durée du calcul : environ ${estim} secondes pour ce clip sur un ordinateur récent, beaucoup plus sur un téléphone. Pendant ce temps la page reste utilisable. Limite : ${DUREE_MAX_STEMS / 60} minutes.</p>
+      <p class="rg-texte">Ce que cette méthode ne fait pas : des parties parfaites. Les réseaux ont appris sur de la musique enregistrée avec voix chantée, batterie, basse et le reste ; sur une musique très différente (orchestre, instruments du monde, voix parlée), des morceaux d'une partie passent dans les autres. Les modèles sont ceux de Spleeter (Deezer, licence MIT).</p>
+      <div class="rg-actions"><button type="button" id="sia-annuler">Annuler</button><button type="button" id="sia-ok" class="principal">${enCache ? "Séparer" : "Télécharger et séparer"}</button></div></div></div>`;
+    document.body.appendChild(el); const fin = oui => { el.remove(); document.removeEventListener("keydown", cl, true); ok(oui); }, cl = e => { if (e.key === "Escape") { e.stopPropagation(); e.preventDefault(); fin(false); } };
+    document.addEventListener("keydown", cl, true); el.querySelector(".ac-fermer").onclick = el.querySelector("#sia-annuler").onclick = () => fin(false); el.querySelector("#sia-ok").onclick = () => fin(true); el.addEventListener("click", e => { if (e.target === el) fin(false); }); el.querySelector("#sia-ok").focus();
+  });
+}
+EXEC["separer-ia"] = async () => {
+  const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!r) { message("Choisis d'abord un clip : clique dessus."); return; }
+  const c = r.clip, src = etat.buffers[c.son]; if (!src) { message("Le son de ce clip n'est pas chargé."); return; }
+  if (c.boucle) { message("Un clip bouclé se sépare mal : raccourcis-le d'abord à un motif (bord droit, au milieu)."); return; }
+  if (c.duree > DUREE_MAX_STEMS) { message(`Ce clip dure ${Math.round(c.duree)} secondes : la séparation par intelligence artificielle est limitée à ${DUREE_MAX_STEMS / 60} minutes. Coupe-le d'abord (S).`); return; }
+  if (separationEnCours) { message("Une séparation est déjà en cours."); return; }
+  const base = new URL("./modeles/", import.meta.url); let enCache = false; try { enCache = await modelesEnCache(base); } catch (_) { /* pas de cache : on dira qu'il faut télécharger */ }
+  if (!(await dialogueSeparationIA(enCache, c.duree))) return;
+  if (!P.trouverClip(etat.projet, c.id)) { message("Le clip a été supprimé : rien à séparer."); return; }
+  separationEnCours = true; const nomClip = (etat.projet.sons[c.son] || {}).nom || "son"; let moteur = null;
+  try {
+    message("Préparation des modèles…");
+    moteur = await creerMoteurORT(base, { rappel: (p, t) => message(`${t}.`) });
+    const parties = await separerStems(Ed.extrait(src, c.decalage, c.duree), moteur, { rappel: (p, t) => message(`Séparation par intelligence artificielle : ${Math.round(p * 100)} %. ${t}.`) });
+    const p = etat.projet; if (!P.trouverClip(p, c.id)) { message("Le clip a été supprimé pendant la séparation : rien n'est ajouté."); return; }
+    for (const cle of STEMS) { const son = parties[cle], sid = ajouterAudio(`${nomClip.slice(0, 40)} : ${NOMS_STEMS[cle]}`, son.canaux, son.sr), piste = P.nouvellePiste(NOMS_STEMS[cle]); p.pistes.push(piste); P.placerClip(p, piste.id, sid, c.debut); }
+    changer(); message("Séparé en voix, batterie, basse et autres instruments, chacun sur une nouvelle piste. Écoute-les un par un (S sur une piste : solo) ; coupe le clip d'origine avec M (muet) pour n'entendre que les quatre parties. Les parties ne sont pas parfaites : un peu de chaque instrument passe dans les autres.");
+  } catch (e) { message(e && e.message ? e.message : "La séparation par intelligence artificielle a échoué."); }
+  finally { if (moteur) { try { await moteur.fermer(); } catch (_) { /* déjà libéré */ } } separationEnCours = false; }
 };
 // Séparer le son (méthodes classiques, voir separation.js) : le clip choisi donne un clip par partie, chacun sur une NOUVELLE piste ; l'original reste intact.
 let separationEnCours = false;
