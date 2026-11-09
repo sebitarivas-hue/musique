@@ -22,7 +22,7 @@ select, input[type=text] { min-height: 38px; padding: 6px 8px; background: #fff;
 .haut { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 8px 14px; background: var(--noir); color: var(--papier); }
 .haut button { color: var(--noir); border-color: var(--papier); }
 .marque { display: flex; align-items: baseline; gap: 10px; } .marque .nom { font: 400 1.5rem/1 var(--f-display); letter-spacing: .04em; } .marque .sous { font: 500 .8rem var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--acide); }
-.retour { color: var(--papier); font-size: 1.6rem; text-decoration: none; padding: 0 6px; }
+.retour { color: var(--papier); font-size: 1.6rem; text-decoration: none; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
 .actions { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
 .etat { font: 500 .8rem var(--f-mono); text-transform: uppercase; letter-spacing: .08em; padding: 4px 10px; border: 1px solid var(--papier); } .etat.marche { background: var(--acide); color: var(--noir); border-color: var(--acide); } .etat.erreur { background: var(--rouge); color: var(--noir); border-color: var(--rouge); }
 .onglets-mobiles { display: none; }
@@ -174,3 +174,5 @@ header.haut a.accueil-sonora { display: none; }
 @media (pointer: coarse) and (min-width: 761px) { header.haut .actions button, header.haut .lien-bouton { min-height: 44px; } }
 @media (pointer: coarse) and (min-width: 761px) { button[data-t], .champ input, .champ select, input[type=range] { min-height: 44px; } }
 @media (pointer: coarse) and (min-width: 761px) { #grille button, #grille select, #grille input:not([type=checkbox]):not([type=file]):not([type=radio]) { min-height: 44px; } }
+/* Onglets : 44 px au moins sur écran étroit (34 px auparavant). */
+@media (max-width: 700px) { .onglets button { min-height: 44px; } }

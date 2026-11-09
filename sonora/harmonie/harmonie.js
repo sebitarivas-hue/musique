@@ -1,21 +1,21 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=fdd145480a";
-import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=fdd145480a";
-import { BANQUE, preparer } from "./echantillons.js?v=fdd145480a";
-import { GENRES, LISTE_GENRES, rendreGenre, mettreReel } from "./genres.js?v=fdd145480a";
-import { chargerKit } from "./batterie.js?v=fdd145480a";
-import { heros, etatBouton } from "../studio/heros.js?v=fdd145480a";
-import { encoderWAV } from "../studio/wav.js?v=fdd145480a";
-import { dessinerOscillo } from "../studio/visuels.js?v=fdd145480a";
-import * as P from "../pistes/projet.js?v=fdd145480a";
-import { Stockage } from "../pistes/stockage.js?v=fdd145480a";
-import * as A from "./accords.js?v=fdd145480a";
-import * as V from "./voicings.js?v=fdd145480a";
-import * as G from "./grille.js?v=fdd145480a";
-import { partitionSVG } from "./partition.js?v=fdd145480a";
-import { monterNotions } from "../pistes/notions.js?v=fdd145480a";
-import { NOTIONS_H, ORDRE_H } from "./notions.js?v=fdd145480a";
+import * as H from "./theorie.js?v=0f0682e51a";
+import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=0f0682e51a";
+import { BANQUE, preparer } from "./echantillons.js?v=0f0682e51a";
+import { GENRES, LISTE_GENRES, rendreGenre, mettreReel } from "./genres.js?v=0f0682e51a";
+import { chargerKit } from "./batterie.js?v=0f0682e51a";
+import { heros, etatBouton } from "../studio/heros.js?v=0f0682e51a";
+import { encoderWAV } from "../studio/wav.js?v=0f0682e51a";
+import { dessinerOscillo } from "../studio/visuels.js?v=0f0682e51a";
+import * as P from "../pistes/projet.js?v=0f0682e51a";
+import { Stockage } from "../pistes/stockage.js?v=0f0682e51a";
+import * as A from "./accords.js?v=0f0682e51a";
+import * as V from "./voicings.js?v=0f0682e51a";
+import * as G from "./grille.js?v=0f0682e51a";
+import { partitionSVG } from "./partition.js?v=0f0682e51a";
+import { monterNotions } from "../pistes/notions.js?v=0f0682e51a";
+import { NOTIONS_H, ORDRE_H } from "./notions.js?v=0f0682e51a";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -86,13 +86,20 @@ function chargerInstr(cle = etat.instrument) {
   return mien.then(L => { if (L) mettreTampons(b, L); etat.sonReel = sonReel(etat.instrument); if (enChargement === mien) badge(L ? "instrument prêt" : "son de secours (enregistrements indisponibles)", ""); }).catch(() => { badge("son de secours (enregistrements indisponibles)", ""); });
 }
 const NOMS_CLAVIER = ["do", "do♯", "ré", "mi♭", "mi", "fa", "fa♯", "sol", "la♭", "la", "si♭", "si"];
+// Sur écran étroit (700 px ou moins, comme la barre d'outils), le clavier montre une seule octave, de la tonique à son octave : six à huit touches blanches d'au moins 40 px,
+// au lieu de quatorze touches de 25 px. Les touches noires gardent la proportion d'un piano (60 % de la largeur d'une blanche).
+const ETROIT = window.matchMedia ? window.matchMedia("(max-width: 700px)") : { matches: false, addEventListener() {} };
+const estNoire = m => [1, 3, 6, 8, 10].includes(((m % 12) + 12) % 12);
 function clavierHtml(g) {
-  const dans = new Map(g.map(n => [n.midi, n.nom])), blancs = [], noirs = [];
-  for (let m = 60; m < 84; m++) { const noire = [1, 3, 6, 8, 10].includes(m % 12), nom = dans.get(m) || dans.get(m - 12) && null, est = dans.has(m) || dans.has(m - 12) || dans.has(m + 12), etiquette = dans.get(m) || dans.get(m - 12) || (noire ? "" : NOMS_CLAVIER[m % 12]), cls = (est ? " dans" : "") + ((m - g[0].midi) % 12 === 0 ? " tonique" : "");
+  const dans = new Map(g.map(n => [n.midi, n.nom])), blancs = [], noirs = [], etroit = ETROIT.matches, t0 = g[0].midi;
+  const debut = etroit ? (estNoire(t0) ? t0 - 1 : t0) : 60, fin = etroit ? t0 + 12 + (estNoire(t0 + 12) ? 1 : 0) : 83;
+  for (let m = debut; m <= fin; m++) { const noire = estNoire(m), est = dans.has(m) || dans.has(m - 12) || dans.has(m + 12), etiquette = dans.get(m) || dans.get(m - 12) || (noire ? "" : NOMS_CLAVIER[m % 12]), cls = (est ? " dans" : "") + ((m - t0) % 12 === 0 ? " tonique" : "");
     (noire ? noirs : blancs).push({ m, html: `class="${noire ? "no" : "bl"}${cls}" data-midi="${m}" role="button" tabindex="0" aria-label="${esc(etiquette || NOMS_CLAVIER[m % 12])}${est ? ", dans la gamme" : ""}"`, etiquette: est ? etiquette : (noire ? "" : NOMS_CLAVIER[m % 12]) }); }
-  const w = 100 / blancs.length; let i = 0; const pos = new Map(); blancs.forEach((b, k) => pos.set(b.m, k));
-  return `<div class="clavier-h" id="clavier-h">${blancs.map(b => `<div ${b.html}>${esc(b.etiquette)}</div>`).join("")}${noirs.map(n => `<div ${n.html} style="left:calc(${(pos.get(n.m - 1) + 1) * w}% - 2.1%)">${esc(n.etiquette)}</div>`).join("")}</div>`;
+  const w = 100 / blancs.length; const pos = new Map(); blancs.forEach((b, k) => pos.set(b.m, k));
+  const styleNoire = n => etroit ? `left:calc(${(pos.get(n.m - 1) + 1) * w}% - ${0.3 * w}%);width:${0.6 * w}%` : `left:calc(${(pos.get(n.m - 1) + 1) * w}% - 2.1%)`;
+  return `<div class="clavier-h" id="clavier-h">${blancs.map(b => `<div ${b.html}>${esc(b.etiquette)}</div>`).join("")}${noirs.filter(n => pos.has(n.m - 1)).map(n => `<div ${n.html} style="${styleNoire(n)}">${esc(n.etiquette)}</div>`).join("")}</div>`;
 }
+if (ETROIT.addEventListener) ETROIT.addEventListener("change", () => { if (etat.vue === "explorer" && $("v-explorer") && !$("v-explorer").hidden) vueExplorer(); });
 function vueExplorer() {
   const t = H.TONIQUES[etat.tonique], m = H.MODES[etat.mode], g = H.gamme(t, etat.mode, 4), hepta = g.length === 7;
   $("v-explorer").innerHTML = heros({ etiquette: "Explorer", titre: `${t.nom} ${m.nom.toLowerCase()}`, texte: g.map(n => n.nom).join("  "), bouton: "b-gamme", libelle: "Écouter la gamme", aide: "Puis touche les notes du clavier, ou un accord plus bas." })

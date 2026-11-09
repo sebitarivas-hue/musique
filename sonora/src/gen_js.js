@@ -1,7 +1,7 @@
 // Génération de code : un graphe optimisé devient une fonction JavaScript `creer(sr)` qui renvoie un noyau de calcul.
 // Le noyau ne fait aucune allocation dans `traiter`. Les contrôles sont évalués tous les 32 échantillons puis interpolés.
 // Un module polyphonique donne deux noyaux : celui d'une voix (instancié une fois par voix) et le noyau maître (qui reçoit la somme des voix).
-import { tardive } from "./graphe.js?v=fdd145480a";
+import { tardive } from "./graphe.js?v=0f0682e51a";
 
 export const SOUS_BLOC = 32;
 const nombre = v => { const s = String(v); return v < 0 || Object.is(v, -0) ? `(${s})` : s; };
@@ -114,7 +114,7 @@ export function genererNoyau(info, g, racines, diags, role = "complet") {
         ctrl.push(`{ const g = ${P(a[0])} !== 0 ? 1 : 0;
         if (g && !gt${id}) st${id} = 1; else if (!g && gt${id}) { st${id} = 4; rl${id} = lv${id}; }
         gt${id} = g;
-        const dt = ${SOUS_BLOC} / sr, att = Math.max(${P(a[1])}, 1e-4), dec = Math.max(${P(a[2])}, 1e-4), sus = ${P(a[3])}, rel = Math.max(${P(a[4])}, 1e-4);
+        const dt = ${SOUS_BLOC} / sr, att = Math.max(${P(a[1])}, 1e-4), dec = Math.max(${P(a[2])}, 1e-4), sus = Math.min(Math.max(${P(a[3])}, 0), 1), rel = Math.max(${P(a[4])}, 1e-4);
         if (st${id} === 1) { lv${id} += dt / att; if (lv${id} >= 1) { lv${id} = 1; st${id} = 2; } }
         else if (st${id} === 2) { lv${id} -= (1 - sus) * dt / dec; if (lv${id} <= sus) { lv${id} = sus; st${id} = 3; } }
         else if (st${id} === 3) lv${id} = sus;
@@ -171,13 +171,13 @@ export function genererNoyau(info, g, racines, diags, role = "complet") {
         if (nom === "carre") {
           audio.push(`const ${dt} = Math.min(Math.abs(${R(a[0])}) / sr, 0.5), w${id} = Math.min(Math.max(${R(a[1])}, 0.01), 0.99);
           let t${id} = ph${id} - w${id} + 1; t${id} -= Math.floor(t${id});
-          const a${id} = (ph${id} < w${id} ? 1 : -1) + pb(ph${id}, ${dt}) - pb(t${id}, ${dt}); ${avance}`);
+          const a${id} = (ph${id} < w${id} ? 1 : -1) + 2 * bw(ph${id}, ${dt}) - 2 * bw(t${id}, ${dt}); ${avance}`);
         } else if (nom === "dent") {
-          audio.push(`const ${dt} = Math.min(Math.abs(${R(a[0])}) / sr, 0.5); const a${id} = (2 * ph${id} - 1) - pb(ph${id}, ${dt}); ${avance}`);
+          audio.push(`const ${dt} = Math.min(Math.abs(${R(a[0])}) / sr, 0.5); const a${id} = (2 * ph${id} - 1) - 2 * bw(ph${id}, ${dt}); ${avance}`);
         } else if (nom === "triangle") {
-          audio.push(`const ${dt} = Math.min(Math.abs(${R(a[0])}) / sr, 0.5); let u${id} = ph${id} + 0.75; u${id} -= Math.floor(u${id}); const a${id} = 4 * Math.abs(u${id} - 0.5) - 1; ${avance}`);
+          audio.push(`const ${dt} = Math.min(Math.abs(${R(a[0])}) / sr, 0.5); let u${id} = ph${id} + 0.75; u${id} -= Math.floor(u${id}); const a${id} = 4 * Math.abs(u${id} - 0.5) - 1 - 8 * ${dt} * bc(ph${id} - 0.25, ${dt}) + 8 * ${dt} * bc(ph${id} - 0.75, ${dt}); ${avance}`);
         } else {
-          audio.push(`const ${dt} = Math.min(Math.abs(${R(a[0])}) / sr, 0.5); const o${id} = ph${id} + ${dt}; const a${id} = o${id} >= 1 ? 1 : 0; ${avance}`);
+          audio.push(`const ${dt} = Math.min(Math.abs(${R(a[0])}) / sr, 0.5); let t${id} = ph${id} - ${dt} + 1; t${id} -= Math.floor(t${id}); const a${id} = (ph${id} < ${dt} ? 1 : 0) + bw(ph${id}, ${dt}) - bw(t${id}, ${dt}); ${avance}`);
         }
         continue;
       }
@@ -259,7 +259,12 @@ return function creer(sr) {
   let incidents = 0, ecretages = 0, premier = true;
   const dv = (a, b) => { if (b === 0) { incidents++; return 0; } return a / b; };
   const md = (a, b) => { if (b === 0) { incidents++; return 0; } return a % b; };
-  const pb = (t, dt) => { if (t < dt) { t /= dt; return t + t - t * t - 1; } if (t > 1 - dt) { t = (t - 1) / dt; return t * t + t + t + 1; } return 0; };
+  // Limitation de bande des oscillateurs : correction par noyau B-spline cubique (support de 4 échantillons). bl est le résidu d'une marche unité (x en échantillons
+  // depuis la discontinuité, négatif avant), bl1 celui d'une rampe unité (BLAMP, intégrale de bl). Polynômes vérifiés par intégration numérique du noyau.
+  const bl = x => { if (x >= 2 || x <= -2) return 0; const a = x < 0 ? -x : x; let r; if (a <= 1) r = -0.5 + a * (0.6666666666666666 + a * a * (-0.3333333333333333 + a * 0.125)); else { const u = 2 - a; r = -(u * u * u * u) / 24; } return x < 0 ? -r : r; };
+  const bl1 = x => { const a = x < 0 ? -x : x; if (a >= 2) return 0; if (a >= 1) { const u = 2 - a; return u * u * u * u * u / 120; } const a2 = a * a; return 0.23333333333333334 - 0.5 * a + a2 / 3 - a2 * a2 / 12 + a2 * a2 * a / 40; };
+  const bw = (ph, dt) => { if (!(dt > 0)) return 0; let s = 0, x = ph / dt; if (x < 2) s += bl(x); x = (ph - 1) / dt; if (x > -2) s += bl(x); return s; };
+  const bc = (d, dt) => { if (!(dt > 0)) return 0; d -= Math.round(d); return bl1(d / dt); };
   const san = x => {
     if (x !== x || x === Infinity || x === -Infinity) { incidents++; return 0; }
     const ax = x < 0 ? -x : x;

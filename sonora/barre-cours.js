@@ -44,7 +44,7 @@
 .barre-cours .bc-pre{font-weight:500}.barre-cours .bc-fl{display:inline-block;width:8px;height:8px;border-left:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(45deg);margin:0 4px 1px 2px}
 .barre-cours .bc-b{border-color:#F0EFE8}.barre-cours .bc-xp{background:#D6FF00;color:#11110F;padding:1px 6px;font:700 11px monospace}
 .barre-cours .bc-rub{display:flex;gap:2px;margin-left:auto;padding-left:8px;border-left:1px solid #3A3A35}.barre-cours .bc-rub a{font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
-@media (max-width:700px){.barre-cours .bc-rub{display:none}.barre-cours .bc-pre{display:none}.barre-cours .bc-retour{max-width:46vw}}`;
+@media (max-width:700px){.barre-cours a{min-height:44px;display:inline-flex;align-items:center}.barre-cours .bc-rub{display:none}.barre-cours .bc-pre{display:none}.barre-cours .bc-retour{max-width:46vw}}`;
   document.head.appendChild(css); document.body.insertBefore(nav, document.body.firstChild);
   // La recherche du site (racine/recherche.js), dont le bouton se range dans cette barre.
   // Seulement quand un espace est choisi ET que sa porte a été franchie (code de la classe ou du professeur déjà accepté sur cet appareil) : la recherche ne contourne aucun code.

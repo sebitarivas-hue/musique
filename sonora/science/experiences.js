@@ -1,8 +1,8 @@
-import { programmeTimbre } from "./microtonalite.js?v=fdd145480a";
+import { programmeTimbre } from "./microtonalite.js?v=0f0682e51a";
 // Les expériences de SONORA Science. Chaque expérience est un programme SONORA (le même langage que le Studio) plus une analyse.
 // Règle : tout résultat affiché est calculé à partir des échantillons que le programme produit, jamais recopié d'une formule.
 // La « théorie » est la valeur attendue d'après la physique ; l'écart et le verdict viennent de la comparaison avec la mesure.
-import * as A from "./analyse.js?v=fdd145480a";
+import * as A from "./analyse.js?v=0f0682e51a";
 
 export const SR = 44100;
 const arrondi = (v, d = 2) => { const t = Math.abs(v) >= 100 ? v.toFixed(Math.max(0, d - 2)) : v.toFixed(d); return (t.includes(".") ? t.replace(/\.?0+$/, "") : t) || "0"; }; // les zéros ne sont retirés qu'après une virgule : 440 reste 440
@@ -168,7 +168,7 @@ instrument Battements {
   { id: "harmoniques-spectre", domaine: "Acoustique", titre: "Formes d'onde, harmoniques et spectre",
     question: "Pourquoi une onde en dents de scie sonne-t-elle plus brillante qu'un sinus ?",
     explication: ["Tout son périodique est la somme de sinusoïdes dont les fréquences sont des multiples de la fondamentale : les harmoniques. Le spectre montre leur amplitude.",
-      "Théorie : la dent de scie contient tous les harmoniques, d'amplitude 1/k. Le carré ne contient que les impairs, 1/k. Le triangle les impairs en 1/k², donc très faibles. Le sinus n'a qu'un seul partiel."],
+      "Théorie : la dent de scie contient tous les harmoniques, d'amplitude 1/k. Le carré ne contient que les impairs, 1/k. Le triangle les impairs en 1/k², donc très faibles. Le sinus n'a qu'un seul partiel. L'oscillateur de SONORA limite sa bande pour éviter le repliement : cela affaiblit légèrement les harmoniques les plus aigus (moins de 2 dB jusqu'à 6 kHz), et la théorie affichée en tient compte."],
     programme: `/// Quatre formes d'onde : on regarde leur spectre.
 instrument Formes {
     reglage frequence : Hz = 220 Hz dans 110 Hz .. 880 Hz courbe log etiquette "Fréquence"
@@ -179,7 +179,9 @@ instrument Formes {
 `, duree: 2,
     mesurer(c) {
       const f0 = A.fondamentale(cana(c), c.sr, { fmin: 80, fmax: 1000, debut: 4096, duree: 0.2 }).f0, h = A.harmoniques(cana(c), c.sr, f0, 7, { debut: 16384, n: 32768 }), forme = Math.round(c.valeurs.forme);
-      const theorie = k => forme === 0 ? (k === 1 ? 1 : 0) : forme === 1 ? (k % 2 ? 1 / (k * k) : 0) : forme === 2 ? (k % 2 ? 1 / k : 0) : 1 / k;
+      // Les oscillateurs de SONORA limitent leur bande (noyau B-spline cubique) : cela affaiblit un peu les harmoniques aigus, d'un facteur sinc⁴ (par rapport à la fondamentale). La théorie en tient compte.
+      const sinc = x => Math.sin(Math.PI * x) / (Math.PI * x), bande = k => forme === 0 ? 1 : Math.pow(Math.abs(sinc(k * f0 / c.sr) / sinc(f0 / c.sr)), 4);
+      const theorie = k => bande(k) * (forme === 0 ? (k === 1 ? 1 : 0) : forme === 1 ? (k % 2 ? 1 / (k * k) : 0) : forme === 2 ? (k % 2 ? 1 / k : 0) : 1 / k);
       const lignes = [L("Fréquence fondamentale mesurée", f0, c.valeurs.frequence, { unite: "Hz", tol: 0.005 })];
       for (let k = 2; k <= 7; k++) {
         const rel = dB(h[k - 1] / h[0]), t = theorie(k);

@@ -13,3 +13,6 @@
 .nav-lecon { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
 details.solution pre { background: var(--noir); color: var(--papier); padding: 12px; overflow: auto; font: .8rem/1.5 var(--f-mono); }
 .sr-seul { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* Cibles tactiles : 44 px au moins sur écran étroit (mesuré dans Chromium mobile le 06/11/2026 : onglets, champs, sélecteurs et boutons faisaient 21 à 38 px). */
+@media (max-width: 700px) { button, select, summary, input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]) { min-height: 44px; } }

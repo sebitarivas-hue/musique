@@ -31,3 +31,6 @@ table.mesures td.n { font-family: var(--f-mono); text-align: right; white-space:
 .cartes-systemes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0; border-top: 2px solid var(--noir); border-left: 2px solid var(--noir); }
 .systeme { padding: 14px; border-right: 2px solid var(--noir); border-bottom: 2px solid var(--noir); background: var(--papier); } .systeme h3 { font: 900 1.25rem/1 "Archivo Variable", var(--f-display); font-stretch: 75%; text-transform: uppercase; margin: 0 0 6px; }
 .systeme .ou { font: 500 12px var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--gris); margin: 0 0 8px; } .liens-atlas a { font-weight: 700; }
+
+/* Cibles tactiles : 44 px au moins sur écran étroit (mesuré dans Chromium mobile le 06/11/2026 : onglets, champs, sélecteurs et boutons faisaient 21 à 38 px). */
+@media (max-width: 700px) { button, select, summary, input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]) { min-height: 44px; } }
