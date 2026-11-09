@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Code</title>
 <meta name="description" content="Le laboratoire de programmation musicale : écrire un programme de son en Faust, en Csound ou en Pure Data, l'entendre aussitôt, avec des exemples guidés pas à pas.">
-<link rel="stylesheet" href="../studio/studio.css?v=0f0682e51a">
-<link rel="stylesheet" href="../enfants.css?v=0f0682e51a">
-<link rel="stylesheet" href="code.css?v=0f0682e51a">
+<link rel="stylesheet" href="../studio/studio.css?v=136a06e79b">
+<link rel="stylesheet" href="../enfants.css?v=136a06e79b">
+<link rel="stylesheet" href="code.css?v=136a06e79b">
 </head>
 <body>
 <a class="saut" href="#atelier">Aller à l'atelier</a>
 <header class="haut">
   <div class="marque"><a href="../../choix.html" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Code</span></div>
   <a class="lien-bouton accueil-sonora" href="../index.html">Tous les outils</a>
-  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../decouverte/index.html">Découvertes</a><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../academy/index.html">Academy</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" href="../pistes/index.html">Pistes</a><a class="lien-bouton" href="../harmonie/index.html">Harmonie</a><a class="lien-bouton" aria-current="page" href="index.html">Code</a></nav>
+  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../decouverte/index.html">Découvertes</a><a class="lien-bouton" href="../academy/index.html">Apprendre</a><a class="lien-bouton" href="../harmonie/index.html">Harmonie</a><a class="lien-bouton" href="../pistes/index.html">Pistes</a><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" aria-current="page" href="index.html">Code</a></nav>
   <div class="etat" id="etat" role="status" aria-live="polite">prêt</div>
 </header>
 <main class="code">
@@ -34,7 +34,7 @@
           <label class="mini">Durée<select id="duree"><option value="2">2 s</option><option value="3" selected>3 s</option><option value="5">5 s</option><option value="8">8 s</option><option value="12">12 s</option></select></label>
           <label class="mini" id="zone-entree" hidden>Son à transformer<select id="entree"><option value="notes">Notes en dents de scie</option><option value="bruit">Bruit blanc</option><option value="pulse">Pulsations</option></select></label>
         </div>
-        <div class="rang boutons"><button type="button" id="b-ecouter" class="grand">Écouter</button><button type="button" id="b-stop">Arrêter</button><button type="button" id="b-wav">Enregistrer en WAV</button></div>
+        <div class="rang boutons"><button type="button" id="b-ecouter" class="grand">Écouter</button><button type="button" id="b-stop">Arrêter</button><button type="button" id="b-vers-pistes">Envoyer vers Pistes</button><button type="button" id="b-wav">Enregistrer en WAV</button></div>
         <canvas id="scope" class="scope" width="900" height="120" aria-label="Forme du son"></canvas>
         <p class="message" id="message" role="status" aria-live="polite"></p>
       </div>
@@ -42,8 +42,8 @@
     <div class="aller-plus" id="plus"></div>
   </section>
 </main>
-<script type="module" src="code.js?v=0f0682e51a"></script>
-<script src="../barre-cours.js?v=0f0682e51a"></script>
-<script src="../retour.js?v=0f0682e51a"></script>
+<script type="module" src="code.js?v=136a06e79b"></script>
+<script src="../barre-cours.js?v=136a06e79b"></script>
+<script src="../retour.js?v=136a06e79b"></script>
 </body>
 </html>

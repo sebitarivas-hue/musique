@@ -6,7 +6,7 @@
 let FAUST = null, NFAUST = 0;
 export async function chargerFaust() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=0f0682e51a"), racine = new URL("../../faust/compilateur/", import.meta.url).href; // le dossier du compilateur du site, à la racine
+    const fw = await import("./faust/faustwasm.js?v=136a06e79b"), racine = new URL("../../faust/compilateur/", import.meta.url).href; // le dossier du compilateur du site, à la racine
     const mod = await fw.instantiateFaustModuleFromFile(racine + "libfaust-wasm.js"), lib = new fw.LibFaust(mod);
     return { fw, comp: new fw.FaustCompiler(lib), version: lib.version() };
   })().catch(e => { FAUST = null; throw e; });
@@ -39,7 +39,7 @@ export async function rendreFaust(gen, meta, { sr = 44100, secondes = 2, entrees
 
 // ---------------------------------------------------------------- Csound
 let CSOUND = null;
-export async function chargerCsound() { if (!CSOUND) CSOUND = import("./csound/csound.js?v=0f0682e51a").catch(e => { CSOUND = null; throw e; }); return CSOUND; }
+export async function chargerCsound() { if (!CSOUND) CSOUND = import("./csound/csound.js?v=136a06e79b").catch(e => { CSOUND = null; throw e; }); return CSOUND; }
 // L'en-tête (sr, ksmps, nchnls, 0dbfs) est fixé par SONORA, d'après l'horloge audio de la page ; les mêmes lignes écrites par l'utilisateur sont retirées pour éviter un conflit.
 export function orchestreComplet(orc, sr) {
   const propre = String(orc).split("\n").filter(l => !/^\s*(sr|kr|ksmps|nchnls|nchnls_i|0dbfs)\s*=/.test(l)).join("\n");
@@ -57,7 +57,7 @@ export async function lancerCsound(ctx, orc, partition) {
 }
 // ---------------------------------------------------------------- Pure Data (WebPd, en version alpha : une partie seulement des objets de Pure Data)
 let PD = null;
-export async function chargerPd() { if (!PD) PD = import("./pd/webpd.js?v=0f0682e51a").catch(e => { PD = null; throw e; }); return PD; }
+export async function chargerPd() { if (!PD) PD = import("./pd/webpd.js?v=136a06e79b").catch(e => { PD = null; throw e; }); return PD; }
 // Les messages de WebPd en français : l'objet inconnu est le cas le plus courant.
 export function erreurPd(e) {
   const m = (Array.isArray(e) ? e : [e]).map(x => String(x && x.message || x)).join("\n"), inconnus = m.match(/unknown object types?\s+(.+)/i);
@@ -135,3 +135,14 @@ export const CATALOGUE = {
   csound: [["Créer un son", "Découverte", "Une note simple : un instrument, une partition d'une ligne."], ["Créer un instrument", "Découverte", "Trois notes en même temps : un accord."], ["Créer un instrument", "Recherche", "La synthèse FM : une note qui en modifie une autre."],
     ["Créer une séquence", "Découverte", "Huit lignes de partition : la gamme de do."], ["Créer une séquence", "Découverte", "Sept notes, plus courtes : un arpège."], ["Créer un son", "Programmation", "La hauteur monte d'une octave pendant la note."], ["Créer un instrument", "Programmation", "Une basse : des dents de scie dont un filtre se ferme."], ["Créer un instrument", "Recherche", "Cinq harmoniques additionnées : c'est ainsi qu'on fabrique un timbre."]],
 };
+
+// ---------------------------------------------------------------- capture du son qui sort d'un nœud (micro, Csound, JavaScript) : le même capteur sert à Pistes et à SONORA Code
+export const CAPTEUR = `class Capteur extends AudioWorkletProcessor { process(e) { const c = e[0]; if (c && c.length && c[0]) this.port.postMessage(c.map(x => x.slice(0))); return true; } } registerProcessor("sonora-capteur", Capteur);`;
+const CAPTEURS = new WeakSet();
+// Branche `source` sur un capteur muet et renvoie { morceaux, fin() } : fin() débranche et rend les morceaux reçus (à assembler avec projet.assemblerCanaux).
+export async function ouvrirCapteur(ctx, source) {
+  if (!CAPTEURS.has(ctx)) { const url = URL.createObjectURL(new Blob([CAPTEUR], { type: "text/javascript" })); await ctx.audioWorklet.addModule(url); CAPTEURS.add(ctx); }
+  const morceaux = [], capteur = new AudioWorkletNode(ctx, "sonora-capteur", { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1], channelCountMode: "max" }), muet = ctx.createGain(); muet.gain.value = 0;
+  capteur.port.onmessage = ev => morceaux.push(ev.data); capteur.connect(muet).connect(ctx.destination); source.connect(capteur);
+  let fini = false; return { morceaux, fin() { if (!fini) { fini = true; try { source.disconnect(capteur); } catch (_) {} try { capteur.disconnect(); muet.disconnect(); } catch (_) {} } return morceaux; } };
+}

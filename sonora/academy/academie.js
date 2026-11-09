@@ -1,11 +1,11 @@
 // SONORA Academy : leçons, exercices corrigés sur le son produit. La progression reste dans le navigateur (aucun compte, rien n'est envoyé).
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=0f0682e51a";
-import { Editeur } from "../studio/editeur.js?v=0f0682e51a";
-import { UNITES, LECONS, parId } from "./parcours.js?v=0f0682e51a";
-import { verifier } from "./correcteur.js?v=0f0682e51a";
-import { preparer } from "../science/executeur.js?v=0f0682e51a";
-import { heros, etatBouton } from "../studio/heros.js?v=0f0682e51a";
-import { dessinerOscillo } from "../studio/visuels.js?v=0f0682e51a";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=136a06e79b";
+import { Editeur } from "../studio/editeur.js?v=136a06e79b";
+import { UNITES, LECONS, parId } from "./parcours.js?v=136a06e79b";
+import { verifier } from "./correcteur.js?v=136a06e79b";
+import { preparer } from "../science/executeur.js?v=136a06e79b";
+import { heros, etatBouton } from "../studio/heros.js?v=136a06e79b";
+import { dessinerOscillo } from "../studio/visuels.js?v=136a06e79b";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -56,7 +56,7 @@ async function arreter(bouton) {
 function ouvrir(id) {
   const l = parId(id) || LECONS[0]; arreter(); etat.ecoutePropreMax = 0; etat.lecon = l; etat.essais = 0; etat.dernier = null;
   document.querySelectorAll("#nav-exp button").forEach(b => b.setAttribute("aria-current", String(b.dataset.id === l.id)));
-  document.title = l.titre + ", SONORA Academy"; panneau("fiche"); window.scrollTo(0, 0);
+  document.title = l.titre + ", SONORA Apprendre"; panneau("fiche"); window.scrollTo(0, 0);
   const i = LECONS.indexOf(l), u = UNITES.find(x => x.id === l.unite), p = lire()[l.id], ex = l.exercice;
   $("fiche").innerHTML = heros({ etiquette: `${u.titre}, ${l.duree}`, titre: l.titre, texte: l.objectif, bouton: "b-ecouter-ex", libelle: "Écouter l'exemple", aide: "C'est l'exemple de la leçon. Lis le cours, puis fais l'exercice plus bas." }) + `<p class="petit" id="msg-ex"></p>
   <section class="cours"><h2>Le cours</h2>${l.cours.map(c => `<p>${md(c)}</p>`).join("")}</section>

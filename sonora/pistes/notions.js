@@ -67,15 +67,12 @@ export const NOTIONS = {
   export: { titre: "Exporter en WAV", court: "Un fichier audio de tout ton projet.",
     corps: ["L'export mélange toutes les pistes, avec leurs volumes, leurs panoramiques et leurs effets, dans un seul fichier audio WAV, sans perte de qualité.", "Tu peux l'écouter ailleurs ou le rendre. Ton projet reste aussi gardé dans ce navigateur, mais le fichier est la copie qui ne dépend pas de lui."],
     essaie: "Exporte ton projet et écoute le fichier dans une autre application.", liens: [] },
-  moteurs: { titre: "Faust, Csound et Pure Data", court: "Trois langages pour fabriquer du son.",
-    corps: ["Au lieu de poser des sons déjà faits, tu écris un petit programme qui fabrique le son. Faust vient de GRAME, à Lyon. Csound est un langage ancien, né dans les années 1980. Pure Data se programme en reliant des boîtes entre elles.", "Le programme devient un clip sur ta piste. C'est un bon moyen de comprendre comment les sons de synthèse sont construits."],
-    essaie: "Choisis un exemple, lance-le, puis change un nombre et réécoute.", liens: [{ libelle: "Le laboratoire sonore (Faust)", url: "../../#faust" }] },
   zoom: { titre: "Le zoom", court: "Voir plus de détail ou plus de temps.",
     corps: ["Zoomer rapproche la règle : tu vois les clips plus en détail, utile pour couper ou placer un son avec précision. Dézoomer montre tout le projet d'un coup d'œil."],
     essaie: "Zoome pour placer un clap exactement sur un temps.", liens: [] },
 };
 
-export const ORDRE = ["piste", "clip", "volume", "panoramique", "muet", "solo", "rec", "effets", "filtre", "echo", "reverb", "enveloppe", "tempo", "metronome", "aimant", "multi", "entree", "instrument", "sequenceur", "bibliotheque", "export", "moteurs", "zoom"];
+export const ORDRE = ["piste", "clip", "volume", "panoramique", "muet", "solo", "rec", "effets", "filtre", "echo", "reverb", "enveloppe", "tempo", "metronome", "aimant", "multi", "entree", "instrument", "sequenceur", "bibliotheque", "export", "zoom"];
 
 // Adresses des liens, relatives à sonora/pistes/index.html (publié sous sonora/pistes/ à la racine du site).
 export const adresse = l => l.url || (l.fiche ? `../../#fiche-${l.fiche}` : l.science ? `../science/index.html#${l.science}` : "#");

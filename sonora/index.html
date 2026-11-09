@@ -3,56 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SONORA, créer avec le son</title>
-<meta name="description" content="SONORA : un environnement de création musicale. Créer, explorer, transformer, retrouver ses projets.">
+<title>SONORA, le laboratoire</title>
+<meta name="description" content="SONORA, le laboratoire du son : apprendre, composer avec l'harmonie et les pistes, fabriquer un son, le mesurer, puis le programmer.">
 <style>
 @font-face { font-family: "Archivo Variable"; src: url("../polices/archivo-variable-latin.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
 @font-face { font-family: "Instrument Sans"; src: url("../polices/instrument-sans-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
 :root { --noir: #11110F; --papier: #F0EFE8; --acide: #D6FF00; --tuile: #22221E; --gris: #BEBDB4; }
 * { box-sizing: border-box; } html { background: var(--noir); }
-body { margin: 0; background: var(--noir); color: var(--papier); font: 600 1rem/1.4 "Instrument Sans", Arial, sans-serif; }
+body { margin: 0; background: var(--noir); color: var(--papier); font: 600 1rem/1.35 "Instrument Sans", Arial, sans-serif; }
 a { color: inherit; } a:focus-visible { outline: 3px solid var(--acide); outline-offset: 2px; }
-main { width: min(980px, 100%); margin: 0 auto; padding: 14px 12px 28px; }
-h1 { margin: 6px 0 2px; font: 900 clamp(2.2rem, 11vw, 4.4rem)/.9 "Archivo Variable", Arial, sans-serif; font-stretch: 62%; text-transform: uppercase; } h1 span { color: var(--acide); }
-.sous { margin: 0 0 14px; color: var(--gris); font: 400 .8rem/1.4 ui-monospace, Menlo, monospace; letter-spacing: .12em; text-transform: uppercase; }
-.tuiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.tuile { display: flex; flex-direction: column; background: var(--tuile); border-radius: 14px; padding: 14px 12px 12px; min-width: 0; }
-.tuile svg { width: 30px; height: 30px; stroke: var(--acide); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.tuile h2 { margin: 8px 0 2px; font: 800 1.25rem/1.1 "Archivo Variable", Arial, sans-serif; } .tuile p { margin: 0 0 10px; color: var(--gris); font-weight: 400; font-size: .85rem; line-height: 1.35; }
-.tuile ul { list-style: none; margin: auto 0 0; padding: 0; display: grid; gap: 6px; }
-.tuile a { display: flex; align-items: center; min-height: 48px; padding: 6px 10px; border: 1.5px solid #5A5A53; border-radius: 10px; text-decoration: none; font-size: .88rem; line-height: 1.2; } .tuile a:hover, .tuile a:focus-visible { border-color: var(--acide); }
-.tuile li:first-child a { background: var(--acide); color: var(--noir); border-color: var(--acide); font-weight: 700; }
-@media (min-width: 701px) { .tuiles { grid-template-columns: repeat(4, 1fr); gap: 14px; } .tuile { padding: 18px 16px 16px; } .tuile h2 { font-size: 1.5rem; } .tuile a { font-size: 1rem; } }
-@media (max-width: 340px) { .tuiles { grid-template-columns: 1fr; } }
+main { width: min(980px, 100%); margin: 0 auto; padding: 10px 12px 18px; }
+h1 { margin: 4px 0 2px; font: 900 clamp(1.9rem, 9vw, 3.6rem)/.92 "Archivo Variable", Arial, sans-serif; font-stretch: 62%; text-transform: uppercase; } h1 span { color: var(--acide); }
+.sous { margin: 0 0 10px; color: var(--gris); font: 400 .75rem/1.4 ui-monospace, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; }
+/* Le parcours : une vraie progression, donc numérotée. Le code vient en dernier. */
+.parcours { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: etape; }
+.parcours li { display: flex; align-items: center; gap: 10px; min-height: 52px; background: var(--tuile); border-radius: 12px; padding: 4px 6px 4px 10px; }
+.parcours li::before { counter-increment: etape; content: counter(etape); flex: 0 0 auto; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--acide); color: var(--acide); font: 800 .95rem/1 "Archivo Variable", Arial, sans-serif; }
+.parcours .texte { flex: 1 1 auto; min-width: 0; } .parcours h2 { margin: 0; font: 800 1.05rem/1.15 "Archivo Variable", Arial, sans-serif; } .parcours p { margin: 0; color: var(--gris); font-weight: 400; font-size: .78rem; line-height: 1.25; }
+.parcours .liens { flex: 0 0 auto; display: flex; gap: 6px; }
+.parcours a { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 4px 12px; border: 1.5px solid #5A5A53; border-radius: 10px; text-decoration: none; font-size: .86rem; line-height: 1.15; text-align: center; }
+.parcours a:hover, .parcours a:focus-visible { border-color: var(--acide); }
+.parcours a.entree { background: var(--acide); color: var(--noir); border-color: var(--acide); font-weight: 700; }
+.parcours li.ferme { opacity: .55; } .parcours li.ferme .liens a { pointer-events: none; border-style: dashed; color: var(--gris); background: none; }
+.plus { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.plus a { display: flex; align-items: center; min-height: 44px; padding: 4px 12px; border: 1.5px solid #5A5A53; border-radius: 10px; text-decoration: none; font-size: .86rem; } .plus a:hover, .plus a:focus-visible { border-color: var(--acide); }
+@media (min-width: 701px) { .parcours { grid-template-columns: 1fr 1fr; gap: 10px; } .parcours li { min-height: 76px; padding: 8px 10px 8px 14px; } .parcours h2 { font-size: 1.3rem; } .parcours p { font-size: .9rem; } .parcours a { font-size: 1rem; } .plus a { font-size: 1rem; } }
+@media (max-width: 380px) { .parcours p { display: none; } .parcours li { min-height: 48px; } }
 </style>
 </head>
 <body>
 <main>
-  <h1>Sonora <span>créer avec le son</span></h1>
-  <p class="sous">Environnement de création musicale</p>
-  <div class="tuiles">
-    <section class="tuile" aria-labelledby="t-creer">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16v0M9 10v12M14 5v22M19 11v10M24 8v16M29 15v2"/></svg>
-      <h2 id="t-creer">Créer</h2><p>Montage, enregistrement, composition.</p>
-      <ul><li><a href="pistes/index.html">Pistes, monter et enregistrer</a></li><li><a href="harmonie/index.html">Harmonie, accords et accompagnement</a></li></ul>
-    </section>
-    <section class="tuile" aria-labelledby="t-explorer">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 5v22M12 5v22M18 8v19M24 5l5 22"/></svg>
-      <h2 id="t-explorer">Explorer</h2><p>Sons, instruments, cultures, ressources.</p>
-      <ul><li><a href="library/index.html">Bibliothèque de sons</a></li><li><a href="../#monde">Carte des musiques du monde</a></li><li><a href="../atlas/index.html">Atlas des musiques</a></li></ul>
-    </section>
-    <section class="tuile" aria-labelledby="t-transformer">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 9h12M23 9h4M5 16h4M15 16h12M5 23h14M25 23h2"/><circle cx="20" cy="9" r="3"/><circle cx="12" cy="16" r="3"/><circle cx="22" cy="23" r="3"/></svg>
-      <h2 id="t-transformer">Transformer</h2><p>Effets, synthèse, traitements.</p>
-      <ul><li><a href="decouverte/index.html">Découvertes, comprendre le son</a></li><li><a href="studio/index.html">Studio, fabriquer un son</a></li><li><a href="science/index.html">Science du son</a></li><li><a href="academy/index.html">Académie, apprendre le langage</a></li><li><a href="code/index.html">Code, programmer la musique (Faust, Csound, Pure Data)</a></li></ul>
-    </section>
-    <section class="tuile" aria-labelledby="t-projets">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h7l3 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-      <h2 id="t-projets">Mes projets</h2><p>Travaux enregistrés et exports.</p>
-      <ul><li><a href="pistes/index.html#projets">Mes projets de Pistes</a></li><li><a href="studio/index.html">Mes programmes du Studio</a></li></ul>
-    </section>
-  </div>
+  <h1>Sonora <span>le laboratoire</span></h1>
+  <p class="sous">Apprendre, composer, fabriquer, programmer</p>
+  <ol class="parcours">
+    <li data-espace="academy"><div class="texte"><h2>Apprendre</h2><p>Écouter, comprendre, pas à pas.</p></div><div class="liens"><a class="entree" href="academy/index.html">Les leçons</a><a href="decouverte/index.html">Découvertes</a></div></li>
+    <li><div class="texte"><h2>Harmonie</h2><p>Accords, gammes, accompagnement.</p></div><div class="liens"><a class="entree" href="harmonie/index.html">Ouvrir</a></div></li>
+    <li><div class="texte"><h2>Pistes</h2><p>Monter, enregistrer, mixer.</p></div><div class="liens"><a class="entree" href="pistes/index.html">Ouvrir</a></div></li>
+    <li data-espace="studio"><div class="texte"><h2>Studio</h2><p>Fabriquer un son et le jouer.</p></div><div class="liens"><a class="entree" href="studio/index.html">Ouvrir</a></div></li>
+    <li data-espace="science"><div class="texte"><h2>Science</h2><p>Mesurer et comprendre le son.</p></div><div class="liens"><a class="entree" href="science/index.html">Ouvrir</a></div></li>
+    <li data-espace="library"><div class="texte"><h2>Library</h2><p>Sons, instruments et effets.</p></div><div class="liens"><a class="entree" href="library/index.html">Ouvrir</a></div></li>
+    <li data-espace="code"><div class="texte"><h2>Code</h2><p>Programmer ses propres sons.</p></div><div class="liens"><a class="entree" href="code/index.html">Ouvrir</a></div></li>
+  </ol>
+  <div class="plus"><a href="pistes/index.html#projets">Mes projets</a><a href="../atlas/index.html">Atlas des musiques</a><a href="../#monde">Carte du monde</a></div>
 </main>
-<script src="barre-cours.js?v=0f0682e51a"></script>
+<script src="barre-cours.js?v=136a06e79b"></script>
+<script>
+// Pour un élève dont la classe n'a pas encore l'outil, l'étape reste visible et dit à partir de quand (décision du 09/11/2026 : tout est visible).
+(function () { var P = window.SONORA_PEUT; if (!P) return; document.querySelectorAll(".parcours li[data-espace]").forEach(function (li) { var e = li.dataset.espace; if (P(e)) return; li.classList.add("ferme"); var m = (window.SONORA_MIN || {})[e];
+  var p = li.querySelector("p"); if (p) p.textContent = "À partir de la " + m + "."; li.querySelectorAll(".liens a").forEach(function (a) { a.setAttribute("aria-disabled", "true"); a.setAttribute("tabindex", "-1"); }); }); })();
+</script>
 </body>
 </html>

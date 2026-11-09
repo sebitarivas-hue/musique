@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=0f0682e51a">
-<link rel="stylesheet" href="pistes.css?v=0f0682e51a"><link rel="stylesheet" href="notions.css?v=0f0682e51a">
+<link rel="stylesheet" href="../studio/studio.css?v=136a06e79b">
+<link rel="stylesheet" href="pistes.css?v=136a06e79b"><link rel="stylesheet" href="notions.css?v=136a06e79b">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
 <header class="haut">
   <div class="marque"><a href="../../choix.html" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Pistes</span></div>
   <a class="lien-bouton accueil-sonora" href="../index.html">Tous les outils</a>
-  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../decouverte/index.html">Découvertes</a><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../academy/index.html">Academy</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" aria-current="page" href="index.html">Pistes</a><a class="lien-bouton" href="../harmonie/index.html">Harmonie</a><a class="lien-bouton" href="../code/index.html">Code</a></nav>
+  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../decouverte/index.html">Découvertes</a><a class="lien-bouton" href="../academy/index.html">Apprendre</a><a class="lien-bouton" href="../harmonie/index.html">Harmonie</a><a class="lien-bouton" aria-current="page" href="index.html">Pistes</a><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" href="../code/index.html">Code</a></nav>
   <div class="etat" id="etat" role="status" aria-live="polite">prêt</div>
 </header>
 <nav id="barre-menus" data-avance class="barre-menus" aria-label="Menus de SONORA Pistes" role="menubar"></nav>
@@ -57,8 +57,7 @@
       <button type="button" id="b-export" data-tip="Fabriquer un fichier WAV avec tout ton projet, pour l'écouter ou le partager"><span class="ic ic-export" aria-hidden="true"></span> Exporter en WAV</button>
       <span class="annuler-groupe" role="group" aria-label="Revenir en arrière"><button type="button" id="b-annuler" data-tip="Annuler la dernière action (Ctrl+Z)" disabled><span class="ic ic-annuler" aria-hidden="true"></span> Annuler</button><button type="button" id="b-refaire" data-tip="Rétablir ce qu'on vient d'annuler (Ctrl+Y)" disabled><span class="ic ic-refaire" aria-hidden="true"></span> Rétablir</button></span>
     </div>
-    <button type="button" id="b-moteurs" data-avance aria-expanded="false" aria-controls="moteurs" data-tip="Pour aller plus loin : écrire un programme de synthèse et le rendre en clip"><span class="ic ic-code" aria-hidden="true"></span> Faust, Csound et Pure Data</button>
-    <button type="button" id="b-niveau" class="niveau" aria-pressed="false" data-tip="Montrer tous les outils (aimant, métronome, menus, Faust...) ou garder seulement l'essentiel"><span class="ic ic-plus" aria-hidden="true"></span> <span id="b-niveau-t">Tous les outils</span></button>
+    <button type="button" id="b-niveau" class="niveau" aria-pressed="false" data-tip="Montrer tous les outils (aimant, métronome, menus...) ou garder seulement l'essentiel"><span class="ic ic-plus" aria-hidden="true"></span> <span id="b-niveau-t">Tous les outils</span></button>
   </section>
   <div class="feuille" id="feuille-ajouter" role="dialog" aria-modal="true" aria-labelledby="fa-titre" hidden>
     <div class="feuille-in"><div class="midi-haut"><h2 id="fa-titre">Ajouter à ton projet</h2><button type="button" class="croix-b" id="fa-fermer" aria-label="Fermer"><span class="croix" aria-hidden="true"></span></button></div><div class="tuiles" id="fa-corps"></div></div>
@@ -109,22 +108,6 @@
       <button type="button" id="b-notes" class="enreg" aria-pressed="false"><span class="pastille-rec" aria-hidden="true"></span> Enregistrer les notes</button></div>
     <p class="petit" id="midi-etat" role="status" aria-live="polite">Aucun clavier MIDI branché : utilise le clavier de l'ordinateur ou les touches de l'écran.</p>
     <div class="midi-clavier" id="midi-clavier" role="group" aria-label="Touches de piano"></div>
-  </section>
-  <section class="moteurs" id="moteurs" aria-label="Faust, Csound et Pure Data" hidden>
-    <div class="midi-haut"><h2>Faust, Csound et Pure Data</h2><button type="button" class="notion" data-notion="moteurs" aria-label="Comprendre : Faust, Csound et Pure Data">?</button><button type="button" class="croix-b" id="mot-fermer" aria-label="Fermer Faust et Csound"><span class="croix" aria-hidden="true"></span></button></div>
-    <p class="petit">Écris un programme dans un autre langage de synthèse et rends-le en clip sur la piste choisie. Faust est compilé ici même et rendu à l'échantillon près ; un programme Faust qui a une entrée (un effet) transforme le clip choisi. Csound est joué en direct puis enregistré : le clip dure autant que la durée demandée. Pure Data (par WebPd, en version alpha, qui ne connaît qu'une partie des objets) est rendu comme Faust ; un patch avec adc~ transforme le clip choisi. Rien n'est envoyé nulle part.</p>
-    <div class="mot-but" id="mot-but" role="group" aria-label="Que veux-tu faire ?"></div>
-    <div class="mot-filtre"><label class="mini">Chercher<input type="search" id="mot-cherche" placeholder="souffle, écho, basse, tremble..." autocomplete="off"></label><span id="mot-niveaux" role="group" aria-label="Niveau"></span></div>
-    <div class="mot-cartes" id="mot-cartes" role="list" aria-label="Exemples"></div>
-    <p class="petit" id="mot-vide" hidden>Aucun exemple ne correspond. Efface la recherche ou change de but.</p>
-    <button type="button" class="mot-voir" id="b-mot-code" aria-expanded="true">Cacher le code</button>
-    <div class="midi-rang" role="group" aria-label="Moteur"><button type="button" class="chip-m" data-mot="faust" aria-pressed="true">Faust</button><button type="button" class="chip-m" data-mot="csound" aria-pressed="false">Csound</button><button type="button" class="chip-m" data-mot="pd" aria-pressed="false">Pure Data</button>
-      <label class="mini" hidden>Exemple<select id="mot-ex" aria-label="Exemple"></select></label><label class="mini">Durée (s)<input type="number" id="mot-duree" min="1" max="30" value="3"></label></div>
-    <label class="mot-champ"><span id="mot-code-lib">Programme Faust</span><textarea id="mot-code" spellcheck="false" rows="8" autocapitalize="off" autocomplete="off"></textarea></label>
-    <label class="mot-champ" id="mot-score-zone" hidden><span>Partition Csound (une ligne i par note : i1 début durée hauteur)</span><textarea id="mot-score" spellcheck="false" rows="3" autocapitalize="off"></textarea></label>
-    <div id="mot-params" class="fx-boutons mot-params" aria-label="Réglages du programme"></div>
-    <div class="midi-rang"><button type="button" id="b-mot-compiler">Compiler</button><button type="button" id="b-mot-rendre" class="principal">Rendre en clip</button></div>
-    <p class="petit mot-etat" id="mot-etat" role="status" aria-live="polite">Choisis un exemple, ou écris ton programme.</p>
   </section>
   <section class="selection" id="selection" aria-label="Clip choisi" hidden>
     <b id="sel-nom"></b>
@@ -179,8 +162,8 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=0f0682e51a"></script>
-<script src="../barre-cours.js?v=0f0682e51a"></script>
-<script src="../retour.js?v=0f0682e51a"></script>
+<script type="module" src="pistes.js?v=136a06e79b"></script>
+<script src="../barre-cours.js?v=136a06e79b"></script>
+<script src="../retour.js?v=136a06e79b"></script>
 </body>
 </html>

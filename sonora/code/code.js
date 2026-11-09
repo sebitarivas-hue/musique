@@ -1,6 +1,8 @@
 // SONORA Code : le laboratoire de programmation musicale. Faust, Csound et Pure Data, compilés et joués dans la page (aucun envoi, aucun serveur).
 // Les moteurs et les exemples sont ceux de SONORA Pistes (../pistes/moteurs.js) ; ici, on les travaille un par un, avec de quoi apprendre.
-import * as MO from "../pistes/moteurs.js?v=0f0682e51a";
+import * as MO from "../pistes/moteurs.js?v=136a06e79b";
+import { assemblerCanaux } from "../pistes/projet.js?v=136a06e79b";
+import { Stockage as RangementPistes } from "../pistes/stockage.js?v=136a06e79b";
 
 const $ = id => document.getElementById(id), esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const LANGAGES = {
@@ -48,8 +50,10 @@ function dessinerLangage() {
   const L = LANGAGES[etat.l]; dessinerLangages();
   $("presentation").innerHTML = `<h2>${L.nom}</h2><p>${L.identite}</p>`;
   $("etapes").innerHTML = `<h3>Pour commencer, en quatre idées</h3><ol>${L.etapes.map(x => `<li>${x}</li>`).join("")}</ol>`;
-  $("lib-code").textContent = L.libelle; $("zone-score").hidden = etat.l !== "csound"; $("b-wav").hidden = etat.l === "csound" || etat.l === "js"; $("params").hidden = etat.l !== "faust";
-  $("plus").innerHTML = `<h3>Pour aller plus loin</h3><ul>${L.docs.map(([t, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul><p class="petit">Dans SONORA Pistes, le même programme se rend en clip sur une piste, pour le mixer avec d'autres sons.</p>`;
+  $("lib-code").textContent = L.libelle; $("zone-score").hidden = etat.l !== "csound"; $("params").hidden = etat.l !== "faust";
+  const site = ((window.BARRE_COURS && window.BARRE_COURS.retour) || "../../choix.html").split("#")[0];   // la page d'accueil du bon espace (enseignant ou élève)
+  const dansLeSite = etat.l === "faust" ? `<h3>Dans le site du cours</h3><ul><li><a href="${esc(site)}#faust-ateliers">Les ateliers guidés</a></li><li><a href="${esc(site)}#faust-matieres">Les matières sonores</a></li><li><a href="${esc(site)}#faust">Le laboratoire Faust</a></li><li><a href="${esc(site)}#faust-studio">Le studio Faust</a></li></ul>` : "";
+  $("plus").innerHTML = dansLeSite + `<h3>Pour aller plus loin</h3><ul>${L.docs.map(([t, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul><p class="petit">Dans SONORA Pistes, le même programme se rend en clip sur une piste, pour le mixer avec d'autres sons.</p>`;
   const n = liste(etat.l).map((x, k) => `<button type="button" class="carte" data-i="${x.i}" style="--c:${L.couleur}" aria-pressed="${x.i === etat.i}"><em>${k + 1} · ${esc(x.niv)}${x.effet ? " · transforme un son" : ""}</em><b>${esc(x.titre)}</b><span>${esc(x.texte)}</span></button>`).join("");
   $("cartes").innerHTML = n; charger(etat.i);
 }
@@ -72,6 +76,12 @@ function signalEssai(type, sr, secondes) {
 function arreter() {
   cancelAnimationFrame(etat.raf); if (etat.sortieJs) { try { etat.sortieJs.disconnect(); } catch (_) {} etat.sortieJs = null; } if (etat.source) { try { etat.source.stop(); } catch (_) {} try { etat.source.disconnect(); } catch (_) {} etat.source = null; }
   if (etat.csound) { const c = etat.csound; etat.csound = null; try { c.noeud.disconnect(); } catch (_) {} c.arreter(); }
+  finirCapture();
+}
+// Csound et JavaScript jouent en direct : on les enregistre en même temps, pour pouvoir les enregistrer en WAV ou les envoyer vers Pistes.
+function finirCapture() {
+  const c = etat.capture; if (!c) return; etat.capture = null; const canaux = assemblerCanaux(c.cap.fin()).slice(0, 2), n = canaux[0] ? canaux[0].length : 0;
+  if (n && pic(canaux) > 1e-4) { etat.dernier = { canaux, sr: c.sr }; if (!etat.occupe) dire((etat.l === "csound" ? "Csound" : "JavaScript") + " : le son est enregistré, tu peux l'enregistrer en WAV ou l'envoyer vers Pistes."); }
 }
 function scope(analyseur, duree) {
   const cv = $("scope"), g = cv.getContext("2d"), d = new Float32Array(analyseur.fftSize), fin = performance.now() + duree * 1000 + 300;
@@ -86,12 +96,16 @@ function jouerCanaux(canaux, sr) {
 }
 const pic = canaux => canaux.reduce((m, x) => { for (let i = 0; i < x.length; i += 5) m = Math.max(m, Math.abs(x[i])); return m; }, 0);
 async function faust(secondes) {
-  dire(MO.chargerFaust && !etat.faustCharge ? "Chargement du compilateur Faust (environ 6 Mo, une seule fois)…" : "Compilation…");
-  const c = await MO.compilerFaust($("code").value); etat.faustCharge = true; etat.compile = c;
-  const z = $("params"); z.innerHTML = ""; etat.valeurs = {};
-  for (const q of MO.parametresFaust(c.meta)) { etat.valeurs[q.adresse] = q.init; const id = "p" + Object.keys(etat.valeurs).length;
-    z.insertAdjacentHTML("beforeend", `<label for="${id}">${esc(q.nom)} <output id="${id}-v">${q.init}</output></label><input id="${id}" type="range" min="${q.min}" max="${q.max}" step="${q.pas || "any"}" value="${q.init}" data-a="${esc(q.adresse)}">`); }
-  z.hidden = !z.children.length;
+  // Le programme n'est recompilé que s'il a changé (ou si on vient de charger un exemple) : sinon les curseurs seraient remis à leur valeur de départ à chaque écoute, et ne serviraient à rien.
+  let c = etat.compile;
+  if (!c) {
+    dire(MO.chargerFaust && !etat.faustCharge ? "Chargement du compilateur Faust (environ 6 Mo, une seule fois)…" : "Compilation…");
+    c = await MO.compilerFaust($("code").value); etat.faustCharge = true; etat.compile = c;
+    const z = $("params"); z.innerHTML = ""; etat.valeurs = {};
+    for (const q of MO.parametresFaust(c.meta)) { etat.valeurs[q.adresse] = q.init; const id = "p" + Object.keys(etat.valeurs).length;
+      z.insertAdjacentHTML("beforeend", `<label for="${id}">${esc(q.nom)} <output id="${id}-v">${q.init}</output></label><input id="${id}" type="range" min="${q.min}" max="${q.max}" step="${q.pas || "any"}" value="${q.init}" data-a="${esc(q.adresse)}">`); }
+    z.hidden = !z.children.length;
+  }
   const ctx = contexte(), sr = ctx.sampleRate; let entrees = [];
   if (c.meta.inputs) { const x = signalEssai($("entree").value, sr, secondes); entrees = [x, x]; }
   dire("Rendu…"); const r = await MO.rendreFaust(c.gen, c.meta, { sr, secondes, entrees, valeurs: etat.valeurs }), p = pic(r.canaux);
@@ -108,15 +122,17 @@ async function pd(secondes) {
 async function csound(secondes) {
   const ctx = contexte(); dire("Chargement de Csound (environ 5 Mo, une seule fois)…");
   const moteur = await MO.lancerCsound(ctx, $("code").value, $("score").value), an = ctx.createAnalyser(); an.fftSize = 2048; moteur.noeud.connect(an); an.connect(ctx.destination); etat.csound = moteur;
+  etat.capture = { cap: await MO.ouvrirCapteur(ctx, moteur.noeud), sr: ctx.sampleRate };
   scope(an, secondes); dire(`Csound joue : ${secondes} s… (tu l'entends en direct)`);
-  setTimeout(() => { if (etat.csound === moteur) { etat.csound = null; try { moteur.noeud.disconnect(); } catch (_) {} moteur.arreter(); dire("Terminé. Change le code ou la partition, puis écoute encore."); } }, secondes * 1000 + 250);
+  setTimeout(() => { if (etat.csound === moteur) { etat.csound = null; try { moteur.noeud.disconnect(); } catch (_) {} moteur.arreter(); finirCapture(); dire("Terminé. Change le code ou la partition, puis écoute encore, ou envoie le son vers Pistes."); } }, secondes * 1000 + 250);
 }
 async function js(secondes) {
   const ctx = contexte(), sortie = ctx.createGain(), an = ctx.createAnalyser(); an.fftSize = 2048; sortie.connect(an); an.connect(ctx.destination);
   etat.sortieJs = sortie; let fn; try { fn = new Function("ctx", "sortie", "duree", $("code").value); } catch (e) { dire("Erreur d'écriture : " + e.message, true); return; }
   try { fn(ctx, sortie, secondes); } catch (e) { dire("Erreur dans le programme : " + (e && e.message || e), true); try { sortie.disconnect(); } catch (_) {} return; }
+  etat.capture = { cap: await MO.ouvrirCapteur(ctx, sortie), sr: ctx.sampleRate };
   scope(an, secondes); dire(`JavaScript joue : ${secondes} s… (tu l'entends en direct)`);
-  setTimeout(() => { if (etat.sortieJs === sortie) { dire("Terminé. Change le code, puis écoute encore."); } }, secondes * 1000 + 250);
+  setTimeout(() => { if (etat.sortieJs === sortie) { finirCapture(); dire("Terminé. Change le code, puis écoute encore, ou envoie le son vers Pistes."); } }, secondes * 1000 + 250);
 }
 async function ecouter() {
   if (etat.occupe) return; etat.occupe = true; $("b-ecouter").disabled = true; arreter();
@@ -137,6 +153,16 @@ $("b-ecouter").onclick = ecouter; $("b-stop").onclick = () => { arreter(); dire(
 $("code").oninput = $("score").oninput = () => { etat.compile = null; };
 $("params").addEventListener("input", e => { const a = e.target.dataset && e.target.dataset.a; if (!a) return; etat.valeurs[a] = +e.target.value; const o = $(e.target.id + "-v"); if (o) o.textContent = e.target.value; });
 $("b-wav").onclick = () => { if (!etat.dernier) { dire("Écoute d'abord, puis enregistre.", true); return; } const u = URL.createObjectURL(wav(etat.dernier.canaux, etat.dernier.sr)), a = document.createElement("a"); a.href = u; a.download = `sonora-${etat.l}.wav`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 5000); };
+// Envoyer vers Pistes : le même mécanisme que le Studio (clé « pistes:arrivees »), pour les quatre langages. Rien ne quitte l'appareil.
+const nomDuSon = () => { const t = etat.l === "js" ? (JS_EX[etat.i] || {}).titre : ((MO.EXEMPLES[etat.l][etat.i] || [])[0] || "").replace(/ \(effet : il lui faut un clip\)/, ""); return ("Code : " + (t || "mon programme")).slice(0, 80); };
+$("b-vers-pistes").onclick = async () => {
+  if (!etat.dernier) { dire("Écoute d'abord, puis envoie.", true); return; }
+  try { const d = etat.dernier, duree = +(d.canaux[0].length / d.sr).toFixed(2), id = "arrivee-" + Date.now().toString(36), nom = nomDuSon();
+    await RangementPistes.ecrireSon(id, { canaux: d.canaux.slice(0, 2), sr: d.sr });
+    let L = []; try { L = JSON.parse(localStorage.getItem("pistes:arrivees") || "[]"); } catch (_) {} L.push({ id, nom, duree }); localStorage.setItem("pistes:arrivees", JSON.stringify(L));
+    dire(`« ${nom} » (${duree} s) est envoyé vers Pistes.`); window.CODE_ENVOI = { id, nom, duree }; if (!window.TEST_SANS_REDIRECTION) location.href = "../pistes/index.html";
+  } catch (e) { dire("L'envoi vers Pistes n'a pas pu se faire : " + (e && e.message || e), true); }
+};
 $("code").addEventListener("keydown", e => { if (e.key === "Tab" && !e.shiftKey) { e.preventDefault(); const t = e.target, a = t.selectionStart; t.value = t.value.slice(0, a) + "  " + t.value.slice(t.selectionEnd); t.selectionStart = t.selectionEnd = a + 2; } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); ecouter(); } });
 const h = (location.hash || "").slice(1); if (LANGAGES[h]) etat.l = h;
-etat.i = liste(etat.l)[0].i; dessinerLangage(); window.CODE_PRET = true;
+etat.i = liste(etat.l)[0].i; dessinerLangage(); window.CODE_ETAT = etat; window.CODE_PRET = true;

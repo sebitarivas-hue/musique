@@ -1,27 +1,27 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=0f0682e51a";
-import * as Ed from "./editions.js?v=0f0682e51a";
-import * as P from "./projet.js?v=0f0682e51a";
-import { Stockage } from "./stockage.js?v=0f0682e51a";
-import { creerBouton } from "./bouton.js?v=0f0682e51a";
-import * as MI from "./midi.js?v=0f0682e51a";
-import * as N from "./notes.js?v=0f0682e51a";
-import { Rouleau } from "./rouleau.js?v=0f0682e51a";
-import * as BM from "./batterie_midi.js?v=0f0682e51a";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=0f0682e51a";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=0f0682e51a";
-import * as INS from "./instruments.js?v=0f0682e51a";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=0f0682e51a";
-import * as MO from "./moteurs.js?v=0f0682e51a";
-import { monterPanneaux } from "./panneaux.js?v=0f0682e51a";
-import { monterNotions } from "./notions.js?v=0f0682e51a";
-import { DEMOS } from "./demos.js?v=0f0682e51a";
-import * as B from "./bibliotheque.js?v=0f0682e51a";
-import { encoderWAV } from "../studio/wav.js?v=0f0682e51a";
-import { ENTREES } from "../library/catalogue.js?v=0f0682e51a";
-import { compiler } from "../src/index.js?v=0f0682e51a";
-import { rendre } from "../src/rendu.js?v=0f0682e51a";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=136a06e79b";
+import * as Ed from "./editions.js?v=136a06e79b";
+import * as P from "./projet.js?v=136a06e79b";
+import { Stockage } from "./stockage.js?v=136a06e79b";
+import { creerBouton } from "./bouton.js?v=136a06e79b";
+import * as MI from "./midi.js?v=136a06e79b";
+import * as N from "./notes.js?v=136a06e79b";
+import { Rouleau } from "./rouleau.js?v=136a06e79b";
+import * as BM from "./batterie_midi.js?v=136a06e79b";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=136a06e79b";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=136a06e79b";
+import * as INS from "./instruments.js?v=136a06e79b";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=136a06e79b";
+import * as MO from "./moteurs.js?v=136a06e79b";
+import { monterPanneaux } from "./panneaux.js?v=136a06e79b";
+import { monterNotions } from "./notions.js?v=136a06e79b";
+import { DEMOS } from "./demos.js?v=136a06e79b";
+import * as B from "./bibliotheque.js?v=136a06e79b";
+import { encoderWAV } from "../studio/wav.js?v=136a06e79b";
+import { ENTREES } from "../library/catalogue.js?v=136a06e79b";
+import { compiler } from "../src/index.js?v=136a06e79b";
+import { rendre } from "../src/rendu.js?v=136a06e79b";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -51,7 +51,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=0f0682e51a"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=136a06e79b"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -74,7 +74,7 @@ async function chainePiste(ctx, pi, sortie) {
     const w = ctx.createGain(); w.gain.value = e.reverb.melange; let rv = null;
     // Un délai maximum : si le navigateur (Safari en particulier) ne répond jamais à la création du nœud Faust, la lecture ne doit pas attendre pour toujours.
     try { rv = await Promise.race([reverbFaust(ctx, e.reverb.duree, e.reverb.aigus), new Promise((_, ko) => setTimeout(() => ko(new Error("délai dépassé")), 4000))]); etat.reverbMoteur = "faust"; }
-    catch (err) { rv = ctx.createConvolver(); rv.buffer = reponseSalle(ctx, e.reverb.duree); etat.reverbMoteur = "secours"; message("La réverbération Faust n'a pas pu démarrer dans ce navigateur : une réverbération de secours la remplace."); }
+    catch (err) { rv = ctx.createConvolver(); rv.buffer = reponseSalle(ctx, e.reverb.duree); etat.reverbMoteur = "secours"; message("La réverbération avancée n'a pas pu démarrer dans ce navigateur : une réverbération de secours la remplace."); }
     pre.connect(rv); rv.connect(w); w.connect(vol);
     // Une source muette reste branchée sur la réverbération : sans elle, le navigateur coupe l'entrée du nœud quand les clips s'arrêtent, et la queue de la réverbération disparaît.
     if (ctx.createConstantSource) { const veille = ctx.createConstantSource(); veille.offset.value = 0; veille.connect(rv); veille.start(); veilles.push(veille); }
@@ -158,7 +158,7 @@ function finEcoute() {
 // ---------------------------------------------------------------- enregistrement au micro
 // Deux voies en parallèle : un AudioWorklet qui recueille les échantillons bruts (précis, on compense la latence), et en filet de sécurité un MediaRecorder
 // (compressé, mais disponible là où le worklet ne répond pas, par exemple certains Safari). Si le worklet ne donne rien, on prend l'enregistrement du MediaRecorder.
-const CAPTEUR = `class Capteur extends AudioWorkletProcessor { process(e) { const c = e[0]; if (c && c.length && c[0]) this.port.postMessage(c.map(x => x.slice(0))); return true; } } registerProcessor("sonora-capteur", Capteur);`;
+const CAPTEUR = MO.CAPTEUR; // le capteur est partagé avec SONORA Code (pistes/moteurs.js)
 const MICRO_ERREURS = { NotAllowedError: "Micro refusé. Autorise-le : sur iPhone, Réglages, Safari (ou ton navigateur), Micro ; sur ordinateur, l'icône à gauche de la barre d'adresse.", SecurityError: "Micro refusé : la page doit être ouverte en https.", NotFoundError: "Aucun micro n'a été trouvé sur cet appareil.", NotReadableError: "Le micro est utilisé par une autre application. Ferme-la puis recommence.", OverconstrainedError: "Ce micro n'accepte pas les réglages demandés." };
 const arretRecorder = rec => new Promise(ok => { if (!rec || rec.state === "inactive") return ok(); rec.addEventListener("stop", () => ok(), { once: true }); try { rec.stop(); } catch (_) { ok(); } });
 function abandonnerCapture(texte) {
@@ -477,112 +477,7 @@ $("fichier-midi").onchange = async e => {
   changer(); await remettreAJourMidi(); message(`${m.pistes.length} piste${m.pistes.length > 1 ? "s" : ""} de notes importée${m.pistes.length > 1 ? "s" : ""}, à ${p.tempo} par minute. Double-clique un clip pour voir et changer ses notes.`);
 };
 
-// ---------------------------------------------------------------- Faust et Csound : un programme rendu en clip (voir moteurs.js)
-const mot = etat.moteurs = { ouvert: false, langage: "faust", compile: null, valeurs: {}, occupe: false };
-const motDire = t => { $("mot-etat").textContent = t; };
-function motExemple(i) {
-  const ex = MO.EXEMPLES[mot.langage][i]; if (!ex) return; $("mot-code").value = ex[1]; $("mot-score").value = ex[2] || ""; mot.compile = null; $("mot-params").innerHTML = ""; motDire(`Exemple « ${ex[0]} » chargé.`);
-}
-// Le catalogue : un but, un niveau, une recherche, des cartes. Toucher une carte change de moteur et charge l'exemple (le <select> caché reste synchronisé).
-const motFiltre = { but: "", niveau: "", q: "" };
-const motNorm = t => String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-function motCartes() {
-  const z = $("mot-cartes"), n = motNorm(motFiltre.q).trim(); let html = "", compte = 0;
-  for (const l of ["faust", "pd", "csound"]) MO.EXEMPLES[l].forEach((e, i) => {
-    const [but, niv, txt] = MO.CATALOGUE[l][i], eff = /effet/.test(e[0]);
-    if (motFiltre.but && but !== motFiltre.but) return; if (motFiltre.niveau && niv !== motFiltre.niveau) return;
-    if (n && !motNorm(`${e[0]} ${txt} ${but} ${niv} ${l === "pd" ? "pure data" : l}`).includes(n)) return;
-    compte++; const actif = mot.langage === l && mot.indice === i;
-    html += `<button type="button" role="listitem" class="mot-carte" data-l="${l}" data-i="${i}" aria-pressed="${actif}"><b>${esc(e[0].replace(/ \(effet : il lui faut un clip\)/, ""))}</b><span>${esc(txt)}</span><em>${l === "pd" ? "Pure Data" : l === "faust" ? "Faust" : "Csound"} · ${esc(niv)}${eff ? " · transforme un clip" : ""}</em></button>`;
-  });
-  z.innerHTML = html; $("mot-vide").hidden = compte > 0;
-}
-function motEntrees() {
-  $("mot-but").innerHTML = ["Créer un son", "Transformer un son", "Créer un instrument", "Créer une séquence", "Programmer librement"].map(b => `<button type="button" class="chip-m" data-but="${b}" aria-pressed="${motFiltre.but === b}">${b}</button>`).join("");
-  $("mot-niveaux").innerHTML = MO.NIVEAUX.map(b => `<button type="button" class="chip-m" data-niv="${b}" aria-pressed="${motFiltre.niveau === b}">${b}</button>`).join("");
-}
-$("mot-but").onclick = e => { const b = e.target.closest("[data-but]"); if (!b) return; if (b.dataset.but === "Programmer librement") { motFiltre.but = ""; $("mot-code").value = ""; $("mot-score").value = ""; mot.compile = null; $("mot-params").innerHTML = ""; mot.indice = -1; motCode(true); motDire("Page blanche : écris ton programme, puis Compiler."); $("mot-code").focus(); } else motFiltre.but = motFiltre.but === b.dataset.but ? "" : b.dataset.but; motEntrees(); motCartes(); };
-$("mot-niveaux").onclick = e => { const b = e.target.closest("[data-niv]"); if (!b) return; motFiltre.niveau = motFiltre.niveau === b.dataset.niv ? "" : b.dataset.niv; motEntrees(); motCartes(); };
-$("mot-cherche").oninput = e => { motFiltre.q = e.target.value; motCartes(); };
-$("mot-cartes").onclick = e => { const b = e.target.closest(".mot-carte"); if (!b) return; motLangage(b.dataset.l, +b.dataset.i); if (mobile.matches) $("b-mot-rendre").scrollIntoView({ block: "center", behavior: "smooth" }); };
-function motCode(voir) { $("moteurs").classList.toggle("sans-code", !voir); $("b-mot-code").setAttribute("aria-expanded", String(voir)); $("b-mot-code").textContent = voir ? "Cacher le code" : "Voir le code"; }
-$("b-mot-code").onclick = () => motCode($("moteurs").classList.contains("sans-code"));
-function motLangage(l, i = 0) {
-  mot.langage = l; mot.compile = null; document.querySelectorAll(".chip-m[data-mot]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mot === l)));
-  $("mot-ex").innerHTML = MO.EXEMPLES[l].map((e, i) => `<option value="${i}">${esc(e[0])}</option>`).join(""); $("mot-score-zone").hidden = l !== "csound"; $("mot-code-lib").textContent = l === "faust" ? "Programme Faust" : l === "pd" ? "Patch Pure Data (texte .pd, tu peux coller le contenu d'un fichier)" : "Orchestre Csound (SONORA fixe sr, ksmps, nchnls et 0dbfs)";
-  $("b-mot-compiler").hidden = l === "csound"; $("mot-params").hidden = l !== "faust"; $("mot-ex").value = String(i); mot.indice = i; motExemple(i); motCartes();
-}
-function basculerMoteurs(ouvrir) {
-  mot.ouvert = ouvrir === undefined ? !mot.ouvert : ouvrir; $("moteurs").hidden = !mot.ouvert; $("b-moteurs").setAttribute("aria-expanded", String(mot.ouvert));
-  if (mot.ouvert) { if (!$("mot-ex").options.length) { motEntrees(); motLangage(mot.langage); motCode(!mobile.matches); } $("moteurs").scrollIntoView({ block: "nearest" }); }
-}
-$("b-moteurs").onclick = () => basculerMoteurs(); $("mot-fermer").onclick = () => basculerMoteurs(false);
-document.querySelectorAll(".chip-m[data-mot]").forEach(b => b.onclick = () => motLangage(b.dataset.mot)); $("mot-ex").onchange = e => { mot.indice = +e.target.value; motExemple(+e.target.value); motCartes(); };
-$("mot-code").oninput = () => { mot.compile = null; };
-async function motCompilerPd() {
-  motDire(mot.chargePd ? "Compilation…" : "Chargement du compilateur Pure Data (environ 400 Ko, une seule fois)…");
-  const c = await MO.compilerPatchPd($("mot-code").value, 44100); mot.chargePd = true; mot.compilePd = c;
-  motDire(`Compilé (WebPd) : ${c.entrees ? "patch à entrée (adc~) : il transforme le clip choisi." : "patch sans entrée : il fabrique un son."}${c.avertissements && c.avertissements.length ? "\nAvertissements : " + c.avertissements.slice(0, 2).join(" ; ") : ""}`); return c;
-}
-async function motRendrePd() {
-  const c = await motCompilerPd(), secondes = Math.max(1, Math.min(30, +$("mot-duree").value || 3)), piste = pistesArmees()[0];
-  let entree = null, sr = 44100, debut = etat.tete, longueur = secondes, clip = null;
-  if (c.entrees) { clip = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!clip) { motDire("Ce patch a une entrée (adc~) : choisis d'abord un clip (clique dessus), il sera transformé. Le clip d'origine est gardé."); return; }
-    const d = etat.buffers[clip.clip.son]; sr = d.sr; const a = Math.floor(clip.clip.decalage * sr), n = Math.floor(clip.clip.duree * sr); entree = d.canaux[0].subarray(a, a + n); debut = clip.clip.debut; longueur = clip.clip.duree + Math.min(secondes, 2); }
-  motDire("Rendu…"); const r = MO.rendrePd(c.js, { sr, secondes: longueur, entree });
-  const pic = r.canaux.reduce((m, x) => { for (let i = 0; i < x.length; i += 7) m = Math.max(m, Math.abs(x[i])); return m; }, 0);
-  if (!(pic > 1e-4)) { motDire("Le patch ne produit aucun son (silence). Vérifie qu'il y a un dac~ relié à un signal, et que les objets sont ceux que WebPd connaît."); return; }
-  const num = Object.values(etat.projet.sons).filter(x => x.nom.startsWith("Pure Data ")).length + 1, p = motPlacer(`Pure Data ${num}${clip ? " (effet)" : ""}`, r.canaux, sr, debut, clip ? clip.piste.id : piste.id);
-  motDire(`Pure Data : clip de ${p.duree.toFixed(1).replace(".", ",")} s sur la piste${pic > 1 ? ". Attention : le signal dépasse 0 dB, baisse le volume dans ton patch." : "."}`); etat.dernierMoteur = { langage: "pd", duree: p.duree, pic, entrees: c.entrees }; etat.aReecouter = (etat.aReecouter || []).concat(p.id); changer();
-}
-async function motCompiler() {
-  motDire(MO.chargerFaust && !mot.charge ? "Chargement du compilateur Faust (environ 6 Mo, une seule fois)…" : "Compilation…");
-  const c = await MO.compilerFaust($("mot-code").value); mot.charge = true; mot.compile = c; mot.valeurs = {};
-  const z = $("mot-params"); z.innerHTML = ""; for (const q of MO.parametresFaust(c.meta)) {
-    mot.valeurs[q.adresse] = q.init; z.appendChild(creerBouton({ libelle: q.nom, nom: q.nom, min: q.min, max: q.max, valeur: q.init, def: q.init, pas: q.type === "nentry" || q.pas < 1 ? q.pas : 0, log: false, taille: 48, donnee: "faust:" + q.adresse, format: v => (Math.abs(v) >= 100 ? String(Math.round(v)) : String(Math.round(v * 100) / 100).replace(".", ",")), onInput: v => { mot.valeurs[q.adresse] = v; } }));
-  }
-  motDire(`Compilé (Faust ${c.version}) : ${c.meta.inputs} entrée${c.meta.inputs > 1 ? "s" : ""}, ${c.meta.outputs} sortie${c.meta.outputs > 1 ? "s" : ""}${c.meta.inputs ? ". Programme à entrée : il transforme le clip choisi." : ". Programme sans entrée : il fabrique un son."}`); return c;
-}
-$("b-mot-compiler").onclick = async () => { if (mot.occupe) return; mot.occupe = true; try { if (mot.langage === "pd") await motCompilerPd(); else await motCompiler(); } catch (e) { motDire(e.message); } finally { mot.occupe = false; } };
-function motPlacer(nom, canaux, sr, debut, pisteId) {
-  const id = ajouterAudio(nom, canaux, sr), duree = canaux[0].length / sr; P.placerClip(etat.projet, P.pisteLibre(etat.projet, pisteId, debut, duree), id, debut); return { id, duree };
-}
-async function motRendreFaust() {
-  const c = mot.compile || await motCompiler(), secondes = Math.max(1, Math.min(30, +$("mot-duree").value || 3)), piste = pistesArmees()[0];
-  let entrees = [], sr = 44100, debut = etat.tete, longueur = secondes, clip = null;
-  if (c.meta.inputs) {
-    clip = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!clip) { motDire("Ce programme a une entrée : choisis d'abord un clip (clique dessus), il sera transformé. Le clip d'origine est gardé."); return; }
-    const d = etat.buffers[clip.clip.son]; sr = d.sr; const a = Math.floor(clip.clip.decalage * sr), n = Math.floor(clip.clip.duree * sr); entrees = d.canaux.map(x => x.subarray(a, a + n)); debut = clip.clip.debut; longueur = clip.clip.duree + Math.min(secondes, 4); // une queue pour un écho ou une résonance
-  }
-  motDire("Rendu…"); const r = await MO.rendreFaust(c.gen, c.meta, { sr, secondes: longueur, entrees, valeurs: mot.valeurs });
-  const pic = r.canaux.reduce((m, x) => { for (let i = 0; i < x.length; i += 7) m = Math.max(m, Math.abs(x[i])); return m; }, 0);
-  if (!(pic > 1e-4)) { motDire("Le programme ne produit aucun son (silence). Vérifie les réglages, ou qu'il y a bien un signal en sortie."); return; }
-  const num = Object.values(etat.projet.sons).filter(x => x.nom.startsWith("Faust ")).length + 1, canaux = r.canaux.length > 2 ? r.canaux.slice(0, 2) : r.canaux;
-  const p = motPlacer(`Faust ${num}${clip ? " (effet)" : ""}`, canaux, sr, debut, clip ? clip.piste.id : piste.id);
-  motDire(`Faust : clip de ${p.duree.toFixed(1).replace(".", ",")} s sur la piste${pic > 1 ? ". Attention : le signal dépasse 0 dB, baisse le volume dans ton programme." : "."}`); etat.dernierMoteur = { langage: "faust", duree: p.duree, pic, entrees: c.meta.inputs, valeurs: { ...mot.valeurs } }; etat.aReecouter = (etat.aReecouter || []).concat(p.id); changer();
-}
-async function motRendreCsound() {
-  const secondes = Math.max(1, Math.min(30, +$("mot-duree").value || 3)), piste = pistesArmees()[0], ctx = contexte();
-  if (ctx.state !== "running") { try { await Promise.race([ctx.resume(), new Promise(ok => setTimeout(ok, 1500))]); } catch (_) {} }
-  motDire("Chargement de Csound (environ 5 Mo, une seule fois)…"); let moteur = null, capteur = null, muet = null;
-  try {
-    if (!etat.capteurPret) { const url = URL.createObjectURL(new Blob([CAPTEUR], { type: "text/javascript" })); await ctx.audioWorklet.addModule(url); etat.capteurPret = true; }
-    const morceaux = []; capteur = new AudioWorkletNode(ctx, "sonora-capteur", { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1], channelCountMode: "max" }); muet = ctx.createGain(); muet.gain.value = 0; capteur.port.onmessage = ev => morceaux.push(ev.data); capteur.connect(muet).connect(ctx.destination);
-    moteur = await MO.lancerCsound(ctx, $("mot-code").value, $("mot-score").value); moteur.noeud.connect(capteur); moteur.noeud.connect(ctx.destination);
-    motDire(`Csound joue et s'enregistre : ${secondes} s… (tu l'entends)`); await new Promise(ok => setTimeout(ok, secondes * 1000 + 250));
-    try { moteur.noeud.disconnect(); } catch (_) {} await moteur.arreter(); moteur = null; try { capteur.disconnect(); muet.disconnect(); } catch (_) {}
-    const canaux = P.assemblerCanaux(morceaux).slice(0, 2), n = canaux[0] ? canaux[0].length : 0, pic = canaux.reduce((m, x) => { for (let i = 0; i < x.length; i += 7) m = Math.max(m, Math.abs(x[i])); return m; }, 0);
-    if (!n || !(pic > 1e-4)) { motDire("Csound n'a produit aucun son (silence). Vérifie la partition : une ligne comme « i1 0 2 440 », et que l'orchestre sort du son avec outs."); return; }
-    const num = Object.values(etat.projet.sons).filter(x => x.nom.startsWith("Csound ")).length + 1, p = motPlacer(`Csound ${num}`, canaux, ctx.sampleRate, etat.tete, piste.id);
-    motDire(`Csound : clip de ${p.duree.toFixed(1).replace(".", ",")} s sur la piste.`); etat.dernierMoteur = { langage: "csound", duree: p.duree, pic }; etat.aReecouter = (etat.aReecouter || []).concat(p.id); changer();
-  } finally { if (moteur) { try { moteur.noeud.disconnect(); } catch (_) {} await moteur.arreter(); } }
-}
-$("b-mot-rendre").onclick = async () => {
-  if (mot.occupe) return; mot.occupe = true; $("b-mot-rendre").disabled = true;
-  try { if (mot.langage === "faust") await motRendreFaust(); else if (mot.langage === "pd") await motRendrePd(); else await motRendreCsound(); }
-  catch (e) { motDire((e && e.message || String(e)).slice(0, 600)); }
-  finally { mot.occupe = false; $("b-mot-rendre").disabled = false; }
-};
+// (Le panneau « Faust, Csound et Pure Data » a déménagé dans SONORA Code, qui envoie le son vers Pistes : décision de Sébastien, 09/11/2026.)
 
 // ---------------------------------------------------------------- historique : annuler et rétablir
 // On range une copie du projet à chaque changement. Les sons sont immuables (un effet crée un nouveau son), donc revenir en arrière ne perd jamais d'audio.
@@ -796,7 +691,6 @@ function deplacerPourTelephone() {
     for (const id of ["fichiers", "fichier-midi"]) deplacer($(id).closest("label"), A);
     for (const id of ["b-biblio", "b-pas", "b-midi", "b-piste"]) deplacer($(id), A);
     const son = groupe(A, "tuile-son"); deplacer($("choix-sonora").closest("label"), son); deplacer($("b-ajout-sonora"), son);
-    deplacer($("b-moteurs"), A);   // Faust, Csound et Pure Data : pour aller plus loin, donc en dernier
     for (const id of ["tempo", "aimant", "metro", "multi", "entree-audio"]) for (const e of avecAide($(id).closest("label"))) deplacer(e, R);
     const z = document.createElement("div"); z.className = "rl-groupe"; z.innerHTML = "<span>Zoom de la règle</span>"; R.appendChild(z); deplacer($("b-zoom-moins"), z); deplacer($("b-zoom-plus"), z);
     deplacer($("b-debut"), R); deplacer($("b-export"), R); deplacer($("b-export-midi"), R); deplacer($("b-nouveau"), R);
@@ -813,7 +707,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") fermerFeuill
 // ---------------------------------------------------------------- Démonstrations : Pistes fait l'exemple lui-même (demos.js). Le projet de l'élève est mis de côté dans « Mes projets ».
 async function commencerDemo(titre, tempo) {
   if (etat.lecture) arreter();
-  for (const [x, b] of [["biblio", "b-biblio"], ["pas", "b-pas"], ["midi", "b-midi"], ["moteurs", "b-moteurs"], ["projets", "b-projets"]]) { const z = $(x); if (z && !z.hidden) { z.hidden = true; $(b).setAttribute("aria-expanded", "false"); } }
+  for (const [x, b] of [["biblio", "b-biblio"], ["pas", "b-pas"], ["midi", "b-midi"], ["projets", "b-projets"]]) { const z = $(x); if (z && !z.hidden) { z.hidden = true; $(b).setAttribute("aria-expanded", "false"); } }
   if (window.PISTES_PANNEAUX && window.PISTES_PANNEAUX.S.boucle) $("pas-ecouter").click();
   const vide = etat.projet.pistes.every(p => p.clips.length === 0), enDemo = /^Démo : /.test(etat.projet.titre || "");
   if (!vide && !enDemo && !etat.retourDemo) { await sauverMaintenant(); etat.retourDemo = { id: etat.projet.id, titre: etat.projet.titre || "Sans titre" }; }
@@ -1012,7 +906,7 @@ const EXEC = {
   couper: () => etat.choisi ? $("b-couper").click() : sansClip(), dupliquer: () => etat.choisi ? $("b-dupliquer").click() : sansClip(), supprimer: () => etat.choisi ? $("b-supprimer").click() : sansClip(),
   deselectionner: () => { etat.choisi = null; afficher(); },
   lire: () => lire(), debut: () => $("b-debut").click(), enregistrer: () => enregistrer(), metronome: () => { $("metro").checked = !$("metro").checked; message("Métronome " + ($("metro").checked ? "activé" : "coupé") + "."); },
-  "piste-ajouter": () => $("b-piste").click(), midi: () => basculerMidi(), moteurs: () => basculerMoteurs(),
+  "piste-ajouter": () => $("b-piste").click(), midi: () => basculerMidi(),
   "piste-haut": () => { const L = etat.projet.pistes, i = Math.max(0, L.findIndex(x => x.id === etat.arme) - 1); etat.arme = L[i].id; afficher(); }, "piste-bas": () => { const L = etat.projet.pistes, i = Math.min(L.length - 1, L.findIndex(x => x.id === etat.arme) + 1); etat.arme = L[i].id; afficher(); },
   "piste-muet": () => { const pi = pisteActive(); if (pi) { pi.muet = !pi.muet; changer(); } }, "piste-solo": () => { const pi = pisteActive(); if (pi) { pi.solo = !pi.solo; changer(); } },
   "zoom-plus": () => $("b-zoom-plus").click(), "zoom-moins": () => $("b-zoom-moins").click(), "zoom-tout": () => { etat.pxs = 60; afficher(); },
