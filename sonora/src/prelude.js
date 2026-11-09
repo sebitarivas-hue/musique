@@ -34,12 +34,6 @@ export const COMPOSITES = {
     soit s4 = lib_toutpasse(s3, a)
     rend mix(x, s4, melange)
 }`,
-  sature: `fonction sature(x : Audio, gain : dB) : Audio {
-    rend tanh(x * lin(gain))
-}`,
-  ecrete: `fonction ecrete(x : Audio, gain : dB) : Audio {
-    rend clamp(x * lin(gain), -1, 1)
-}`,
   panoramique: `fonction panoramique(x : Audio, position : Ratio) : Audio[2] {
     soit angle = (clamp(position, -1, 1) + 1) * 0.7853981633974483
     rend [x * cos(angle), x * sin(angle)]

@@ -1,13 +1,15 @@
 // Génération de code : un graphe optimisé devient une fonction JavaScript `creer(sr)` qui renvoie un noyau de calcul.
 // Le noyau ne fait aucune allocation dans `traiter`. Les contrôles sont évalués tous les 32 échantillons puis interpolés.
 // Un module polyphonique donne deux noyaux : celui d'une voix (instancié une fois par voix) et le noyau maître (qui reçoit la somme des voix).
-import { tardive } from "./graphe.js?v=8849c5d49e";
+import { tardive } from "./graphe.js?v=a492c6d601";
 
 export const SOUS_BLOC = 32;
 const nombre = v => { const s = String(v); return v < 0 || Object.is(v, -0) ? `(${s})` : s; };
 const CHAMPS_NOTE = { hauteur: 0, vitesse: 1, porte: 2, id: 3 };
 const FORMES_LFO = ["sinus", "triangle", "carre", "dent"];
 const MODULES_FILTRE = new Set(["passe_bas", "passe_haut", "passe_bande", "coupe_bande", "pic"]);
+// Distorsions suréchantillonnées 4 fois : le gain est lu à la cadence de contrôle, l'entrée à la cadence audio.
+const MODULES_OS = new Set(["sature", "ecrete"]);
 
 function expression(n, R, accord) {
   const [a, b, c] = n.args.map(R);
@@ -74,8 +76,8 @@ export function genererNoyau(info, g, racines, diags, role = "complet") {
   const interp = new Set();
   const noterAudio = id => { if (N[id].r === "k") interp.add(id); };
   racines.forEach(noterAudio);
-  for (const n of N) if (n.r === "a" || (n.op === "prim" && !MODULES_FILTRE.has(n.nom) && n.nom !== "adsr" && n.nom !== "lfo")) n.args.forEach(noterAudio);
-  for (const n of N) if (n.op === "prim" && MODULES_FILTRE.has(n.nom)) noterAudio(n.args[0]);
+  for (const n of N) if (n.r === "a" || (n.op === "prim" && !MODULES_FILTRE.has(n.nom) && !MODULES_OS.has(n.nom) && n.nom !== "adsr" && n.nom !== "lfo")) n.args.forEach(noterAudio);
+  for (const n of N) if (n.op === "prim" && (MODULES_FILTRE.has(n.nom) || MODULES_OS.has(n.nom))) noterAudio(n.args[0]);
 
   const R_ctrl = id => N[id].op === "const" ? nombre(N[id].val) : N[id].r === "c" ? `c${id}` : `k${id}`;
   const R_audio = id => N[id].op === "const" ? nombre(N[id].val) : N[id].r === "c" ? `c${id}` : N[id].r === "k" ? `ki${id}` : `a${id}`;
@@ -215,6 +217,25 @@ export function genererNoyau(info, g, racines, diags, role = "complet") {
         audio.push(`const x${id} = ${x}; let a${id} = b0_${id} * x${id} + s1_${id};
         if (a${id} - a${id} !== 0) { s1_${id} = 0; s2_${id} = 0; incidents++; a${id} = 0; }
         else { s1_${id} = b1_${id} * x${id} - c1_${id} * a${id} + s2_${id}; s2_${id} = b2_${id} * x${id} - c2_${id} * a${id}; if (s1_${id} < 1e-20 && s1_${id} > -1e-20) s1_${id} = 0; if (s2_${id} < 1e-20 && s2_${id} > -1e-20) s2_${id} = 0; }`);
+        continue;
+      }
+      if (MODULES_OS.has(nom)) {
+        // Distorsion suréchantillonnée 4 fois. Le signal d'entrée passe tel quel (retardé de 16 échantillons, le retard de la chaîne) ; seule la DIFFÉRENCE entre la distorsion et le
+        // signal amplifié (nulle sous le seuil de l'écrêtage, petite pour tanh à petit niveau) traverse les filtres : elle est calculée à 4 fois la cadence, filtrée par un passe-bas
+        // (fenêtre de Kaiser, 65 coefficients, coupure à la moitié de la cadence d'origine), puis ramenée à la cadence d'origine. Les harmoniques créés au-delà de la moitié de la
+        // cadence sont ainsi retirés avant de se replier. Latence : 16 échantillons.
+        dansCreer(`let g${id} = 1, wn${id} = 0, we${id} = 0; const xr${id} = new Float64Array(32), er${id} = new Float64Array(128), hf${id} = new Float64Array(65);
+        { const I0 = x => { let s = 1, t = 1; for (let k = 1; k < 40; k++) { t *= (x / (2 * k)) * (x / (2 * k)); s += t; } return s; }; let somme = 0;
+          for (let i = 0; i < 65; i++) { const m = i - 32, sinc = m === 0 ? 0.25 : Math.sin(Math.PI * m / 4) / (Math.PI * m); hf${id}[i] = sinc * I0(9 * Math.sqrt(1 - (m / 32) * (m / 32))) / I0(9); somme += hf${id}[i]; }
+          for (let i = 0; i < 65; i++) hf${id}[i] /= somme; }`);
+        reinit.push(`xr${id}.fill(0); er${id}.fill(0); wn${id} = 0; we${id} = 0;`);
+        ctrl.push(`g${id} = Math.pow(10, ${R_ctrl(a[1])} / 20);`);
+        const nl = nom === "sature" ? `Math.tanh(v)` : `(v > 1 ? 1 : v < -1 ? -1 : v)`;
+        audio.push(`let x${id} = ${R(a[0])}; if (x${id} - x${id} !== 0) { incidents++; x${id} = 0; }
+        xr${id}[wn${id}] = x${id};
+        for (let k = 0; k < 4; k++) { let u = 0; for (let q = 0, i = k; i < 65; q++, i += 4) u += hf${id}[i] * xr${id}[(wn${id} - q) & 31]; const v = 4 * u * g${id}; er${id}[(we${id} + k) & 127] = ${nl} - v; }
+        let d${id} = 0; for (let j = 0; j < 65; j++) d${id} += hf${id}[j] * er${id}[(we${id} - j) & 127];
+        const a${id} = g${id} * xr${id}[(wn${id} - 16) & 31] + d${id}; wn${id} = (wn${id} + 1) & 31; we${id} = (we${id} + 4) & 127;`);
         continue;
       }
       if (nom === "z1") {
