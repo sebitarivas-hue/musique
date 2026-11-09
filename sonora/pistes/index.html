@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=a492c6d601">
-<link rel="stylesheet" href="pistes.css?v=a492c6d601"><link rel="stylesheet" href="notions.css?v=a492c6d601">
+<link rel="stylesheet" href="../studio/studio.css?v=06afd88475">
+<link rel="stylesheet" href="pistes.css?v=06afd88475"><link rel="stylesheet" href="notions.css?v=06afd88475">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -134,7 +134,14 @@
       <button type="button" id="rl-vider" data-tip="Enlever toutes les notes de ce clip"><span class="ic ic-gomme" aria-hidden="true"></span> Tout effacer</button>
       <button type="button" id="rl-fin" class="principal"><span class="ic ic-ok" aria-hidden="true"></span> Terminé</button>
     </div>
-    <p class="petit" id="rl-aide">Clique dans la grille pour poser une note. Clique une note pour la choisir, glisse-la pour la déplacer, tire son bord droit pour l'allonger. Les flèches la déplacent, + et - l'allongent.</p>
+    <div class="rl-haut rl-haut2" role="group" aria-label="Outils du piano roll">
+      <label class="mini" data-tip="Le son qui joue ces notes : le changer refait l'audio du clip">Instrument<select id="rl-instrument" aria-label="Instrument du clip"></select></label>
+      <label class="mini" data-tip="Éclairer les notes d'une gamme sur le piano roll, pour composer dans une tonalité">Gamme<select id="rl-tonique" aria-label="Tonique de la gamme"><option value="0">do</option><option value="1">do♯</option><option value="2">ré</option><option value="3">ré♯</option><option value="4">mi</option><option value="5">fa</option><option value="6">fa♯</option><option value="7">sol</option><option value="8">sol♯</option><option value="9">la</option><option value="10">la♯</option><option value="11">si</option></select><select id="rl-mode" aria-label="Mode de la gamme"><option value="aucune">aucune</option><option value="majeur">majeur</option><option value="mineur">mineur</option><option value="dorien">dorien</option><option value="mixolydien">mixolydien</option><option value="pentatonique majeure">pentatonique majeure</option><option value="pentatonique mineure">pentatonique mineure</option><option value="blues">blues</option></select></label>
+      <span class="rl-groupe" role="group" aria-label="Zoom du piano roll"><button type="button" id="rl-zoom-moins" aria-label="Zoom arrière" data-tip="Voir plus de temps (Ctrl + molette)">&minus;</button><output id="rl-zoom" aria-live="polite">100 %</output><button type="button" id="rl-zoom-plus" aria-label="Zoom avant" data-tip="Voir les notes plus larges (Ctrl + molette)">+</button></span>
+      <span class="rl-groupe" role="group" aria-label="Transposer"><button type="button" id="rl-octave-moins" data-tip="Descendre les notes choisies (toutes s'il n'y en a pas) d'une octave : Maj + flèche du bas">&minus; octave</button><button type="button" id="rl-octave-plus" data-tip="Monter d'une octave : Maj + flèche du haut">+ octave</button></span>
+      <span class="rl-groupe" role="group" aria-label="Notes choisies"><button type="button" id="rl-tout" data-tip="Choisir toutes les notes (Ctrl+A)">Tout choisir</button><button type="button" id="rl-copier" disabled data-tip="Copier les notes choisies (Ctrl+C)">Copier</button><button type="button" id="rl-coller" data-tip="Coller au repère, la flèche de la règle (Ctrl+V)">Coller</button><button type="button" id="rl-dupliquer" disabled data-tip="Dupliquer les notes choisies juste après (Ctrl+D)">Dupliquer</button></span>
+    </div>
+    <p class="petit" id="rl-aide">Clique dans la grille pour poser une note. Glisse dans le vide pour en choisir plusieurs (Maj ou Ctrl pour en ajouter). Glisse les notes choisies pour les déplacer, tire le bord droit pour les allonger, le bord gauche pour les raccourcir. Clique la règle pour placer le repère (où l'on colle et d'où l'on écoute). Les barres du bas règlent la vitesse de chaque note. Flèches : un pas ; Maj + haut ou bas : une octave ; Ctrl + C, X, V, D, A : copier, couper, coller, dupliquer, tout choisir.</p>
     <div id="rl-corps" class="rl"></div>
   </section>
   <section class="auto" id="auto" aria-label="Courbes de la piste" hidden>
@@ -164,8 +171,8 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=a492c6d601"></script>
-<script src="../barre-cours.js?v=a492c6d601"></script>
-<script src="../retour.js?v=a492c6d601"></script>
+<script type="module" src="pistes.js?v=06afd88475"></script>
+<script src="../barre-cours.js?v=06afd88475"></script>
+<script src="../retour.js?v=06afd88475"></script>
 </body>
 </html>

@@ -464,3 +464,17 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .lasso { position: absolute; z-index: 5; pointer-events: none; border: 1.5px dashed var(--bleu, #4C9BF5); background: rgba(76,155,245,.15); }
 .clip[data-zone="copier"] { cursor: copy; }
 #voies { position: relative; }
+
+/* Piano roll : règle des mesures, barres de vitesse, gamme éclairée, sélection multiple, repère et tête de lecture */
+.rl-haut2 { margin-top: 6px; } .rl-haut2 select { min-height: 36px; }
+.rl { display: flex; flex-direction: column; gap: 0; }
+.rl-ligne { display: flex; align-items: stretch; background: #151518; border: 1px solid var(--daw-trait); } .rl-ligne-regle { border-bottom: 0; border-radius: 10px 10px 0 0; } .rl-ligne-vel { border-top: 0; border-radius: 0 0 10px 10px; }
+.rl-cale { flex: none; font: 600 .62rem system-ui, sans-serif; color: var(--daw-doux); display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; text-transform: uppercase; letter-spacing: .04em; }
+.rl-regle, .rl-vel-zone { flex: 1; overflow: hidden; } .rl-regle-svg, .rl-vel-svg { display: block; } .rl-regle-svg { cursor: pointer; }
+.rl-regle-fond { fill: #1c1c21; } .rl-regle-mesure { stroke: rgba(255,255,255,.55); stroke-width: 1.2; } .rl-regle-temps { stroke: rgba(255,255,255,.3); } .rl-regle-num { font: 700 11px system-ui, sans-serif; fill: #ECEBE4; pointer-events: none; }
+.rl-vel-fond { fill: #17171b; } .rl-vel-repere { stroke: rgba(255,255,255,.07); } .rl-vel { stroke: #14130f; stroke-width: 1; cursor: ns-resize; fill-opacity: .9; } .rl-vel.rl-vel-choisie { stroke: #fff; stroke-width: 2; }
+.rl-corps { border-radius: 0; }
+.rl-dans { fill: #2b2b33; } .rl-tonique { fill: #34343f; }
+.rl-lasso { fill: rgba(76,155,245,.18); stroke: #4C9BF5; stroke-dasharray: 4 3; pointer-events: none; }
+.rl-repere { stroke: #4C9BF5; stroke-width: 1.5; stroke-dasharray: 5 3; pointer-events: none; } .rl-repere-pointe { fill: #4C9BF5; }
+.rl-tete { stroke: #FF5638; stroke-width: 2; pointer-events: none; }
