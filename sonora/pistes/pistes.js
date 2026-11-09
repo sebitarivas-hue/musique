@@ -1,27 +1,27 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=136a06e79b";
-import * as Ed from "./editions.js?v=136a06e79b";
-import * as P from "./projet.js?v=136a06e79b";
-import { Stockage } from "./stockage.js?v=136a06e79b";
-import { creerBouton } from "./bouton.js?v=136a06e79b";
-import * as MI from "./midi.js?v=136a06e79b";
-import * as N from "./notes.js?v=136a06e79b";
-import { Rouleau } from "./rouleau.js?v=136a06e79b";
-import * as BM from "./batterie_midi.js?v=136a06e79b";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=136a06e79b";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=136a06e79b";
-import * as INS from "./instruments.js?v=136a06e79b";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=136a06e79b";
-import * as MO from "./moteurs.js?v=136a06e79b";
-import { monterPanneaux } from "./panneaux.js?v=136a06e79b";
-import { monterNotions } from "./notions.js?v=136a06e79b";
-import { DEMOS } from "./demos.js?v=136a06e79b";
-import * as B from "./bibliotheque.js?v=136a06e79b";
-import { encoderWAV } from "../studio/wav.js?v=136a06e79b";
-import { ENTREES } from "../library/catalogue.js?v=136a06e79b";
-import { compiler } from "../src/index.js?v=136a06e79b";
-import { rendre } from "../src/rendu.js?v=136a06e79b";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=b9fea21f70";
+import * as Ed from "./editions.js?v=b9fea21f70";
+import * as P from "./projet.js?v=b9fea21f70";
+import { Stockage } from "./stockage.js?v=b9fea21f70";
+import { creerBouton } from "./bouton.js?v=b9fea21f70";
+import * as MI from "./midi.js?v=b9fea21f70";
+import * as N from "./notes.js?v=b9fea21f70";
+import { Rouleau } from "./rouleau.js?v=b9fea21f70";
+import * as BM from "./batterie_midi.js?v=b9fea21f70";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=b9fea21f70";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=b9fea21f70";
+import * as INS from "./instruments.js?v=b9fea21f70";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=b9fea21f70";
+import * as MO from "./moteurs.js?v=b9fea21f70";
+import { monterPanneaux } from "./panneaux.js?v=b9fea21f70";
+import { monterNotions } from "./notions.js?v=b9fea21f70";
+import { DEMOS } from "./demos.js?v=b9fea21f70";
+import * as B from "./bibliotheque.js?v=b9fea21f70";
+import { encoderWAV } from "../studio/wav.js?v=b9fea21f70";
+import { ENTREES } from "../library/catalogue.js?v=b9fea21f70";
+import { compiler } from "../src/index.js?v=b9fea21f70";
+import { rendre } from "../src/rendu.js?v=b9fea21f70";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -51,7 +51,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=136a06e79b"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=b9fea21f70"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -432,8 +432,10 @@ const rl = { son: null, minuteur: null, samp: null, lecture: null };
 const rouleau = new Rouleau($("rl-corps"), {
   change: (notes, temps) => { const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; s.midi.notes = notes; s.midi.temps = temps; changer(); majRouleauBarre(); clearTimeout(rl.minuteur); rl.minuteur = setTimeout(() => rendreMidiSon(rl.son).then(() => { afficher(); planifierRangement(250); }), 350); },
   ecouter: (n, v) => ecouterNote(n, v),
-  selection: () => majRouleauBarre(),
+  selection: () => { majRouleauBarre(); majVitesseBarre(); },
 });
+function majVitesseBarre() { const v = Math.round(rouleau.vitesse * 100); $("rl-vitesse").value = v; $("rl-vitesse-val").textContent = v; }
+$("rl-vitesse").oninput = e => { $("rl-vitesse-val").textContent = e.target.value; rouleau.reglerVitesse(+e.target.value / 100); };
 function majRouleauBarre() { const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; $("rl-mesures").textContent = (s.midi.temps / etat.projet.temps) + (s.midi.temps / etat.projet.temps > 1 ? " mesures" : " mesure"); $("rl-suppr").disabled = rouleau.sel < 0; $("rl-moins").disabled = s.midi.temps <= etat.projet.temps; }
 async function ecouterNote(n, v) {
   const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; const cat = INS.catalogue(), e = cat.find(x => x.id === s.midi.instrument) || cat.find(x => x.id === "ech:clavier"); const ctx = contexte();
@@ -454,6 +456,14 @@ $("rl-ecouter").onclick = async () => {
   if (rl.lecture) { try { rl.lecture.stop(); } catch (_) {} rl.lecture = null; $("rl-ecouter").lastChild.textContent = " Écouter"; return; }
   clearTimeout(rl.minuteur); await rendreMidiSon(rl.son); const d = etat.buffers[rl.son]; if (!d) return; const ctx = contexte(), b = ctx.createBuffer(d.canaux.length, d.canaux[0].length, d.sr); d.canaux.forEach((c, i) => b.copyToChannel(c, i));
   const src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination); src.onended = () => { if (rl.lecture === src) { rl.lecture = null; $("rl-ecouter").lastChild.textContent = " Écouter"; } }; rl.lecture = src; src.start(); $("rl-ecouter").lastChild.textContent = " Arrêter";
+};
+// Un clip de notes vide, posé au curseur sur la piste choisie, avec l'instrument du clavier : on écrit les notes dans le piano roll au lieu de les jouer.
+$("b-clip-notes").onclick = async () => {
+  const p = etat.projet, sec = 60 / p.tempo, temps = 2 * p.temps, instrument = (midi.catalogue.find(x => x.id === $("midi-instrument").value) || { id: "ech:clavier" }).id;
+  const num = Object.values(p.sons).filter(x => x.nom.startsWith("Notes ")).length + 1;
+  const id = P.ajouterSon(p, { nom: `Notes ${num}`, duree: temps * sec, sr: SR_MIDI, canaux: 2, midi: { notes: [], instrument, temps, rendu: -1 } });
+  P.placerClip(p, P.pisteLibre(p, pisteActive().id, etat.tete, temps * sec), id, etat.tete); changer(); await remettreAJourMidi();
+  const r = Object.values(p.pistes).flatMap(pi => pi.clips).find(c => c.son === id); if (r) etat.choisi = r.id; afficher(); ouvrirRouleau(id); message("Clip de notes vide : clique dans la grille pour poser une note, glisse-la pour la déplacer.");
 };
 $("b-modifier-notes").onclick = () => { const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r) ouvrirRouleau(r.clip.son); };
 document.addEventListener("dblclick", e => { const c = e.target.closest && e.target.closest(".clip[data-clip]"); if (!c) return; const r = P.trouverClip(etat.projet, c.dataset.clip); if (r && P.estMidi(etat.projet.sons[r.clip.son])) { etat.choisi = r.clip.id; ouvrirRouleau(r.clip.son); } });

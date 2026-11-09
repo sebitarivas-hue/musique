@@ -2,7 +2,7 @@
 // Clic dans le vide : une note. Clic sur une note : on la choisit ; on la glisse pour la déplacer, on tire son bord droit pour l'allonger ; Suppr l'enlève.
 // Les flèches déplacent la note choisie (gauche et droite d'un pas de grille, haut et bas d'un demi-ton), + et - la rallongent ou la raccourcissent.
 // Tout ce que fait le rouleau passe par des rappels : il ne connaît ni le projet, ni l'audio. Testé dans Chromium (tests/pistes.test.mjs).
-import { nettoyerNotes } from "./notes.js?v=136a06e79b";
+import { nettoyerNotes } from "./notes.js?v=b9fea21f70";
 
 const SVG = "http://www.w3.org/2000/svg", H_RANGEE = 22, PX_TEMPS = 56, W_CLAVIER = 54, NOIRES = new Set([1, 3, 6, 8, 10]);
 const NOMS = ["do", "do♯", "ré", "ré♯", "mi", "fa", "fa♯", "sol", "sol♯", "la", "la♯", "si"];
@@ -57,7 +57,7 @@ export class Rouleau {
     this.gNotes.append(r); this.notesEl[i] = r; return r;
   }
   _maj(i) { const x = this.notes[i], r = this.notesEl[i]; if (!x || !r) return; r.setAttribute("x", x.t * PX_TEMPS + 0.5); r.setAttribute("y", this.rang(x.n) * H_RANGEE + 1); r.setAttribute("width", Math.max(6, x.d * PX_TEMPS - 1)); r.setAttribute("aria-label", `${this.lignes && this.nomLigne ? this.nomLigne(this.ligneDe(x.n)) : nomHauteur(x.n)}, au temps ${virg(x.t + 1)}, ${virg(x.d)} temps`); }
-  _choisir(i) { this.sel = i; this.notesEl.forEach((r, k) => r.classList.toggle("rl-choisie", k === i)); if (this.r.selection) this.r.selection(i >= 0 ? this.notes[i] : null); }
+  _choisir(i) { this.sel = i; if (i >= 0 && this.notes[i]) this.vitesse = this.notes[i].v; this.notesEl.forEach((r, k) => r.classList.toggle("rl-choisie", k === i)); if (this.r.selection) this.r.selection(i >= 0 ? this.notes[i] : null); }
   _point(e) { const b = this.svg.getBoundingClientRect(), rg = Math.max(0, Math.min(this.nbRangs - 1, Math.floor((e.clientY - b.top) / H_RANGEE))); return { t: (e.clientX - b.left) / PX_TEMPS, n: this.noteDeRang(rg), r: rg }; }
   _appui(e) {
     e.preventDefault(); this.svg.focus({ preventScroll: true }); const p = this._point(e), cible = e.target.closest && e.target.closest("[data-i]");
@@ -95,4 +95,9 @@ export class Rouleau {
   // Longueur du clip en temps (au moins ce que les notes demandent).
   longueur(temps) { const fin = Math.max(0, ...this.notes.map(x => x.t + x.d)); this.temps = Math.max(this.parMesure, Math.max(temps, Math.ceil(fin - 1e-9))); this._emettre(); this.dessiner(); }
   reglerGrille(g) { this.grille = +g; this.dessiner(); }
+  // Vitesse (force) de 0,05 à 1 : celle de la note choisie, et celle des notes que l'on posera ensuite.
+  reglerVitesse(v) {
+    this.vitesse = Math.max(0.05, Math.min(1, v)); const x = this.notes[this.sel]; if (!x) return; x.v = this.vitesse; const r = this.notesEl[this.sel];
+    this._emettre(); if (r) r.setAttribute("fill-opacity", 0.55 + 0.45 * this.vitesse);
+  }
 }

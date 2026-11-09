@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=136a06e79b">
-<link rel="stylesheet" href="pistes.css?v=136a06e79b"><link rel="stylesheet" href="notions.css?v=136a06e79b">
+<link rel="stylesheet" href="../studio/studio.css?v=b9fea21f70">
+<link rel="stylesheet" href="pistes.css?v=b9fea21f70"><link rel="stylesheet" href="notions.css?v=b9fea21f70">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -105,6 +105,7 @@
       <label class="mini">Gamme<select id="midi-gamme" aria-label="Gamme du clavier"></select></label>
       <label class="mini" data-tip="Aligner les notes que tu joues sur le rythme du projet : elles sonnent en place, même si ton jeu était un peu en avance ou en retard">Caler les notes<select id="midi-calage" aria-label="Caler les notes sur la grille"><option value="0">non, comme je joue</option><option value="1">sur le temps</option><option value="0.5" selected>sur la croche</option><option value="0.25">sur la double croche</option></select></label>
       <button type="button" id="b-midi-brancher">Brancher un clavier MIDI</button>
+      <button type="button" id="b-clip-notes" data-tip="Créer un clip de notes vide à l'endroit du curseur, avec cet instrument, puis poser les notes une à une dans le piano roll, sans rien jouer"><span class="ic ic-piano" aria-hidden="true"></span> Écrire des notes (piano roll)</button>
       <button type="button" id="b-notes" class="enreg" aria-pressed="false"><span class="pastille-rec" aria-hidden="true"></span> Enregistrer les notes</button></div>
     <p class="petit" id="midi-etat" role="status" aria-live="polite">Aucun clavier MIDI branché : utilise le clavier de l'ordinateur ou les touches de l'écran.</p>
     <div class="midi-clavier" id="midi-clavier" role="group" aria-label="Touches de piano"></div>
@@ -127,6 +128,7 @@
       <button type="button" id="rl-ecouter" data-tip="Écouter les notes de ce clip, une fois"><span class="ic ic-play" aria-hidden="true"></span> Écouter</button>
       <label class="mini" data-tip="Le pas des notes : elles se posent et se déplacent de cette valeur">Grille<select id="rl-grille" aria-label="Grille des notes"><option value="1">le temps</option><option value="0.5" selected>la croche</option><option value="0.25">la double croche</option><option value="0">libre</option></select></label>
       <span class="rl-groupe" role="group" aria-label="Longueur du clip"><button type="button" id="rl-moins" data-tip="Raccourcir le clip d'une mesure">&minus; mesure</button><output id="rl-mesures" aria-live="polite"></output><button type="button" id="rl-plus" data-tip="Allonger le clip d'une mesure">+ mesure</button></span>
+      <label class="mini" data-tip="La force de la note choisie, et des notes que tu poses ensuite">Vitesse<input type="range" id="rl-vitesse" min="5" max="100" value="80" aria-label="Vitesse de la note"><output id="rl-vitesse-val" aria-live="polite">80</output></label>
       <button type="button" id="rl-caler" data-tip="Remettre toutes les notes sur la grille choisie"><span class="ic ic-ok" aria-hidden="true"></span> Caler tout</button>
       <button type="button" id="rl-suppr" disabled data-tip="Enlever la note choisie (touche Suppr)"><span class="ic ic-corbeille" aria-hidden="true"></span> Supprimer la note</button>
       <button type="button" id="rl-vider" data-tip="Enlever toutes les notes de ce clip"><span class="ic ic-gomme" aria-hidden="true"></span> Tout effacer</button>
@@ -162,8 +164,8 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=136a06e79b"></script>
-<script src="../barre-cours.js?v=136a06e79b"></script>
-<script src="../retour.js?v=136a06e79b"></script>
+<script type="module" src="pistes.js?v=b9fea21f70"></script>
+<script src="../barre-cours.js?v=b9fea21f70"></script>
+<script src="../retour.js?v=b9fea21f70"></script>
 </body>
 </html>
