@@ -44,10 +44,10 @@ export function trouverPiste(p, id) { return p.pistes.find(x => x.id === id) || 
 export function trouverClip(p, id) { for (const pi of p.pistes) { const c = pi.clips.find(x => x.id === id); if (c) return { piste: pi, clip: c }; } return null; }
 
 // Place un clip : il commence à `debut`, lit le son à partir de `decalage`, pendant `duree` (par défaut tout le son).
-export function placerClip(p, pisteId, sonId, debut, { decalage = 0, duree, gain = 1 } = {}) {
+export function placerClip(p, pisteId, sonId, debut, { decalage = 0, duree, gain = 1, boucle } = {}) {
   const pi = trouverPiste(p, pisteId), s = p.sons[sonId]; if (!pi || !s) throw new Error("piste ou son introuvable");
-  const d = Math.max(0.01, Math.min(duree ?? s.duree - decalage, s.duree - decalage));
-  const c = { id: nouvelId("c"), son: sonId, debut: Math.max(0, debut), decalage: Math.max(0, decalage), duree: d, gain };
+  const d = boucle > 0 ? Math.max(0.01, duree ?? s.duree - decalage) : Math.max(0.01, Math.min(duree ?? s.duree - decalage, s.duree - decalage));   // un clip bouclé peut durer plus que son son
+  const c = { id: nouvelId("c"), son: sonId, debut: Math.max(0, debut), decalage: Math.max(0, decalage), duree: d, gain, ...(boucle > 0 ? { boucle } : {}) };
   pi.clips.push(c); pi.clips.sort((a, b) => a.debut - b.debut); return c.id;
 }
 export function deplacerClip(p, clipId, debut, pisteId) {
@@ -60,17 +60,59 @@ export function deplacerClip(p, clipId, debut, pisteId) {
 export function couperClip(p, clipId, t) {
   const r = trouverClip(p, clipId); if (!r) return null; const c = r.clip, dedans = t - c.debut;
   if (dedans <= 0.005 || dedans >= c.duree - 0.005) return null;
+  if (c.boucle) {   // un clip bouclé ne se coupe que sur le début d'une répétition : chaque morceau repart du début du motif
+    const B = longueurMotif(p, c), k = Math.round(dedans / B); if (k < 1 || Math.abs(dedans - k * B) > 0.02) return null;
+    const second = { id: nouvelId("c"), son: c.son, debut: c.debut + k * B, decalage: c.decalage, duree: c.duree - k * B, gain: c.gain, boucle: c.boucle };
+    c.duree = k * B; normaliserBoucle(p, c); normaliserBoucle(p, second); r.piste.clips.push(second); r.piste.clips.sort((a, b) => a.debut - b.debut); return second.id;
+  }
   const second = { id: nouvelId("c"), son: c.son, debut: t, decalage: c.decalage + dedans, duree: c.duree - dedans, gain: c.gain };
   c.duree = dedans; r.piste.clips.push(second); r.piste.clips.sort((a, b) => a.debut - b.debut); return second.id;
 }
+// Un clip qui suit le tempo (notes, rythme de la Bibliothèque) copié a son propre son : on peut le changer sans toucher l'original. Un son audio est partagé.
+function sonPourCopie(p, c) { const s = p.sons[c.son]; return suitLeTempo(s) ? ajouterSon(p, { nom: s.nom, duree: s.duree, sr: s.sr, canaux: s.canaux, midi: s.midi ? copieMidi(s.midi) : undefined, source: s.source ? JSON.parse(JSON.stringify(s.source)) : undefined }) : c.son; }
 export function dupliquerClip(p, clipId) {
-  const r = trouverClip(p, clipId); if (!r) return null; const c = r.clip, s = p.sons[c.son]; let son = c.son;
-  if (suitLeTempo(s)) { son = ajouterSon(p, { nom: s.nom, duree: s.duree, sr: s.sr, canaux: s.canaux, midi: s.midi, source: s.source }); }   // un clip de notes copié a ses propres notes : on peut le changer sans toucher l'original
-  return placerClip(p, r.piste.id, son, c.debut + c.duree, { decalage: c.decalage, duree: c.duree, gain: c.gain });
+  const r = trouverClip(p, clipId); if (!r) return null; const c = r.clip, son = sonPourCopie(p, c);
+  const id = placerClip(p, r.piste.id, son, c.debut + c.duree, { decalage: c.decalage, duree: c.duree, gain: c.gain, boucle: c.boucle }); return id;
 }
 export function supprimerClip(p, clipId) { const r = trouverClip(p, clipId); if (!r) return false; r.piste.clips = r.piste.clips.filter(c => c.id !== clipId); return true; }
-// Raccourcit ou rallonge un clip par sa fin, sans dépasser le son.
-export function rognerClip(p, clipId, duree) { const r = trouverClip(p, clipId); if (!r) return false; const s = p.sons[r.clip.son]; r.clip.duree = Math.max(0.01, Math.min(duree, s.duree - r.clip.decalage)); return true; }
+// Un clip bouclé répète un motif : `boucle` est la longueur du motif en secondes (jamais plus que le son restant). Le clip peut durer autant de répétitions qu'on veut.
+export const longueurMotif = (p, c) => { const s = p.sons[c.son]; return Math.max(0.01, Math.min(c.boucle, s ? s.duree - c.decalage : c.boucle)); };
+// Un clip qui ne dépasse plus son motif n'est plus bouclé : c'est un clip ordinaire.
+function normaliserBoucle(p, c) { if (c.boucle && c.duree <= longueurMotif(p, c) + 1e-6) { c.duree = Math.min(c.duree, longueurMotif(p, c)); delete c.boucle; } }
+// Raccourcit ou rallonge un clip par sa fin, sans dépasser le son (un clip bouclé n'a pas cette limite).
+export function rognerClip(p, clipId, duree) {
+  const r = trouverClip(p, clipId); if (!r) return false; const c = r.clip, s = p.sons[c.son];
+  if (c.boucle) { c.duree = Math.max(0.01, duree); normaliserBoucle(p, c); return true; }
+  c.duree = Math.max(0.01, Math.min(duree, s.duree - c.decalage)); return true;
+}
+// Répète le motif du clip jusqu'à la durée demandée. Un clip pas encore bouclé prend sa durée actuelle pour motif ; en dessous de cette durée, c'est un simple raccourcissement.
+export function boucler(p, clipId, duree) {
+  const r = trouverClip(p, clipId); if (!r) return false; const c = r.clip, s = p.sons[c.son]; if (!s) return false;
+  if (!c.boucle) { if (duree <= c.duree + 1e-6) return rognerClip(p, clipId, duree); c.boucle = c.duree; }
+  c.duree = Math.max(0.01, duree); normaliserBoucle(p, c); return true;
+}
+// Déplace le bord gauche d'un clip : son début avance (ou recule) en même temps que l'endroit du son où il commence, la fin reste en place. Pas pour un clip bouclé.
+export function rognerDebut(p, clipId, debut) {
+  const r = trouverClip(p, clipId); if (!r) return false; const c = r.clip; if (c.boucle) return false;
+  const fin = c.debut + c.duree, d = Math.max(c.debut - c.decalage, Math.min(debut, fin - 0.01)) - c.debut;   // pas avant le début du son, ni après la fin du clip
+  c.debut += d; c.decalage += d; c.duree -= d; r.piste.clips.sort((a, b) => a.debut - b.debut); return true;
+}
+// Presse-papiers : les clips choisis, avec leur place relative (piste et temps). Les sons audio sont partagés, ceux qui suivent le tempo sont copiés au collage.
+export function copierClips(p, ids) {
+  const L = []; p.pistes.forEach((pi, i) => pi.clips.forEach(c => { if (ids.includes(c.id)) L.push({ i, c: { ...c } }); }));
+  if (!L.length) return null; const t0 = Math.min(...L.map(x => x.c.debut)), i0 = Math.min(...L.map(x => x.i));
+  return { clips: L.map(x => ({ dp: x.i - i0, dt: x.c.debut - t0, son: x.c.son, decalage: x.c.decalage, duree: x.c.duree, gain: x.c.gain, ...(x.c.boucle ? { boucle: x.c.boucle } : {}) })), span: Math.max(...L.map(x => x.c.debut + x.c.duree)) - t0, t0, i0 };
+}
+// Colle le presse-papiers à l'instant `t`, la première ligne sur la piste `pisteId` (les suivantes en dessous ; des pistes sont ajoutées s'il en manque). Renvoie les nouveaux identifiants et les sons copiés.
+export function collerClips(p, presse, pisteId, t) {
+  const i0 = Math.max(0, p.pistes.findIndex(x => x.id === pisteId)), ids = [], sons = [];
+  for (const x of presse.clips) {
+    while (p.pistes.length <= i0 + x.dp) p.pistes.push(nouvellePiste(`Piste ${p.pistes.length + 1}`));
+    const modele = { son: x.son }, avant = Object.keys(p.sons).length; if (!p.sons[x.son]) continue; const son = sonPourCopie(p, modele); if (Object.keys(p.sons).length > avant) sons.push({ de: x.son, vers: son });
+    ids.push(placerClip(p, p.pistes[i0 + x.dp].id, son, t + x.dt, { decalage: x.decalage, duree: x.duree, gain: x.gain, boucle: x.boucle }));
+  }
+  return { ids, sons };
+}
 
 // Une piste où un clip de [debut, debut + duree] ne chevauche rien : la piste demandée si elle est libre, sinon la suivante libre, sinon une piste neuve.
 export function pisteLibre(p, pisteId, debut, duree) {
@@ -124,8 +166,11 @@ export function planLecture(p, depuis = 0) {
   const out = [];
   for (const pi of pistesAudibles(p)) for (const c of pi.clips) {
     const fin = c.debut + c.duree; if (fin <= depuis) continue;
-    const saute = Math.max(0, depuis - c.debut);
-    out.push({ piste: pi.id, clip: c.id, son: c.son, quand: Math.max(0, c.debut - depuis), decalage: c.decalage + saute, duree: c.duree - saute, gain: c.gain * pi.volume, gainClip: c.gain, pan: pi.pan });
+    const B = c.boucle ? longueurMotif(p, c) : c.duree;   // un clip bouclé est joué en répétitions du motif, la dernière coupée à la fin du clip
+    for (let k = 0, d0 = c.debut; d0 < fin - 1e-9; k++, d0 = c.debut + k * B) {
+      const f = Math.min(fin, d0 + B); if (f <= depuis) continue; const saute = Math.max(0, depuis - d0);
+      out.push({ piste: pi.id, clip: c.id, son: c.son, quand: Math.max(0, d0 - depuis), decalage: c.decalage + saute, duree: f - d0 - saute, gain: c.gain * pi.volume, gainClip: c.gain, pan: pi.pan });
+    }
   }
   return out.sort((a, b) => a.quand - b.quand);
 }
@@ -173,7 +218,7 @@ export function changerTempo(p, tempo, { audio = true } = {}) {
   const nouveau = Math.max(20, Math.min(300, +tempo || p.tempo)), f = p.tempo / nouveau, sons = new Set();
   for (const pi of p.pistes) for (const c of pi.clips) {
     const s = p.sons[c.son];
-    if (suitLeTempo(s)) { c.debut *= f; c.duree *= f; c.decalage *= f; sons.add(c.son); } else if (audio) c.debut *= f;
+    if (suitLeTempo(s)) { c.debut *= f; c.duree *= f; c.decalage *= f; if (c.boucle) c.boucle *= f; sons.add(c.son); } else if (audio) c.debut *= f;
   }
   for (const id of sons) p.sons[id].duree *= f;   // l'audio d'un son qui suit le tempo est refait plus tard, mais sa durée suit déjà : un clip qui le lisait en entier le lit toujours en entier
   p.tempo = nouveau; return { facteur: f, sons: [...sons] };

@@ -5,6 +5,11 @@ export const COMMANDES = [
   { id: "importer", menu: "Fichier", libelle: "Importer des sons…", touches: ["Ctrl+I"] }, { id: "exporter", menu: "Fichier", libelle: "Exporter en WAV", touches: ["Ctrl+Maj+E"] }, { id: "nouveau", menu: "Fichier", libelle: "Nouveau projet", touches: [] },
   { id: "annuler", menu: "Édition", libelle: "Annuler", touches: ["Ctrl+Z"] }, { id: "refaire", menu: "Édition", libelle: "Rétablir", touches: ["Ctrl+Y", "Ctrl+Maj+Z"] },
   { id: "couper", menu: "Édition", libelle: "Couper le clip au curseur", touches: ["S"], clip: true }, { id: "dupliquer", menu: "Édition", libelle: "Dupliquer le clip", touches: ["D", "Ctrl+D"], clip: true },
+  { id: "copier", menu: "Édition", libelle: "Copier les clips choisis", touches: ["Ctrl+C"], clip: true }, { id: "presse-couper", menu: "Édition", libelle: "Couper les clips choisis (les garder pour les coller)", touches: ["Ctrl+X"], clip: true }, { id: "coller", menu: "Édition", libelle: "Coller au curseur", touches: ["Ctrl+V"] },
+  { id: "tout-choisir", menu: "Édition", libelle: "Choisir tous les clips", touches: ["Ctrl+A"] }, { id: "boucler", menu: "Édition", libelle: "Boucler le clip : une répétition de plus", touches: ["L"], clip: true },
+  { id: "decaler-gauche", menu: "Édition", libelle: "Décaler le clip vers la gauche d'un pas de grille", touches: ["←"], clip: true }, { id: "decaler-droite", menu: "Édition", libelle: "Décaler le clip vers la droite d'un pas de grille", touches: ["→"], clip: true },
+  { id: "decaler-gauche-mesure", menu: "Édition", libelle: "Décaler le clip d'une mesure vers la gauche", touches: ["Maj+←"], clip: true }, { id: "decaler-droite-mesure", menu: "Édition", libelle: "Décaler le clip d'une mesure vers la droite", touches: ["Maj+→"], clip: true },
+  { id: "rogner-curseur", menu: "Édition", libelle: "Raccourcir le clip jusqu'au curseur", touches: ["E"], clip: true },
   { id: "supprimer", menu: "Édition", libelle: "Supprimer le clip", touches: ["Suppr", "Retour"], clip: true }, { id: "deselectionner", menu: "Édition", libelle: "Désélectionner", touches: ["Échap"] },
   { id: "lire", menu: "Lecture", libelle: "Lire / Arrêter", touches: ["Espace"] }, { id: "debut", menu: "Lecture", libelle: "Revenir au début", touches: ["Début"] }, { id: "enregistrer", menu: "Lecture", libelle: "Enregistrer sur la piste choisie", touches: ["R"] }, { id: "metronome", menu: "Lecture", libelle: "Métronome : activer / couper", touches: ["K"] },
   { id: "piste-ajouter", menu: "Piste", libelle: "Ajouter une piste", touches: ["T"] }, { id: "midi", menu: "Piste", libelle: "Jouer un instrument (clavier MIDI ou ordinateur)", touches: [] }, { id: "piste-haut", menu: "Piste", libelle: "Piste précédente", touches: ["↑"] }, { id: "piste-bas", menu: "Piste", libelle: "Piste suivante", touches: ["↓"] },
@@ -20,7 +25,7 @@ export const COMMANDES = [
   { id: "aide-raccourcis", menu: "Aide", libelle: "Raccourcis clavier", touches: ["?"] },
   { id: "aide-notions", menu: "Aide", libelle: "Comprendre les mots de Pistes", touches: [] },
 ];
-const NOMS = { Espace: " ", Suppr: "Delete", Retour: "Backspace", "Début": "Home", "↑": "ArrowUp", "↓": "ArrowDown", "Échap": "Escape" };
+const NOMS = { Espace: " ", Suppr: "Delete", Retour: "Backspace", "Début": "Home", "↑": "ArrowUp", "←": "ArrowLeft", "→": "ArrowRight", "↓": "ArrowDown", "Échap": "Escape" };
 export function correspond(touche, e) {
   let cle = touche; const p = []; for (let change = true; change;) { change = false; for (const m of ["Ctrl", "Maj", "Alt"]) if (cle.startsWith(m + "+") && cle.length > m.length + 1) { p.push(m); cle = cle.slice(m.length + 1); change = true; } } // « + » seul est une touche, pas un séparateur
   const ctrl = p.includes("Ctrl"), maj = p.includes("Maj"), alt = p.includes("Alt");
@@ -28,6 +33,7 @@ export function correspond(touche, e) {
   const k = NOMS[cle] || cle;
   if (k.length === 1 && /[a-z]/i.test(k)) return e.key.toLowerCase() === k.toLowerCase() && !!e.shiftKey === maj;
   if (k === "?" || k === "+" ) return e.key === k;          // la majuscule fait partie du caractère
+  if (k.startsWith("Arrow")) return e.key === k && !!e.shiftKey === maj;   // Maj+← n'est pas ←
   return e.key === k && (!maj || e.shiftKey);
 }
 export function commandePour(e) { return COMMANDES.find(c => c.touches.some(t => correspond(t, e))) || null; }

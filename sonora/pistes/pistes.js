@@ -1,32 +1,38 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=b9fea21f70";
-import * as Ed from "./editions.js?v=b9fea21f70";
-import * as P from "./projet.js?v=b9fea21f70";
-import { Stockage } from "./stockage.js?v=b9fea21f70";
-import { creerBouton } from "./bouton.js?v=b9fea21f70";
-import * as MI from "./midi.js?v=b9fea21f70";
-import * as N from "./notes.js?v=b9fea21f70";
-import { Rouleau } from "./rouleau.js?v=b9fea21f70";
-import * as BM from "./batterie_midi.js?v=b9fea21f70";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=b9fea21f70";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=b9fea21f70";
-import * as INS from "./instruments.js?v=b9fea21f70";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=b9fea21f70";
-import * as MO from "./moteurs.js?v=b9fea21f70";
-import { monterPanneaux } from "./panneaux.js?v=b9fea21f70";
-import { monterNotions } from "./notions.js?v=b9fea21f70";
-import { DEMOS } from "./demos.js?v=b9fea21f70";
-import * as B from "./bibliotheque.js?v=b9fea21f70";
-import { encoderWAV } from "../studio/wav.js?v=b9fea21f70";
-import { ENTREES } from "../library/catalogue.js?v=b9fea21f70";
-import { compiler } from "../src/index.js?v=b9fea21f70";
-import { rendre } from "../src/rendu.js?v=b9fea21f70";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=81a5598e39";
+import * as Ed from "./editions.js?v=81a5598e39";
+import * as P from "./projet.js?v=81a5598e39";
+import { Stockage } from "./stockage.js?v=81a5598e39";
+import { creerBouton } from "./bouton.js?v=81a5598e39";
+import * as MI from "./midi.js?v=81a5598e39";
+import * as N from "./notes.js?v=81a5598e39";
+import { Rouleau } from "./rouleau.js?v=81a5598e39";
+import * as BM from "./batterie_midi.js?v=81a5598e39";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=81a5598e39";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=81a5598e39";
+import * as INS from "./instruments.js?v=81a5598e39";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=81a5598e39";
+import * as MO from "./moteurs.js?v=81a5598e39";
+import { monterPanneaux } from "./panneaux.js?v=81a5598e39";
+import { monterNotions } from "./notions.js?v=81a5598e39";
+import { DEMOS } from "./demos.js?v=81a5598e39";
+import * as B from "./bibliotheque.js?v=81a5598e39";
+import { encoderWAV } from "../studio/wav.js?v=81a5598e39";
+import { ENTREES } from "../library/catalogue.js?v=81a5598e39";
+import { compiler } from "../src/index.js?v=81a5598e39";
+import { rendre } from "../src/rendu.js?v=81a5598e39";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const etat = { projet: null, buffers: {}, ctx: null, lecture: false, enreg: false, tete: 0, debutCtx: 0, debutTete: 0, sources: [], choisi: null, arme: null, pxs: 60, metro: null };
+const etat = { projet: null, buffers: {}, ctx: null, lecture: false, enreg: false, tete: 0, debutCtx: 0, debutTete: 0, sources: [], arme: null, pxs: 60, metro: null };
+// La sélection de clips : `choisi` est le clip principal (celui que les réglages de la barre visent), `choisis` tous les clips choisis. Écrire `etat.choisi = id` revient à choisir ce seul clip.
+Object.defineProperty(etat, "choisi", { get() { return this._principal || null; }, set(v) { this._principal = v || null; this.choisis = new Set(v ? [v] : []); }, enumerable: true });
+etat.choisi = null;
+etat.basculerChoix = id => { if (etat.choisis.has(id)) { etat.choisis.delete(id); if (etat._principal === id) etat._principal = [...etat.choisis].pop() || null; } else { etat.choisis.add(id); etat._principal = id; } };
+etat.choisirTout = ids => { etat.choisis = new Set(ids); etat._principal = ids.length ? ids[ids.length - 1] : null; };
+
 window.PISTES = etat; window.PISTES_STOCKAGE = Stockage;
 const badge = (t, c = "") => { const e = $("etat"); e.textContent = t; e.className = "etat " + c; };
 const message = t => { $("message").textContent = t; };
@@ -51,7 +57,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=b9fea21f70"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=81a5598e39"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -500,14 +506,16 @@ window.PISTES_HISTO = histo;
 // ---------------------------------------------------------------- effets sur le clip choisi : ils créent un nouveau son, l'original reste intact
 function appliquerEffet(id) {
   const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!r) { message("Choisis d'abord un clip : clique dessus."); return; }
+  if (r.clip.boucle) { message("Cet effet s'applique à un seul passage du son : raccourcis le clip bouclé à un motif (bord droit, au milieu), applique l'effet, puis reboucle."); return; }
   const c = r.clip, src = etat.buffers[c.son]; if (!src) { message("Le son de ce clip n'est pas chargé."); return; }
   const e = Ed.EFFETS[id], res = e.f(Ed.extrait(src, c.decalage, c.duree)), nom = `${etat.projet.sons[c.son].nom} (${e.etiquette})`.slice(0, 80);
   remplacerClip(c, res, nom, e.nom);
 }
-function remplacerClip(c, res, nom, effet) { const sid = ajouterAudio(nom, res.canaux, res.sr); c.son = sid; c.decalage = 0; c.duree = Ed.duree(res); changer(); message(`${effet} appliqué au clip : nouveau son « ${nom} ». Ctrl+Z pour annuler.`); }
+function remplacerClip(c, res, nom, effet) { const sid = ajouterAudio(nom, res.canaux, res.sr); c.son = sid; c.decalage = 0; c.duree = Ed.duree(res); delete c.boucle; changer(); message(`${effet} appliqué au clip : nouveau son « ${nom} ». Ctrl+Z pour annuler.`); }
 // Fenêtre de réglage : construite à partir de Ed.REGLABLES (libellés, bornes, unités). L'aperçu joue les 6 premières secondes du clip ; Appliquer crée un nouveau son, l'original reste intact.
 function ouvrirReglage(id) {
   const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!r) { message("Choisis d'abord un clip : clique dessus."); return; }
+  if (r.clip.boucle) { message("Cet effet s'applique à un seul passage du son : raccourcis le clip bouclé à un motif (bord droit, au milieu), applique l'effet, puis reboucle."); return; }
   const c = r.clip, src = etat.buffers[c.son], spec = Ed.REGLABLES[id]; if (!src) { message("Le son de ce clip n'est pas chargé."); return; }
   fermerMenus(); document.getElementById("reglage")?.remove(); const el = document.createElement("div"); el.id = "reglage"; el.className = "aide-clavier"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", spec.nom);
   const champ = p => { const u = p.unite ? ` ${p.unite}` : "";
@@ -563,8 +571,9 @@ function sonSonora(idEntree) {
 // ---------------------------------------------------------------- affichage
 function dessinerOnde(cv, son, clip) {
   const d = etat.buffers[clip.son]; const w = cv.width = Math.max(4, Math.round(clip.duree * etat.pxs)), h = cv.height = 58, g = cv.getContext("2d");
-  g.clearRect(0, 0, w, h); if (!d) return; const x = d.canaux[0], a = Math.floor(clip.decalage * d.sr), n = Math.floor(clip.duree * d.sr), pas = Math.max(1, n / w);
-  g.fillStyle = "#11110F"; for (let i = 0; i < w; i++) { let mn = 0, mx = 0; const s = a + Math.floor(i * pas), e2 = Math.min(x.length, s + Math.ceil(pas)); for (let j = s; j < e2; j++) { if (x[j] < mn) mn = x[j]; if (x[j] > mx) mx = x[j]; } const y0 = h / 2 - mx * h / 2 * 0.95, y1 = h / 2 - mn * h / 2 * 0.95; g.fillRect(i, y0, 1, Math.max(1, y1 - y0)); }
+  g.clearRect(0, 0, w, h); if (!d) return; const x = d.canaux[0], B = clip.boucle ? P.longueurMotif(etat.projet, clip) : 0, pas = Math.max(1, d.sr / etat.pxs);
+  g.fillStyle = "#11110F"; for (let i = 0; i < w; i++) { let mn = 0, mx = 0; const ti = B ? (i / etat.pxs) % B : i / etat.pxs, s = Math.floor((clip.decalage + ti) * d.sr), e2 = Math.min(x.length, s + Math.ceil(pas)); for (let j = s; j < e2; j++) { if (x[j] < mn) mn = x[j]; if (x[j] > mx) mx = x[j]; } const y0 = h / 2 - mx * h / 2 * 0.95, y1 = h / 2 - mn * h / 2 * 0.95; g.fillRect(i, y0, 1, Math.max(1, y1 - y0)); }
+  if (B) { g.fillStyle = "rgba(17,17,15,.55)"; for (let k = 1; k * B * etat.pxs < w; k++) g.fillRect(Math.round(k * B * etat.pxs), 0, 2, h); }   // un trait à chaque répétition du motif
 }
 function afficher() {
   majAnnuler(); const p = etat.projet, largeur = Math.max(30, P.dureeTotale(p) + 16) * etat.pxs;
@@ -578,7 +587,7 @@ function afficher() {
     <input type="range" class="vol-h" min="0" max="1.5" step="0.01" value="${pi.volume}" aria-label="Volume de ${esc(pi.nom)}" title="Volume de la piste">
     <div class="ent-k"></div></div>`; }).join("");
   const grille = `background-size: ${P.dureeTemps(p) * etat.pxs}px 100%`;
-  $("voies").innerHTML = p.pistes.map(pi => `<div class="voie" data-piste="${pi.id}" style="${grille}" aria-label="Piste ${esc(pi.nom)}">${pi.clips.map(c => `<div class="clip${etat.choisi === c.id ? " choisi" : ""}" data-clip="${c.id}" style="left:${c.debut * etat.pxs}px;width:${Math.max(4, c.duree * etat.pxs)}px" tabindex="0" aria-label="${esc((p.sons[c.son] || {}).nom || "son")}, à ${c.debut.toFixed(2)} s"><div class="nom-clip">${esc((p.sons[c.son] || {}).nom || "son")}</div><canvas></canvas></div>`).join("")}</div>`).join("");
+  $("voies").innerHTML = p.pistes.map(pi => `<div class="voie" data-piste="${pi.id}" style="${grille}" aria-label="Piste ${esc(pi.nom)}">${pi.clips.map(c => `<div class="clip${etat.choisis.has(c.id) ? " choisi" : ""}${c.boucle ? " boucle" : ""}" data-clip="${c.id}" style="left:${c.debut * etat.pxs}px;width:${Math.max(4, c.duree * etat.pxs)}px" tabindex="0" aria-label="${esc((p.sons[c.son] || {}).nom || "son")}, à ${c.debut.toFixed(2)} s${c.boucle ? ", bouclé" : ""}"><div class="nom-clip">${c.boucle ? "↻ " : ""}${esc((p.sons[c.son] || {}).nom || "son")}</div><canvas></canvas><span class="poi poi-g" aria-hidden="true"></span><span class="poi poi-d" aria-hidden="true"></span><span class="poi poi-boucle" aria-hidden="true">↻</span></div>`).join("")}</div>`).join("");
   for (const el of document.querySelectorAll(".clip[data-clip]")) { const r2 = P.trouverClip(p, el.dataset.clip); dessinerOnde(el.querySelector("canvas"), p.sons[r2.clip.son], r2.clip); }
   brancherEntetes(); brancherVoies(); dessinerEnveloppes(); majAuto(); majSelection(); afficherEffets(); majDebut();
 }
@@ -797,14 +806,46 @@ function brancherVoies() {
     v.onpointerdown = e => { if (e.target === v) { etat.choisi = null; etat.tete = P.aimanter(etat.projet, tempsDe(e), +$("aimant").value); if (etat.lecture) { arreter(); } afficher(); } };
   }
   for (const el of document.querySelectorAll(".clip[data-clip]")) {
+    el.onpointermove = m => { if (!m.buttons) el.dataset.zone = zoneClip(el, m); };
     el.onpointerdown = e => {
-      e.preventDefault(); el.setPointerCapture(e.pointerId); etat.choisi = el.dataset.clip; document.querySelectorAll(".clip").forEach(c => c.classList.toggle("choisi", c === el)); majSelection();
-      const r = P.trouverClip(etat.projet, etat.choisi), x0 = e.clientX, d0 = r.clip.debut; let bouge = false;
-      el.onpointermove = m => { const dx = (m.clientX - x0) / etat.pxs; if (Math.abs(m.clientX - x0) > 3) bouge = true; if (bouge) el.style.left = P.aimanter(etat.projet, d0 + dx, +$("aimant").value) * etat.pxs + "px"; };
-      el.onpointerup = m => { el.onpointermove = null; el.onpointerup = null; if (!bouge) return; const sous = document.elementsFromPoint(m.clientX, m.clientY).find(x => x.classList && x.classList.contains("voie")); P.deplacerClip(etat.projet, etat.choisi, P.aimanter(etat.projet, d0 + (m.clientX - x0) / etat.pxs, +$("aimant").value), sous ? sous.dataset.piste : undefined); changer(); };
+      e.preventDefault(); el.setPointerCapture(e.pointerId); const id = el.dataset.clip, p = etat.projet;
+      if (e.shiftKey || e.ctrlKey || e.metaKey) { etat.basculerChoix(id); surligner(); majSelection(); return; }   // Maj ou Ctrl + clic : ajouter ce clip à la sélection ou l'en retirer
+      const zone = zoneClip(el, e), groupe = etat.choisis.has(id) && etat.choisis.size > 1 && zone === "deplacer";
+      if (!groupe) etat.choisi = id; else etat._principal = id;
+      surligner(); majSelection();
+      const r = P.trouverClip(p, id), x0 = e.clientX, d0 = r.clip.debut, dur0 = r.clip.duree, dec0 = r.clip.decalage, son = p.sons[r.clip.son], bloque = zone === "rogner-debut" && r.clip.boucle;
+      const ids = [...etat.choisis], els = ids.map(i => document.querySelector(`.clip[data-clip="${i}"]`)), debuts = ids.map(i => P.trouverClip(p, i).clip.debut), grille = () => +$("aimant").value; let bouge = false;
+      const fin = m => { el.onpointermove = ev => { if (!ev.buttons) el.dataset.zone = zoneClip(el, ev); }; el.onpointerup = null; el.onpointercancel = null; return m; };
+      el.dataset.zone = zone;
+      el.onpointermove = m => {
+        const dx = (m.clientX - x0) / etat.pxs; if (Math.abs(m.clientX - x0) > 3) bouge = true; if (!bouge || bloque) return;
+        if (zone === "deplacer") { const delta = P.aimanter(p, d0 + dx, grille()) - d0; els.forEach((e2, k) => { if (e2) e2.style.left = Math.max(0, debuts[k] + delta) * etat.pxs + "px"; }); }
+        else if (zone === "rogner-debut") { const nd = Math.max(d0 - dec0, Math.min(P.aimanter(p, d0 + dx, grille()), d0 + dur0 - 0.01)); el.style.left = nd * etat.pxs + "px"; el.style.width = Math.max(4, (d0 + dur0 - nd) * etat.pxs) + "px"; }
+        else { let f = Math.max(d0 + 0.01, P.aimanter(p, d0 + dur0 + dx, grille())); if (zone === "rogner-fin" && !r.clip.boucle) f = Math.min(f, d0 + son.duree - dec0); el.style.width = Math.max(4, (f - d0) * etat.pxs) + "px"; }
+      };
+      el.onpointercancel = () => { fin(); afficher(); };
+      el.onpointerup = m => {
+        fin(); const dx = (m.clientX - x0) / etat.pxs;
+        if (!bouge) { if (!bloque && groupe) { etat.choisi = id; afficher(); } else if (bloque) message("Un clip bouclé garde son début : tire son bord droit pour le raccourcir ou le rallonger."); return; }
+        if (bloque) { afficher(); return; }
+        if (zone === "deplacer") {
+          const delta = P.aimanter(p, d0 + dx, grille()) - d0, sous = document.elementsFromPoint(m.clientX, m.clientY).find(x => x.classList && x.classList.contains("voie"));
+          if (ids.length > 1) ids.forEach((i, k) => P.deplacerClip(p, i, debuts[k] + delta)); else P.deplacerClip(p, id, d0 + delta, sous ? sous.dataset.piste : undefined);
+        } else if (zone === "rogner-debut") P.rognerDebut(p, id, P.aimanter(p, d0 + dx, grille()));
+        else if (zone === "rogner-fin") P.rognerClip(p, id, P.aimanter(p, d0 + dur0 + dx, grille()) - d0);
+        else { const t = P.aimanter(p, d0 + dur0 + dx, grille()) - d0; P.boucler(p, id, t); if (r.clip.boucle) message("Clip bouclé : le motif se répète. Tire le bord droit du milieu pour le raccourcir."); }
+        changer();
+      };
     };
   }
 }
+// Où est la souris sur un clip ? Le bord droit : en haut, boucler ; plus bas, raccourcir ou rallonger. Le bord gauche : raccourcir par le début. Ailleurs : déplacer.
+function zoneClip(el, m) {
+  const b = el.getBoundingClientRect(), x = m.clientX - b.left, y = m.clientY - b.top, tactile = m.pointerType === "touch", ez = Math.max(5, Math.min(tactile ? 22 : 11, b.width / 3));
+  if (x >= b.width - ez) return y < b.height * 0.34 ? "boucler" : "rogner-fin"; if (x < ez) return "rogner-debut"; return "deplacer";
+}
+const surligner = () => document.querySelectorAll(".clip[data-clip]").forEach(c => c.classList.toggle("choisi", etat.choisis.has(c.dataset.clip)));
+const clipsChoisis = () => [...etat.choisis].filter(i => P.trouverClip(etat.projet, i));
 
 
 // ---------------------------------------------------------------- effets d'une piste : un rack d'appareils, chacun avec son interrupteur, sa croix, ses boutons et son schéma
@@ -898,23 +939,39 @@ $("tempo").onchange = async e => {
 $("b-annuler").onclick = () => annuler(); $("b-refaire").onclick = () => retablir();
 $("b-zoom-plus").onclick = () => { etat.pxs = Math.min(400, etat.pxs * 1.5); afficher(); }; $("b-zoom-moins").onclick = () => { etat.pxs = Math.max(10, etat.pxs / 1.5); afficher(); };
 $("regle").onpointerdown = e => { const r = $("regle").getBoundingClientRect(); etat.tete = Math.max(0, (e.clientX - r.left) / etat.pxs); if (etat.lecture) { arreter(); lire(); } };
-$("b-couper").onclick = () => { if (!etat.choisi) return; const n = P.couperClip(etat.projet, etat.choisi, etat.tete); if (!n) { message("Place le curseur rouge à l'intérieur du clip pour le couper."); return; } changer(); };
+$("b-couper").onclick = () => { const ids = clipsChoisis(); if (!ids.length) return; let n = 0; for (const id of ids) if (P.couperClip(etat.projet, id, etat.tete)) n++; if (!n) { message("Place le curseur rouge à l'intérieur du clip pour le couper."); return; } changer(); };
 $("b-dupliquer").onclick = () => {
-  if (!etat.choisi) return; const orig = P.trouverClip(etat.projet, etat.choisi), avant = new Set(Object.keys(etat.projet.sons));
-  etat.choisi = P.dupliquerClip(etat.projet, etat.choisi);
-  for (const id of Object.keys(etat.projet.sons)) if (!avant.has(id) && orig && etat.buffers[orig.clip.son]) rangerAudio(id, etat.buffers[orig.clip.son].canaux);   // un clip de notes copié a son propre son : on range une copie de l'audio
+  const ids = clipsChoisis(); if (!ids.length) return; const avant = new Set(Object.keys(etat.projet.sons));
+  if (ids.length === 1) { const orig = P.trouverClip(etat.projet, ids[0]); etat.choisi = P.dupliquerClip(etat.projet, ids[0]); for (const id of Object.keys(etat.projet.sons)) if (!avant.has(id) && orig && etat.buffers[orig.clip.son]) rangerAudio(id, etat.buffers[orig.clip.son].canaux); }   // un clip de notes copié a son propre son : on range une copie de l'audio
+  else { const pr = P.copierClips(etat.projet, ids), r = P.collerClips(etat.projet, pr, etat.projet.pistes[pr.i0].id, pr.t0 + pr.span); rangerSonsCopies(r.sons); etat.choisirTout(r.ids); }
   changer(); };
-$("b-supprimer").onclick = () => { if (!etat.choisi) return; P.supprimerClip(etat.projet, etat.choisi); etat.choisi = null; changer(); };
+$("b-supprimer").onclick = () => { const ids = clipsChoisis(); if (!ids.length) return; for (const id of ids) P.supprimerClip(etat.projet, id); etat.choisi = null; changer(); };
+function rangerSonsCopies(sons) { for (const x of sons) if (etat.buffers[x.de]) rangerAudio(x.vers, etat.buffers[x.de].canaux); }
 $("sel-gain").oninput = e => { const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r) { r.clip.gain = +e.target.value; planifierRangement(300); } };
 for (const e of ENTREES) { const o = document.createElement("option"); o.value = e.id; o.textContent = e.titre; $("choix-sonora").appendChild(o); }
 $("b-ajout-sonora").onclick = () => { if ($("choix-sonora").value) sonSonora($("choix-sonora").value); };
 // ---------------------------------------------------------------- commandes : menus, raccourcis, aide (la table est dans commandes.js)
+// D'un pas, le clip retombe sur la grille ; d'une mesure, il garde son écart avec la grille.
+function decaler(sens, mesure = false) {
+  const ids = clipsChoisis(); if (!ids.length) return; const p = etat.projet, pas = mesure ? P.dureeMesure(p) : (+$("aimant").value ? P.dureeTemps(p) * +$("aimant").value : 0.05);
+  for (const id of ids) { const c = P.trouverClip(p, id).clip; P.deplacerClip(p, id, Math.max(0, mesure ? c.debut + sens * pas : Math.round((c.debut + sens * pas) / pas) * pas)); } changer();
+}
 const pisteActive = () => P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0];
 const sansClip = () => { message("Choisis d'abord un clip : clique dessus."); };
 const EXEC = {
   importer: () => $("fichiers").click(), exporter: () => $("b-export").click(), nouveau: () => $("b-nouveau").click(), annuler, refaire: retablir,
   couper: () => etat.choisi ? $("b-couper").click() : sansClip(), dupliquer: () => etat.choisi ? $("b-dupliquer").click() : sansClip(), supprimer: () => etat.choisi ? $("b-supprimer").click() : sansClip(),
   deselectionner: () => { etat.choisi = null; afficher(); },
+  copier: () => { const ids = clipsChoisis(); if (!ids.length) return sansClip(); etat.presse = P.copierClips(etat.projet, ids); message(`${ids.length} clip${ids.length > 1 ? "s" : ""} copié${ids.length > 1 ? "s" : ""}. Place le curseur, puis Ctrl+V pour coller.`); },
+  "presse-couper": () => { const ids = clipsChoisis(); if (!ids.length) return sansClip(); etat.presse = P.copierClips(etat.projet, ids); $("b-supprimer").click(); message(`${ids.length} clip${ids.length > 1 ? "s" : ""} coupé${ids.length > 1 ? "s" : ""} : Ctrl+V les recolle ailleurs.`); },
+  coller: () => {
+    if (!etat.presse) { message("Rien à coller : copie d'abord des clips (Ctrl+C)."); return; }
+    const t = P.aimanter(etat.projet, etat.tete, +$("aimant").value), r = P.collerClips(etat.projet, etat.presse, pisteActive().id, t); if (!r.ids.length) { message("Ces clips n'existent plus dans le projet."); return; }
+    rangerSonsCopies(r.sons); etat.choisirTout(r.ids); etat.tete = t + etat.presse.span; changer(); message(`${r.ids.length} clip${r.ids.length > 1 ? "s" : ""} collé${r.ids.length > 1 ? "s" : ""}. Le curseur est à leur fin : Ctrl+V à nouveau les colle à la suite.`); },
+  "tout-choisir": () => { const ids = etat.projet.pistes.flatMap(pi => pi.clips.map(c => c.id)); etat.choisirTout(ids); surligner(); majSelection(); message(ids.length ? `${ids.length} clip${ids.length > 1 ? "s" : ""} choisi${ids.length > 1 ? "s" : ""}.` : "Il n'y a aucun clip."); },
+  boucler: () => { const ids = clipsChoisis(); if (!ids.length) return sansClip(); for (const id of ids) { const c = P.trouverClip(etat.projet, id).clip; P.boucler(etat.projet, id, c.duree + (c.boucle ? P.longueurMotif(etat.projet, c) : c.duree)); } changer(); message("Une répétition de plus. Tire le bord droit du clip, en haut, pour boucler à la souris."); },
+  "decaler-gauche": () => decaler(-1), "decaler-droite": () => decaler(1), "decaler-gauche-mesure": () => decaler(-1, true), "decaler-droite-mesure": () => decaler(1, true),
+  "rogner-curseur": () => { const ids = clipsChoisis(); if (!ids.length) return sansClip(); let n = 0; for (const id of ids) { const c = P.trouverClip(etat.projet, id).clip; if (etat.tete > c.debut + 0.01 && etat.tete < c.debut + c.duree) { P.rognerClip(etat.projet, id, etat.tete - c.debut); n++; } } if (!n) { message("Place le curseur à l'intérieur du clip pour le raccourcir jusque-là."); return; } changer(); },
   lire: () => lire(), debut: () => $("b-debut").click(), enregistrer: () => enregistrer(), metronome: () => { $("metro").checked = !$("metro").checked; message("Métronome " + ($("metro").checked ? "activé" : "coupé") + "."); },
   "piste-ajouter": () => $("b-piste").click(), midi: () => basculerMidi(),
   "piste-haut": () => { const L = etat.projet.pistes, i = Math.max(0, L.findIndex(x => x.id === etat.arme) - 1); etat.arme = L[i].id; afficher(); }, "piste-bas": () => { const L = etat.projet.pistes, i = Math.min(L.length - 1, L.findIndex(x => x.id === etat.arme) + 1); etat.arme = L[i].id; afficher(); },
@@ -958,7 +1015,8 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape" && document.querySelector("#barre-menus .menu-l:not([hidden])")) { fermerMenus(); e.preventDefault(); return; }
   const t = e.target; if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA" || (document.querySelector("#barre-menus .menu-l:not([hidden])")))) return;
   if (document.getElementById("aide-clavier") || document.getElementById("reglage")) return;
-  const c = commandePour(e); if (!c) return; e.preventDefault(); lancer(c.id);
+  const c = commandePour(e); if (!c) return; if (/^decaler-/.test(c.id) && !etat.choisis.size) return;   // sans clip choisi, les flèches font défiler la page
+  e.preventDefault(); lancer(c.id);
 });
 document.addEventListener("visibilitychange", () => { if (document.hidden && etat.lecture) arreter(); });
 
