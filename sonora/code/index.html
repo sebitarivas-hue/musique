@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Code</title>
 <meta name="description" content="Le laboratoire de programmation musicale : écrire un programme de son en Faust, en Csound ou en Pure Data, l'entendre aussitôt, avec des exemples guidés pas à pas.">
-<link rel="stylesheet" href="../studio/studio.css?v=56d45a54ec">
-<link rel="stylesheet" href="../enfants.css?v=56d45a54ec">
-<link rel="stylesheet" href="code.css?v=56d45a54ec">
+<link rel="stylesheet" href="../studio/studio.css?v=b48919e0af">
+<link rel="stylesheet" href="../enfants.css?v=b48919e0af">
+<link rel="stylesheet" href="code.css?v=b48919e0af">
 </head>
 <body>
 <a class="saut" href="#atelier">Aller à l'atelier</a>
@@ -24,12 +24,13 @@
     <div class="presentation" id="presentation"></div>
     <div class="etapes" id="etapes"></div>
     <div class="zone">
-      <div class="cartes-col"><h2>Les exemples, pas à pas</h2><div class="cartes" id="cartes"></div></div>
+      <div class="cartes-col"><h2>Les exemples, pas à pas</h2><div class="filtre" id="filtre" role="group" aria-label="Familles de programmes" hidden></div><div class="cartes" id="cartes"></div></div>
       <div class="edition">
         <label for="code" id="lib-code">Programme</label>
         <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" rows="12"></textarea>
         <div id="zone-score" hidden><label for="score">Partition Csound (une ligne par note : i1 début durée hauteur)</label><textarea id="score" spellcheck="false" rows="4"></textarea></div>
         <div id="params" class="params" hidden></div>
+        <div id="details" class="details" hidden></div>
         <div class="rang">
           <label class="mini">Durée<select id="duree"><option value="2">2 s</option><option value="3" selected>3 s</option><option value="5">5 s</option><option value="8">8 s</option><option value="12">12 s</option></select></label>
           <label class="mini" id="zone-entree" hidden>Son à transformer<select id="entree"><option value="notes">Notes en dents de scie</option><option value="bruit">Bruit blanc</option><option value="pulse">Pulsations</option></select></label>
@@ -42,8 +43,8 @@
     <div class="aller-plus" id="plus"></div>
   </section>
 </main>
-<script type="module" src="code.js?v=56d45a54ec"></script>
-<script src="../barre-cours.js?v=56d45a54ec"></script>
-<script src="../retour.js?v=56d45a54ec"></script>
+<script type="module" src="code.js?v=b48919e0af"></script>
+<script src="../barre-cours.js?v=b48919e0af"></script>
+<script src="../retour.js?v=b48919e0af"></script>
 </body>
 </html>

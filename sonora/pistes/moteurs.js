@@ -6,7 +6,7 @@
 let FAUST = null, NFAUST = 0;
 export async function chargerFaust() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=56d45a54ec"), racine = new URL("../../faust/compilateur/", import.meta.url).href; // le dossier du compilateur du site, à la racine
+    const fw = await import("./faust/faustwasm.js?v=b48919e0af"), racine = new URL("../../faust/compilateur/", import.meta.url).href; // le dossier du compilateur du site, à la racine
     const mod = await fw.instantiateFaustModuleFromFile(racine + "libfaust-wasm.js"), lib = new fw.LibFaust(mod);
     return { fw, comp: new fw.FaustCompiler(lib), version: lib.version() };
   })().catch(e => { FAUST = null; throw e; });
@@ -29,6 +29,11 @@ export async function compilerFaust(code) {
 export function parametresFaust(meta) {
   const L = []; (function marche(items) { for (const it of items || []) { if (it.items) marche(it.items); else if (["hslider", "vslider", "nentry"].includes(it.type)) L.push({ adresse: it.address, nom: it.label, min: +it.min, max: +it.max, init: +it.init, pas: +it.step || 0, type: it.type }); else if (["button", "checkbox"].includes(it.type)) L.push({ adresse: it.address, nom: it.label, min: 0, max: 1, init: 0, pas: 1, type: it.type }); } })(meta.ui); return L;
 }
+// Les boutons et les cases du programme (button, checkbox) : [{ adresse, nom, type }]. Un rendu hors ligne n'a personne pour appuyer : on les tient à 1 pendant tout le rendu (un instrument à « gate » joue sa note).
+export function commandesFaust(meta) {
+  const L = []; (function marche(items) { for (const it of items || []) { if (it.items) marche(it.items); else if (["button", "checkbox"].includes(it.type)) L.push({ adresse: it.address, nom: it.label, type: it.type }); } })(meta && meta.ui);
+  return L;
+}
 // Rend `secondes` de son. `entrees` : tableaux Float32Array pour un programme qui a des entrées (un effet). `valeurs` : { adresse: valeur }.
 export async function rendreFaust(gen, meta, { sr = 44100, secondes = 2, entrees = [], valeurs = {} } = {}) {
   const n = Math.max(128, Math.ceil(secondes * sr)), proc = await gen.createOfflineProcessor(sr, 128);
@@ -39,7 +44,7 @@ export async function rendreFaust(gen, meta, { sr = 44100, secondes = 2, entrees
 
 // ---------------------------------------------------------------- Csound
 let CSOUND = null;
-export async function chargerCsound() { if (!CSOUND) CSOUND = import("./csound/csound.js?v=56d45a54ec").catch(e => { CSOUND = null; throw e; }); return CSOUND; }
+export async function chargerCsound() { if (!CSOUND) CSOUND = import("./csound/csound.js?v=b48919e0af").catch(e => { CSOUND = null; throw e; }); return CSOUND; }
 // L'en-tête (sr, ksmps, nchnls, 0dbfs) est fixé par SONORA, d'après l'horloge audio de la page ; les mêmes lignes écrites par l'utilisateur sont retirées pour éviter un conflit.
 export function orchestreComplet(orc, sr) {
   const propre = String(orc).split("\n").filter(l => !/^\s*(sr|kr|ksmps|nchnls|nchnls_i|0dbfs)\s*=/.test(l)).join("\n");
@@ -57,7 +62,7 @@ export async function lancerCsound(ctx, orc, partition) {
 }
 // ---------------------------------------------------------------- Pure Data (WebPd, en version alpha : une partie seulement des objets de Pure Data)
 let PD = null;
-export async function chargerPd() { if (!PD) PD = import("./pd/webpd.js?v=56d45a54ec").catch(e => { PD = null; throw e; }); return PD; }
+export async function chargerPd() { if (!PD) PD = import("./pd/webpd.js?v=b48919e0af").catch(e => { PD = null; throw e; }); return PD; }
 // Les messages de WebPd en français : l'objet inconnu est le cas le plus courant.
 export function erreurPd(e) {
   const m = (Array.isArray(e) ? e : [e]).map(x => String(x && x.message || x)).join("\n"), inconnus = m.match(/unknown object types?\s+(.+)/i);

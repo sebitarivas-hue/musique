@@ -29,3 +29,13 @@ body { background: #F0EFE8; }
 @media (max-width: 700px) { .atelier { padding: 14px; } .boutons button { flex: 1 1 40%; } }
 
 [hidden] { display: none !important; }
+
+/* Faust : les familles de programmes (pastilles), l'explication ligne par ligne et les défis d'un atelier */
+.filtre { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; } .filtre[hidden] { display: none; }
+.filtre button { min-height: 36px; padding: 0 12px; border: 2px solid #14130f; border-radius: 999px; background: #fff; font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; color: #14130f; }
+.filtre button[aria-pressed="true"] { background: #14130f; color: #D6FF00; }
+.details { margin: 8px 0; padding: 10px 14px; border: 2px solid #14130f; border-radius: 14px; background: #fff; } .details[hidden] { display: none; }
+.details h3 { margin: 4px 0 6px; font-size: .95rem; } .details ol { margin: 0 0 6px; padding-left: 1.3em; font-size: .86rem; line-height: 1.4; } .details .petit { margin: 2px 0 6px; font-size: .78rem; color: #55544d; }
+.defis { display: flex; flex-wrap: wrap; gap: 6px; } .defis button { min-height: 44px; padding: 6px 12px; border: 2px solid #14130f; border-radius: 12px; background: #D6FF00; font: inherit; font-size: .84rem; font-weight: 700; cursor: pointer; color: #14130f; }
+@media (max-width: 900px) { .filtre { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; } .filtre button { flex: 0 0 auto; min-height: 44px; } }
+.zone > *, .cartes-col, .edition { min-width: 0; } .filtre { max-width: 100%; }

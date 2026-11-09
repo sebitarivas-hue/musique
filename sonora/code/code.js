@@ -1,8 +1,8 @@
 // SONORA Code : le laboratoire de programmation musicale. Faust, Csound et Pure Data, compilés et joués dans la page (aucun envoi, aucun serveur).
 // Les moteurs et les exemples sont ceux de SONORA Pistes (../pistes/moteurs.js) ; ici, on les travaille un par un, avec de quoi apprendre.
-import * as MO from "../pistes/moteurs.js?v=56d45a54ec";
-import { assemblerCanaux } from "../pistes/projet.js?v=56d45a54ec";
-import { Stockage as RangementPistes } from "../pistes/stockage.js?v=56d45a54ec";
+import * as MO from "../pistes/moteurs.js?v=b48919e0af";
+import { assemblerCanaux } from "../pistes/projet.js?v=b48919e0af";
+import { Stockage as RangementPistes } from "../pistes/stockage.js?v=b48919e0af";
 
 const $ = id => document.getElementById(id), esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const LANGAGES = {
@@ -34,14 +34,21 @@ const JS_EX = [
   { titre: "Du bruit filtré", niv: "Programmation", texte: "Du bruit blanc dont on ne garde qu'une bande : un souffle de vent qu'on fait monter.", code: "const t = ctx.currentTime;\nconst n = Math.floor(ctx.sampleRate * duree);\nconst tampon = ctx.createBuffer(1, n, ctx.sampleRate);\nconst x = tampon.getChannelData(0);\nfor (let i = 0; i < n; i++) x[i] = Math.random() * 2 - 1;   // bruit blanc\nconst source = ctx.createBufferSource();\nconst filtre = ctx.createBiquadFilter();\nconst vol = ctx.createGain();\nsource.buffer = tampon;\nfiltre.type = \"bandpass\";\nfiltre.Q.value = 6;\nfiltre.frequency.setValueAtTime(300, t);\nfiltre.frequency.exponentialRampToValueAtTime(3000, t + duree);\nvol.gain.value = 0.5;\nsource.connect(filtre).connect(vol).connect(sortie);\nsource.start(t);" },
   { titre: "Un écho", niv: "Recherche", texte: "Une note pincée, puis un délai qui se renvoie une partie de son signal.", code: "const t = ctx.currentTime;\nconst osc = ctx.createOscillator();\nconst vol = ctx.createGain();\nconst delai = ctx.createDelay(1);\nconst retour = ctx.createGain();\nosc.type = \"square\";\nosc.frequency.value = 392;\nvol.gain.setValueAtTime(0.25, t);\nvol.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);\ndelai.delayTime.value = 0.35;\nretour.gain.value = 0.55;       // la part du signal qui revient\nosc.connect(vol);\nvol.connect(sortie);            // le son direct\nvol.connect(delai);\ndelai.connect(retour).connect(delai);   // la boucle de l'écho\ndelai.connect(sortie);\nosc.start(t);\nosc.stop(t + 0.4);" },
 ];
-const etat = { l: "faust", i: 0, occupe: false, ctx: null, source: null, csound: null, dernier: null, compile: null, valeurs: {}, raf: 0 };
+const etat = { l: "faust", filtre: "tous", i: 0, occupe: false, ctx: null, source: null, csound: null, dernier: null, compile: null, valeurs: {}, raf: 0 };
 const dire = (t, erreur) => { const m = $("message"); m.textContent = t; m.classList.toggle("erreur", !!erreur); const e = $("etat"); if (e) e.textContent = erreur ? "erreur" : t.split("\n")[0].slice(0, 40); };
 
+// Les programmes du laboratoire Faust du site (faust_labo.json, fabriqué par outils/faust/vers_sonora.py) : sept ateliers guidés et 34 exemples en 8 familles. Leurs numéros commencent à 1000 (ateliers) et 2000 (exemples).
+const LABO = { familles: [], exemples: [], ateliers: [] }; const laboDe = i => i >= 2000 ? LABO.exemples[i - 2000] : LABO.ateliers[i - 1000];
+function listeLabo() {
+  const noms = Object.fromEntries(LABO.familles);
+  return [...LABO.ateliers.map((a, k) => ({ i: 1000 + k, titre: a.titre, effet: false, niv: "Atelier guidé", groupe: "ateliers", texte: a.texte })),
+    ...LABO.exemples.map((x, k) => ({ i: 2000 + k, titre: x.titre, effet: false, niv: noms[x.famille], groupe: x.famille, texte: x.texte }))];
+}
 function liste(l) { // les exemples d'un langage, du plus simple au plus avancé
   if (l === "js") return JS_EX.map((e, i) => ({ i, titre: e.titre, effet: false, niv: e.niv, texte: e.texte }));
   const rang = n => MO.NIVEAUX.indexOf(n);
   return MO.EXEMPLES[l].map((e, i) => ({ i, titre: e[0].replace(/ \(effet : il lui faut un clip\)/, ""), effet: /effet/.test(e[0]), but: MO.CATALOGUE[l][i][0], niv: MO.CATALOGUE[l][i][1], texte: MO.CATALOGUE[l][i][2] }))
-    .sort((a, b) => rang(a.niv) - rang(b.niv) || a.i - b.i);
+    .sort((a, b) => rang(a.niv) - rang(b.niv) || a.i - b.i).map(x => ({ ...x, groupe: "initiation" })).concat(l === "faust" ? listeLabo() : []);
 }
 function dessinerLangages() {
   $("langages").innerHTML = ["faust", "csound", "pd", "js"].map(k => [k, LANGAGES[k]]).map(([k, L]) => `<button type="button" data-l="${k}" style="--c:${L.couleur}" aria-pressed="${k === etat.l}"><b>${L.nom}</b><span>${esc(L.court)}</span></button>`).join("");
@@ -52,15 +59,31 @@ function dessinerLangage() {
   $("etapes").innerHTML = `<h3>Pour commencer, en quatre idées</h3><ol>${L.etapes.map(x => `<li>${x}</li>`).join("")}</ol>`;
   $("lib-code").textContent = L.libelle; $("zone-score").hidden = etat.l !== "csound"; $("params").hidden = etat.l !== "faust";
   const site = ((window.BARRE_COURS && window.BARRE_COURS.retour) || "../../choix.html").split("#")[0];   // la page d'accueil du bon espace (enseignant ou élève)
-  const dansLeSite = etat.l === "faust" ? `<h3>Dans le site du cours</h3><ul><li><a href="${esc(site)}#faust-ateliers">Les ateliers guidés</a></li><li><a href="${esc(site)}#faust-matieres">Les matières sonores</a></li><li><a href="${esc(site)}#faust">Le laboratoire Faust</a></li><li><a href="${esc(site)}#faust-studio">Le studio Faust</a></li></ul>` : "";
+  const dansLeSite = etat.l === "faust" ? `<h3>Pour aller plus loin, dans le site du cours</h3><p class="petit">Les ateliers guidés et les exemples du studio Faust sont ici, dans la liste des exemples.</p><ul><li><a href="${esc(site)}#faust-matieres">Les matières sonores : un laboratoire d'expériences</a></li><li><a href="${esc(site)}#faust">Les jeux et les notions du laboratoire Faust</a></li></ul>` : "";
   $("plus").innerHTML = dansLeSite + `<h3>Pour aller plus loin</h3><ul>${L.docs.map(([t, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul><p class="petit">Dans SONORA Pistes, le même programme se rend en clip sur une piste, pour le mixer avec d'autres sons.</p>`;
-  const n = liste(etat.l).map((x, k) => `<button type="button" class="carte" data-i="${x.i}" style="--c:${L.couleur}" aria-pressed="${x.i === etat.i}"><em>${k + 1} · ${esc(x.niv)}${x.effet ? " · transforme un son" : ""}</em><b>${esc(x.titre)}</b><span>${esc(x.texte)}</span></button>`).join("");
+  dessinerFiltre();
+  const n = liste(etat.l).filter(x => etat.l !== "faust" || etat.filtre === "tous" || x.groupe === etat.filtre).map((x, k) => `<button type="button" class="carte" data-i="${x.i}" style="--c:${L.couleur}" aria-pressed="${x.i === etat.i}"><em>${k + 1} · ${esc(x.niv)}${x.effet ? " · transforme un son" : ""}</em><b>${esc(x.titre)}</b><span>${esc(x.texte)}</span></button>`).join("");
   $("cartes").innerHTML = n; charger(etat.i);
+}
+// Les familles de programmes Faust : des pastilles pour ne voir qu'une famille (il y en a une cinquantaine en tout).
+function dessinerFiltre() {
+  const z = $("filtre"); z.hidden = etat.l !== "faust" || !LABO.exemples.length; if (z.hidden) return; const noms = [["tous", "Tout"], ["initiation", "Initiation"], ["ateliers", "Ateliers guidés"], ...LABO.familles];
+  z.innerHTML = noms.map(([k, n]) => `<button type="button" data-f="${k}" aria-pressed="${k === etat.filtre}">${esc(n)}</button>`).join("");
+}
+function chargerLabo(i) {
+  const x = laboDe(i); if (!x) return; etat.i = i; etat.compile = null; $("code").value = x.code; $("score").value = ""; $("params").innerHTML = ""; arreter();
+  $("zone-entree").hidden = !(LABO.familles.length && x.famille === "effets");   // un effet transforme un son : on propose le son d'essai
+  document.querySelectorAll(".carte").forEach(c => c.setAttribute("aria-pressed", String(+c.dataset.i === i)));
+  const d = $("details"); d.hidden = false; d.innerHTML = (x.lignes && x.lignes.length ? `<h3>Ce que fait le programme, ligne par ligne</h3><ol>${x.lignes.map(l => `<li>${esc(l)}</li>`).join("")}</ol>` : "")
+    + (x.defis && x.defis.length ? `<h3>Des défis</h3><p class="petit">Toucher un défi règle les curseurs, puis écoute le résultat.</p><div class="defis">${x.defis.map((f, k) => `<button type="button" data-d="${k}">${esc(f.texte)}</button>`).join("")}</div>` : "")
+    + (x.cours ? `<p class="petit">Dans le cours : ${esc(x.cours)}.</p>` : ""); d.hidden = !d.innerHTML;
+  dire(`« ${x.titre} » chargé. ${x.texte}`);
 }
 function charger(i) {
   if (etat.l === "js") { const e = JS_EX[i]; if (!e) return; etat.i = i; $("code").value = e.code; $("score").value = ""; $("params").innerHTML = ""; arreter(); $("zone-entree").hidden = true;
     document.querySelectorAll(".carte").forEach(c => c.setAttribute("aria-pressed", String(+c.dataset.i === i))); dire(`Exemple « ${e.titre} » chargé. ${e.texte}`); return; }
-  const ex = MO.EXEMPLES[etat.l][i]; if (!ex) return; etat.i = i; etat.compile = null; $("code").value = ex[1]; $("score").value = ex[2] || ""; $("params").innerHTML = ""; arreter();
+  if (etat.l === "faust" && i >= 1000) { chargerLabo(i); return; }
+  $("details").hidden = true; const ex = MO.EXEMPLES[etat.l][i]; if (!ex) return; etat.i = i; etat.compile = null; $("code").value = ex[1]; $("score").value = ex[2] || ""; $("params").innerHTML = ""; arreter();
   document.querySelectorAll(".carte").forEach(c => c.setAttribute("aria-pressed", String(+c.dataset.i === i)));
   const meta = MO.CATALOGUE[etat.l][i]; dire(`Exemple « ${ex[0].replace(/ \(effet : il lui faut un clip\)/, "")} » chargé. ${meta[2]}`); $("zone-entree").hidden = !/effet/.test(ex[0]);
 }
@@ -95,7 +118,7 @@ function jouerCanaux(canaux, sr) {
   const s = ctx.createBufferSource(), an = ctx.createAnalyser(); an.fftSize = 2048; s.buffer = buf; s.connect(an); an.connect(ctx.destination); s.start(); etat.source = s; scope(an, buf.duration); s.onended = () => { if (etat.source === s) etat.source = null; };
 }
 const pic = canaux => canaux.reduce((m, x) => { for (let i = 0; i < x.length; i += 5) m = Math.max(m, Math.abs(x[i])); return m; }, 0);
-async function faust(secondes) {
+async function assurerCompile() {
   // Le programme n'est recompilé que s'il a changé (ou si on vient de charger un exemple) : sinon les curseurs seraient remis à leur valeur de départ à chaque écoute, et ne serviraient à rien.
   let c = etat.compile;
   if (!c) {
@@ -106,11 +129,16 @@ async function faust(secondes) {
       z.insertAdjacentHTML("beforeend", `<label for="${id}">${esc(q.nom)} <output id="${id}-v">${q.init}</output></label><input id="${id}" type="range" min="${q.min}" max="${q.max}" step="${q.pas || "any"}" value="${q.init}" data-a="${esc(q.adresse)}">`); }
     z.hidden = !z.children.length;
   }
+  return c;
+}
+async function faust(secondes) {
+  const c = await assurerCompile();
+  const tenus = Object.fromEntries(MO.commandesFaust(c.meta).map(q => [q.adresse, 1]));   // un rendu hors ligne n'a personne pour appuyer : les boutons et les cases sont tenus
   const ctx = contexte(), sr = ctx.sampleRate; let entrees = [];
   if (c.meta.inputs) { const x = signalEssai($("entree").value, sr, secondes); entrees = [x, x]; }
-  dire("Rendu…"); const r = await MO.rendreFaust(c.gen, c.meta, { sr, secondes, entrees, valeurs: etat.valeurs }), p = pic(r.canaux);
+  dire("Rendu…"); const r = await MO.rendreFaust(c.gen, c.meta, { sr, secondes, entrees, valeurs: { ...etat.valeurs, ...tenus } }), p = pic(r.canaux);
   if (!(p > 1e-4)) { dire("Le programme ne produit aucun son (silence). Vérifie les réglages, et qu'il y a bien un signal en sortie.", true); return; }
-  etat.dernier = r; jouerCanaux(r.canaux, r.sr); dire(`Faust ${c.version} : ${c.meta.inputs} entrée${c.meta.inputs > 1 ? "s" : ""}, ${c.meta.outputs} sortie${c.meta.outputs > 1 ? "s" : ""}.${p > 1 ? " Attention : le signal dépasse 0 dB, baisse le volume." : ""}`);
+  etat.dernier = r; jouerCanaux(r.canaux, r.sr); dire(`Faust ${c.version} : ${c.meta.inputs} entrée${c.meta.inputs > 1 ? "s" : ""}, ${c.meta.outputs} sortie${c.meta.outputs > 1 ? "s" : ""}.${Object.keys(tenus).length ? " Les boutons du programme sont tenus pendant l'écoute." : ""}${p > 1 ? " Attention : le signal dépasse 0 dB, baisse le volume." : ""}`);
 }
 async function pd(secondes) {
   dire("Compilation (WebPd)…"); const ctx = contexte(), sr = ctx.sampleRate, c = await MO.compilerPatchPd($("code").value, sr);
@@ -148,13 +176,21 @@ function wav(canaux, sr) { // 16 bits, stéréo
   return new Blob([o], { type: "audio/wav" });
 }
 $("langages").onclick = e => { const b = e.target.closest("[data-l]"); if (!b) return; etat.l = b.dataset.l; etat.i = liste(etat.l)[0].i; arreter(); dessinerLangage(); try { history.replaceState(null, "", "#" + etat.l); } catch (_) {} };
+$("details").onclick = async e => {
+  const b = e.target.closest("[data-d]"); if (!b) return; const x = laboDe(etat.i), f = x && x.defis && x.defis[+b.dataset.d]; if (!f) return;
+  try { const c = await assurerCompile(), P = MO.parametresFaust(c.meta); let n = 0;
+    for (const [nom, v] of Object.entries(f.valeurs)) { const q = P.find(r => r.nom === nom || r.adresse.endsWith("/" + nom)); if (!q) continue; etat.valeurs[q.adresse] = +v; const champ = [...$("params").querySelectorAll("input")].find(i => i.dataset.a === q.adresse); if (champ) { champ.value = v; const o = $(champ.id + "-v"); if (o) o.textContent = v; } n++; }
+    dire(`Défi : ${f.texte}. ${n} réglage${n > 1 ? "s" : ""} changé${n > 1 ? "s" : ""}.`); await ecouter();
+  } catch (err) { dire(err && err.message || "Le défi n'a pas pu se faire.", true); }
+};
+$("filtre").onclick = e => { const b = e.target.closest("[data-f]"); if (!b) return; etat.filtre = b.dataset.f; const L = liste("faust").filter(x => etat.filtre === "tous" || x.groupe === etat.filtre); if (L.length && !L.some(x => x.i === etat.i)) etat.i = L[0].i; dessinerLangage(); };
 $("cartes").onclick = e => { const b = e.target.closest(".carte"); if (b) charger(+b.dataset.i); };
 $("b-ecouter").onclick = ecouter; $("b-stop").onclick = () => { arreter(); dire("Arrêté."); };
 $("code").oninput = $("score").oninput = () => { etat.compile = null; };
 $("params").addEventListener("input", e => { const a = e.target.dataset && e.target.dataset.a; if (!a) return; etat.valeurs[a] = +e.target.value; const o = $(e.target.id + "-v"); if (o) o.textContent = e.target.value; });
 $("b-wav").onclick = () => { if (!etat.dernier) { dire("Écoute d'abord, puis enregistre.", true); return; } const u = URL.createObjectURL(wav(etat.dernier.canaux, etat.dernier.sr)), a = document.createElement("a"); a.href = u; a.download = `sonora-${etat.l}.wav`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 5000); };
 // Envoyer vers Pistes : le même mécanisme que le Studio (clé « pistes:arrivees »), pour les quatre langages. Rien ne quitte l'appareil.
-const nomDuSon = () => { const t = etat.l === "js" ? (JS_EX[etat.i] || {}).titre : ((MO.EXEMPLES[etat.l][etat.i] || [])[0] || "").replace(/ \(effet : il lui faut un clip\)/, ""); return ("Code : " + (t || "mon programme")).slice(0, 80); };
+const nomDuSon = () => { const t = etat.l === "js" ? (JS_EX[etat.i] || {}).titre : etat.i >= 1000 && etat.l === "faust" ? (laboDe(etat.i) || {}).titre : ((MO.EXEMPLES[etat.l][etat.i] || [])[0] || "").replace(/ \(effet : il lui faut un clip\)/, ""); return ("Code : " + (t || "mon programme")).slice(0, 80); };
 $("b-vers-pistes").onclick = async () => {
   if (!etat.dernier) { dire("Écoute d'abord, puis envoie.", true); return; }
   try { const d = etat.dernier, duree = +(d.canaux[0].length / d.sr).toFixed(2), id = "arrivee-" + Date.now().toString(36), nom = nomDuSon();
@@ -165,4 +201,5 @@ $("b-vers-pistes").onclick = async () => {
 };
 $("code").addEventListener("keydown", e => { if (e.key === "Tab" && !e.shiftKey) { e.preventDefault(); const t = e.target, a = t.selectionStart; t.value = t.value.slice(0, a) + "  " + t.value.slice(t.selectionEnd); t.selectionStart = t.selectionEnd = a + 2; } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); ecouter(); } });
 const h = (location.hash || "").slice(1); if (LANGAGES[h]) etat.l = h;
+try { const r = await fetch(new URL("./faust_labo.json", import.meta.url)); if (r.ok) Object.assign(LABO, await r.json()); } catch (_) { /* sans le fichier, Code garde ses exemples d'initiation */ }
 etat.i = liste(etat.l)[0].i; dessinerLangage(); window.CODE_ETAT = etat; window.CODE_PRET = true;

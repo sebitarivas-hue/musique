@@ -1,0 +1,496 @@
+{
+ "familles": [
+  [
+   "bases",
+   "Les bases"
+  ],
+  [
+   "synthese",
+   "Synthèses"
+  ],
+  [
+   "bruits",
+   "Bruits et filtres"
+  ],
+  [
+   "physiques",
+   "Modèles physiques"
+  ],
+  [
+   "rythmes",
+   "Rythmes et boucles"
+  ],
+  [
+   "effets",
+   "Effets"
+  ],
+  [
+   "espace",
+   "Espace"
+  ],
+  [
+   "musique",
+   "Petites pièces"
+  ]
+ ],
+ "exemples": [
+  {
+   "id": "sinus",
+   "famille": "bases",
+   "titre": "Un son pur",
+   "texte": "Une sinusoïde : un seul partiel. Change la fréquence (la hauteur) et le volume (l'intensité).",
+   "code": "import(\"stdfaust.lib\");\n// Un son pur : une seule fréquence\nfreq = hslider(\"freq [unit:Hz]\", 440, 50, 2000, 1);\nvolume = hslider(\"volume\", 0.3, 0, 1, 0.01) : si.smoo;\nprocess = os.osc(freq) * volume <: _, _;"
+  },
+  {
+   "id": "formes",
+   "famille": "bases",
+   "titre": "Quatre formes d'onde",
+   "texte": "Sinusoïde, triangle, carrée, dent de scie : même hauteur, timbres différents. Regarde la forme et le spectre.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq [unit:Hz]\", 220, 50, 1000, 1);\nforme = nentry(\"forme [style:menu{'sinus':0;'triangle':1;'carrée':2;'dent de scie':3}]\", 0, 0, 3, 1);\nvolume = hslider(\"volume\", 0.25, 0, 1, 0.01) : si.smoo;\nonde = os.osc(freq), os.triangle(freq), os.square(freq), os.sawtooth(freq) : ba.selectn(4, forme);\nprocess = onde * volume <: _, _;"
+  },
+  {
+   "id": "battements",
+   "famille": "bases",
+   "titre": "Les battements",
+   "texte": "Deux sons purs presque à la même fréquence : on entend le son trembler. Plus l'écart grandit, plus vite ça bat.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq [unit:Hz]\", 440, 100, 1000, 1);\necart = hslider(\"écart [unit:Hz]\", 3, 0, 30, 0.1);\nprocess = (os.osc(freq) + os.osc(freq + ecart)) * 0.2 <: _, _;"
+  },
+  {
+   "id": "enveloppe",
+   "famille": "bases",
+   "titre": "L'enveloppe ADSR",
+   "texte": "Joue au clavier. Attaque, déclin, maintien, relâche : la vie du son dans le temps.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 440, 50, 2000, 0.01);\ngate = button(\"gate\");\na = hslider(\"attaque [unit:s]\", 0.01, 0.001, 2, 0.001);\nd = hslider(\"déclin [unit:s]\", 0.3, 0.001, 2, 0.001);\ns = hslider(\"maintien\", 0.5, 0, 1, 0.01);\nr = hslider(\"relâche [unit:s]\", 0.5, 0.001, 4, 0.001);\nprocess = os.sawtooth(freq) * en.adsr(a, d, s, r, gate) * 0.25 : fi.lowpass(2, 3000) <: _, _;"
+  },
+  {
+   "id": "gamme",
+   "famille": "bases",
+   "titre": "Les harmoniques d'une note",
+   "texte": "Les huit premiers partiels d'une note grave, chacun avec son curseur : c'est la série harmonique, la base du timbre.",
+   "code": "import(\"stdfaust.lib\");\nf = hslider(\"fondamentale [unit:Hz]\", 110, 50, 400, 1);\npartiel(i) = os.osc(f * (i + 1)) * hslider(\"h%j\", 1 / (i + 1), 0, 1, 0.01) with { j = i + 1; };\nprocess = par(i, 8, partiel(i)) :> _ * 0.12 <: _, _;"
+  },
+  {
+   "id": "additive",
+   "famille": "synthese",
+   "titre": "Synthèse additive",
+   "texte": "On additionne des partiels. La pente règle la brillance, l'inharmonicité éloigne les partiels de la série : vers la cloche.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 220, 50, 1000, 0.01);\ngate = button(\"gate\");\npente = hslider(\"pente\", 1, 0, 3, 0.01);\ninharm = hslider(\"inharmonicité\", 0, 0, 0.1, 0.001);\npartiel(i) = os.osc(freq * n * sqrt(1 + inharm * n * n)) / pow(n, pente) with { n = i + 1; };\nprocess = par(i, 12, partiel(i)) :> _ * en.adsr(0.01, 0.4, 0.4, 0.8, gate) * 0.2 <: _, _;"
+  },
+  {
+   "id": "soustractive",
+   "famille": "synthese",
+   "titre": "Synthèse soustractive",
+   "texte": "Une dent de scie très riche, puis un filtre qui retire l'aigu. La résonance fait chanter la fréquence de coupure.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 110, 30, 800, 0.01);\ngate = button(\"gate\");\ncoupure = hslider(\"coupure [unit:Hz]\", 1200, 80, 8000, 1) : si.smoo;\nreso = hslider(\"résonance\", 3, 0.7, 20, 0.1);\nenv = en.adsr(0.005, 0.2, 0.6, 0.3, gate);\nprocess = (os.sawtooth(freq) + os.sawtooth(freq * 1.005)) * 0.2 * env\n  : fi.resonlp(coupure * (0.3 + env), reso, 1) <: _, _;"
+  },
+  {
+   "id": "fm",
+   "famille": "synthese",
+   "titre": "Synthèse FM",
+   "texte": "Un oscillateur fait vibrer la fréquence d'un autre (John Chowning, 1973). Rapport entier : son harmonique ; rapport bizarre : cloche.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 220, 50, 1000, 0.01);\ngate = button(\"gate\");\nrapport = hslider(\"rapport\", 1, 0.25, 8, 0.01);\nindice = hslider(\"indice\", 3, 0, 15, 0.01);\nenv = en.adsr(0.005, 0.5, 0.3, 0.6, gate);\nmodulante = os.osc(freq * rapport) * indice * env * freq * rapport;\nprocess = os.osc(freq + modulante) * env * 0.3 <: _, _;"
+  },
+  {
+   "id": "am",
+   "famille": "synthese",
+   "titre": "Modulation d'amplitude et modulation en anneau",
+   "texte": "Lentement, l'AM est un trémolo. Plus vite, au-delà de 20 Hz, elle crée de nouvelles fréquences : le son devient métallique.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq [unit:Hz]\", 330, 50, 1000, 1);\nvitesse = hslider(\"vitesse [unit:Hz]\", 5, 0.1, 500, 0.1) : si.smoo;\nprofondeur = hslider(\"profondeur\", 0.8, 0, 1, 0.01);\nprocess = os.osc(freq) * (1 - profondeur * (0.5 + 0.5 * os.osc(vitesse))) * 0.3 <: _, _;"
+  },
+  {
+   "id": "pwm",
+   "famille": "synthese",
+   "titre": "Onde carrée qui respire",
+   "texte": "Le rapport cyclique d'une onde rectangulaire bouge lentement : le timbre change sans arrêt, comme dans les synthétiseurs des années 1970.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 110, 30, 600, 0.01);\ngate = button(\"gate\");\nvitesse = hslider(\"vitesse [unit:Hz]\", 0.4, 0.05, 8, 0.01);\nlargeur = 0.5 + 0.4 * os.osc(vitesse);\nprocess = os.pulsetrain(freq, largeur) * en.adsr(0.01, 0.2, 0.7, 0.4, gate) * 0.2 : fi.lowpass(2, 4000) <: _, _;"
+  },
+  {
+   "id": "superscie",
+   "famille": "synthese",
+   "titre": "Sept scies désaccordées",
+   "texte": "Sept dents de scie légèrement désaccordées : un son large et épais. Le désaccord règle l'épaisseur.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 110, 30, 800, 0.01);\ngate = button(\"gate\");\ndesaccord = hslider(\"désaccord\", 0.01, 0, 0.05, 0.001);\nvoix(i) = os.sawtooth(freq * (1 + desaccord * (i - 3) / 3));\nprocess = par(i, 7, voix(i)) :> _ * en.adsr(0.05, 0.3, 0.8, 0.8, gate) * 0.08 : fi.lowpass(2, 5000) <: _, _;"
+  },
+  {
+   "id": "bruits",
+   "famille": "bruits",
+   "titre": "Bruit blanc, bruit rose",
+   "texte": "Le bruit contient toutes les fréquences à la fois. Le blanc est brillant, le rose plus doux : son spectre baisse vers l'aigu.",
+   "code": "import(\"stdfaust.lib\");\ncouleur = nentry(\"couleur [style:menu{'blanc':0;'rose':1;'brun':2}]\", 0, 0, 2, 1);\nvolume = hslider(\"volume\", 0.2, 0, 1, 0.01) : si.smoo;\nbrun = no.noise : fi.pole(0.995) * 0.05;\nprocess = no.noise * 0.5, no.pink_noise, brun : ba.selectn(3, couleur) * volume <: _, _;"
+  },
+  {
+   "id": "passebande",
+   "famille": "bruits",
+   "titre": "Un filtre qui sculpte le bruit",
+   "texte": "Un filtre passe-bande ne laisse passer qu'une zone de fréquences. Étroit, le bruit devient presque une note ; on entend le vent.",
+   "code": "import(\"stdfaust.lib\");\ncentre = hslider(\"centre [unit:Hz]\", 800, 100, 6000, 1) : si.smoo;\nq = hslider(\"étroitesse (Q)\", 5, 0.5, 80, 0.1);\nvolume = hslider(\"volume\", 0.5, 0, 1, 0.01);\nprocess = no.noise : fi.resonbp(centre, q, volume) <: _, _;"
+  },
+  {
+   "id": "vent",
+   "famille": "bruits",
+   "titre": "Le vent",
+   "texte": "Du bruit filtré dont la fréquence et le volume bougent lentement au hasard. Un exemple de son qu'on ne peut pas écrire en notes.",
+   "code": "import(\"stdfaust.lib\");\nforce = hslider(\"force\", 0.5, 0, 1, 0.01);\nlent(s) = no.noise : ba.sAndH(ba.pulse(ma.SR / s)) : si.smooth(ba.tau2pole(1 / s));\ncentre = 300 + 1500 * force * (0.5 + 0.5 * lent(1.3));\nprocess = no.noise : fi.resonbp(centre, 3, 0.3 + 0.5 * force * (0.5 + 0.5 * lent(0.7))) <: _, _;"
+  },
+  {
+   "id": "voyelles",
+   "famille": "bruits",
+   "titre": "Les voyelles",
+   "texte": "Trois filtres, les formants, transforment une dent de scie en voix qui dit a, é, i, o, ou. C'est ainsi que la bouche colore la voix.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 130, 70, 400, 0.01);\ngate = button(\"gate\");\nv = hslider(\"voyelle (a é i o ou)\", 0, 0, 4, 0.01) : si.smoo;\nf1 = 730, 530, 270, 570, 300 : ba.selectn(5, int(v + 0.5));\nf2 = 1090, 1840, 2290, 840, 870 : ba.selectn(5, int(v + 0.5));\nf3 = 2440, 2480, 3010, 2410, 2240 : ba.selectn(5, int(v + 0.5));\nsource = os.sawtooth(freq * (1 + 0.006 * os.osc(5))) * en.adsr(0.05, 0.1, 0.9, 0.3, gate);\nprocess = source <: fi.resonbp(f1 : si.smoo, 10, 1), fi.resonbp(f2 : si.smoo, 12, 0.5), fi.resonbp(f3 : si.smoo, 14, 0.3) :> _ * 0.15 <: _, _;"
+  },
+  {
+   "id": "corde",
+   "famille": "physiques",
+   "titre": "Une corde pincée",
+   "texte": "Un bruit très court tourne dans une boucle de retard : c'est l'algorithme de Karplus et Strong (1983). La longueur de la boucle donne la hauteur.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 220, 50, 1000, 0.01);\ngate = button(\"gate\");\namorti = hslider(\"amortissement\", 0.4, 0, 1, 0.01);\nprocess = gate : ba.impulsify : pm.ks(pm.f2l(freq), amorti) * 0.6 <: _, _;"
+  },
+  {
+   "id": "djembe",
+   "famille": "physiques",
+   "titre": "Le djembé",
+   "texte": "Un modèle physique de djembé, de la bibliothèque Faust. Touche le clavier pour frapper : la hauteur change la taille de la peau.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 80, 40, 300, 0.01);\ngate = button(\"gate\");\nposition = hslider(\"position de frappe\", 0.3, 0, 1, 0.01);\nforce = hslider(\"force\", 0.8, 0, 1, 0.01);\nprocess = gate : ba.impulsify : pm.djembe(freq, position, 0.5, force) * 2 <: _, _;"
+  },
+  {
+   "id": "marimba",
+   "famille": "physiques",
+   "titre": "Le marimba",
+   "texte": "Une lame de bois frappée et son tube résonateur, simulés par le calcul. Change l'endroit de la frappe.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 440, 100, 2000, 0.01);\ngate = button(\"gate\");\nposition = hslider(\"position de frappe\", 1, 0, 4, 1);\ndur = hslider(\"dureté du maillet\", 0.5, 0, 1, 0.01);\nprocess = gate : ba.impulsify : pm.marimba(freq, position, dur * 7000 + 1000, 0.25, 1) * 2 <: _, _;"
+  },
+  {
+   "id": "flute",
+   "famille": "physiques",
+   "titre": "La flûte",
+   "texte": "Un modèle physique de flûte : le souffle excite un tube. Joue au clavier ; la pression change la couleur et peut faire octavier.",
+   "code": "import(\"stdfaust.lib\");\nfreq = hslider(\"freq\", 440, 200, 1500, 0.01);\ngate = button(\"gate\");\npression = hslider(\"pression\", 0.9, 0.5, 1.2, 0.01);\nprocess = pm.fluteModel(pm.f2l(freq), 0.5, pression * en.asr(0.05, 1, 0.1, gate)) * 0.4 <: _, _;"
+  },
+  {
+   "id": "cloche",
+   "famille": "physiques",
+   "titre": "Une cloche d'église",
+   "texte": "Une cloche décrite par ses modes de vibration, mesurés sur une vraie cloche. Le battant frappe au clavier.",
+   "code": "import(\"stdfaust.lib\");\ngate = button(\"gate\");\nposition = hslider(\"position de frappe\", 0, 0, 6, 1);\ndur = hslider(\"dureté\", 0.5, 0, 1, 0.01);\nprocess = gate : ba.impulsify : pm.frenchBell(position, dur * 7000 + 1000, 0.5, 1) * 0.3 <: _, _;"
+  },
+  {
+   "id": "metronome",
+   "famille": "rythmes",
+   "titre": "Un métronome",
+   "texte": "Une impulsion à chaque battement, plus forte sur le premier temps. Règle le tempo et le nombre de temps par mesure.",
+   "code": "import(\"stdfaust.lib\");\ntempo = hslider(\"tempo [unit:BPM]\", 90, 40, 220, 1);\ntemps = hslider(\"temps par mesure\", 4, 2, 7, 1);\nmarche = checkbox(\"marche\");\nbattement = ba.beat(tempo) * marche;\ncompte = battement : ba.pulse_countup_loop(temps - 1, 1);\nclic = battement : en.ar(0.001, 0.05) * os.osc(select2(compte == 0, 1000, 1600));\nprocess = clic * 0.5 <: _, _;"
+  },
+  {
+   "id": "boucle",
+   "famille": "rythmes",
+   "titre": "Une boîte à rythmes",
+   "texte": "Grosse caisse, caisse claire et charleston, fabriquées avec des sinus et du bruit, sur une boucle de seize cases.",
+   "code": "import(\"stdfaust.lib\");\ntempo = hslider(\"tempo [unit:BPM]\", 100, 60, 180, 1);\nmarche = checkbox(\"marche\");\npas = ba.beat(tempo * 4) * marche;\nn = pas : ba.pulse_countup_loop(15, 1);\nmotif(m) = (m >> (15 - n)) & 1;\negc = pas * motif(34984) : en.ar(0.001, 0.25);\ngc = os.osc(50 + 120 * egc) * egc * 0.7;\ncc = pas * motif(2056) : en.ar(0.001, 0.15) * (no.noise : fi.highpass(2, 1500)) * 0.5;\nch = pas * motif(43690) : en.ar(0.001, 0.04) * (no.noise : fi.highpass(2, 7000)) * 0.3;\nprocess = (gc + cc + ch) * 0.55 <: _, _;"
+  },
+  {
+   "id": "polyrythme",
+   "famille": "rythmes",
+   "titre": "Trois contre deux",
+   "texte": "Deux pulsations en même temps : trois coups aigus pendant deux coups graves. Le polyrythme des musiques d'Afrique de l'Ouest.",
+   "code": "import(\"stdfaust.lib\");\ntempo = hslider(\"tempo [unit:BPM]\", 60, 30, 120, 1);\nmarche = checkbox(\"marche\");\ncoup(f, t) = ba.beat(t) * marche : en.ar(0.001, 0.12) * os.osc(f);\nprocess = (coup(220, tempo * 2) + coup(660, tempo * 3)) * 0.4 <: _, _;"
+  },
+  {
+   "id": "arpege",
+   "famille": "rythmes",
+   "titre": "Un arpège qui tourne",
+   "texte": "Un accord joué note après note, en boucle. Change le tempo et l'accord : majeur ou mineur.",
+   "code": "import(\"stdfaust.lib\");\ntempo = hslider(\"tempo [unit:BPM]\", 120, 60, 300, 1);\nmineur = checkbox(\"mineur\");\nmarche = checkbox(\"marche\");\npas = ba.beat(tempo * 2) * marche;\nn = pas : ba.pulse_countup_loop(3, 1);\ndemi = 0, select2(mineur, 4, 3), 7, 12 : ba.selectn(4, n);\nnote = 57 + demi : ba.midikey2hz;\nprocess = os.triangle(note) * (pas : en.ar(0.005, 0.3)) * 0.4 <: _, _;"
+  },
+  {
+   "id": "echo",
+   "famille": "effets",
+   "titre": "L'écho",
+   "texte": "Le son revient, de plus en plus faible. Avec le micro, parle ou chante : ta voix revient.",
+   "code": "import(\"stdfaust.lib\");\ntemps = hslider(\"temps [unit:s]\", 0.35, 0.05, 1.5, 0.01);\nretour = hslider(\"retour\", 0.5, 0, 0.95, 0.01);\nprocess = _ <: _, ef.echo(2, temps, retour) * 0.6 :> _ * 0.6 <: _, _;"
+  },
+  {
+   "id": "reverb",
+   "famille": "effets",
+   "titre": "La réverbération",
+   "texte": "Des milliers de réflexions très serrées : la salle. Avec le micro, chante dans une cathédrale.",
+   "code": "import(\"stdfaust.lib\");\ntaille = hslider(\"taille de la salle\", 0.8, 0, 0.98, 0.01);\nmelange = hslider(\"mélange\", 0.4, 0, 1, 0.01);\nprocess = _ <: (_ * (1 - melange) <: _, _), (_ <: re.stereo_freeverb(taille, 0.5, 0.5, 23) : _ * melange * 0.25, _ * melange * 0.25) :> _, _;"
+  },
+  {
+   "id": "robot",
+   "famille": "effets",
+   "titre": "La voix de robot",
+   "texte": "La modulation en anneau multiplie ta voix par un son pur : elle devient métallique. Branche le micro et parle.",
+   "code": "import(\"stdfaust.lib\");\nf = hslider(\"fréquence [unit:Hz]\", 60, 10, 400, 1);\nprocess = _ * os.osc(f) * 2 <: _, _;"
+  },
+  {
+   "id": "saturation",
+   "famille": "effets",
+   "titre": "La saturation",
+   "texte": "On écrase le haut de l'onde : de nouvelles harmoniques apparaissent, comme dans une guitare électrique.",
+   "code": "import(\"stdfaust.lib\");\ngain = hslider(\"gain\", 0.5, 0, 1, 0.01);\nprocess = _ : ef.cubicnl(gain, 0) * 0.7 <: _, _;"
+  },
+  {
+   "id": "harmoniseur",
+   "famille": "effets",
+   "titre": "Plus aigu, plus grave",
+   "texte": "Change la hauteur d'un son sans changer sa vitesse. Avec le micro, ta voix monte ou descend d'une quinte, d'une octave.",
+   "code": "import(\"stdfaust.lib\");\ndemitons = hslider(\"décalage [unit:demi-tons]\", 7, -12, 12, 1);\nprocess = _ <: _ * 0.6, ef.transpose(2048, 512, demitons) :> _ <: _, _;"
+  },
+  {
+   "id": "panoramique",
+   "famille": "espace",
+   "titre": "Gauche, droite",
+   "texte": "Un son qui se promène entre l'enceinte de gauche et celle de droite. Mets un casque.",
+   "code": "import(\"stdfaust.lib\");\nvitesse = hslider(\"vitesse [unit:Hz]\", 0.25, 0, 3, 0.01);\np = 0.5 + 0.5 * os.osc(vitesse);\nson = os.sawtooth(220) * 0.2 : fi.lowpass(2, 1500);\nprocess = son <: _ * sqrt(1 - p), _ * sqrt(p);"
+  },
+  {
+   "id": "doppler",
+   "famille": "espace",
+   "titre": "L'effet Doppler",
+   "texte": "Une sirène passe devant toi : la hauteur monte quand elle approche, baisse quand elle s'éloigne.",
+   "code": "import(\"stdfaust.lib\");\nvitesse = hslider(\"vitesse de passage\", 0.2, 0.05, 1, 0.01);\nx = os.lf_sawpos(vitesse) * 2 - 1;\ndist = sqrt(x * x + 0.01);\nv = x / dist;\nhauteur = 660 * (1 - 0.25 * v);\nprocess = os.square(hauteur) * 0.15 / (dist * 2 + 0.3) : fi.lowpass(2, 3000) <: _ * (0.5 - 0.5 * x), _ * (0.5 + 0.5 * x);"
+  },
+  {
+   "id": "nappe",
+   "famille": "musique",
+   "titre": "Une nappe qui évolue",
+   "texte": "Un accord tenu, des filtres qui bougent lentement, une réverbération : une petite pièce d'ambiance, sans fin.",
+   "code": "import(\"stdfaust.lib\");\nracine = hslider(\"racine [unit:Hz]\", 110, 55, 220, 0.01);\nlenteur = hslider(\"lenteur\", 0.05, 0.01, 0.5, 0.01);\nvoix(r, k) = os.sawtooth(racine * r) : fi.resonlp(500 + 1500 * (0.5 + 0.5 * os.osc(lenteur * k)), 2, 0.08);\nprocess = (voix(1, 1) + voix(1.5, 1.3) + voix(2.4, 0.7) + voix(3, 1.7)) * 0.15 <: re.stereo_freeverb(0.9, 0.5, 0.5, 23);"
+  },
+  {
+   "id": "carillon",
+   "famille": "musique",
+   "titre": "Un carillon au hasard",
+   "texte": "Des notes de la gamme pentatonique tirées au hasard, jouées par une cloche FM, dans une grande salle. Rien ne se répète.",
+   "code": "import(\"stdfaust.lib\");\ntempo = hslider(\"tempo [unit:BPM]\", 80, 30, 200, 1);\nmarche = checkbox(\"marche\");\npas = ba.beat(tempo * 2) * marche;\nhasard = no.noise : ba.sAndH(pas) : abs;\nnote = 0, 2, 4, 7, 9, 12, 14, 16 : ba.selectn(8, int(hasard * 7.99));\nf = 69 + note : ba.midikey2hz;\nenv = pas : en.ar(0.002, 2.5);\ncloche = os.osc(f + os.osc(f * 3.5) * f * 2 * env) * env * 0.25;\nprocess = cloche * 0.12 <: re.stereo_freeverb(0.85, 0.4, 0.5, 23);"
+  },
+  {
+   "id": "sirene",
+   "famille": "musique",
+   "titre": "Les sirènes d'Ionisation",
+   "texte": "Un son qui glisse lentement vers l'aigu puis redescend, comme les sirènes d'Edgard Varèse dans Ionisation (1931).",
+   "code": "import(\"stdfaust.lib\");\nvitesse = hslider(\"vitesse [unit:Hz]\", 0.1, 0.02, 1, 0.01);\nf = 150 + 1000 * (0.5 - 0.5 * os.osc(vitesse));\nprocess = os.triangle(f) * 0.06 <: re.stereo_freeverb(0.7, 0.5, 0.5, 23);"
+  }
+ ],
+ "ateliers": [
+  {
+   "id": "son-pur",
+   "titre": "Un son pur",
+   "cours": "6e, séquence 1",
+   "texte": "Une sinusoïde : le son le plus simple qui existe. Fais-la sonner, puis change sa hauteur.",
+   "code": "import(\"stdfaust.lib\");\nhauteur = hslider(\"hauteur\", 440, 100, 1000, 1) : si.smoo;\nmarche = checkbox(\"jouer\") : si.smoo;\nprocess = os.osc(hauteur) * 0.15 * marche;",
+   "lignes": [
+    "On charge la bibliothèque de Faust.",
+    "Un curseur « hauteur », de 100 à 1000 hertz, qui commence à 440 (le la du diapason).",
+    "Un bouton marche ou arrêt.",
+    "Le son : une sinusoïde (os.osc) à la hauteur choisie, à faible volume, multipliée par le bouton."
+   ],
+   "defis": [
+    {
+     "texte": "Le la du diapason",
+     "valeurs": {
+      "hauteur": 440
+     }
+    },
+    {
+     "texte": "Une octave plus bas",
+     "valeurs": {
+      "hauteur": 220
+     }
+    },
+    {
+     "texte": "Une octave plus haut",
+     "valeurs": {
+      "hauteur": 880
+     }
+    }
+   ]
+  },
+  {
+   "id": "harmoniques",
+   "titre": "Fabriquer un timbre avec des harmoniques",
+   "cours": "6e, séquence 4 et 3e, séquence 3",
+   "texte": "Un son musical est fait d'harmoniques : la note et ses multiples. Monte et descends les barres pour sculpter le timbre.",
+   "code": "import(\"stdfaust.lib\");\nnote = hslider(\"note\", 110, 55, 440, 1) : si.smoo;\nh(i) = vslider(\"h%i\", (i == 0), 0, 1, 0.01) : si.smoo;\nmarche = checkbox(\"jouer\") : si.smoo;\nprocess = par(i, 8, os.osc(note * (i + 1)) * h(i)) :> *(0.12 * marche);",
+   "lignes": [
+    "La bibliothèque.",
+    "La note fondamentale.",
+    "Huit curseurs verticaux, un par harmonique ; seul le premier est monté au départ.",
+    "Marche ou arrêt.",
+    "Huit sinusoïdes, à 1, 2, 3… 8 fois la note, chacune à son volume, additionnées (:>)."
+   ],
+   "defis": [
+    {
+     "texte": "Un son pur",
+     "valeurs": {
+      "h0": 1,
+      "h1": 0,
+      "h2": 0,
+      "h3": 0,
+      "h4": 0,
+      "h5": 0,
+      "h6": 0,
+      "h7": 0
+     }
+    },
+    {
+     "texte": "Creux comme une clarinette (impaires)",
+     "valeurs": {
+      "h0": 1,
+      "h1": 0,
+      "h2": 0.5,
+      "h3": 0,
+      "h4": 0.3,
+      "h5": 0,
+      "h6": 0.2,
+      "h7": 0
+     }
+    },
+    {
+     "texte": "Brillant comme une trompette",
+     "valeurs": {
+      "h0": 1,
+      "h1": 0.8,
+      "h2": 0.7,
+      "h3": 0.6,
+      "h4": 0.5,
+      "h5": 0.4,
+      "h6": 0.3,
+      "h7": 0.25
+     }
+    }
+   ]
+  },
+  {
+   "id": "cloche",
+   "titre": "Une cloche, un gong",
+   "cours": "6e, séquence 4 : le gamelan",
+   "texte": "Une cloche a des partiels inharmoniques : ils ne sont pas des multiples de la note. Frappe-la, puis rends-la plus ou moins « métallique ».",
+   "code": "import(\"stdfaust.lib\");\nnote = hslider(\"note\", 330, 100, 1000, 1);\nresonance = hslider(\"resonance\", 2, 0.2, 6, 0.1);\nmetal = hslider(\"metal\", 1, 0, 1, 0.01);\nfrappe = button(\"frapper\");\npartiel(harm, inharm, d, a) = os.osc(note * (harm + metal * (inharm - harm))) * en.ar(0.001, resonance * d, frappe) * a;\nprocess = (partiel(1, 1, 1, 0.5) + partiel(2, 2.76, 0.5, 0.3) + partiel(3, 5.4, 0.25, 0.15) + partiel(4, 8.93, 0.12, 0.08)) * 0.4;",
+   "lignes": [
+    "La bibliothèque.",
+    "La note.",
+    "La durée de la résonance, en secondes.",
+    "Le curseur métal : 0, des harmoniques ordinaires ; 1, des partiels de cloche.",
+    "Le bouton pour frapper.",
+    "Un partiel : sa hauteur glisse entre l'harmonique et le partiel de cloche, et il s'éteint à sa vitesse.",
+    "Quatre partiels additionnés."
+   ],
+   "defis": [
+    {
+     "texte": "Une vraie cloche",
+     "valeurs": {
+      "metal": 1
+     }
+    },
+    {
+     "texte": "Une corde, pas une cloche",
+     "valeurs": {
+      "metal": 0
+     }
+    },
+    {
+     "texte": "Un gong grave et long",
+     "valeurs": {
+      "note": 120,
+      "resonance": 6,
+      "metal": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "guitare",
+   "titre": "Une corde pincée",
+   "cours": "6e, séquence 1 : souffler, pincer, frapper",
+   "texte": "Un modèle physique : Faust calcule comment une corde de nylon vibre quand on la pince. Joue sur le clavier.",
+   "code": "import(\"stdfaust.lib\");\nprocess = pm.nylonGuitar_ui_MIDI <: _, _;",
+   "lignes": [
+    "La bibliothèque.",
+    "Le modèle physique de guitare à cordes de nylon (pm = physical models), envoyé à gauche et à droite."
+   ],
+   "defis": []
+  },
+  {
+   "id": "voix",
+   "titre": "Une voix de synthèse",
+   "cours": "5e, séquence 1 et 3e, séquence 3",
+   "texte": "Une voix calculée par synthèse FOF (fonctions d'onde formantiques). Choisis la voix et la voyelle, puis joue sur le clavier.",
+   "code": "import(\"stdfaust.lib\");\nprocess = pm.SFFormantModelFofSmooth_ui_MIDI <: _, _;",
+   "lignes": [
+    "La bibliothèque.",
+    "Le modèle de voix chantée : type de voix, voyelle, hauteur, vibrato."
+   ],
+   "defis": []
+  },
+  {
+   "id": "salle",
+   "titre": "La salle : la réverbération",
+   "cours": "Tous niveaux : écouter l'espace",
+   "texte": "La même corde pincée, dans une salle plus ou moins grande. La réverbération imite les milliers d'échos sur les murs.",
+   "code": "import(\"stdfaust.lib\");\nduree = hslider(\"salle\", 2, 0.3, 8, 0.1);\nprocess = pm.nylonGuitar_ui_MIDI <: re.zita_rev1_stereo(20, 200, 6000, duree, duree * 0.8, 48000) : *(3), *(3);",
+   "lignes": [
+    "La bibliothèque.",
+    "La durée de la réverbération, en secondes : petite pièce ou cathédrale.",
+    "La guitare, envoyée dans la réverbération zita-rev1, puis un peu amplifiée à gauche et à droite."
+   ],
+   "defis": [
+    {
+     "texte": "Une petite chambre",
+     "valeurs": {
+      "salle": 0.4
+     }
+    },
+    {
+     "texte": "Une église",
+     "valeurs": {
+      "salle": 4
+     }
+    },
+    {
+     "texte": "Une cathédrale",
+     "valeurs": {
+      "salle": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "glissandos",
+   "titre": "Une masse de glissandos",
+   "cours": "3e, séquence 4 : Xenakis",
+   "texte": "Seize sons qui glissent lentement, chacun à sa vitesse : on n'entend plus des notes, mais une masse sonore qui bouge.",
+   "code": "import(\"stdfaust.lib\");\nvitesse = hslider(\"vitesse\", 0.05, 0.01, 0.5, 0.01);\ndensite = hslider(\"densite\", 8, 1, 16, 1) : si.smoo;\nmarche = checkbox(\"jouer\") : si.smoo;\nvoix(i) = os.sawtooth(200 + i * 45 + 150 * os.osc(vitesse * (1 + i * 0.13))) * (i < densite);\nprocess = par(i, 16, voix(i)) :> fi.lowpass(2, 2500) * 0.03 * marche;",
+   "lignes": [
+    "La bibliothèque.",
+    "La vitesse des glissements.",
+    "Combien de voix on entend, de 1 à 16.",
+    "Marche ou arrêt.",
+    "Une voix : une dent de scie dont la hauteur ondule lentement ; elle se tait si elle dépasse la densité.",
+    "Seize voix additionnées, adoucies par un filtre."
+   ],
+   "defis": [
+    {
+     "texte": "Une seule voix",
+     "valeurs": {
+      "densite": 1
+     }
+    },
+    {
+     "texte": "Toute la masse",
+     "valeurs": {
+      "densite": 16
+     }
+    },
+    {
+     "texte": "Une masse qui s'agite",
+     "valeurs": {
+      "densite": 16,
+      "vitesse": 0.4
+     }
+    }
+   ]
+  }
+ ]
+}
