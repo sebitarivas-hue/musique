@@ -2473,6 +2473,8 @@ const attendre = ms => new Promise(r => setTimeout(r, ms));
 let AC = null, METRO = null, MASTER = null, NOEUDS = [], SON_EN_COURS = null, DEVERROUILLE = false;
 /* iPhone : sans ceci, le bouton silencieux coupe le son du navigateur. */
 function deverrouiller() {
+  /* iPhone : le contexte audio ne se réveille que dans le geste du doigt. On le crée et on le réveille ici, tout de suite, avant toute attente (chargement des instruments, etc.). */
+  try { audio(); } catch (_) {}
   if (DEVERROUILLE) return; DEVERROUILLE = true;
   setTimeout(() => { try { chargerInstruments(["clavier", "percu"]); prechargerGestes(); } catch (_) {} }, 50);
   try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (_) {}
@@ -2590,6 +2592,7 @@ function audio() {
         .then(buf => { const rv2 = AC.createConvolver(); rv2.buffer = buf; MASTER.connect(rv2).connect(mouille); try { MASTER.disconnect(rv); rv.disconnect(); } catch (_) {} REVERB_FAUST = true; }).catch(() => {}); } catch (_) {} }
   if (AC.state === "suspended") AC.resume(); return AC;
 }
+["pointerdown", "touchend", "click", "keydown"].forEach(ev => document.addEventListener(ev, () => { try { if (AC && AC.state !== "running") AC.resume(); } catch (_) {} }, true));
 const suivre = n => { NOEUDS.push(n); if (NOEUDS.length > 600) NOEUDS = NOEUDS.slice(-300); return n; };
 function toutArreter() { PARTI.forEach(clearTimeout); PARTI = []; document.querySelectorAll('.pn.on').forEach(n => n.classList.remove('on')); NOEUDS.forEach(n => { try { n.stop(); } catch (_) {} }); NOEUDS = []; if (SON_EN_COURS) { clearTimeout(SON_EN_COURS.t); SON_EN_COURS.b.setAttribute("aria-pressed", "false"); SON_EN_COURS = null; } }
 /* jouer(fréquence, durée, volume, forme, départ, options) : une note avec une enveloppe douce. */

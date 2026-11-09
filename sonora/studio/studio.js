@@ -1,15 +1,15 @@
 // SONORA Studio : l'interface de programmation. Elle ne calcule aucun son : elle compile (Worker), envoie au moteur (AudioWorklet),
 // et affiche ce que le moteur renvoie.
-import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=4ead38928a";
-import { compiler, MODULES, MATHS } from "../src/index.js?v=4ead38928a";
-import { MOTS } from "../src/lexeur.js?v=4ead38928a";
-import { Editeur, inserer } from "./editeur.js?v=4ead38928a";
-import { formater, vers, depuis } from "./reglages-commun.js?v=4ead38928a";
-import { EXEMPLES } from "./exemples.js?v=4ead38928a";
-import { Projets } from "./projets.js?v=4ead38928a";
-import { installerCreation } from "./creation.js?v=4ead38928a";
-import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=4ead38928a";
-import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=4ead38928a";
+import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=56d45a54ec";
+import { compiler, MODULES, MATHS } from "../src/index.js?v=56d45a54ec";
+import { MOTS } from "../src/lexeur.js?v=56d45a54ec";
+import { Editeur, inserer } from "./editeur.js?v=56d45a54ec";
+import { formater, vers, depuis } from "./reglages-commun.js?v=56d45a54ec";
+import { EXEMPLES } from "./exemples.js?v=56d45a54ec";
+import { Projets } from "./projets.js?v=56d45a54ec";
+import { installerCreation } from "./creation.js?v=56d45a54ec";
+import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=56d45a54ec";
+import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=56d45a54ec";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -172,7 +172,7 @@ async function brancherSource() {
   let src;
   if (choix === "sinus") { src = ctx.createOscillator(); src.frequency.value = 220; const g = ctx.createGain(); g.gain.value = 0.4; src.connect(g); src.start(); src.stop2 = () => src.stop(); src.sortie = g; }
   else if (choix === "micro") {
-    try { const flux = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); const s = ctx.createMediaStreamSource(flux); s.stop2 = () => flux.getTracks().forEach(t => t.stop()); src = s; src.sortie = s; }
+    try { try { if (navigator.audioSession) navigator.audioSession.type = "play-and-record"; } catch (_) {} const flux = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); const s = ctx.createMediaStreamSource(flux); s.stop2 = () => flux.getTracks().forEach(t => t.stop()); src = s; src.sortie = s; }
     catch (e) { journal("av", "Micro indisponible : " + esc(e && e.message || e) + ". Choisis une autre source."); return; }
   } else {
     const n = ctx.sampleRate, buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);

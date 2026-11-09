@@ -1,29 +1,29 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=4ead38928a";
-import * as Ed from "./editions.js?v=4ead38928a";
-import * as P from "./projet.js?v=4ead38928a";
-import { Stockage } from "./stockage.js?v=4ead38928a";
-import { creerBouton } from "./bouton.js?v=4ead38928a";
-import * as MI from "./midi.js?v=4ead38928a";
-import * as N from "./notes.js?v=4ead38928a";
-import { Rouleau } from "./rouleau.js?v=4ead38928a";
-import { separer, NOMS_PARTIES } from "./separation.js?v=4ead38928a";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=4ead38928a";
-import * as BM from "./batterie_midi.js?v=4ead38928a";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=4ead38928a";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=4ead38928a";
-import * as INS from "./instruments.js?v=4ead38928a";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=4ead38928a";
-import * as MO from "./moteurs.js?v=4ead38928a";
-import { monterPanneaux } from "./panneaux.js?v=4ead38928a";
-import { monterNotions } from "./notions.js?v=4ead38928a";
-import { DEMOS } from "./demos.js?v=4ead38928a";
-import * as B from "./bibliotheque.js?v=4ead38928a";
-import { encoderWAV } from "../studio/wav.js?v=4ead38928a";
-import { ENTREES } from "../library/catalogue.js?v=4ead38928a";
-import { compiler } from "../src/index.js?v=4ead38928a";
-import { rendre } from "../src/rendu.js?v=4ead38928a";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=56d45a54ec";
+import * as Ed from "./editions.js?v=56d45a54ec";
+import * as P from "./projet.js?v=56d45a54ec";
+import { Stockage } from "./stockage.js?v=56d45a54ec";
+import { creerBouton } from "./bouton.js?v=56d45a54ec";
+import * as MI from "./midi.js?v=56d45a54ec";
+import * as N from "./notes.js?v=56d45a54ec";
+import { Rouleau } from "./rouleau.js?v=56d45a54ec";
+import { separer, NOMS_PARTIES } from "./separation.js?v=56d45a54ec";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=56d45a54ec";
+import * as BM from "./batterie_midi.js?v=56d45a54ec";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=56d45a54ec";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=56d45a54ec";
+import * as INS from "./instruments.js?v=56d45a54ec";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=56d45a54ec";
+import * as MO from "./moteurs.js?v=56d45a54ec";
+import { monterPanneaux } from "./panneaux.js?v=56d45a54ec";
+import { monterNotions } from "./notions.js?v=56d45a54ec";
+import { DEMOS } from "./demos.js?v=56d45a54ec";
+import * as B from "./bibliotheque.js?v=56d45a54ec";
+import { encoderWAV } from "../studio/wav.js?v=56d45a54ec";
+import { ENTREES } from "../library/catalogue.js?v=56d45a54ec";
+import { compiler } from "../src/index.js?v=56d45a54ec";
+import { rendre } from "../src/rendu.js?v=56d45a54ec";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -59,7 +59,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=4ead38928a"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=56d45a54ec"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -132,6 +132,8 @@ async function lire() {
   if ($("metro").checked) etat.metro = metronome(ctx, etat.tete, etat.debutCtx);
   etat.lecture = true; $("b-lire").innerHTML = '<span class="ic ic-stop" aria-hidden="true"></span> Arrêter'; badge(etat.enreg ? "enregistrement" : "lecture", etat.enreg ? "erreur" : "marche");
 }
+// La session audio de Safari (iOS 16.4 et après) : le micro n'est accessible qu'en « play-and-record » ; ailleurs, la propriété n'existe pas.
+function sessionAudio(type) { try { if (navigator.audioSession && navigator.audioSession.type !== type) navigator.audioSession.type = type; } catch (_) {} }
 function arreter() {
   for (const s of etat.sources) { try { s.stop(); } catch (_) {} } etat.sources = [];
   for (const ch of Object.values(etat.chaines || {})) { try { ch.vol.disconnect(); (ch.veilles || []).forEach(v => v.stop()); } catch (_) {} } etat.chaines = null;
@@ -196,6 +198,7 @@ async function enregistrer() {
     const armees = pistesArmees(), piste = armees[0]; if (!piste) return;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { message("Ce navigateur ne donne pas accès au micro (il faut une page en https et un navigateur récent)."); return; }
     const ctx = contexte(); let flux;
+    sessionAudio("play-and-record");   // iPhone et iPad : une session « lecture seule » refuse le micro (« AudioSession category is not compatible with audio capture »)
     const entree = $("entree-audio") && $("entree-audio").value; try { flux = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, ...(armees.length > 1 ? { channelCount: { ideal: armees.length } } : {}), ...(entree ? { deviceId: { exact: entree } } : {}) } }); listerEntrees(); }
     catch (e1) { if (e1 && e1.name === "OverconstrainedError") { try { flux = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e2) { e1 = e2; } } if (!flux) { message(MICRO_ERREURS[e1 && e1.name] || "Micro indisponible : " + (e1 && (e1.message || e1.name) || e1)); return; } }
     if (ctx.state !== "running") { try { await Promise.race([ctx.resume(), new Promise(ok => setTimeout(ok, 1500))]); } catch (_) {} }
@@ -264,7 +267,7 @@ function suivreCurseur() {
 async function finirEnregistrement() {
   const c = etat.capture; etat.enreg = false; etat.capture = null; document.querySelectorAll(".clip.enreg-en-cours").forEach(x => x.remove()); $("b-enreg").setAttribute("aria-pressed", "false"); $("vu-micro").hidden = true;
   try { c.src.disconnect(); if (c.noeud) c.noeud.disconnect(); if (c.muet) c.muet.disconnect(); } catch (_) {}
-  await arretRecorder(c.rec); c.flux.getTracks().forEach(t => t.stop());
+  sessionAudio("auto"); await arretRecorder(c.rec); c.flux.getTracks().forEach(t => t.stop());
   let canaux = P.assemblerCanaux(c.morceaux), sr = c.sr, voie = "worklet";
   if (!canaux.length || canaux[0].length < c.sr * 0.05) {
     canaux = [];
