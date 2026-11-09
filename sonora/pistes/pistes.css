@@ -478,3 +478,98 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .rl-lasso { fill: rgba(76,155,245,.18); stroke: #4C9BF5; stroke-dasharray: 4 3; pointer-events: none; }
 .rl-repere { stroke: #4C9BF5; stroke-width: 1.5; stroke-dasharray: 5 3; pointer-events: none; } .rl-repere-pointe { fill: #4C9BF5; }
 .rl-tete { stroke: #FF5638; stroke-width: 2; pointer-events: none; }
+
+/* =====================================================================================================================================
+   Téléphone, version 2 (refonte du 09/11/2026 : « beaucoup trop illisible surtout en téléphone »). Ce bloc vient en dernier et l'emporte sur les règles plus anciennes.
+   1. Les pistes tiennent à quatre ou cinq à l'écran (122 px au lieu de 152 px) ; 2. la barre du clip choisi est une rangée d'icônes fixée au-dessus de la barre de lecture, au lieu d'un bloc de 170 px
+   qui repoussait les pistes ; 3. le menu est un accordéon sombre (Fichier, Édition...) au lieu d'une liste blanche de trente lignes avec des raccourcis clavier ; 4. les feuilles sont sombres, comme l'application.
+   ===================================================================================================================================== */
+@media (max-width: 700px) {
+  :root { --h-piste: 122px; }
+  .ligne { grid-template-columns: 118px minmax(0, 1fr); --h-piste: 122px; }
+  .entete { grid-template-columns: 1fr 1fr; grid-template-rows: 30px 38px 38px; gap: 4px; padding: 4px; }
+  .entete input[type=text] { min-height: 30px; font-size: .8rem; padding: 2px 6px; }
+  .entete .ent-b .b-arme, .entete .ent-b .b-muet, .entete .ent-b .b-solo, .entete .ent-b .b-plus { min-width: 0; min-height: 38px; }
+  .clip .nom-clip { font-size: .75rem; line-height: 18px; }
+  .clip canvas { height: calc(var(--h-piste) - 12px - 24px); }
+  /* le message d'état : une ligne */
+  #message { -webkit-line-clamp: 1; font-size: .74rem; padding: 3px 8px; min-height: 0; }
+
+  /* la barre du clip choisi : en bas, au-dessus de la barre de lecture ; des icônes avec un mot, qui défilent si besoin */
+  .selection { position: fixed; left: 0; right: 0; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 46; margin: 0; padding: 6px 8px; flex-wrap: nowrap; overflow-x: auto; gap: 6px; align-items: stretch; border: 0; border-top: 2px solid var(--acide); border-radius: 0; background: #1b1b21; box-shadow: 0 -8px 18px rgba(0, 0, 0, .5); scrollbar-width: none; }
+  .selection::-webkit-scrollbar { display: none; } .selection[hidden] { display: none; }
+  .selection #sel-nom { flex: 0 0 auto; max-width: 24vw; align-self: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .8rem; color: var(--acide); }
+  .selection button { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 64px; min-height: 54px; padding: 4px 8px; font-size: .68rem; line-height: 1.1; text-align: center; white-space: normal; border-radius: 10px; }
+  .selection button .ic { font-size: 1.4rem; } .selection button[hidden] { display: none; }
+  .selection .mini { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; min-width: 150px; font-size: .75rem; } .selection .mini input { min-width: 90px; }
+  body:has(#selection:not([hidden])) { padding-bottom: calc(132px + 66px); }
+  body:has(#selection:not([hidden])) .transport .position { top: -98px; }
+
+  /* le menu : un accordéon sombre */
+  body.menu-ouvert .barre-menus { background: #121214; color: #ECEBE4; padding: 56px 12px 24px; }
+  body.menu-ouvert .barre-menus .menu { margin: 0 0 8px; border: 1px solid #34343c; border-radius: 12px; background: #1b1b21; overflow: hidden; }
+  body.menu-ouvert .barre-menus .menu-b { pointer-events: auto; display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 14px; font: 700 .95rem var(--f-body); letter-spacing: .02em; text-transform: none; color: #ECEBE4; border: 0; border-bottom: 0; background: transparent; }
+  body.menu-ouvert .barre-menus .menu-b::after { content: ""; width: 9px; height: 9px; border-right: 2.5px solid var(--acide); border-bottom: 2.5px solid var(--acide); transform: rotate(45deg); transition: transform .15s; }
+  body.menu-ouvert .barre-menus .menu.ouvert-m .menu-b { color: var(--acide); } body.menu-ouvert .barre-menus .menu.ouvert-m .menu-b::after { transform: rotate(225deg); }
+  body.menu-ouvert .barre-menus .menu:not(.ouvert-m) .menu-l, body.menu-ouvert .barre-menus .menu:not(.ouvert-m) .menu-l[hidden] { display: none !important; }
+  body.menu-ouvert .barre-menus .menu-l { padding: 0 6px 8px; }
+  body.menu-ouvert .barre-menus [data-cmd] { color: #ECEBE4; border-bottom: 1px solid #2b2b33; font-size: .95rem; min-height: 50px; } body.menu-ouvert .barre-menus [data-cmd]:disabled { color: #6e6e78; }
+  body.menu-ouvert .barre-menus [data-cmd] kbd { display: none; }   /* les raccourcis clavier ne servent à rien sur un téléphone */
+  body.menu-ouvert .barre-menus li:has(> [data-cmd^="decaler-"]), body.menu-ouvert .barre-menus li:has(> [data-cmd="tout-choisir"]), body.menu-ouvert .barre-menus li:has(> [data-cmd="rogner-curseur"]), body.menu-ouvert .barre-menus li:has(> [data-cmd="zoom-tout"]), body.menu-ouvert .barre-menus li:has(> [data-cmd="piste-haut"]), body.menu-ouvert .barre-menus li:has(> [data-cmd="piste-bas"]), body.menu-ouvert .barre-menus li:has(> [data-cmd="deselectionner"]) { display: none; }
+  body.menu-ouvert .menu-fermer { background: #1b1b21; color: #ECEBE4; border-color: #4a4a55; }
+
+  /* les feuilles (Ajouter, Réglages, piste) : sombres, comme l'application */
+  .feuille { background: #17171b; color: #ECEBE4; border-top: 2px solid var(--acide); border-radius: 18px 18px 0 0; box-shadow: 0 -10px 30px rgba(0, 0, 0, .6); }
+  .feuille h2, .feuille .midi-haut h2 { color: #ECEBE4; font-size: 1rem; text-transform: none; letter-spacing: 0; }
+  .feuille .tuiles button, .feuille .tuiles .bouton-fichier, .feuille .tuiles label { background: #24242b; color: #ECEBE4; border: 1px solid #3c3c46; border-radius: 12px; }
+  .feuille .tuiles .principal, .feuille .tuiles .tuile-principale, .feuille .tuiles .bouton-fichier:first-child { background: var(--acide); color: #14130f; border-color: var(--acide); }
+  .feuille select, .feuille input[type=number], .feuille input[type=text] { background: #24242b; color: #ECEBE4; border: 1px solid #3c3c46; border-radius: 10px; }
+  .feuille .croix-b { background: #24242b; color: #ECEBE4; border-color: #3c3c46; }
+  .feuille-r, .reglages-liste > * { color: #ECEBE4; } .feuille output { color: var(--acide); }
+}
+@media (max-width: 700px) {
+  .selection #sel-nom { order: 0; max-width: 20vw; } .selection #b-couper { order: 1; } .selection #b-dupliquer { order: 2; } .selection #b-supprimer { order: 3; } .selection #b-modifier-notes { order: 4; } .selection #b-tempo-trouver { order: 5; } .selection .mini { order: 6; }
+  .selection button { width: 74px; min-width: 74px; font-size: .65rem; padding: 4px 4px; }
+}
+@media (max-width: 700px) {
+  body.menu-ouvert .barre-menus .menu-l, body.menu-ouvert .barre-menus .menu-l li, body.menu-ouvert .barre-menus [data-cmd] { background: transparent; box-shadow: none; }
+  body.menu-ouvert .barre-menus [data-cmd]:active { background: #2a2a33; } body.menu-ouvert .barre-menus [data-cmd]:last-child { border-bottom: 0; }
+}
+@media (max-width: 700px) {
+  .feuille .reglages-liste button, .feuille .reglages-liste .bouton-fichier, .feuille .feuille-in .alerte-act button, .feuille .feuille-r button:not(.notion) { background: #24242b; color: #ECEBE4; border: 1px solid #3c3c46; border-radius: 12px; min-height: 52px; }
+  .feuille .reglages-liste button.principal, .feuille .reglages-liste #fr-export, .feuille .reglages-liste button[id*="wav"], .feuille .reglages-liste button:first-of-type.principal { background: var(--acide); color: #14130f; border-color: var(--acide); }
+  .feuille .reglages-liste button:disabled { opacity: .45; }
+  .feuille input[type=checkbox] { accent-color: var(--acide); width: 28px; height: 28px; }
+  .feuille .reglages-liste .rl-groupe button { min-width: 64px; }
+  .feuille .notion { background: #ECEBE4; color: #14130f; }
+}
+@media (max-width: 700px) { #fr-corps #b-export { background: var(--acide); color: #14130f; border-color: var(--acide); } }
+/* Piano roll sur téléphone : un éditeur plein écran. Titre, Terminé et Écouter en tête ; tous les outils sur UNE rangée qui défile ; l'aide est cachée ; la grille prend toute la hauteur qui reste. */
+@media (max-width: 700px) {
+  #rouleau:not([hidden]) { position: fixed; inset: 0; z-index: 70; margin: 0; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); border: 0; border-radius: 0; background: #121214; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  #rouleau .rl-haut { flex: 0 0 auto; flex-wrap: nowrap; overflow-x: auto; gap: 6px; padding-bottom: 2px; scrollbar-width: none; align-items: center; } #rouleau .rl-haut::-webkit-scrollbar { display: none; }
+  #rouleau .rl-haut > * { flex: 0 0 auto; } #rouleau .rl-haut2 { margin-top: 0; }
+  #rouleau .rl-haut b { order: 0; max-width: 34vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; }
+  #rl-fin { order: 1; margin-left: 0 !important; } #rl-ecouter { order: 2; }
+  #rouleau .rl-haut button { min-height: 44px; padding: 0 12px; font-size: .78rem; white-space: nowrap; } #rouleau .rl-haut .mini { display: flex; align-items: center; gap: 6px; font-size: .74rem; white-space: nowrap; } #rouleau .rl-haut select { min-height: 44px; }
+  #rouleau .rl-groupe { display: inline-flex; gap: 4px; }
+  #rl-aide { display: none; }
+  #rl-corps { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  #rl-corps .rl-corps { flex: 1 1 auto; max-height: none; min-height: 0; }
+}
+@media (max-width: 700px) {
+  #rouleau .rl-haut > * { order: 3; } #rouleau .rl-haut b { order: 0; } #rl-fin { order: 1; } #rl-ecouter { order: 2; }
+  #rouleau .rl-haut select { width: auto; min-width: 0; max-width: 46vw; background: #24242b; color: #ECEBE4; border: 1px solid #3c3c46; border-radius: 10px; padding: 0 8px; }
+  #rouleau .rl-haut input[type=range] { width: 90px; }
+}
+@media (max-width: 700px) { #rouleau #rl-fin { order: 1; } #rouleau #rl-ecouter { order: 2; } #rouleau #rl-fin .ic { font-size: 1.1em; } }
+@media (max-width: 700px) {   /* cibles tactiles de 44 px au moins et montage sur 68 % de la largeur au moins (exigences testées) : l'en-tête garde 106 px, la piste 134 px */
+  :root { --h-piste: 134px; } .ligne { grid-template-columns: 106px minmax(0, 1fr); --h-piste: 134px; }
+  .entete { grid-template-rows: 30px 44px 44px; }
+  .entete .ent-b .b-arme, .entete .ent-b .b-muet, .entete .ent-b .b-solo, .entete .ent-b .b-plus { min-width: 44px; min-height: 44px; }
+}
+@media (max-width: 700px) {   /* le panneau « Jouer un instrument » : plus d'explication au-dessus du clavier, les réglages en rangées serrées */
+  #midi > p.petit:not(#midi-etat) { display: none; }
+  #midi .midi-rang { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; } #midi .midi-rang .mini { display: flex; align-items: center; gap: 6px; font-size: .78rem; }
+  #midi .midi-rang select { max-width: 60vw; } #midi #midi-etat { font-size: .74rem; margin: 4px 0; }
+}

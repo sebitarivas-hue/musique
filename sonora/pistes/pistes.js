@@ -1,29 +1,29 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=cf3dab01bc";
-import * as Ed from "./editions.js?v=cf3dab01bc";
-import * as P from "./projet.js?v=cf3dab01bc";
-import { Stockage } from "./stockage.js?v=cf3dab01bc";
-import { creerBouton } from "./bouton.js?v=cf3dab01bc";
-import * as MI from "./midi.js?v=cf3dab01bc";
-import * as N from "./notes.js?v=cf3dab01bc";
-import { Rouleau } from "./rouleau.js?v=cf3dab01bc";
-import { separer, NOMS_PARTIES } from "./separation.js?v=cf3dab01bc";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=cf3dab01bc";
-import * as BM from "./batterie_midi.js?v=cf3dab01bc";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=cf3dab01bc";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=cf3dab01bc";
-import * as INS from "./instruments.js?v=cf3dab01bc";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=cf3dab01bc";
-import * as MO from "./moteurs.js?v=cf3dab01bc";
-import { monterPanneaux } from "./panneaux.js?v=cf3dab01bc";
-import { monterNotions } from "./notions.js?v=cf3dab01bc";
-import { DEMOS } from "./demos.js?v=cf3dab01bc";
-import * as B from "./bibliotheque.js?v=cf3dab01bc";
-import { encoderWAV } from "../studio/wav.js?v=cf3dab01bc";
-import { ENTREES } from "../library/catalogue.js?v=cf3dab01bc";
-import { compiler } from "../src/index.js?v=cf3dab01bc";
-import { rendre } from "../src/rendu.js?v=cf3dab01bc";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=4ead38928a";
+import * as Ed from "./editions.js?v=4ead38928a";
+import * as P from "./projet.js?v=4ead38928a";
+import { Stockage } from "./stockage.js?v=4ead38928a";
+import { creerBouton } from "./bouton.js?v=4ead38928a";
+import * as MI from "./midi.js?v=4ead38928a";
+import * as N from "./notes.js?v=4ead38928a";
+import { Rouleau } from "./rouleau.js?v=4ead38928a";
+import { separer, NOMS_PARTIES } from "./separation.js?v=4ead38928a";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=4ead38928a";
+import * as BM from "./batterie_midi.js?v=4ead38928a";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=4ead38928a";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=4ead38928a";
+import * as INS from "./instruments.js?v=4ead38928a";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=4ead38928a";
+import * as MO from "./moteurs.js?v=4ead38928a";
+import { monterPanneaux } from "./panneaux.js?v=4ead38928a";
+import { monterNotions } from "./notions.js?v=4ead38928a";
+import { DEMOS } from "./demos.js?v=4ead38928a";
+import * as B from "./bibliotheque.js?v=4ead38928a";
+import { encoderWAV } from "../studio/wav.js?v=4ead38928a";
+import { ENTREES } from "../library/catalogue.js?v=4ead38928a";
+import { compiler } from "../src/index.js?v=4ead38928a";
+import { rendre } from "../src/rendu.js?v=4ead38928a";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -59,7 +59,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=cf3dab01bc"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=4ead38928a"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -1102,7 +1102,9 @@ function construireMenus() {
   document.addEventListener("click", e => { if (!e.target.closest("#barre-menus")) fermerMenus(); });
   // Téléphone : les menus s'ouvrent en une feuille (tout visible, rangé par thèmes) depuis le bouton de la barre d'outils, au lieu d'une rangée de sept mots minuscules.
   const sortirMenu = () => { document.body.classList.remove("menu-ouvert"); $("b-menu-m").setAttribute("aria-expanded", "false"); };
-  $("b-menu-m").onclick = e => { e.stopPropagation(); majMenus(); const o = document.body.classList.toggle("menu-ouvert"); $("b-menu-m").setAttribute("aria-expanded", String(o)); };
+  // Sur téléphone, le menu est un accordéon : toucher le titre d'une section l'ouvre et ferme les autres (la première est ouverte d'emblée).
+  nav.addEventListener("click", e => { const b = e.target.closest(".menu-b"); if (!b || !document.body.classList.contains("menu-ouvert")) return; e.stopPropagation(); const m = b.parentElement, ouvrir = !m.classList.contains("ouvert-m"); nav.querySelectorAll(".menu").forEach(x => x.classList.remove("ouvert-m")); if (ouvrir) m.classList.add("ouvert-m"); b.setAttribute("aria-expanded", String(ouvrir)); }, true);
+  $("b-menu-m").onclick = e => { e.stopPropagation(); majMenus(); const o = document.body.classList.toggle("menu-ouvert"); $("b-menu-m").setAttribute("aria-expanded", String(o)); if (o && !nav.querySelector(".menu.ouvert-m")) { const m = nav.querySelector(".menu"); if (m) m.classList.add("ouvert-m"); } };
   nav.addEventListener("click", e => { if (e.target.closest("[data-cmd]")) setTimeout(sortirMenu, 0); }, true);
   $("b-menu-fermer").onclick = e => { e.stopPropagation(); sortirMenu(); };
   document.addEventListener("click", e => { if (document.body.classList.contains("menu-ouvert") && !e.target.closest("#barre-menus, #b-menu-m")) sortirMenu(); });
