@@ -1662,7 +1662,7 @@ document.addEventListener("click", e => { const b = e.target.closest && e.target
 const NIV_I = { "6e": 0, "5e": 1, "4e": 2, "3e": 3 };
 const peut = min => !D.eleves || !min || NIV_I[maClasse() || "6e"] >= NIV_I[min];
 const SEL_CLASSE = "cours-sacre-coeur:classe:";
-async function empreinteClasse(k, code) { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(SEL_CLASSE + k + ":" + code)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join(""); }
+async function empreinteClasse(k, code) { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(SEL_CLASSE + k + ":" + String(code).trim().toLowerCase())); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join(""); }
 const classeOk = () => { const k = get("classe", ""); return !!(D.niveaux[k] && get("classe-ok", "") === D.codes[k]); };
 let CLASSE_OK = "";  /* en mémoire aussi, pour un navigateur qui refuse le stockage */
 
