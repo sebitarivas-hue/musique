@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=d9c6f78dfe">
-<link rel="stylesheet" href="pistes.css?v=d9c6f78dfe"><link rel="stylesheet" href="notions.css?v=d9c6f78dfe">
+<link rel="stylesheet" href="../studio/studio.css?v=50b7e5c7de">
+<link rel="stylesheet" href="pistes.css?v=50b7e5c7de"><link rel="stylesheet" href="notions.css?v=50b7e5c7de">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -149,6 +149,11 @@
     <p class="petit rl-seul-roll" id="rl-aide">Clique dans la grille pour poser une note. Glisse dans le vide pour en choisir plusieurs (Maj ou Ctrl pour en ajouter). Glisse les notes choisies pour les déplacer, tire le bord droit pour les allonger, le bord gauche pour les raccourcir. Clique la règle pour placer le repère (où l'on colle et d'où l'on écoute). Les barres du bas règlent la vitesse de chaque note. Flèches : un pas ; Maj + haut ou bas : une octave ; Ctrl + C, X, V, D, A : copier, couper, coller, dupliquer, tout choisir.</p>
     <div id="rl-corps" class="rl"></div>
     <div id="partition" class="partition" hidden>
+      <div class="rl-haut pt-barre" role="group" aria-label="Clé, armure et mesure">
+        <label class="mini" data-tip="Clé de sol, clé de fa, ou deux portées pour le piano (sol et fa)"><span class="pt-lib">Clé</span><select id="pt-cle" aria-label="Clé de la portée"><option value="treble">clé de sol</option><option value="bass">clé de fa</option><option value="alto">clé d'ut 3e (alto)</option><option value="tenor">clé d'ut 4e (ténor)</option><option value="piano">piano (sol et fa)</option></select></label>
+        <label class="mini" data-tip="L'armure : les dièses ou les bémols de la tonalité (choisir la tonalité règle l'armure)"><span class="pt-lib">Armure</span><select id="pt-tonalite" aria-label="Armure de clé et tonalité"></select></label>
+        <label class="mini" data-tip="L'indication de mesure : 2/4, 3/4, 4/4, 6/8..."><span class="pt-lib">Mesure</span><select id="pt-chiffrage" aria-label="Indication de mesure"></select></label>
+      </div>
       <div class="pt-palette" id="pt-palette" role="toolbar" aria-label="Notes à poser sur la partition">
         <div class="pt-groupe" role="group" aria-label="Note ou silence">
           <button type="button" class="pt-mode" id="pt-mode-note" aria-pressed="true" data-tip="Poser des notes">Notes</button>
@@ -171,11 +176,8 @@
       <div class="pt-gauche">
         <div id="pt-score" class="pt-score" role="region" aria-label="Partition" tabindex="0"></div>
       </div>
-      <div class="rl-haut pt-barre" role="group" aria-label="Réglages de la partition">
+      <div class="rl-haut pt-barre pt-barre2" role="group" aria-label="Autres réglages de la partition">
         <button type="button" class="notion" data-notion="partition" aria-label="Comprendre : la partition">?</button>
-        <label class="mini" data-tip="Clé de sol, clé de fa, ou deux portées pour le piano (sol et fa)">Portée<select id="pt-cle" aria-label="Clé de la portée"><option value="treble">clé de sol</option><option value="bass">clé de fa</option><option value="alto">clé d'ut 3e (alto)</option><option value="tenor">clé d'ut 4e (ténor)</option><option value="piano">piano (sol et fa)</option></select></label>
-        <label class="mini" data-tip="L'armure : les dièses ou les bémols de la tonalité">Tonalité<select id="pt-tonalite" aria-label="Tonalité"></select></label>
-        <label class="mini" data-tip="Le chiffrage de mesure, choisi parmi ceux qui tombent sur la mesure du projet">Mesure<select id="pt-chiffrage" aria-label="Chiffrage de mesure"></select></label>
         <button type="button" id="pt-deviner" data-tip="Chercher la tonalité d'après les notes du clip">Deviner la tonalité</button>
         <span class="rl-groupe" role="group" aria-label="Taille de la partition"><button type="button" id="pt-zoom-moins" aria-label="Partition plus petite" data-tip="Partition plus petite">&minus;</button><button type="button" id="pt-zoom-plus" aria-label="Partition plus grande" data-tip="Partition plus grande">+</button></span>
       </div>
@@ -237,8 +239,8 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=d9c6f78dfe"></script>
-<script src="../barre-cours.js?v=d9c6f78dfe"></script>
-<script src="../retour.js?v=d9c6f78dfe"></script>
+<script type="module" src="pistes.js?v=50b7e5c7de"></script>
+<script src="../barre-cours.js?v=50b7e5c7de"></script>
+<script src="../retour.js?v=50b7e5c7de"></script>
 </body>
 </html>

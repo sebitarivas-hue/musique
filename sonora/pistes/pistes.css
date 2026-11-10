@@ -584,7 +584,7 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .rouleau.mode-partition .rl-seul-roll { display: none !important; }
 .partition[hidden] { display: none; }
 .partition { margin-top: 8px; }
-.pt-barre { margin-bottom: 8px; }
+.pt-barre { margin-bottom: 8px; } .pt-barre .pt-lib { font-weight: 700; }
 .pt-barre select, .pt-outils select { min-height: 40px; }
 .pt-corps-ancien { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); gap: 12px; align-items: start; }
 .pt-gauche, .pt-droite { min-width: 0; }
@@ -609,7 +609,7 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .pt-aide summary { cursor: pointer; font-weight: 700; color: var(--daw-texte); min-height: 32px; }
 .pt-aide ul { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
 .pt-aide code { background: #101014; color: #f1eee6; padding: 1px 5px; border-radius: 4px; font-family: ui-monospace, Menlo, Consolas, monospace; }
-@media (max-width: 860px) { .pt-barre .mini { flex: 1 1 150px; min-width: 0; } .pt-barre .mini select { flex: 1; min-width: 0; width: 100%; } .pt-corps { grid-template-columns: minmax(0, 1fr); } .pt-score { max-height: 380px; } .pt-texte { min-height: 180px; font-size: 16px; } .rl-onglets button { flex: 1; justify-content: center; } }
+@media (max-width: 860px) { .pt-barre .mini { flex: 1 1 96px; min-width: 0; flex-direction: column; align-items: stretch; gap: 2px; } .pt-barre { flex-wrap: wrap; } .pt-barre .mini select { flex: 1; min-width: 0; width: 100%; } .pt-corps { grid-template-columns: minmax(0, 1fr); } .pt-score { max-height: 380px; } .pt-texte { min-height: 180px; font-size: 16px; } .rl-onglets button { flex: 1; justify-content: center; } }
 #rl-corps[hidden] { display: none; }
 
 /* La palette de notes : on glisse une durée sur la portée (ou on la choisit puis on touche la portée) ; l'aperçu montre la note et son nom, et on l'entend. */
@@ -646,3 +646,10 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .pt-barre .notion { font-size: 0; padding: 0; background: none; border: 0; min-width: 44px; min-height: 44px; }
 .pt-barre .notion::before { background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); }
 @media (max-width: 900px) { .debut-cartes button:last-child:nth-child(odd) { grid-column: 1 / -1; } }
+/* Réglages de la partition : clé, armure et mesure au-dessus de la palette, côte à côte ; « ? », « Deviner » et le zoom sous la partition. */
+#rouleau .rl-haut.pt-barre .notion { font-size: 0; }
+@media (max-width: 860px) {
+  #rouleau .rl-haut.pt-barre:not(.pt-barre2) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; gap: 6px 8px; align-items: end; }
+  #rouleau .rl-haut.pt-barre .mini { min-width: 0; } #rouleau .rl-haut.pt-barre .mini select { width: 100%; min-width: 0; text-overflow: ellipsis; }
+  #rouleau .rl-haut.pt-barre2 { flex-wrap: wrap; overflow: visible; }
+}

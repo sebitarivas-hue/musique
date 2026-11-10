@@ -1,10 +1,10 @@
 // Le panneau « Partition » de SONORA Pistes : la partition gravée d'un clip de notes, et à côté son texte façon LilyPond. On écrit le texte, la partition se dessine et les notes du clip suivent ;
 // on change les notes dans le piano roll, la partition suit. Le panneau ne connaît ni le projet ni l'audio : tout passe par des rappels (comme le piano roll).
 // rappels : { ecouter(n, v), message(t), appliquer({ notes, temps, partition }) : le texte a changé les notes, memoriser(partition) : seul le texte a changé }
-import { lire, ecrire, ErreurLily } from "./lily.js?v=d9c6f78dfe";
-import { depuisNotes, versNotes, devinerTonalite, longueurMesure, unitesValeur } from "./modele.js?v=d9c6f78dfe";
-import { chargerVexflow, graver } from "./gravure.js?v=d9c6f78dfe";
-import { nomTonalite, alterationsArmure, midiDe, nomFrancais } from "./hauteurs.js?v=d9c6f78dfe";
+import { lire, ecrire, ErreurLily } from "./lily.js?v=50b7e5c7de";
+import { depuisNotes, versNotes, devinerTonalite, longueurMesure, unitesValeur } from "./modele.js?v=50b7e5c7de";
+import { chargerVexflow, graver } from "./gravure.js?v=50b7e5c7de";
+import { nomTonalite, alterationsArmure, midiDe, nomFrancais } from "./hauteurs.js?v=50b7e5c7de";
 
 const BASE = new URL("../", import.meta.url);
 const TONALITES = [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7];
@@ -79,8 +79,9 @@ export class PanneauPartition {
     if (!opts.has(v)) { const o = document.createElement("option"); o.value = v; o.textContent = `${nomTonalite(r.quintes, r.mode)}`; $("pt-tonalite").append(o); }
     $("pt-tonalite").value = v;
     $("pt-cle").value = r.cle === "piano" ? "piano" : r.cle === "bass" ? "bass" : r.cle === "treble" ? "treble" : (["alto", "tenor"].includes(r.cle) ? r.cle : "treble");
-    const ch = $("pt-chiffrage"); ch.innerHTML = ""; const lst = new Set(); for (const d of [2, 4, 8]) { const n = this.parMesure * d / 4; if (Number.isInteger(n) && n >= 2) lst.add(`${n}/${d}`); } lst.add(`${r.chiffrage[0]}/${r.chiffrage[1]}`);
-    for (const t of lst) { const o = document.createElement("option"); o.value = t; o.textContent = t; ch.append(o); } ch.value = `${r.chiffrage[0]}/${r.chiffrage[1]}`;
+    const ch = $("pt-chiffrage"); ch.innerHTML = ""; const lst = new Set(["2/4", "3/4", "4/4", "5/4", "2/2", "3/8", "6/8", "9/8", "12/8"]); for (const d of [2, 4, 8]) { const n = this.parMesure * d / 4; if (Number.isInteger(n) && n >= 2) lst.add(`${n}/${d}`); } lst.add(`${r.chiffrage[0]}/${r.chiffrage[1]}`);
+    const val = s => { const [n, d] = s.split("/").map(Number); return n / d; };
+    for (const t of [...lst].sort((x, y) => val(x) - val(y) || x.localeCompare(y))) { const o = document.createElement("option"); o.value = t; o.textContent = t; ch.append(o); } ch.value = `${r.chiffrage[0]}/${r.chiffrage[1]}`;
     $("pt-langue").value = r.langue;
   }
   _changerReglage(quoi) {
