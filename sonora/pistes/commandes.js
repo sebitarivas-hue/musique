@@ -2,7 +2,7 @@
 // `touches` : une ou plusieurs combinaisons, écrites comme on les affiche (Ctrl+Z, Ctrl+Maj+Z, Espace, Suppr...).
 export const MENUS = ["Fichier", "Édition", "Lecture", "Piste", "Effets", "Affichage", "Aide"];
 export const COMMANDES = [
-  { id: "importer", menu: "Fichier", libelle: "Importer des sons…", touches: ["Ctrl+I"] }, { id: "exporter", menu: "Fichier", libelle: "Exporter en WAV", touches: ["Ctrl+Maj+E"] }, { id: "nouveau", menu: "Fichier", libelle: "Nouveau projet", touches: [] },
+  { id: "importer", menu: "Fichier", libelle: "Importer un son…", touches: ["Ctrl+I"] }, { id: "importer-partition", menu: "Fichier", libelle: "Importer une partition…", touches: [] }, { id: "exporter", menu: "Fichier", libelle: "Exporter en WAV", touches: ["Ctrl+Maj+E"] }, { id: "nouveau", menu: "Fichier", libelle: "Nouveau projet", touches: [] },
   { id: "annuler", menu: "Édition", libelle: "Annuler", touches: ["Ctrl+Z"] }, { id: "refaire", menu: "Édition", libelle: "Rétablir", touches: ["Ctrl+Y", "Ctrl+Maj+Z"] },
   { id: "couper", menu: "Édition", libelle: "Couper le clip au curseur", touches: ["S"], clip: true }, { id: "dupliquer", menu: "Édition", libelle: "Dupliquer le clip", touches: ["D", "Ctrl+D"], clip: true },
   { id: "copier", menu: "Édition", libelle: "Copier les clips choisis", touches: ["Ctrl+C"], clip: true }, { id: "presse-couper", menu: "Édition", libelle: "Couper les clips choisis (les garder pour les coller)", touches: ["Ctrl+X"], clip: true }, { id: "coller", menu: "Édition", libelle: "Coller au curseur", touches: ["Ctrl+V"] },

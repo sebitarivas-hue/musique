@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=e0583807f5">
-<link rel="stylesheet" href="pistes.css?v=e0583807f5"><link rel="stylesheet" href="notions.css?v=e0583807f5">
+<link rel="stylesheet" href="../studio/studio.css?v=336655a455">
+<link rel="stylesheet" href="pistes.css?v=336655a455"><link rel="stylesheet" href="notions.css?v=336655a455">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -38,7 +38,7 @@
   <section class="outils" aria-label="Sons et projet">
     <button type="button" id="b-menu-m" class="ico-m" aria-label="Menu : fichier, édition, lecture, piste, effets, affichage, aide" aria-haspopup="dialog" aria-expanded="false"><span class="ic ic-menu" aria-hidden="true"></span></button>
     <div class="grp" role="group" aria-label="Apporter des sons"><span class="grp-t" aria-hidden="true">Sons</span>
-      <label class="bouton-fichier" data-tip="Ouvrir un fichier audio de ton ordinateur (WAV, MP3...) : il arrive sur la piste choisie, au curseur"><span class="ic ic-importer" aria-hidden="true"></span> Importer des sons<input type="file" id="fichiers" accept="audio/*,.wav,.mp3,.ogg,.m4a,.flac" multiple></label>
+      <label class="bouton-fichier" data-tip="Ouvrir un fichier audio de ton ordinateur (WAV, MP3...) : il arrive sur la piste choisie, au curseur"><span class="ic ic-importer" aria-hidden="true"></span> Importer un son<input type="file" id="fichiers" accept="audio/*,.wav,.mp3,.ogg,.m4a,.flac" multiple></label>
       <label class="bouton-fichier" data-tip="Ouvrir une partition : MusicXML, .mxl, MIDI, ou PDF et image (lus par le service de lecture de partitions) : chaque instrument devient une piste de notes avec son timbre, que tu peux modifier"><span class="ic ic-importer" aria-hidden="true"></span> Importer une partition<input type="file" id="fichier-midi" accept=".pdf,.png,.jpg,.jpeg,.mxl,.musicxml,.xml,.mid,.midi,audio/midi,audio/x-midi,application/vnd.recordare.musicxml,application/vnd.recordare.musicxml+xml"></label>
       <button type="button" id="b-biblio" aria-expanded="false" aria-controls="biblio" data-tip="Des batteries, des rythmes du monde, des instruments : écoute puis ajoute sur la piste"><span class="ic ic-biblio" aria-hidden="true"></span> Sons et rythmes</button>
       <button type="button" id="b-midi" aria-expanded="false" aria-controls="midi" data-tip="Un clavier pour jouer un instrument et enregistrer tes notes sur la piste (clavier MIDI, ordinateur ou écran)"><span class="ic ic-piano" aria-hidden="true"></span> Jouer un instrument</button>
@@ -230,17 +230,19 @@
     <div class="debut-cartes">
       <button type="button" data-go="instrument" style="--c:#4C9BF5"><span class="ic ic-piano" aria-hidden="true"></span><b>Jouer un instrument</b><span>Un clavier sur l'écran ou sur ton ordinateur : tes notes s'enregistrent toutes seules.</span></button>
       <button type="button" data-go="partition" style="--c:#A86CF0"><span class="ic ic-partition" aria-hidden="true"></span><b>Écrire une partition</b><span>Glisse des notes sur la portée : tu les vois écrites et tu les entends tout de suite.</span></button>
-      <button type="button" data-go="rythme" style="--c:#FF8A3D"><span class="ic ic-pas" aria-hidden="true"></span><b>Choisir un rythme</b><span>Un beat de rap, de rock ou d'ailleurs, déjà prêt : tu l'écoutes puis tu le poses.</span></button>
+      <button type="button" data-go="pas" style="--c:#FF8A3D"><span class="ic ic-pas" aria-hidden="true"></span><b>Construire un rythme</b><span>Allume des cases sur une grille : une batterie joue ce que tu as écrit.</span></button>
       <button type="button" data-go="voix" style="--c:#FF6B57"><span class="ic ic-micro" aria-hidden="true"></span><b>Enregistrer ma voix</b><span>Avec le micro de ton appareil : chante, parle, tape des mains.</span></button>
-      <button type="button" data-go="importer" style="--c:#3FC79A"><span class="ic ic-importer" aria-hidden="true"></span><b>Prendre un son</b><span>Un fichier audio de ton téléphone ou de ton ordinateur.</span></button>
+      <button type="button" data-go="importer" style="--c:#3FC79A"><span class="ic ic-importer" aria-hidden="true"></span><b>Importer un son</b><span>Un fichier audio de ton téléphone ou de ton ordinateur.</span></button>
+      <button type="button" data-go="importer-partition" style="--c:#2FB8C9"><span class="ic ic-importer" aria-hidden="true"></span><b>Importer une partition</b><span>Un fichier MusicXML ou MIDI, ou un PDF : chaque instrument devient une piste.</span></button>
+      <button type="button" data-go="rythme" style="--c:#E8B73A"><span class="ic ic-biblio" aria-hidden="true"></span><b>Choisir un rythme</b><span>Un beat de rap, de rock ou d'ailleurs, déjà prêt : tu l'écoutes puis tu le poses.</span></button>
     </div>
   </section></div>
   </div>
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=e0583807f5"></script>
-<script src="../barre-cours.js?v=e0583807f5"></script>
-<script src="../retour.js?v=e0583807f5"></script>
+<script type="module" src="pistes.js?v=336655a455"></script>
+<script src="../barre-cours.js?v=336655a455"></script>
+<script src="../retour.js?v=336655a455"></script>
 </body>
 </html>
