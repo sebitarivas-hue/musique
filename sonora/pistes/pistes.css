@@ -391,7 +391,7 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 /* « Par où commencer ? » : quatre cartes rondes et colorées posées sur les pistes vides ; elles disparaissent au premier clip. Les pistes restent visibles à leur place. */
 .defile > .debut { position: absolute; left: 0; right: 0; top: 28px; bottom: 0; z-index: 6; display: flex; flex-direction: column; justify-content: center; padding: 10px 12px; background: rgba(21, 21, 24, .8); color: var(--daw-texte); }
 .debut[hidden] { display: none; } .debut h2 { margin: 0 0 8px; font-size: 1rem; text-transform: none; letter-spacing: 0; }
-.debut-cartes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex: 0 1 auto; min-height: 0; max-height: 190px; }
+.debut-cartes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; flex: 0 1 auto; min-height: 0; max-height: 190px; }
 .debut-cartes button { --ombre: color-mix(in srgb, var(--c) 58%, #14130f); display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 5px; text-align: left; padding: 12px 14px; border: 0; border-radius: 20px; background: var(--c); background: linear-gradient(165deg, color-mix(in srgb, var(--c) 78%, #fff), var(--c)); color: #14130f; box-shadow: 0 4px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); cursor: pointer; font: inherit; transition: transform .08s, box-shadow .08s, filter .12s; min-height: 0; }
 .debut-cartes button:hover { filter: brightness(1.06); } .debut-cartes button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ombre), inset 0 2px 0 rgba(255,255,255,.45); }
 .debut-cartes .ic { font-size: 1.7rem; color: #14130f; } .debut-cartes b { font-size: 1.15rem; line-height: 1.1; } .debut-cartes button > span:last-child { font-size: .85rem; font-weight: 500; line-height: 1.25; color: rgba(20, 19, 15, .78); }
@@ -573,3 +573,76 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
   #midi .midi-rang { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; } #midi .midi-rang .mini { display: flex; align-items: center; gap: 6px; font-size: .78rem; }
   #midi .midi-rang select { max-width: 60vw; } #midi #midi-etat { font-size: .74rem; margin: 4px 0; }
 }
+.ic-partition { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' d='M2 6h20M2 10h20M2 14h20M2 18h20'/%3E%3Cellipse cx='8' cy='15.500' rx='2.800' ry='2.100' fill='black' transform='rotate(-20 8 15.500)'/%3E%3Cellipse cx='16' cy='9.500' rx='2.800' ry='2.100' fill='black' transform='rotate(-20 16 9.500)'/%3E%3Cpath stroke='black' stroke-width='1.800' d='M10.600 15V6M18.600 9V1.500'/%3E%3C/svg%3E"); }
+
+/* La partition du clip (onglet du rouleau) : le texte façon LilyPond à droite, la partition sur papier blanc à gauche ; sur téléphone, la partition d'abord puis le texte. */
+.rl-onglets { display: flex; gap: 6px; margin: 0 0 8px; border-bottom: 1px solid var(--daw-trait); }
+.rl-onglets button { display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 0 16px; border-radius: 9px 9px 0 0; background: transparent; color: var(--daw-doux); border: 1px solid transparent; border-bottom: none; font-weight: 700; cursor: pointer; }
+.rl-onglets button .ic { color: currentColor; font-size: 1.25em; }
+.rl-onglets button[aria-selected="true"] { background: var(--daw-piste2); color: var(--daw-texte); border-color: var(--daw-trait); box-shadow: inset 0 3px 0 var(--acide); }
+.rl-onglets button:hover:not([aria-selected="true"]) { color: var(--daw-texte); }
+.rouleau.mode-partition .rl-seul-roll { display: none !important; }
+.partition[hidden] { display: none; }
+.partition { margin-top: 8px; }
+.pt-barre { margin-bottom: 8px; }
+.pt-barre select, .pt-outils select { min-height: 40px; }
+.pt-corps-ancien { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); gap: 12px; align-items: start; }
+.pt-gauche, .pt-droite { min-width: 0; }
+.pt-score { position: relative; background: #ffffff; color: #1b1b22; border-radius: 10px; border: 1px solid var(--daw-trait); max-height: 520px; overflow: auto; padding: 4px 3px; }
+.pt-score:focus-visible { outline: 3px solid var(--acide); outline-offset: 2px; }
+.pt-score.pt-ancien svg { opacity: .35; }
+.pt-score svg { display: block; max-width: none; }
+.pt-score .pt-note { cursor: pointer; }
+.pt-score .pt-note:hover path, .pt-score .pt-note:hover ellipse, .pt-score .pt-note:hover text { fill: #1f6feb; stroke: #1f6feb; }
+.pt-score .pt-actif path, .pt-score .pt-actif ellipse, .pt-score .pt-actif text { fill: #d9480f !important; stroke: #d9480f !important; }
+.pt-curseur { position: absolute; width: 2px; background: #e5334b; border-radius: 1px; pointer-events: none; box-shadow: 0 0 0 1px rgba(229, 51, 75, .25); }
+.pt-outils { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+.pt-outils button, .pt-barre > button { min-height: 40px; padding: 0 12px; border-radius: 8px; background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); font-weight: 600; cursor: pointer; }
+.pt-outils button:hover, .pt-barre > button:hover { border-color: var(--acide); }
+.pt-texte { display: block; width: 100%; box-sizing: border-box; min-height: 220px; max-height: 60vh; resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--daw-trait); background: #101014; color: #f1eee6; font: 15px/1.55 ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace; tab-size: 2; white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto; }
+.pt-texte:focus-visible { outline: 3px solid var(--acide); outline-offset: 1px; }
+.pt-texte[aria-invalid="true"] { border-color: #ff6b57; }
+.pt-erreur { margin-top: 8px; padding: 9px 12px; border-radius: 8px; background: #3a1512; color: #ffd9d3; border: 1px solid #ff6b57; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pt-erreur[hidden] { display: none; }
+.pt-erreur button { min-height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid #ff6b57; background: transparent; color: #ffd9d3; cursor: pointer; }
+.pt-aide { margin-top: 8px; color: var(--daw-doux); font-size: .9rem; }
+.pt-aide summary { cursor: pointer; font-weight: 700; color: var(--daw-texte); min-height: 32px; }
+.pt-aide ul { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.pt-aide code { background: #101014; color: #f1eee6; padding: 1px 5px; border-radius: 4px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+@media (max-width: 860px) { .pt-barre .mini { flex: 1 1 150px; min-width: 0; } .pt-barre .mini select { flex: 1; min-width: 0; width: 100%; } .pt-corps { grid-template-columns: minmax(0, 1fr); } .pt-score { max-height: 380px; } .pt-texte { min-height: 180px; font-size: 16px; } .rl-onglets button { flex: 1; justify-content: center; } }
+#rl-corps[hidden] { display: none; }
+
+/* La palette de notes : on glisse une durée sur la portée (ou on la choisit puis on touche la portée) ; l'aperçu montre la note et son nom, et on l'entend. */
+.pt-palette { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; padding: 8px 10px; border-radius: 12px; background: var(--daw-piste2); border: 1px solid var(--daw-trait); margin-bottom: 8px; }
+.pt-groupe { display: flex; gap: 6px; align-items: flex-end; flex-wrap: wrap; }
+.pt-mode { min-height: 44px; padding: 0 14px; border-radius: 9px; border: 1px solid var(--daw-trait); background: transparent; color: var(--daw-texte); font-weight: 700; cursor: pointer; }
+.pt-mode[aria-pressed="true"] { background: var(--daw-texte); color: var(--noir); }
+.pt-val, .pt-mod { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; min-width: 64px; min-height: 68px; padding: 4px 8px 5px; border-radius: 10px; border: 2px solid var(--daw-trait); background: #ffffff; color: #1b1b22; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.pt-mod { min-width: 58px; background: var(--daw-tete); color: var(--daw-texte); cursor: pointer; touch-action: manipulation; }
+.pt-val:hover, .pt-mod:hover { border-color: var(--acide); }
+.pt-val[aria-pressed="true"], .pt-mod[aria-pressed="true"] { border-color: var(--acide); box-shadow: 0 0 0 3px rgba(216, 255, 0, .35); background: #fffbe0; color: #1b1b22; }
+.pt-mod[aria-pressed="true"] { background: var(--acide); color: var(--noir); }
+.pt-glyphe { font-family: Bravura, "Noto Music", serif; font-size: 2.1rem; line-height: 1; height: 2.4rem; display: flex; align-items: flex-end; }
+.pt-gomme-ic { font-family: system-ui, sans-serif; font-size: 1.5rem; height: 2.4rem; align-items: center; }
+.pt-nom { font-size: .72rem; font-weight: 600; letter-spacing: .02em; }
+.pt-invite { margin: 0 0 8px; color: var(--daw-doux); font-size: .92rem; }
+.pt-score.pt-outil-actif, .pt-score.pt-outil-actif svg { cursor: crosshair; }
+.pt-score.pt-gomme-actif .pt-note { cursor: not-allowed; }
+.pt-score.pt-en-glisse { cursor: grabbing; }
+.pt-score .pt-choisie path, .pt-score .pt-choisie ellipse, .pt-score .pt-choisie text { fill: #1f6feb !important; stroke: #1f6feb !important; }
+.pt-score .pt-note { touch-action: none; }
+.pt-apercu { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; z-index: 3; }
+.pt-apercu[hidden] { display: none; }
+.pt-ap-barre { position: absolute; width: 0; border-left: 2px dashed rgba(31, 111, 235, .6); }
+.pt-ap-tete { position: absolute; background: rgba(31, 111, 235, .85); border-radius: 50%; transform: rotate(-20deg); box-shadow: 0 0 0 2px rgba(255, 255, 255, .9); }
+.pt-ap-nom { position: absolute; padding: 1px 7px; border-radius: 6px; background: #1f6feb; color: #fff; font: 700 13px/1.4 system-ui, sans-serif; white-space: nowrap; }
+.pt-fantome { position: fixed; z-index: 1000; pointer-events: none; transform: translate(-50%, -80%); font-family: Bravura, "Noto Music", serif; font-size: 3.2rem; line-height: 1; color: #1f6feb; filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .45)); }
+.pt-texte-det { margin-top: 10px; border: 1px solid var(--daw-trait); border-radius: 10px; padding: 6px 10px 10px; }
+.pt-texte-det > summary { cursor: pointer; font-weight: 700; min-height: 40px; display: flex; align-items: center; color: var(--daw-texte); }
+.pt-texte-det[open] > summary { margin-bottom: 6px; }
+.partition .pt-gauche { margin-bottom: 8px; }
+.pt-barre { margin-top: 4px; }
+@media (max-width: 860px) { .pt-palette { gap: 8px 10px; padding: 6px; } .pt-val { min-width: 56px; } .pt-invite { font-size: .85rem; } }
+.pt-barre .notion { font-size: 0; padding: 0; background: none; border: 0; min-width: 44px; min-height: 44px; }
+.pt-barre .notion::before { background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); }
+@media (max-width: 900px) { .debut-cartes button:last-child:nth-child(odd) { grid-column: 1 / -1; } }

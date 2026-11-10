@@ -38,7 +38,7 @@ export const estSource = s => !!(s && s.source && (s.source.type === "boucle" ||
 export const suitLeTempo = s => estMidi(s) || estSource(s);
 // Un son « MIDI » garde ses notes (écrites en temps, voir notes.js) et l'instrument qui les joue : son audio est fabriqué à partir d'elles, et refait quand elles ou le tempo changent.
 // midi : { notes: [{ t, d, n, v }], instrument: identifiant de l'instrument de Pistes, temps: durée en temps du clip }.
-export const copieMidi = m => ({ notes: (m.notes || []).map(x => ({ ...x })), instrument: m.instrument || "ech:clavier", temps: m.temps || 4, rendu: m.rendu });
+export const copieMidi = m => ({ notes: (m.notes || []).map(x => ({ ...x })), instrument: m.instrument || "ech:clavier", temps: m.temps || 4, rendu: m.rendu, ...(m.partition ? { partition: JSON.parse(JSON.stringify(m.partition)) } : {}) });
 export const estMidi = s => !!(s && s.midi && Array.isArray(s.midi.notes));
 export function trouverPiste(p, id) { return p.pistes.find(x => x.id === id) || null; }
 export function trouverClip(p, id) { for (const pi of p.pistes) { const c = pi.clips.find(x => x.id === id); if (c) return { piste: pi, clip: c }; } return null; }

@@ -1,29 +1,30 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=b48919e0af";
-import * as Ed from "./editions.js?v=b48919e0af";
-import * as P from "./projet.js?v=b48919e0af";
-import { Stockage } from "./stockage.js?v=b48919e0af";
-import { creerBouton } from "./bouton.js?v=b48919e0af";
-import * as MI from "./midi.js?v=b48919e0af";
-import * as N from "./notes.js?v=b48919e0af";
-import { Rouleau } from "./rouleau.js?v=b48919e0af";
-import { separer, NOMS_PARTIES } from "./separation.js?v=b48919e0af";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=b48919e0af";
-import * as BM from "./batterie_midi.js?v=b48919e0af";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=b48919e0af";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=b48919e0af";
-import * as INS from "./instruments.js?v=b48919e0af";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=b48919e0af";
-import * as MO from "./moteurs.js?v=b48919e0af";
-import { monterPanneaux } from "./panneaux.js?v=b48919e0af";
-import { monterNotions } from "./notions.js?v=b48919e0af";
-import { DEMOS } from "./demos.js?v=b48919e0af";
-import * as B from "./bibliotheque.js?v=b48919e0af";
-import { encoderWAV } from "../studio/wav.js?v=b48919e0af";
-import { ENTREES } from "../library/catalogue.js?v=b48919e0af";
-import { compiler } from "../src/index.js?v=b48919e0af";
-import { rendre } from "../src/rendu.js?v=b48919e0af";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=d9c6f78dfe";
+import * as Ed from "./editions.js?v=d9c6f78dfe";
+import * as P from "./projet.js?v=d9c6f78dfe";
+import { Stockage } from "./stockage.js?v=d9c6f78dfe";
+import { creerBouton } from "./bouton.js?v=d9c6f78dfe";
+import * as MI from "./midi.js?v=d9c6f78dfe";
+import * as N from "./notes.js?v=d9c6f78dfe";
+import { Rouleau } from "./rouleau.js?v=d9c6f78dfe";
+import { PanneauPartition } from "./partition/panneau.js?v=d9c6f78dfe";
+import { separer, NOMS_PARTIES } from "./separation.js?v=d9c6f78dfe";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=d9c6f78dfe";
+import * as BM from "./batterie_midi.js?v=d9c6f78dfe";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=d9c6f78dfe";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=d9c6f78dfe";
+import * as INS from "./instruments.js?v=d9c6f78dfe";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=d9c6f78dfe";
+import * as MO from "./moteurs.js?v=d9c6f78dfe";
+import { monterPanneaux } from "./panneaux.js?v=d9c6f78dfe";
+import { monterNotions } from "./notions.js?v=d9c6f78dfe";
+import { DEMOS } from "./demos.js?v=d9c6f78dfe";
+import * as B from "./bibliotheque.js?v=d9c6f78dfe";
+import { encoderWAV } from "../studio/wav.js?v=d9c6f78dfe";
+import { ENTREES } from "../library/catalogue.js?v=d9c6f78dfe";
+import { compiler } from "../src/index.js?v=d9c6f78dfe";
+import { rendre } from "../src/rendu.js?v=d9c6f78dfe";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -59,7 +60,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=b48919e0af"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=d9c6f78dfe"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -439,13 +440,28 @@ $("tt-caler").onclick = async () => {
 };
 
 // ---------------------------------------------------------------- le rouleau : voir et changer les notes d'un clip de notes
-const rl = { son: null, minuteur: null, samp: null, lecture: null };
+const rl = { son: null, minuteur: null, samp: null, lecture: null, onglet: "roll" };
 const rouleau = new Rouleau($("rl-corps"), {
   change: (notes, temps) => { const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; s.midi.notes = notes; s.midi.temps = temps; changer(); majRouleauBarre(); clearTimeout(rl.minuteur); rl.minuteur = setTimeout(() => rendreMidiSon(rl.son).then(() => { afficher(); planifierRangement(250); }), 350); },
   ecouter: (n, v) => ecouterNote(n, v),
   selection: () => { majRouleauBarre(); majVitesseBarre(); },
   zoom: z => { $("rl-zoom").textContent = Math.round(z * 100) + " %"; },
 });
+// La partition du clip (onglet « Partition ») : le texte façon LilyPond écrit les notes, le piano roll les voit, et inversement.
+const panneauPartition = new PanneauPartition($("partition"), {
+  ecouter: (n, v) => ecouterNote(n, v), message, annuler: () => annuler(),
+  appliquer: ({ notes, temps, partition }) => { const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; s.midi.notes = notes; s.midi.temps = temps; s.midi.partition = partition; changer(); majRouleauBarre(); clearTimeout(rl.minuteur); rl.minuteur = setTimeout(() => rendreMidiSon(rl.son).then(() => { afficher(); planifierRangement(250); }), 350); },
+  memoriser: partition => { const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; s.midi.partition = partition; changer(); },
+});
+window.PISTES_PARTITION = panneauPartition;
+function afficherOnglet(nom) {
+  const s = etat.projet.sons[rl.son], batt = !!(s && P.estMidi(s) && BM.estBatterie(s.midi.instrument)); if (batt) nom = "roll"; rl.onglet = nom; const p = nom === "partition";
+  $("rouleau").classList.toggle("mode-partition", p); $("partition").hidden = !p; $("rl-corps").hidden = p;
+  $("rl-onglet-roll").setAttribute("aria-selected", String(!p)); $("rl-onglet-partition").setAttribute("aria-selected", String(p)); $("rl-onglet-partition").disabled = batt; $("rl-onglet-partition").dataset.tip = batt ? "La partition n'est pas disponible pour une batterie (une ligne par pièce) : utilise le piano roll." : "Les notes en partition (clé, armure, nuances), avec un texte façon LilyPond pour composer en écrivant";
+  if (p && s) panneauPartition.ouvrir({ notes: s.midi.notes, temps: s.midi.temps, parMesure: etat.projet.temps, partition: s.midi.partition || null, tempo: etat.projet.tempo }); else panneauPartition.fermer();
+}
+$("rl-onglet-roll").onclick = () => { if (rl.son) { rl.onglet = "roll"; ouvrirRouleau(rl.son); } };
+$("rl-onglet-partition").onclick = () => { if (rl.son) { rl.onglet = "partition"; ouvrirRouleau(rl.son); } };
 function majVitesseBarre() { const g = rouleau.choisies, v = Math.round((g.length ? g.reduce((s, x) => s + x.v, 0) / g.length : rouleau.vitesse) * 100); $("rl-vitesse").value = v; $("rl-vitesse-val").textContent = v; }
 $("rl-vitesse").oninput = e => { $("rl-vitesse-val").textContent = e.target.value; rouleau.reglerVitesse(+e.target.value / 100); };
 function majRouleauBarre() { const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; $("rl-mesures").textContent = (s.midi.temps / etat.projet.temps) + (s.midi.temps / etat.projet.temps > 1 ? " mesures" : " mesure"); const nb = rouleau.choix.size; $("rl-suppr").disabled = nb === 0; $("rl-copier").disabled = nb === 0; $("rl-dupliquer").disabled = nb === 0; $("rl-suppr").lastChild.textContent = nb > 1 ? ` Supprimer les ${nb} notes` : " Supprimer la note"; $("rl-octave-moins").disabled = $("rl-octave-plus").disabled = !!rouleau.lignes; $("rl-moins").disabled = s.midi.temps <= etat.projet.temps; }
@@ -456,7 +472,7 @@ async function ecouterNote(n, v) {
 function ouvrirRouleau(sonId) {
   const s = etat.projet.sons[sonId]; if (!P.estMidi(s)) { message("Ce clip n'est pas un clip de notes : il n'a pas de notes à modifier. Enregistre des notes avec « Jouer un instrument »."); return; }
   rl.son = sonId; $("rouleau").hidden = false; $("rl-titre").textContent = `Notes de « ${s.nom} »`; rouleau.grille = +$("rl-grille").value; const batt = BM.estBatterie(s.midi.instrument);   // une batterie : une ligne par pièce, avec son nom, au lieu du clavier de piano
-  rouleau.ouvrir({ notes: s.midi.notes, temps: s.midi.temps, parMesure: etat.projet.temps, nom: s.nom, ...(batt ? { lignes: BM.LIGNES, ligneDe: BM.ligneDe, nomLigne: n => BM.NOMS_LIGNES[n] || n } : {}) }); majRouleauBarre(); majVitesseBarre(); rouleau.reglerGamme($("rl-tonique").value, $("rl-mode").value); remplirInstrumentsRouleau(s); $("rl-zoom").textContent = Math.round(rouleau.zoom * 100) + " %"; $("rouleau").scrollIntoView({ block: "nearest" });
+  rouleau.ouvrir({ notes: s.midi.notes, temps: s.midi.temps, parMesure: etat.projet.temps, nom: s.nom, ...(batt ? { lignes: BM.LIGNES, ligneDe: BM.ligneDe, nomLigne: n => BM.NOMS_LIGNES[n] || n } : {}) }); majRouleauBarre(); majVitesseBarre(); rouleau.reglerGamme($("rl-tonique").value, $("rl-mode").value); remplirInstrumentsRouleau(s); $("rl-zoom").textContent = Math.round(rouleau.zoom * 100) + " %"; afficherOnglet(rl.onglet); $("rouleau").scrollIntoView({ block: "nearest" });
 }
 // Le choix de l'instrument du clip : changer l'instrument refait l'audio ; passer d'un instrument à une batterie (ou l'inverse) change aussi les lignes du piano roll.
 function remplirInstrumentsRouleau(s) {
@@ -469,20 +485,20 @@ $("rl-instrument").onchange = e => {
 };
 // Après Annuler ou Rétablir, le piano roll ouvert relit les notes du projet.
 function rafraichirRouleau() { if (!rl.son) return; if (P.estMidi(etat.projet.sons[rl.son])) ouvrirRouleau(rl.son); else { $("rouleau").hidden = true; rl.son = null; } }
-function fermerRouleau() { arreterEcouteRouleau(); clearTimeout(rl.minuteur); const id = rl.son; $("rouleau").hidden = true; rl.son = null; if (rl.lecture) { try { rl.lecture.stop(); } catch (_) {} rl.lecture = null; } if (id && P.estMidi(etat.projet.sons[id]) && etat.projet.sons[id].midi.rendu !== etat.projet.tempo) remettreAJourMidi(); }
+function fermerRouleau() { arreterEcouteRouleau(); panneauPartition.fermer(); clearTimeout(rl.minuteur); const id = rl.son; $("rouleau").hidden = true; rl.son = null; if (rl.lecture) { try { rl.lecture.stop(); } catch (_) {} rl.lecture = null; } if (id && P.estMidi(etat.projet.sons[id]) && etat.projet.sons[id].midi.rendu !== etat.projet.tempo) remettreAJourMidi(); }
 $("rl-fin").onclick = fermerRouleau; $("rl-suppr").onclick = () => rouleau.supprimer(); $("rl-vider").onclick = () => rouleau.effacer();
 $("rl-grille").onchange = e => rouleau.reglerGrille(+e.target.value);
 $("rl-caler").onclick = () => { const g = +$("rl-grille").value || 0.25, s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; rouleau.caler(g); };
 $("rl-plus").onclick = () => { const s = etat.projet.sons[rl.son]; if (P.estMidi(s)) rouleau.longueur(s.midi.temps + etat.projet.temps); };
 $("rl-moins").onclick = () => { const s = etat.projet.sons[rl.son]; if (P.estMidi(s)) rouleau.longueur(s.midi.temps - etat.projet.temps); };
-function arreterEcouteRouleau() { cancelAnimationFrame(rl.anim); if (rl.lecture) { const l = rl.lecture; rl.lecture = null; try { l.onended = null; l.stop(); } catch (_) {} } $("rl-ecouter").lastChild.textContent = " Écouter"; rouleau.suivre(null); }
+function arreterEcouteRouleau() { cancelAnimationFrame(rl.anim); if (rl.lecture) { const l = rl.lecture; rl.lecture = null; try { l.onended = null; l.stop(); } catch (_) {} } $("rl-ecouter").lastChild.textContent = " Écouter"; rouleau.suivre(null); panneauPartition.suivre(null); }
 // « Écouter » joue le clip depuis le repère de la règle (le début s'il n'a pas bougé) ; un trait suit la lecture sur le piano roll.
 $("rl-ecouter").onclick = async () => {
   if (rl.lecture) { arreterEcouteRouleau(); return; }
   clearTimeout(rl.minuteur); await rendreMidiSon(rl.son); const d = etat.buffers[rl.son]; if (!d) return; const ctx = contexte(), b = ctx.createBuffer(d.canaux.length, d.canaux[0].length, d.sr); d.canaux.forEach((c, i) => b.copyToChannel(c, i));
   const s = etat.projet.sons[rl.son], sec = 60 / etat.projet.tempo, depart = Math.min(rouleau.curseur, s.midi.temps) * sec, src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination);
   src.onended = () => { if (rl.lecture === src) arreterEcouteRouleau(); }; rl.lecture = src; src.start(0, depart); $("rl-ecouter").lastChild.textContent = " Arrêter"; const t0 = ctx.currentTime - depart;
-  const suivre = () => { if (rl.lecture !== src) return; const t = (ctx.currentTime - t0) / sec; if (t >= s.midi.temps) { rouleau.suivre(null); return; } rouleau.suivre(t); rl.anim = requestAnimationFrame(suivre); }; suivre();
+  const suivre = () => { if (rl.lecture !== src) return; const t = (ctx.currentTime - t0) / sec; if (t >= s.midi.temps) { rouleau.suivre(null); panneauPartition.suivre(null); return; } rouleau.suivre(t); panneauPartition.suivre(t); rl.anim = requestAnimationFrame(suivre); }; suivre();
 };
 $("rl-zoom-plus").onclick = () => rouleau.reglerZoom(rouleau.zoom * 1.25); $("rl-zoom-moins").onclick = () => rouleau.reglerZoom(rouleau.zoom / 1.25);
 $("rl-octave-plus").onclick = () => rouleau.transposer(12); $("rl-octave-moins").onclick = () => rouleau.transposer(-12);
@@ -494,9 +510,10 @@ $("b-clip-notes").onclick = async () => {
   const num = Object.values(p.sons).filter(x => x.nom.startsWith("Notes ")).length + 1;
   const id = P.ajouterSon(p, { nom: `Notes ${num}`, duree: temps * sec, sr: SR_MIDI, canaux: 2, midi: { notes: [], instrument, temps, rendu: -1 } });
   P.placerClip(p, P.pisteLibre(p, pisteActive().id, etat.tete, temps * sec), id, etat.tete); changer(); await remettreAJourMidi();
-  const r = Object.values(p.pistes).flatMap(pi => pi.clips).find(c => c.son === id); if (r) etat.choisi = r.id; afficher(); ouvrirRouleau(id); message("Clip de notes vide : clique dans la grille pour poser une note, glisse-la pour la déplacer.");
+  const r = Object.values(p.pistes).flatMap(pi => pi.clips).find(c => c.son === id); if (r) etat.choisi = r.id; afficher(); ouvrirRouleau(id); message(rl.onglet === "partition" ? "Clip de notes vide : glisse une note de la palette sur la portée, tu l'entends en la posant." : "Clip de notes vide : clique dans la grille pour poser une note, glisse-la pour la déplacer.");
 };
-$("b-modifier-notes").onclick = () => { const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r) ouvrirRouleau(r.clip.son); };
+$("b-modifier-notes").onclick = () => { const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r) { rl.onglet = "roll"; ouvrirRouleau(r.clip.son); } };
+$("b-partition").onclick = () => { const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (!r) return; const s = etat.projet.sons[r.clip.son]; if (P.estMidi(s) && BM.estBatterie(s.midi.instrument)) { message("La partition n'est pas disponible pour une batterie (une ligne par pièce) : utilise le piano roll."); return; } rl.onglet = "partition"; ouvrirRouleau(r.clip.son); };
 document.addEventListener("dblclick", e => { const c = e.target.closest && e.target.closest(".clip[data-clip]"); if (!c) return; const r = P.trouverClip(etat.projet, c.dataset.clip); if (r && P.estMidi(etat.projet.sons[r.clip.son])) { etat.choisi = r.clip.id; ouvrirRouleau(r.clip.son); } });
 // MIDI : export et import de fichiers standard
 function telechargerOctets(octets, nom, type) { const u = URL.createObjectURL(new Blob([octets], { type })), a = document.createElement("a"); a.href = u; a.download = nom; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
@@ -694,6 +711,7 @@ function majDebut() { const vide = etat.projet.pistes.every(p => p.clips.length 
 $("debut").onclick = e => { const b = e.target.closest("[data-go]"); if (!b) return; const go = b.dataset.go;
   if (go === "instrument") { if ($("midi").hidden) $("b-midi").click(); $("midi").scrollIntoView({ block: "nearest" }); }
   else if (go === "rythme") { if ($("biblio").hidden) $("b-biblio").click(); const t = $("biblio-onglets").querySelector("[data-fam=rythmes]"); if (t) t.click(); $("biblio").scrollIntoView({ block: "nearest" }); }
+  else if (go === "partition") { rl.onglet = "partition"; $("b-clip-notes").click(); }
   else if (go === "voix") $("b-enreg").click(); else if (go === "importer") $("fichiers").click(); };
 $("auto-volume").onclick = () => { etat.courbe = "volume"; etat.pointSel = null; afficher(); };
 $("auto-pan").onclick = () => { etat.courbe = "pan"; etat.pointSel = null; afficher(); };
@@ -703,7 +721,7 @@ $("auto-sup").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env)
 $("auto-vider").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env); if (!pi) return; P.viderCourbe(pi, etat.courbe || "volume"); etat.pointSel = null; changer(); };
 function majSelection() {
   const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); $("selection").hidden = !r; if (!r) return;
-  $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain; $("b-modifier-notes").hidden = !P.estMidi(etat.projet.sons[r.clip.son]); $("b-tempo-trouver").hidden = P.suitLeTempo(etat.projet.sons[r.clip.son]);
+  $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain; $("b-modifier-notes").hidden = !P.estMidi(etat.projet.sons[r.clip.son]); $("b-partition").hidden = !P.estMidi(etat.projet.sons[r.clip.son]); $("b-tempo-trouver").hidden = P.suitLeTempo(etat.projet.sons[r.clip.son]);
 }
 let minuteur = null;
 // ---------------------------------------------------------------- Téléphone : les réglages avancés d'une piste (volume, panoramique, effets, enveloppe) s'ouvrent dans une feuille du bas
@@ -1119,7 +1137,7 @@ const majAnnuler = () => { const a = $("b-annuler"), r = $("b-refaire"); if (a) 
 function majMenus() { majAnnuler(); document.querySelectorAll("#barre-menus [data-cmd]").forEach(b => { const id = b.dataset.cmd, c = COMMANDES.find(x => x.id === id); b.disabled = !!(ACTIF[id] && !ACTIF[id]()) || !!(c && c.clip && !etat.choisi); }); }
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && document.querySelector("#barre-menus .menu-l:not([hidden])")) { fermerMenus(); e.preventDefault(); return; }
-  if (e.target && e.target.closest && e.target.closest("#rouleau") && !(/^[zy]$/i.test(e.key) && (e.ctrlKey || e.metaKey))) return;   // dans le piano roll, le clavier est au piano roll (Ctrl+Z et Ctrl+Y restent Annuler et Rétablir)
+  if (e.target && e.target.closest && e.target.closest("#rouleau") && (/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName) || !(/^[zy]$/i.test(e.key) && (e.ctrlKey || e.metaKey)))) return;   // (dans le texte de la partition, Ctrl+Z défait le texte, pas le projet)   // dans le piano roll, le clavier est au piano roll (Ctrl+Z et Ctrl+Y restent Annuler et Rétablir)
   const t = e.target; if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA" || (document.querySelector("#barre-menus .menu-l:not([hidden])")))) return;
   if (document.getElementById("aide-clavier") || document.getElementById("reglage")) return;
   const c = commandePour(e); if (!c) return; if (/^decaler-/.test(c.id) && !etat.choisis.size) return;   // sans clip choisi, les flèches font défiler la page

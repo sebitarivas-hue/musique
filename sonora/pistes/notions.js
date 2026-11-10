@@ -40,6 +40,9 @@ export const NOTIONS = {
   enveloppe: { titre: "L'enveloppe de volume", court: "Dessiner comment le volume monte et descend.",
     corps: ["L'enveloppe est une ligne que tu dessines sur la piste avec des points : tu choisis où le volume monte, descend, s'éteint. Un fondu à l'entrée (le son arrive doucement) ou à la sortie (il disparaît doucement) en est un exemple.", "Ne la confonds pas avec l'enveloppe ADSR d'un instrument de synthèse : Attaque, Déclin, Soutien, Relâche, la forme d'une seule note."],
     essaie: "Pose trois points pour faire un fondu : volume bas au début, haut au milieu, bas à la fin.", liens: [{ libelle: "Expérience : l'enveloppe d'amplitude (ADSR)", science: "enveloppe-adsr" }, { libelle: "Fiche : le solfège de l'objet sonore", fiche: "objet_sonore" }] },
+  partition: { titre: "La partition", court: "Les notes du clip écrites sur une portée.",
+    corps: ["Glisse une note de la palette sur la portée : plus elle est haute sur les lignes, plus le son est aigu, et tu l'entends en la déplaçant. La clé donne la hauteur des notes, l'armure range les dièses et les bémols de la tonalité, le chiffrage compte les temps de chaque mesure.", "Pour écrire en texte, ouvre « Écrire en texte » : c'est le langage de LilyPond, où c d e f g a b sont les notes et 4 est la noire."],
+    essaie: "Glisse une croche sur la première mesure, puis une noire plus haut, et écoute.", liens: [{ libelle: "Fiche : l'intensité et les nuances", fiche: "nuances" }, { libelle: "Fiche : l'histoire de la notation", fiche: "notation" }] },
   tempo: { titre: "Le tempo", court: "La vitesse de la pulsation.",
     corps: ["Le tempo se compte en battements par minute. À 60, il y a un battement par seconde ; à 100, c'est un tempo modéré ; au-delà de 140, c'est rapide.", "Le tempo du projet sert au métronome, à l'aimant et aux rythmes de la bibliothèque et du séquenceur."],
     essaie: "Passe de 80 à 120 : le même rythme paraît plus énergique.", liens: [{ libelle: "Fiche : le tempo et la pulsation", fiche: "tempo" }] },
@@ -72,7 +75,7 @@ export const NOTIONS = {
     essaie: "Zoome pour placer un clap exactement sur un temps.", liens: [] },
 };
 
-export const ORDRE = ["piste", "clip", "volume", "panoramique", "muet", "solo", "rec", "effets", "filtre", "echo", "reverb", "enveloppe", "tempo", "metronome", "aimant", "multi", "entree", "instrument", "sequenceur", "bibliotheque", "export", "zoom"];
+export const ORDRE = ["piste", "clip", "volume", "panoramique", "muet", "solo", "rec", "effets", "filtre", "echo", "reverb", "enveloppe", "tempo", "metronome", "aimant", "multi", "entree", "instrument", "sequenceur", "bibliotheque", "export", "zoom", "partition"];
 
 // Adresses des liens, relatives à sonora/pistes/index.html (publié sous sonora/pistes/ à la racine du site).
 export const adresse = l => l.url || (l.fiche ? `../../#fiche-${l.fiche}` : l.science ? `../science/index.html#${l.science}` : "#");
