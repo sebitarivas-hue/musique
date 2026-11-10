@@ -1,10 +1,10 @@
 // Le panneau « Partition » de SONORA Pistes : la partition gravée d'un clip de notes, et à côté son texte façon LilyPond. On écrit le texte, la partition se dessine et les notes du clip suivent ;
 // on change les notes dans le piano roll, la partition suit. Le panneau ne connaît ni le projet ni l'audio : tout passe par des rappels (comme le piano roll).
 // rappels : { ecouter(n, v), message(t), appliquer({ notes, temps, partition }) : le texte a changé les notes, memoriser(partition) : seul le texte a changé }
-import { lire, ecrire, ErreurLily } from "./lily.js?v=50b7e5c7de";
-import { depuisNotes, versNotes, devinerTonalite, longueurMesure, unitesValeur } from "./modele.js?v=50b7e5c7de";
-import { chargerVexflow, graver } from "./gravure.js?v=50b7e5c7de";
-import { nomTonalite, alterationsArmure, midiDe, nomFrancais } from "./hauteurs.js?v=50b7e5c7de";
+import { lire, ecrire, ErreurLily } from "./lily.js?v=6405336182";
+import { depuisNotes, versNotes, devinerTonalite, longueurMesure, unitesValeur } from "./modele.js?v=6405336182";
+import { chargerVexflow, graver } from "./gravure.js?v=6405336182";
+import { nomTonalite, alterationsArmure, midiDe, nomFrancais } from "./hauteurs.js?v=6405336182";
 
 const BASE = new URL("../", import.meta.url);
 const TONALITES = [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7];
@@ -154,11 +154,14 @@ export class PanneauPartition {
   }
   _surCurseurTexte() { if (!this.res) return; const ta = this.$("pt-texte"); const a = ta.selectionStart; this.res.surligner([a, Math.max(a + 1, ta.selectionEnd)]); }
 
+  // Où est le SVG dans la zone de défilement de la partition (les éléments SVG n'ont pas de offsetLeft : on le mesure).
+  _decalageSvg() { const sc = this.$("pt-score"), sv = sc.querySelector("svg"); if (!sv) return { dx: 0, dy: 0 }; const rs = sv.getBoundingClientRect(), rc = sc.getBoundingClientRect(); return { dx: rs.left - rc.left + sc.scrollLeft, dy: rs.top - rc.top + sc.scrollTop }; }
   // ---- le curseur de lecture : t en temps (noires), null pour l'enlever
   suivre(t) {
+    if (this.res && this.res.surlignerJouees) this.res.surlignerJouees(t === undefined ? null : t);
     if (!this.curseur) return; if (t === null || t === undefined || !this.res) { this.curseur.hidden = true; return; }
     const p = this.res.position(t); if (!p) { this.curseur.hidden = true; return; }
-    this.curseur.hidden = false; const sv = this.$("pt-score").querySelector("svg"), dx = sv ? sv.offsetLeft : 0, dy = sv ? sv.offsetTop : 0; this.curseur.style.left = `${p.x + dx}px`; this.curseur.style.top = `${p.y0 + dy}px`; this.curseur.style.height = `${Math.max(10, p.y1 - p.y0)}px`;
+    this.curseur.hidden = false; const { dx, dy } = this._decalageSvg(); this.curseur.style.left = `${p.x + dx}px`; this.curseur.style.top = `${p.y0 + dy}px`; this.curseur.style.height = `${Math.max(10, p.y1 - p.y0)}px`;
     const sc = this.$("pt-score"), y = p.y0; if (y < sc.scrollTop || y > sc.scrollTop + sc.clientHeight - 60) sc.scrollTop = Math.max(0, y - 30);
   }
 
@@ -245,7 +248,7 @@ export class PanneauPartition {
     const sc = this.$("pt-score"), sv = sc.querySelector("svg"); if (!sv) return; let ap = this.apercuEl;
     if (!c) { this._cacherApercu(); return; }
     if (!ap || !ap.isConnected) { ap = this.apercuEl = div("pt-apercu"); ap.innerHTML = '<span class="pt-ap-barre"></span><span class="pt-ap-tete"></span><span class="pt-ap-nom"></span>'; sc.append(ap); }
-    const dx = sv.offsetLeft, dy = sv.offsetTop, sil = this.session ? (this.session.spec.type === "palette" && this.outil.mode === "silence") : this.outil.mode === "silence" && this.outil.actif;
+    const { dx, dy } = this._decalageSvg(), sil = this.session ? (this.session.spec.type === "palette" && this.outil.mode === "silence") : this.outil.mode === "silence" && this.outil.actif;
     ap.hidden = false; const barre = ap.querySelector(".pt-ap-barre"), tete = ap.querySelector(".pt-ap-tete"), nom = ap.querySelector(".pt-ap-nom");
     barre.style.left = `${c.x + dx}px`; barre.style.top = `${c.yPortee + dy}px`; barre.style.height = `${c.yPorteeBas - c.yPortee}px`;
     const m = this._midiDe(c.diat, this.outil.alt), r = c.esp * 0.62; tete.style.width = `${r * 2.3}px`; tete.style.height = `${r * 1.7}px`; tete.style.left = `${c.x + dx - r * 0.2}px`; tete.style.top = `${c.y + dy - r * 0.85}px`; tete.hidden = !!sil || !avecTete;

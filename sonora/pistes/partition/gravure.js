@@ -1,8 +1,8 @@
 // La gravure de la partition de SONORA Pistes : le modèle (modele.js) dessiné en SVG avec VexFlow (MIT, police musicale Bravura sous licence SIL OFL), dans pistes/vendor/vexflow.
 // Navigateur seulement. Dessine : clé, armure, chiffrage, tempo, notes et accords, silences, points, altérations (selon l'armure), ligatures, triolets, liaisons de prolongation et d'expression,
 // articulations, nuances, soufflets, reprises, barres de mesure, portée de piano avec accolade, retours à la ligne.
-import { mesurer, longueurMesure, pulsation, U_NOIRE } from "./modele.js?v=50b7e5c7de";
-import { midiDe, nomArmureVexflow, diatonique } from "./hauteurs.js?v=50b7e5c7de";
+import { mesurer, longueurMesure, pulsation, U_NOIRE } from "./modele.js?v=6405336182";
+import { midiDe, nomArmureVexflow, diatonique } from "./hauteurs.js?v=6405336182";
 
 let CHARGE = null;
 // VexFlow dessine les signes de la musique (clés, têtes de notes, altérations...) avec la police Bravura, qu'il embarque (base64) mais dont le chargement est asynchrone :
@@ -238,6 +238,15 @@ export function graver(racine, partition, { largeur = 760, echelle = 1.15, onNot
     // le x de l'aperçu : on refait le chemin inverse (temps -> x)
     let xa = g.x0 + 6; for (let k = 0; k < uniques.length - 1; k++) { const a = uniques[k], b = uniques[k + 1]; if (tc >= a.t && tc <= b.t && b.t > a.t) { xa = a.x + (tc - a.t) / (b.t - a.t) * (b.x - a.x); break; } }
     return { mesure: g.k, ligne: g.li, portee: meilleur.s, cle: st.cle, tU: tc, diat, x: xa * echelle, y: (bas - step * pas) * echelle, yPortee: (st.yHaut - 3 * st.esp) * echelle, yPorteeBas: (st.yHaut + 7 * st.esp) * echelle, esp: st.esp * echelle };
+  };
+  // les notes qui sonnent à t (en temps = noires) s'allument ; t = null éteint tout. On ne touche qu'aux notes qui changent d'état.
+  let jouees = new Set();
+  res.surlignerJouees = tTemps => {
+    const u = tTemps === null || tTemps === undefined ? null : tTemps * 24 + 0.5, nouv = new Set();
+    if (u !== null) for (const i of items) if (i.el && !i.silence && i.t <= u && i.t + i.u > u) nouv.add(i.el);
+    for (const e of jouees) if (!nouv.has(e)) e.classList.remove("pt-joue");
+    for (const e of nouv) if (!jouees.has(e)) e.classList.add("pt-joue");
+    jouees = nouv;
   };
   res.surlignerNote = (t, n) => { svg.querySelectorAll(".pt-choisie").forEach(e => e.classList.remove("pt-choisie")); if (t === null) return; for (const i of items) if (i.el && i.midis.includes(n) && i.t <= t * 24 + 0.5 && i.t + i.u > t * 24 + 0.5) i.el.classList.add("pt-choisie"); };
   res.surligner = (src) => { svg.querySelectorAll(".pt-actif").forEach(e => e.classList.remove("pt-actif")); if (!src) return; for (const i of items) if (i.el && i.src && i.src[0] < src[1] && i.src[1] > src[0] && (src[1] - src[0] <= 1 ? i.src[0] <= src[0] && i.src[1] >= src[0] : true)) i.el.classList.add("pt-actif"); };

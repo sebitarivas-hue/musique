@@ -595,7 +595,9 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .pt-score .pt-note { cursor: pointer; }
 .pt-score .pt-note:hover path, .pt-score .pt-note:hover ellipse, .pt-score .pt-note:hover text { fill: #1f6feb; stroke: #1f6feb; }
 .pt-score .pt-actif path, .pt-score .pt-actif ellipse, .pt-score .pt-actif text { fill: #d9480f !important; stroke: #d9480f !important; }
-.pt-curseur { position: absolute; width: 2px; background: #e5334b; border-radius: 1px; pointer-events: none; box-shadow: 0 0 0 1px rgba(229, 51, 75, .25); }
+.pt-curseur { position: absolute; width: 3px; background: #e5334b; border-radius: 2px; pointer-events: none; box-shadow: 0 0 0 1px rgba(229, 51, 75, .3), 0 0 10px 2px rgba(229, 51, 75, .35); z-index: 2; }
+/* La note qui sonne s'allume pendant « Écouter » */
+.pt-score .pt-joue path, .pt-score .pt-joue ellipse, .pt-score .pt-joue text, .pt-score .pt-joue rect { fill: #e5334b !important; stroke: #e5334b !important; }
 .pt-outils { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
 .pt-outils button, .pt-barre > button { min-height: 40px; padding: 0 12px; border-radius: 8px; background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); font-weight: 600; cursor: pointer; }
 .pt-outils button:hover, .pt-barre > button:hover { border-color: var(--acide); }
