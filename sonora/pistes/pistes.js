@@ -1,31 +1,32 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=9fd2d5915c";
-import * as Ed from "./editions.js?v=9fd2d5915c";
-import * as P from "./projet.js?v=9fd2d5915c";
-import { Stockage } from "./stockage.js?v=9fd2d5915c";
-import { creerBouton } from "./bouton.js?v=9fd2d5915c";
-import * as MI from "./midi.js?v=9fd2d5915c";
-import * as N from "./notes.js?v=9fd2d5915c";
-import { Rouleau } from "./rouleau.js?v=9fd2d5915c";
-import { PanneauPartition } from "./partition/panneau.js?v=9fd2d5915c";
-import { separer, NOMS_PARTIES } from "./separation.js?v=9fd2d5915c";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=9fd2d5915c";
-import * as BM from "./batterie_midi.js?v=9fd2d5915c";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=9fd2d5915c";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=9fd2d5915c";
-import * as INS from "./instruments.js?v=9fd2d5915c";
-import { lirePartition } from "./musicxml.js?v=9fd2d5915c";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=9fd2d5915c";
-import * as MO from "./moteurs.js?v=9fd2d5915c";
-import { monterPanneaux } from "./panneaux.js?v=9fd2d5915c";
-import { monterNotions } from "./notions.js?v=9fd2d5915c";
-import { DEMOS } from "./demos.js?v=9fd2d5915c";
-import * as B from "./bibliotheque.js?v=9fd2d5915c";
-import { encoderWAV } from "../studio/wav.js?v=9fd2d5915c";
-import { ENTREES } from "../library/catalogue.js?v=9fd2d5915c";
-import { compiler } from "../src/index.js?v=9fd2d5915c";
-import { rendre } from "../src/rendu.js?v=9fd2d5915c";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=e0583807f5";
+import * as Ed from "./editions.js?v=e0583807f5";
+import * as P from "./projet.js?v=e0583807f5";
+import { Stockage } from "./stockage.js?v=e0583807f5";
+import { creerBouton } from "./bouton.js?v=e0583807f5";
+import * as MI from "./midi.js?v=e0583807f5";
+import * as N from "./notes.js?v=e0583807f5";
+import { Rouleau } from "./rouleau.js?v=e0583807f5";
+import { PanneauPartition } from "./partition/panneau.js?v=e0583807f5";
+import { separer, NOMS_PARTIES } from "./separation.js?v=e0583807f5";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=e0583807f5";
+import * as BM from "./batterie_midi.js?v=e0583807f5";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=e0583807f5";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=e0583807f5";
+import * as INS from "./instruments.js?v=e0583807f5";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=e0583807f5";
+import * as OMR from "./omr.js?v=e0583807f5";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=e0583807f5";
+import * as MO from "./moteurs.js?v=e0583807f5";
+import { monterPanneaux } from "./panneaux.js?v=e0583807f5";
+import { monterNotions } from "./notions.js?v=e0583807f5";
+import { DEMOS } from "./demos.js?v=e0583807f5";
+import * as B from "./bibliotheque.js?v=e0583807f5";
+import { encoderWAV } from "../studio/wav.js?v=e0583807f5";
+import { ENTREES } from "../library/catalogue.js?v=e0583807f5";
+import { compiler } from "../src/index.js?v=e0583807f5";
+import { rendre } from "../src/rendu.js?v=e0583807f5";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -61,7 +62,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=9fd2d5915c"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=e0583807f5"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -523,9 +524,20 @@ $("b-export-midi").onclick = () => {
   const nom = (etat.projet.titre || "projet").replace(/[^\w\u00C0-\u017F -]+/g, "").trim().replace(/\s+/g, "-") || "projet"; telechargerOctets(N.versMidi({ tempo: etat.projet.tempo, temps: etat.projet.temps, pistes }), nom + ".mid", "audio/midi");
   const n = pistes.reduce((s, x) => s + x.notes.length, 0); message(`Fichier MIDI écrit : ${n} note${n > 1 ? "s" : ""} sur ${pistes.length} piste${pistes.length > 1 ? "s" : ""}, à ${etat.projet.tempo} par minute.`);
 };
+// Un PDF ou une image de partition passe par le service de lecture (outils/serveur_omr) ; le reste est lu sur place.
+async function lireOuReconnaitre(octets) {
+  if (!OMR.estImage(octets)) return lirePartition(octets);
+  const svc = await OMR.trouverService(); if (!svc) throw new Error(OMR.AIDE);
+  if (!svc.local && !confirm("Ce fichier va être envoyé au service de lecture de partitions de la classe, qui ne le garde pas. Continuer ?")) throw new Error("Envoi annulé : rien n'a quitté ton ordinateur.");
+  const noms = prompt("Les instruments, du haut vers le bas de la page, séparés par des virgules (par exemple : Violon I, Violon II, Alto, Violoncelle). Laisse vide si tu ne sais pas.", ""); if (noms === null) throw new Error("Lecture annulée.");
+  message("Lecture de la partition en cours : compte une trentaine de secondes par page. Ne ferme pas la page.");
+  const r = await OMR.lireParService(octets, { url: svc.url, instruments: noms }), m = depuisMusicXml(r.musicxml);
+  const dout = r.rapport.filter(x => x.trim()); m.avertissements = [...(dout.length > 8 ? [...dout.slice(0, 8), `... et ${dout.length - 8} autres lignes.`] : dout), ...m.avertissements];
+  return m;
+}
 $("fichier-midi").onchange = async e => {
   const f = e.target.files[0]; e.target.value = ""; if (!f) return; let m;
-  try { m = await lirePartition(new Uint8Array(await f.arrayBuffer())); } catch (err) { message(err.message || "Ce fichier n'a pas pu être lu."); return; }
+  try { m = await lireOuReconnaitre(new Uint8Array(await f.arrayBuffer())); } catch (err) { message(err.message || "Ce fichier n'a pas pu être lu."); return; }
   if (!m.pistes.length) { message("Ce fichier ne contient aucune note."); return; }
   if (m.titre && etat.projet.pistes.every(x => x.clips.length === 0) && (!etat.projet.titre || /^Sans titre/.test(etat.projet.titre))) etat.projet.titre = m.titre.slice(0, 80);
   const p = etat.projet, vide = p.pistes.every(x => x.clips.length === 0); if (vide && m.tempo >= 20 && m.tempo <= 300) { p.tempo = Math.round(m.tempo); $("tempo").value = p.tempo; }
