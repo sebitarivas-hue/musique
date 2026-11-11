@@ -155,3 +155,11 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
 
 /* Les vues et panneaux masqués le sont toujours, quoi qu'en dise une autre règle d'affichage (Safari iOS laissait des blocs vides). */
 #plan[hidden], #galerie[hidden], #tessitures[hidden], .melange[hidden], #explorer[hidden], #timbres[hidden], #fugue[hidden], #britten[hidden], #variations[hidden], #credits[hidden] { display: none !important; }
+
+/* Tous les cadres qui reçoivent un instrument le centrent et le font tenir entier, avec une marge : plus d'icône collée dans un coin ou qui déborde. */
+.pico, .vignette, .vg, .vig, .grand-icone { display: flex; align-items: center; justify-content: center; box-sizing: border-box; overflow: hidden; }
+.pico { padding: 3px; } .vignette { padding: 3px; } .vg { padding: 2px; } .vig { padding: 3px; } .grand-icone { padding: 8px; }
+.pico img.photo, .vignette img.photo, .vg img.photo, .vig img.photo, .grand-icone img.photo { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; object-position: center; }
+.pico svg, .vignette svg, .vg svg, .vig svg, .grand-icone svg { max-width: 100%; max-height: 100%; width: 100%; height: 100%; }
+.pico { width: 48px; height: 48px; } .pico svg, .pico img { margin: 0; }
+@media (max-width: 700px) { .pico { width: 40px; height: 40px; } }
