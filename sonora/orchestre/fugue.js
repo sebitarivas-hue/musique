@@ -1,9 +1,9 @@
 // SONORA Orchestre, espace 05 : construire une fugue. Le sujet et le contre-sujet se dessinent sur une grille ; les voix entrent l'une après l'autre (sujet, réponse à la quinte, sujet à l'octave, réponse),
 // chacune avec l'instrument choisi, et le contre-sujet accompagne l'entrée suivante. Les sons sont ceux de la banque du site.
-import { parId, nomNote } from "./donnees.js?v=a6bd026c2d";
-import { POOL, etiquette } from "./timbres_logique.js?v=a6bd026c2d";
-import { PAS, DEGRES, SUJET_EXEMPLE, VOIX_PAR_DEFAUT, exposition, dureeTemps, frottements, evenementsVoix } from "./fugue_logique.js?v=a6bd026c2d";
-import { rendreMelodie, sommer, lire, arreter, message, contexte } from "./audio.js?v=a6bd026c2d";
+import { parId, nomNote } from "./donnees.js?v=c227b2d74f";
+import { POOL, etiquette } from "./timbres_logique.js?v=c227b2d74f";
+import { PAS, DEGRES, SUJET_EXEMPLE, VOIX_PAR_DEFAUT, exposition, dureeTemps, frottements, evenementsVoix } from "./fugue_logique.js?v=c227b2d74f";
+import { rendreMelodie, sommer, lire, arreter, message, contexte } from "./audio.js?v=c227b2d74f";
 
 const $ = id => document.getElementById(id), CLE = "sonora.orchestre.fugue";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

@@ -1,14 +1,14 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=a6bd026c2d";
-import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=a6bd026c2d";
-import { monterTimbres } from "./timbres.js?v=a6bd026c2d";
-import { monterFugue } from "./fugue.js?v=a6bd026c2d";
-import { monterBritten } from "./britten.js?v=a6bd026c2d";
-import { monterVariations } from "./variations.js?v=a6bd026c2d";
-import { svgIcone, dessin } from "./icones.js?v=a6bd026c2d";
-import { PHOTOS } from "./photos.js?v=a6bd026c2d";
-import { FICHES } from "./fiches.js?v=a6bd026c2d";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=c227b2d74f";
+import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=c227b2d74f";
+import { monterTimbres } from "./timbres.js?v=c227b2d74f";
+import { monterFugue } from "./fugue.js?v=c227b2d74f";
+import { monterBritten } from "./britten.js?v=c227b2d74f";
+import { monterVariations } from "./variations.js?v=c227b2d74f";
+import { svgIcone, dessin } from "./icones.js?v=c227b2d74f";
+import { PHOTOS } from "./photos.js?v=c227b2d74f";
+import { FICHES } from "./fiches.js?v=c227b2d74f";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -45,6 +45,12 @@ function dessinerPlan() {
   }
   s += '<g class="chef"><circle cx="500" cy="528" r="11"/><path d="M493 541 L507 541 L500 530 Z"/><text x="500" y="505">chef</text></g></svg>';
   $("plan").innerHTML = s;
+}
+
+// ---------------------------------------------------------------- la galerie : une carte par instrument, rangée par famille (la vue des petits écrans)
+function dessinerGalerie() {
+  $("galerie").innerHTML = ORDRE_FAMILLES.map(f => '<section class="bloc-gal" style="--c:' + FAMILLES[f].couleur + ";--p:" + FAMILLES[f].pale + '"><h3>' + esc(FAMILLES[f].nom) + '</h3><div class="cartes-g">'
+    + INSTRUMENTS.filter(i => i.fam === f).map(i => '<button type="button" class="carte-g" data-id="' + i.id + '" data-fam="' + f + '" aria-pressed="false"><span class="vg">' + visuel(i.id, 84, "") + "</span><span class=\"ng\">" + esc(i.nom) + "</span></button>").join("") + "</div></section>").join("");
 }
 
 // ---------------------------------------------------------------- les tessitures : toutes les étendues sur un même axe de hauteurs
@@ -157,7 +163,7 @@ function fiche() {
 
 // ---------------------------------------------------------------- sélection, familles, vues
 function marquer() {
-  document.querySelectorAll(".sect, .tess-ligne").forEach(g => { g.setAttribute("aria-pressed", String(etat.choisir && g.classList.contains("sect") ? etat.melange.indexOf(g.dataset.id) >= 0 : g.dataset.id === etat.choix)); g.classList.toggle("attenue", !!etat.famille && g.dataset.fam !== etat.famille); });
+  document.querySelectorAll(".sect, .tess-ligne, .carte-g").forEach(g => { g.setAttribute("aria-pressed", String(etat.choisir && g.classList.contains("sect") ? etat.melange.indexOf(g.dataset.id) >= 0 : g.dataset.id === etat.choix)); g.classList.toggle("attenue", !!etat.famille && g.dataset.fam !== etat.famille); });
   document.querySelectorAll("#familles button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f === etat.famille)));
 }
 function choisir(id, focus) {
@@ -166,8 +172,8 @@ function choisir(id, focus) {
   if (focus && window.matchMedia("(max-width: 900px)").matches) $("fiche").scrollIntoView({ block: "nearest" });
 }
 function vue(v) {
-  etat.vue = v; $("melange").hidden = v !== "plan"; $("plan").hidden = v !== "plan"; $("tessitures").hidden = v !== "tess";
-  $("v-plan").setAttribute("aria-pressed", String(v === "plan")); $("v-tess").setAttribute("aria-pressed", String(v === "tess"));
+  etat.vue = v; $("melange").hidden = v !== "plan"; $("plan").hidden = v !== "plan"; $("galerie").hidden = v !== "gal"; $("tessitures").hidden = v !== "tess";
+  $("v-plan").setAttribute("aria-pressed", String(v === "plan")); $("v-gal").setAttribute("aria-pressed", String(v === "gal")); $("v-tess").setAttribute("aria-pressed", String(v === "tess"));
 }
 const ESPACES = [["01", "Explorer l'orchestre", "explorer", "violons1", "Le plan, les quatre familles, 29 instruments, leurs tessitures."], ["02", "Écouter Britten", "britten", "tamTam", "Un guide d'écoute : le thème, treize variations, la fugue. Sans enregistrement : l'œuvre est protégée."], ["03", "Reconnaître les timbres", "timbres", "hautbois", "Comparer deux timbres, puis tester ses oreilles à l'aveugle."], ["04", "Comprendre les variations", "variations", "harpe", "Transformer un thème de huit façons et l'écouter avec d'autres instruments."], ["05", "Construire une fugue", "fugue", "violoncelles", "Dessiner un sujet, faire entrer les voix, écouter la superposition."]];
 let timbresPret = false, fuguePret = false, brittenPret = false, variationsPret = false;
@@ -193,13 +199,14 @@ function credits() {
   const t = $("credits"); if (t) t.hidden = !liste.length;
 }
 function demarrer() {
-  parcours(); dessinerPlan(); dessinerTessitures(); credits();
+  parcours(); dessinerPlan(); dessinerGalerie(); dessinerTessitures(); credits();
   $("familles").innerHTML = ORDRE_FAMILLES.map(f => '<button type="button" data-f="' + f + '" aria-pressed="false" style="--c:' + FAMILLES[f].couleur + '">' + esc(FAMILLES[f].court) + "</button>").join("");
   $("familles").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; etat.famille = etat.famille === b.dataset.f ? null : b.dataset.f; marquer(); });
-  $("explorer").addEventListener("click", e => { const g = e.target.closest(".sect, .tess-ligne"); if (!g) return; if (etat.choisir && g.classList.contains("sect")) { const k = etat.melange.indexOf(g.dataset.id); if (k >= 0) etat.melange.splice(k, 1); else etat.melange.push(g.dataset.id); majMelange(); return; } choisir(g.dataset.id, true); });
+  $("explorer").addEventListener("click", e => { const g = e.target.closest(".sect, .tess-ligne, .carte-g"); if (!g) return; if (etat.choisir && g.classList.contains("sect")) { const k = etat.melange.indexOf(g.dataset.id); if (k >= 0) etat.melange.splice(k, 1); else etat.melange.push(g.dataset.id); majMelange(); return; } choisir(g.dataset.id, true); });
   $("explorer").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".sect, .tess-ligne")) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent("click", { bubbles: true })); } });
   brancherMelange(); majMelange();
-  $("v-plan").onclick = () => vue("plan"); $("v-tess").onclick = () => vue("tess");
+  $("v-plan").onclick = () => vue("plan"); $("v-gal").onclick = () => vue("gal"); $("v-tess").onclick = () => vue("tess");
+  if (window.matchMedia("(max-width: 700px)").matches) vue("gal");
   const id = decodeURIComponent((location.hash || "").slice(1)); choisir(parId(id) ? id : null, false); espace(["timbres", "fugue", "britten", "variations"].indexOf(id) >= 0 ? id : "explorer");
   window.addEventListener("hashchange", () => { const h = decodeURIComponent((location.hash || "").slice(1)); if (["timbres", "fugue", "britten", "variations"].indexOf(h) >= 0) espace(h); else if (parId(h)) { espace("explorer"); if (h !== etat.choix) choisir(h, false); } });
   document.addEventListener("click", e => { const a = e.target.closest("[data-voir]"); if (a) { e.preventDefault(); espace("explorer"); choisir(a.dataset.voir, true); } });

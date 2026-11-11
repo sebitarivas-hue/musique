@@ -1,5 +1,5 @@
 // Séquences : motifs euclidiens, arpèges, plan de notes exact pour le rendu hors ligne, et planificateur pour le jeu en direct. Sans DOM : testé dans Node.
-import { frequenceMidi } from "./midi.js?v=a6bd026c2d";
+import { frequenceMidi } from "./midi.js?v=c227b2d74f";
 
 // Rythme euclidien (Bjorklund) : k impulsions réparties le plus régulièrement possible sur n pas. Renvoie un tableau de 0 et 1.
 export function euclide(k, n, rotation = 0) {

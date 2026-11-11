@@ -115,3 +115,8 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
 
 .ma-desc { margin: 10px 0; } .ma-desc h4 { margin: 0 0 6px; } .cercles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; } .cercle { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: .85rem; } .cercle textarea { font: 500 .9rem var(--f-body, sans-serif); border: 2px solid var(--noir); border-radius: 18px 18px 18px 4px; padding: 8px 10px; background: #fff; resize: vertical; width: 100%; box-sizing: border-box; }
 @media (max-width: 700px) { .cercles { grid-template-columns: 1fr; } }
+
+/* Galerie */
+.galerie { padding: 6px 8px 12px; } .bloc-gal h3 { margin: 12px 0 6px; font-size: 1rem; border-left: 12px solid var(--c); padding-left: 8px; }
+.cartes-g { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; } .carte-g { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; min-height: 0; background: var(--p); border: 2px solid var(--noir); }
+.carte-g .vg { width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; background: var(--p); } .carte-g .ng { font-size: .78rem; font-weight: 700; line-height: 1.1; text-align: center; } .carte-g[aria-pressed="true"] { background: var(--acide); } .carte-g.attenue { opacity: .25; }

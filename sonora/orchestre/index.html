@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Orchestre</title>
 <meta name="description" content="Explorer l'orchestre symphonique : le plan des musiciens, les quatre familles, chaque instrument, sa tessiture et son timbre.">
-<link rel="stylesheet" href="../studio/studio.css?v=a6bd026c2d">
-<link rel="stylesheet" href="orchestre.css?v=a6bd026c2d">
+<link rel="stylesheet" href="../studio/studio.css?v=c227b2d74f">
+<link rel="stylesheet" href="orchestre.css?v=c227b2d74f">
 </head>
 <body>
 <a class="saut" href="#contenu">Aller au contenu</a>
@@ -22,7 +22,7 @@
   <section id="explorer" aria-labelledby="t-explorer">
     <h2 id="t-explorer">01 Explorer l'orchestre</h2>
     <div class="outils">
-      <div class="vues" role="group" aria-label="Façon de regarder l'orchestre"><button type="button" id="v-plan" aria-pressed="true">Le plan</button><button type="button" id="v-tess" aria-pressed="false">Les tessitures</button></div>
+      <div class="vues" role="group" aria-label="Façon de regarder l'orchestre"><button type="button" id="v-plan" aria-pressed="true">Le plan</button><button type="button" id="v-gal" aria-pressed="false">La galerie</button><button type="button" id="v-tess" aria-pressed="false">Les tessitures</button></div>
       <div class="familles" id="familles" role="group" aria-label="Mettre une famille en valeur"></div>
     </div>
     <div class="melange" id="melange" role="group" aria-label="Faire jouer des sections ensemble">
@@ -35,6 +35,7 @@
     <div class="cadre">
       <div class="scene">
         <div id="plan"></div>
+        <div id="galerie" class="galerie" hidden></div>
         <div id="tessitures" hidden></div>
       </div>
       <aside class="fiche" id="fiche" aria-live="polite" tabindex="-1"></aside>
@@ -66,8 +67,8 @@
     <ul id="credits-liste"></ul>
   </section>
 </main>
-<script type="module" src="orchestre.js?v=a6bd026c2d"></script>
-<script src="../barre-cours.js?v=a6bd026c2d"></script>
-<script src="../retour.js?v=a6bd026c2d"></script>
+<script type="module" src="orchestre.js?v=c227b2d74f"></script>
+<script src="../barre-cours.js?v=c227b2d74f"></script>
+<script src="../retour.js?v=c227b2d74f"></script>
 </body>
 </html>
