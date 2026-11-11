@@ -1,0 +1,39 @@
+/* SONORA Orchestre : fond papier, encre noire, vert acide ; les quatre familles gardent une couleur constante partout. */
+.orchestre { width: min(1180px, 100%); margin: 0 auto; padding: 16px 16px 48px; }
+.intro h1 { font: 400 clamp(1.8rem, 5vw, 3rem)/1.05 var(--f-display, sans-serif); margin: 6px 0 10px; text-transform: none; } .intro h1 span { background: var(--acide); padding: 0 .15em; }
+.intro p { max-width: 62ch; font-size: 1.05rem; margin: 0 0 14px; color: var(--gris); }
+.parcours { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 0 0 22px; padding: 0; }
+.parcours li { border: 2px solid var(--noir); padding: 8px 10px; min-height: 64px; background: #fff; }
+.parcours li b { display: block; font: 700 .78rem var(--f-mono, monospace); } .parcours li span { font-weight: 700; font-size: .95rem; line-height: 1.15; display: block; }
+.parcours li.actif { background: var(--acide); } .parcours li.bientot { border-style: dashed; color: var(--gris); } .parcours li small { display: block; font-size: .75rem; margin-top: 2px; }
+#explorer h2 { font-size: 1.15rem; margin-bottom: 10px; }
+.outils { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; margin-bottom: 10px; }
+.vues { display: flex; } .vues button { border-radius: 0; } .vues button + button { margin-left: -2px; } .vues button[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
+.familles { display: flex; flex-wrap: wrap; gap: 6px; }
+.familles button { display: inline-flex; align-items: center; gap: 7px; } .familles button::before { content: ""; width: 14px; height: 14px; background: var(--c); border: 2px solid var(--noir); }
+.familles button[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
+.cadre { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr); gap: 16px; align-items: start; }
+.scene { background: #fff; border: 2px solid var(--noir); padding: 6px; }
+.scene svg { display: block; width: 100%; height: auto; }
+.sect path { fill: var(--c); stroke: var(--noir); stroke-width: 2; cursor: pointer; transition: opacity .15s; }
+.sect:hover path, .sect:focus-visible path { stroke-width: 4; } .sect:focus { outline: none; } .sect:focus-visible path { stroke: #000; stroke-width: 5; }
+.sect[aria-pressed="true"] path { fill: var(--noir); } .sect[aria-pressed="true"] text { fill: var(--acide); }
+.sect text { font: 700 13px var(--f-body, sans-serif); fill: var(--noir); text-anchor: middle; pointer-events: none; }
+.attenue { opacity: .22; }
+.chef circle { fill: var(--noir); } .chef text { font: 700 12px var(--f-mono, monospace); fill: var(--noir); text-anchor: middle; }
+.public { font: 700 12px var(--f-mono, monospace); fill: var(--gris); text-anchor: middle; }
+.fiche { border: 2px solid var(--noir); background: #fff; padding: 14px 16px; position: sticky; top: 8px; }
+.fiche:focus { outline: 3px solid var(--acide); } .fiche h3 { font: 400 1.4rem/1.1 var(--f-display, sans-serif); margin: 0 0 4px; }
+.fiche .fam { display: inline-block; font: 700 .75rem var(--f-mono, monospace); padding: 2px 8px; background: var(--c); border: 2px solid var(--noir); margin-bottom: 8px; }
+.fiche p { margin: 8px 0; font-size: 1rem; line-height: 1.45; } .fiche dl { margin: 10px 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: .92rem; } .fiche dt { font-weight: 700; } .fiche dd { margin: 0; }
+.fiche .vide { color: var(--gris); }
+.clavier { display: block; width: 100%; height: auto; margin: 8px 0 4px; } .clavier .touche { cursor: pointer; } .clavier .touche.blanche { fill: #fff; } .clavier .touche.noire { fill: var(--noir); }
+.clavier .touche.dehors { fill: #E3E2D9; cursor: default; } .clavier .touche.noire.dehors { fill: #8a897f; } .clavier .touche:hover:not(.dehors) { fill: var(--acide); }
+.clavier .tess { fill: var(--c); opacity: .85; } .legende { font-size: .8rem; color: var(--gris); margin: 0 0 8px; }
+.fiche .actions-fiche { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; } .sans-son { font-size: .88rem; color: var(--gris); border-left: 4px solid var(--c); padding-left: 8px; }
+.tess-ligne { cursor: pointer; } .tess-ligne rect.barre { fill: var(--c); stroke: var(--noir); stroke-width: 1.5; } .tess-ligne text { font: 600 12px var(--f-body, sans-serif); fill: var(--noir); }
+.tess-ligne:hover rect.barre, .tess-ligne:focus-visible rect.barre { stroke-width: 3; } .tess-ligne:focus { outline: none; } .tess-ligne[aria-pressed="true"] rect.barre { fill: var(--noir); }
+.tess-axe line { stroke: #cfcec4; } .tess-axe text { font: 600 11px var(--f-mono, monospace); fill: var(--gris); text-anchor: middle; } .tess-sans { font-style: italic; fill: var(--gris); }
+@media (max-width: 900px) { .cadre { grid-template-columns: 1fr; } .fiche { position: static; } .parcours { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .sect text { font-size: 17px; } }
+@media (prefers-reduced-motion: reduce) { .sect path { transition: none; } }

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONORA Orchestre</title>
+<meta name="description" content="Explorer l'orchestre symphonique : le plan des musiciens, les quatre familles, chaque instrument, sa tessiture et son timbre.">
+<link rel="stylesheet" href="../studio/studio.css?v=4898d7d9e1">
+<link rel="stylesheet" href="orchestre.css?v=4898d7d9e1">
+</head>
+<body>
+<a class="saut" href="#contenu">Aller au contenu</a>
+<header class="haut">
+  <div class="marque"><a href="../../choix.html" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Orchestre</span></div>
+  <a class="lien-bouton accueil-sonora" href="../index.html">Tous les outils</a>
+  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../decouverte/index.html">Découvertes</a><a class="lien-bouton" href="../academy/index.html">Apprendre</a><a class="lien-bouton" href="../harmonie/index.html">Harmonie</a><a class="lien-bouton" aria-current="page" href="index.html">Orchestre</a><a class="lien-bouton" href="../pistes/index.html">Pistes</a><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" href="../code/index.html">Code</a></nav>
+  <div class="etat" id="etat" role="status" aria-live="polite">prêt</div>
+</header>
+<main id="contenu" class="orchestre">
+  <section class="intro"><h1>L'orchestre, <span>instrument par instrument</span></h1><p>Un guide pour apprendre à reconnaître les quatre familles, puis chaque instrument : sa place, sa hauteur, son timbre. Un parcours en cinq étapes, qui mène à l'écoute du Guide de l'orchestre de Britten.</p></section>
+  <ol class="parcours" id="parcours" aria-label="Le parcours en cinq étapes"></ol>
+  <section id="explorer" aria-labelledby="t-explorer">
+    <h2 id="t-explorer">01 Explorer l'orchestre</h2>
+    <div class="outils">
+      <div class="vues" role="group" aria-label="Façon de regarder l'orchestre"><button type="button" id="v-plan" aria-pressed="true">Le plan</button><button type="button" id="v-tess" aria-pressed="false">Les tessitures</button></div>
+      <div class="familles" id="familles" role="group" aria-label="Mettre une famille en valeur"></div>
+    </div>
+    <div class="cadre">
+      <div class="scene">
+        <div id="plan"></div>
+        <div id="tessitures" hidden></div>
+      </div>
+      <aside class="fiche" id="fiche" aria-live="polite" tabindex="-1"></aside>
+    </div>
+  </section>
+</main>
+<script type="module" src="orchestre.js?v=4898d7d9e1"></script>
+<script src="../barre-cours.js?v=4898d7d9e1"></script>
+<script src="../retour.js?v=4898d7d9e1"></script>
+</body>
+</html>
