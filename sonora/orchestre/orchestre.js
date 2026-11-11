@@ -1,32 +1,14 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=4898d7d9e1";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=4898d7d9e1";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=38029b7b21";
+import { message, arreter, jouer } from "./audio.js?v=38029b7b21";
+import { monterTimbres } from "./timbres.js?v=38029b7b21";
+import { monterFugue } from "./fugue.js?v=38029b7b21";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const ABR = { piccolo: "Picc.", corAnglais: "C. angl.", clarinetteBasse: "Cl. basse", caisseClaire: "Caisse cl.", grosseCaisse: "Gr. caisse", tamTam: "Tam-tam", cloches: "Cloches" };
 const etat = { choix: null, famille: null, vue: "plan", note: null };
-let ctx = null, source = null;
-
-function message(t) { const e = $("etat"); if (e) e.textContent = t; }
-function contexte() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC(); } if (ctx.state === "suspended") ctx.resume(); return ctx; }
-function arreter() { if (source) { try { source.stop(); } catch (e) {} source = null; } }
-
-// Joue des notes (numéros MIDI) avec l'instrument de la banque : une note tenue ou une gamme.
-async function jouer(inst, notes, pas) {
-  if (!inst.banque || !notes.length) return;
-  const c = contexte(); arreter(); message("chargement de " + inst.nom.toLowerCase() + "…");
-  const tampons = await preparer(inst.banque, c);
-  if (!tampons) { message("les sons ne sont pas disponibles ici"); return; }
-  const ev = notes.map((m, i) => ({ t: i * (pas || 0), duree: pas ? pas * 0.9 : 1.8, notes: [m], vitesse: 0.8 }));
-  const [L, R] = mixer(ev, tampons, { sr: c.sampleRate, instrument: inst.banque, duree: ev[ev.length - 1].t + (pas ? 0.8 : 2.4) });
-  const buf = c.createBuffer(2, L.length, c.sampleRate); buf.copyToChannel(L, 0); buf.copyToChannel(R, 1);
-  const g = c.createGain(); g.gain.value = 0.8; g.connect(c.destination);
-  const s = c.createBufferSource(); s.buffer = buf; s.connect(g); s.start(); source = s; s.onended = () => { if (source === s) { source = null; message("prêt"); } };
-  message(pas ? "gamme : " + nomNote(notes[0]) + " à " + nomNote(notes[notes.length - 1]) : nomNote(notes[0]));
-}
-
 // ---------------------------------------------------------------- le plan
 function dessinerPlan() {
   let s = '<svg viewBox="0 0 1000 560" role="group" aria-label="Plan de l\'orchestre vu de dessus, le chef en bas">';
@@ -108,9 +90,18 @@ function vue(v) {
   etat.vue = v; $("plan").hidden = v !== "plan"; $("tessitures").hidden = v !== "tess";
   $("v-plan").setAttribute("aria-pressed", String(v === "plan")); $("v-tess").setAttribute("aria-pressed", String(v === "tess"));
 }
+const ESPACES = [["01", "Explorer l'orchestre", "explorer"], ["02", "Écouter Britten", null], ["03", "Reconnaître les timbres", "timbres"], ["04", "Comprendre les variations", null], ["05", "Construire une fugue", "fugue"]];
+let timbresPret = false, fuguePret = false;
+function espace(nom) {
+  if (nom === "timbres" && !timbresPret) { timbresPret = true; monterTimbres(); }
+  if (nom === "fugue" && !fuguePret) { fuguePret = true; monterFugue(); }
+  arreter(); for (const s of ["explorer", "timbres", "fugue"]) $(s).hidden = nom !== s;
+  document.querySelectorAll("#parcours li[data-e]").forEach(li => { const sur = li.dataset.e === nom; li.classList.toggle("actif", sur); const b = li.querySelector("button"); if (sur) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current"); });
+  try { if (nom !== "explorer") history.replaceState(null, "", "#" + nom); else if (location.hash === "#timbres" || location.hash === "#fugue") history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+}
 function parcours() {
-  const etapes = [["01", "Explorer l'orchestre", true], ["02", "Écouter Britten", false], ["03", "Reconnaître les timbres", false], ["04", "Comprendre les variations", false], ["05", "Construire une fugue", false]];
-  $("parcours").innerHTML = etapes.map(e => '<li class="' + (e[2] ? "actif" : "bientot") + '"' + (e[2] ? ' aria-current="step"' : "") + "><b>" + e[0] + "</b><span>" + esc(e[1]) + "</span>" + (e[2] ? "" : "<small>à venir</small>") + "</li>").join("");
+  $("parcours").innerHTML = ESPACES.map(e => e[2] ? '<li data-e="' + e[2] + '"><button type="button"><span class="num">' + e[0] + "</span><span>" + esc(e[1]) + "</span></button></li>" : '<li class="bientot"><span class="num">' + e[0] + "</span><span>" + esc(e[1]) + "</span><small>à venir</small></li>").join("");
+  $("parcours").addEventListener("click", e => { const li = e.target.closest("li[data-e]"); if (li) espace(li.dataset.e); });
 }
 function demarrer() {
   parcours(); dessinerPlan(); dessinerTessitures();
@@ -119,8 +110,9 @@ function demarrer() {
   $("explorer").addEventListener("click", e => { const g = e.target.closest(".sect, .tess-ligne"); if (g) choisir(g.dataset.id, true); });
   $("explorer").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".sect, .tess-ligne")) { e.preventDefault(); choisir(e.target.dataset.id, true); } });
   $("v-plan").onclick = () => vue("plan"); $("v-tess").onclick = () => vue("tess");
-  const id = decodeURIComponent((location.hash || "").slice(1)); choisir(parId(id) ? id : null, false);
-  window.addEventListener("hashchange", () => { const h = decodeURIComponent((location.hash || "").slice(1)); if (parId(h) && h !== etat.choix) choisir(h, false); });
+  const id = decodeURIComponent((location.hash || "").slice(1)); choisir(parId(id) ? id : null, false); espace(id === "timbres" || id === "fugue" ? id : "explorer");
+  window.addEventListener("hashchange", () => { const h = decodeURIComponent((location.hash || "").slice(1)); if (h === "timbres" || h === "fugue") espace(h); else if (parId(h)) { espace("explorer"); if (h !== etat.choix) choisir(h, false); } });
+  document.addEventListener("click", e => { const a = e.target.closest("[data-voir]"); if (a) { e.preventDefault(); espace("explorer"); choisir(a.dataset.voir, true); } });
   window.ORCHESTRE_PRET = true;
 }
 demarrer();

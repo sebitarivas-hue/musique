@@ -3,9 +3,11 @@
 .intro h1 { font: 400 clamp(1.8rem, 5vw, 3rem)/1.05 var(--f-display, sans-serif); margin: 6px 0 10px; text-transform: none; } .intro h1 span { background: var(--acide); padding: 0 .15em; }
 .intro p { max-width: 62ch; font-size: 1.05rem; margin: 0 0 14px; color: var(--gris); }
 .parcours { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 0 0 22px; padding: 0; }
-.parcours li { border: 2px solid var(--noir); padding: 8px 10px; min-height: 64px; background: #fff; }
-.parcours li b { display: block; font: 700 .78rem var(--f-mono, monospace); } .parcours li span { font-weight: 700; font-size: .95rem; line-height: 1.15; display: block; }
-.parcours li.actif { background: var(--acide); } .parcours li.bientot { border-style: dashed; color: var(--gris); } .parcours li small { display: block; font-size: .75rem; margin-top: 2px; }
+.parcours li { border: 2px solid var(--noir); min-height: 64px; background: #fff; padding: 0; }
+.parcours li.bientot { padding: 8px 10px; border-style: dashed; color: var(--gris); }
+.parcours .num { display: block; font: 700 .78rem var(--f-mono, monospace); } .parcours li span + span { font-weight: 700; font-size: .95rem; line-height: 1.15; display: block; }
+.parcours li button { width: 100%; height: 100%; min-height: 64px; border: 0; background: transparent; text-align: left; padding: 8px 10px; font: inherit; }
+.parcours li button:hover { background: var(--acide); } .parcours li.actif { background: var(--acide); } .parcours li small { display: block; font-size: .75rem; margin-top: 2px; }
 #explorer h2 { font-size: 1.15rem; margin-bottom: 10px; }
 .outils { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; margin-bottom: 10px; }
 .vues { display: flex; } .vues button { border-radius: 0; } .vues button + button { margin-left: -2px; } .vues button[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
@@ -37,3 +39,32 @@
 @media (max-width: 900px) { .cadre { grid-template-columns: 1fr; } .fiche { position: static; } .parcours { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 520px) { .sect text { font-size: 17px; } }
 @media (prefers-reduced-motion: reduce) { .sect path { transition: none; } }
+
+/* Espace 03 : timbres */
+.chapeau { max-width: 62ch; margin: 0 0 12px; color: var(--gris); } .cadre-timbres { grid-template-columns: 1fr 1fr; } .cadre-timbres .fiche { position: static; }
+.fiche fieldset { border: 0; padding: 0; margin: 10px 0; } .fiche legend { font-weight: 700; padding: 0; margin-bottom: 4px; }
+.choix-rg { display: flex; flex-wrap: wrap; gap: 6px; } .choix-rg button[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
+.record { font: 600 .85rem var(--f-mono, monospace); align-self: center; } .rang { font: 700 .78rem var(--f-mono, monospace); margin: 0 0 4px; }
+.reponses { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; } .reponses button { min-height: 52px; text-align: left; }
+.reponses button[style] { border-left: 12px solid var(--c); } .reponses button.juste { background: #8BD450; } .reponses button.faux { background: #FFB4A8; }
+.bravo { border-left: 6px solid #3FA34D; padding-left: 8px; } .rate { border-left: 6px solid var(--rouge); padding-left: 8px; }
+.nb { font: 700 .8rem var(--f-mono, monospace); text-transform: uppercase; } .conf { padding-left: 1.2em; margin: 6px 0 10px; }
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .duo label { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: .85rem; }
+.duo-texte { display: grid; gap: 8px; margin-top: 12px; font-size: .92rem; } .duo-texte div { border-left: 8px solid var(--c); padding-left: 8px; }
+@media (max-width: 900px) { .cadre-timbres { grid-template-columns: 1fr; } } @media (max-width: 520px) { .duo, .reponses { grid-template-columns: 1fr; } }
+.reponses button.juste, .reponses button.faux, .reponses button:disabled { opacity: 1; } .reponses button:disabled:not(.juste):not(.faux) { color: var(--gris); }
+
+/* Espace 05 : fugue */
+.fiche-fugue { position: static; } .grilles { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; } .bloc-grille h3 { margin-bottom: 2px; }
+.grille { display: grid; gap: 2px; max-width: 460px; } .g-ligne { display: grid; grid-template-columns: 42px repeat(8, 1fr); gap: 2px; align-items: center; }
+.g-nom { font: 600 .7rem var(--f-mono, monospace); color: var(--gris); text-align: right; padding-right: 4px; } .g-temps span { text-align: center; font: 600 .7rem var(--f-mono, monospace); color: var(--gris); }
+.cell { min-height: 0; height: 24px; padding: 0; border: 1.5px solid #cfcec4; border-radius: 0; background: #fff; } .cell.do { background: #F4F3EC; }
+.cell:hover { background: var(--acide); } .cell[aria-pressed="true"] { background: var(--noir); border-color: var(--noir); } .cell:focus-visible { outline: 3px solid var(--acide); outline-offset: 1px; box-shadow: 0 0 0 5px var(--noir); }
+.reglages-fugue { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 12px 0; } .reglages-fugue input[type=range] { width: 220px; }
+.choix-voix { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; margin-bottom: 10px; } .choix-voix label { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: .85rem; }
+.noms-voix { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 4px 0 8px; } .noms-voix li { border-left: 10px solid var(--c); background: #F4F3EC; padding: 4px 10px; font-weight: 600; font-size: .88rem; }
+.rouleau { background: #fff; border: 2px solid var(--noir); padding: 4px; margin-bottom: 8px; } .rouleau svg { display: block; width: 100%; height: auto; }
+.rouleau .note { fill: var(--c); stroke: var(--noir); stroke-width: 1.2; } .rouleau .note.contre { fill-opacity: .45; stroke-dasharray: 3 2; } .rouleau .mesure { stroke: #cfcec4; stroke-dasharray: 4 3; } .rouleau .frotte { fill: var(--rouge); }
+.rouleau #tete { stroke: var(--noir); stroke-width: 3; }
+@media (max-width: 700px) { .grilles { grid-template-columns: 1fr; } .g-ligne { grid-template-columns: 34px repeat(8, 1fr); } .cell { height: 30px; } }
+.fiche-fugue h3 + .noms-voix, .fiche-fugue .actions-fiche + h3 { margin-top: 18px; }
