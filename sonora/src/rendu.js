@@ -1,4 +1,4 @@
-import { Polyphonie } from "./voix.js?v=49855e5e9a";
+import { Polyphonie } from "./voix.js?v=a6bd026c2d";
 
 // Rendu hors ligne : exécute un noyau compilé sans AudioWorklet. Sert aux tests numériques et à l'export WAV.
 export function instancier(module, sr) {

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Orchestre</title>
 <meta name="description" content="Explorer l'orchestre symphonique : le plan des musiciens, les quatre familles, chaque instrument, sa tessiture et son timbre.">
-<link rel="stylesheet" href="../studio/studio.css?v=49855e5e9a">
-<link rel="stylesheet" href="orchestre.css?v=49855e5e9a">
+<link rel="stylesheet" href="../studio/studio.css?v=a6bd026c2d">
+<link rel="stylesheet" href="orchestre.css?v=a6bd026c2d">
 </head>
 <body>
 <a class="saut" href="#contenu">Aller au contenu</a>
@@ -25,6 +25,13 @@
       <div class="vues" role="group" aria-label="Façon de regarder l'orchestre"><button type="button" id="v-plan" aria-pressed="true">Le plan</button><button type="button" id="v-tess" aria-pressed="false">Les tessitures</button></div>
       <div class="familles" id="familles" role="group" aria-label="Mettre une famille en valeur"></div>
     </div>
+    <div class="melange" id="melange" role="group" aria-label="Faire jouer des sections ensemble">
+      <span class="etq">Mélanger</span>
+      <button type="button" id="m-choisir" aria-pressed="false">Choisir des sections sur le plan</button>
+      <button type="button" data-preset="cordes">Les cordes</button><button type="button" data-preset="bois">Les bois</button><button type="button" data-preset="cuivres">Les cuivres</button><button type="button" data-preset="tout">Tout l'orchestre</button>
+      <button type="button" class="principal" id="m-jouer">Écouter l'accord de do majeur</button><button type="button" id="m-vider">Vider</button>
+      <span class="m-etat" id="m-etat" role="status" aria-live="polite">Aucune section choisie.</span>
+    </div>
     <div class="cadre">
       <div class="scene">
         <div id="plan"></div>
@@ -36,21 +43,31 @@
   <section id="timbres" aria-labelledby="t-timbres" hidden>
     <h2 id="t-timbres">03 Reconnaître les timbres</h2>
     <p class="chapeau">Le timbre, c'est ce qui distingue deux instruments qui jouent la même note. Compare d'abord, puis teste tes oreilles.</p>
-    <div class="cadre cadre-timbres"><div class="fiche" id="compare"></div><div class="fiche" id="quiz" aria-live="polite"></div></div>
+    <div class="cadre cadre-timbres"><div class="fiche" id="compare"></div><div class="fiche" id="quiz" aria-live="polite"></div><div class="fiche pleine" id="mots"></div></div>
   </section>
   <section id="fugue" aria-labelledby="t-fugue" hidden>
     <h2 id="t-fugue">05 Construire une fugue</h2>
     <p class="chapeau">Dans une fugue, une même phrase, le sujet, est reprise par des voix qui entrent l'une après l'autre. La deuxième voix reprend le sujet à la quinte : c'est la réponse. Dessine ton sujet, choisis tes instruments, écoute les voix se superposer.</p>
     <div class="fiche fiche-fugue" id="fugue-corps"></div>
   </section>
+  <section id="britten" aria-labelledby="t-britten" hidden>
+    <h2 id="t-britten">02 Écouter Britten</h2>
+    <p class="chapeau">Le Guide de l'orchestre fait entendre l'orchestre instrument par instrument : un thème, treize variations, une fugue. Ce guide t'accompagne pendant l'écoute.</p>
+    <div class="fiche fiche-fugue" id="britten-corps"></div>
+  </section>
+  <section id="variations" aria-labelledby="t-variations" hidden>
+    <h2 id="t-variations">04 Comprendre les variations</h2>
+    <p class="chapeau">Une variation garde l'identité d'un thème en changeant sa forme ou sa couleur. Transforme ton thème de huit façons, puis écoute-le avec l'instrument de ton choix.</p>
+    <div class="fiche fiche-fugue" id="variations-corps"></div>
+  </section>
   <section id="credits" class="credits" aria-labelledby="t-credits" hidden>
     <h2 id="t-credits">Crédits des images</h2>
-    <p class="legende">Photos d'instruments retouchées (fond blanc, rognage). Les autres instruments sont dessinés pour ce cours.</p>
+    <p class="legende">Photos d'instruments retouchées (fond blanc, rognage). Celles dont la licence est « À confirmer » ont été fournies sans licence connue : à vérifier avant toute diffusion publique. Les instruments sans photo sont dessinés pour ce cours.</p>
     <ul id="credits-liste"></ul>
   </section>
 </main>
-<script type="module" src="orchestre.js?v=49855e5e9a"></script>
-<script src="../barre-cours.js?v=49855e5e9a"></script>
-<script src="../retour.js?v=49855e5e9a"></script>
+<script type="module" src="orchestre.js?v=a6bd026c2d"></script>
+<script src="../barre-cours.js?v=a6bd026c2d"></script>
+<script src="../retour.js?v=a6bd026c2d"></script>
 </body>
 </html>

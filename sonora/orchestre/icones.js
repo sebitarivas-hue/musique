@@ -61,10 +61,15 @@ function xylophone() {
 function cloches() {
   let s = L(8, 8, 92, 8, 3.4) + L(8, 8, 8, 96, 3) + L(92, 8, 92, 96, 3); for (let i = 0; i < 7; i++) { const h = 84 - i * 8, x = 17 + i * 10; s += L(x + 3, 8, x + 3, 14, 1.4) + R(x, 14, 6.4, h, ARGENT, 3); } return s;
 }
+const triangle = () => P("M50 10 L90 86 L10 86 Z", "none", 4.2) + L(50, 2, 50, 10, 1.6) + L(80, 30, 96, 8, 3, ROUGE);
+const tambourBasque = () => C(50, 50, 40, BOIS, 2.2) + C(50, 50, 32, PEAU, 1.8) + [0, 1, 2, 3, 4, 5, 6, 7].map(i => { const a = i * Math.PI / 4; return C((50 + 36 * Math.cos(a)).toFixed(1), (50 + 36 * Math.sin(a)).toFixed(1), 3.4, OR, 1.2); }).join("");
+const castagnettes = () => L(50, 8, 36, 40, 1.6) + L(50, 8, 66, 40, 1.6) + E(34, 62, 22, 24, BOIS, 2) + E(68, 66, 20, 22, BOIS2, 2) + C(34, 62, 4, NOIR, 1) + C(68, 66, 4, NOIR, 1);
+const blocsChinois = () => L(12, 24, 88, 24, 3.2) + [0, 1, 2, 3].map(i => E(22 + i * 19, 40, 9, 12 + i * 2, BOIS, 1.8)).join("") + L(50, 30, 38, 94, 2.4) + L(50, 30, 62, 94, 2.4) + L(50, 30, 50, 94, 2.4);
+const fouet = () => P("M10 56 L70 36 L74 46 L16 66 Z", BOIS, 2) + P("M12 70 L74 50 L78 60 L18 80 Z", BOIS2, 2) + C(14, 63, 3, OR2, 1.2);
 const FABRIQUE = {
   violons1: () => cordeFrottee(0.9), violons2: () => cordeFrottee(0.9), altos: () => cordeFrottee(0.97), violoncelles: () => cordeFrottee(1.03, L(50, 94, 50, 100, 2.4)), contrebasses: () => cordeFrottee(1.07, L(50, 94, 50, 100, 2.4)),
   harpe, piccolo: () => flute(true), flutes: () => flute(false), hautbois: () => anche("hautbois"), corAnglais: () => anche("cor"), clarinettes: () => anche("clarinette"), clarinetteBasse: () => anche("basse"), bassons: basson,
-  cors: cor, trompettes: trompette, trombones: trombone, tuba, timbales: timbale, caisseClaire, grosseCaisse, cymbales, tamTam: tamtam, xylophone, cloches
+  cors: cor, trompettes: trompette, trombones: trombone, tuba, timbales: timbale, caisseClaire, grosseCaisse, cymbales, tamTam: tamtam, xylophone, cloches, triangle, tambourBasque, castagnettes, blocsChinois, fouet
 };
 // Le dessin d'un instrument, à placer dans un <svg viewBox="0 0 100 100"> ou dans un groupe transformé.
 export function dessin(id) { const f = FABRIQUE[id]; return f ? f() : ""; }

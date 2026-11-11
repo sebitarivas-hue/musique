@@ -4,13 +4,13 @@
 //              joués à deux mesures, au tempo du projet ;
 //   Sons       les neuf sons de synthèse d'Harmonie (basse 808, sous-basse, lead, nappe, piano électrique, pincé, orgue rock, cloches, stab) sur la note et la durée de son choix.
 // Tout est fabriqué à la demande, sans fichier ni réseau, et reproductible. Sans DOM : testé dans Node.
-import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS, chargerKit } from "../harmonie/batterie.js?v=49855e5e9a";
+import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS, chargerKit } from "../harmonie/batterie.js?v=a6bd026c2d";
 export const preparerBatterie = chargerKit;   // la vraie batterie (enregistrée) : à charger au démarrage de Pistes
-import { GENRES } from "../harmonie/genres.js?v=49855e5e9a";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=49855e5e9a";
-import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=49855e5e9a";
-import { rendreSuite } from "../harmonie/son.js?v=49855e5e9a";
-import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=49855e5e9a";
+import { GENRES } from "../harmonie/genres.js?v=a6bd026c2d";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=a6bd026c2d";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=a6bd026c2d";
+import { rendreSuite } from "../harmonie/son.js?v=a6bd026c2d";
+import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=a6bd026c2d";
 
 export const NOMS_PIECES = { kick: "Grosse caisse", snare: "Caisse claire", clap: "Clap", hatc: "Charleston fermé", hato: "Charleston ouvert", rim: "Rimshot", tom: "Tom", cow: "Cloche", shaker: "Shaker", ride: "Cymbale ride", crash: "Cymbale crash" };
 // Des rythmes du monde, sur seize pas (huit, neuf ou douze quand le rythme l'exige). Les mêmes que ceux de l'atelier sonore du cours.

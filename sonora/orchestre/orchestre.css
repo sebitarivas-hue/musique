@@ -80,3 +80,38 @@
 /* Photos d'instruments : le fond blanc des photos disparaît sur la teinte de la famille */
 .photo { display: block; mix-blend-mode: multiply; max-width: 100%; height: auto; } .photo-svg { mix-blend-mode: multiply; }
 .grand-icone { width: 164px; height: 164px; } .credits { margin-top: 28px; } .credits ul { padding-left: 1.2em; margin: 6px 0; font-size: .85rem; color: var(--gris); } .credits a { color: inherit; }
+
+/* Rubriques de la fiche */
+.savoir p { margin: 6px 0; font-size: .95rem; line-height: 1.45; } .etq { display: inline-block; font: 700 .7rem var(--f-mono, monospace); text-transform: uppercase; background: var(--noir); color: var(--papier); padding: 1px 6px; margin-right: 4px; }
+.rubrique { margin: 10px 0; } .rangee { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; } .rangee button { min-height: 34px; font-size: .82rem; }
+.pierre { background: #FFF4C2; border-left: 6px solid #FFC53D; padding: 6px 10px; font-size: .92rem; margin: 10px 0; }
+.nav-instr { display: flex; justify-content: space-between; gap: 8px; margin-top: 14px; border-top: 2px solid var(--noir); padding-top: 10px; } .nav-instr button { font-size: .8rem; min-height: 34px; }
+
+/* Mélange */
+.melange { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; border: 2px solid var(--noir); background: #fff; padding: 8px 10px; margin-bottom: 10px; } .melange[hidden] { display: none; } .melange button { min-height: 34px; font-size: .82rem; }
+#m-choisir[aria-pressed="true"] { background: var(--noir); color: var(--papier); } .m-etat { font-size: .82rem; color: var(--gris); margin-left: 4px; }
+.mode-melange .sect { cursor: copy; } .sect.dans-melange path { stroke: var(--noir); stroke-width: 5; stroke-dasharray: none; fill: var(--acide); } .mode-melange .sect:not(.dans-melange) path { stroke-dasharray: 6 4; }
+
+/* Espaces 02 et 04 */
+.entete-oeuvre p { margin: 4px 0 8px; font-size: .95rem; } .rate-doux { border-left: 6px solid #FFC53D; background: #FFF4C2; padding: 6px 10px; } .progres { font: 700 .8rem var(--f-mono, monospace); }
+.frise { list-style: none; display: flex; flex-wrap: wrap; gap: 4px; padding: 0; margin: 10px 0; } .frise button { min-width: 38px; min-height: 38px; padding: 0 6px; border: 2px solid var(--noir); border-bottom: 8px solid var(--c); font: 700 .8rem var(--f-mono, monospace); } .frise button[aria-current="true"] { background: var(--noir); color: var(--papier); } .frise button.fait::after { content: " \2713"; }
+.carte-etape { background: var(--p); border: 2px solid var(--noir); border-left: 12px solid var(--c); padding: 12px 14px; margin-bottom: 12px; } .carte-etape h3 { margin: 4px 0 8px; font-size: 1.3rem; }
+.vignettes { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; } .vig { width: 82px; height: 82px; background: #fff; border: 1.5px solid var(--noir); display: flex; align-items: center; justify-content: center; } .vig svg, .vig img { max-width: 100%; max-height: 100%; }
+.reco { display: flex; align-items: center; gap: 8px; margin: 10px 0; font-weight: 700; } .reco input { width: 20px; height: 20px; }
+.jeu-ordre { border-top: 2px solid var(--noir); margin-top: 18px; padding-top: 10px; } .puces { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; } .puces button.pris { background: #8BD450; opacity: 1; }
+.champ { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: .85rem; }
+.mel-theme { margin: 10px 0 14px; max-width: 420px; } .mini { display: block; width: 100%; height: auto; background: #fff; border: 1.5px solid var(--noir); } .mini .m-theme { fill: #b9b8ae; } .mini .m-var { fill: var(--c, #11110F); stroke: var(--noir); stroke-width: .8; }
+.grille-variations { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; } .carte-var { background: var(--p); border: 2px solid var(--noir); border-top: 10px solid var(--c); padding: 10px 12px; } .carte-var h3 { margin: 0 0 4px; font-size: 1.1rem; } .carte-var p { margin: 4px 0 8px; font-size: .9rem; } .carte-var .mini { --c: var(--c); margin-bottom: 8px; }
+
+/* Espace 02 : contexte, effectif, exercices */
+.contexte { margin: 6px 0 10px; padding-left: 1.2em; font-size: .92rem; } .contexte li { margin: 3px 0; } .carac { margin: 6px 0; }
+.effectif-oeuvre { margin-top: 16px; border-top: 2px solid var(--noir); padding-top: 8px; } .chips { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 8px 0; } .chips li { display: flex; gap: 6px; align-items: center; border: 1.5px solid var(--noir); background: #fff; padding: 3px 8px 3px 3px; font-size: .82rem; } .vig.petit { width: 48px; height: 48px; }
+.exercices { border-top: 2px solid var(--noir); margin-top: 18px; padding-top: 8px; } .texte-trous { font-size: 1.05rem; line-height: 2.2; } .texte-trous select, .tableau-th select { width: auto; min-width: 7.5em; display: inline-block; min-height: 34px; padding: 2px 6px; }
+select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { background: #FFD3CB; border-color: var(--rouge); } .bilan { font-weight: 700; margin: 6px 0 12px; }
+.defile { overflow-x: auto; } .tableau-th { border-collapse: collapse; min-width: 640px; } .tableau-th th, .tableau-th td { border: 2px solid var(--noir); padding: 4px 6px; text-align: center; } .tableau-th th[scope="row"] { text-align: left; background: #F4F3EC; } .tableau-th select { min-width: 6em; width: 100%; }
+
+.pleine { grid-column: 1 / -1; } .image-q { margin: 8px 0; width: 190px; height: 190px; } .resume-mots { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 4px; } .resume-mots li { border-left: 8px solid var(--c); padding: 2px 8px; background: #F4F3EC; font-size: .88rem; }
+.puces button[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
+
+.ma-desc { margin: 10px 0; } .ma-desc h4 { margin: 0 0 6px; } .cercles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; } .cercle { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: .85rem; } .cercle textarea { font: 500 .9rem var(--f-body, sans-serif); border: 2px solid var(--noir); border-radius: 18px 18px 18px 4px; padding: 8px 10px; background: #fff; resize: vertical; width: 100%; box-sizing: border-box; }
+@media (max-width: 700px) { .cercles { grid-template-columns: 1fr; } }

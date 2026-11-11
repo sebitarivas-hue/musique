@@ -72,5 +72,174 @@ export const PHOTOS = {
   "titre": "Piccolo.jpg",
   "auteur": "User:Caesura",
   "licence": "Domaine public"
+ },
+ "cors": {
+  "f": "cors.jpg",
+  "w": 584,
+  "h": 420,
+  "titre": "French horn front.png",
+  "auteur": "BenP",
+  "licence": "CC BY 2.5"
+ },
+ "trompettes": {
+  "f": "trompettes.jpg",
+  "w": 139,
+  "h": 420,
+  "titre": "Yamaha Trumpet YTR-8335LA crop.jpg",
+  "auteur": "Yamaha Corporation",
+  "licence": "CC BY-SA 4.0"
+ },
+ "violoncelles": {
+  "f": "violoncelles.jpg",
+  "w": 143,
+  "h": 420,
+  "titre": "Planche de photos d'instruments fournie par Sébastien",
+  "auteur": "source à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "contrebasses": {
+  "f": "contrebasses.jpg",
+  "w": 147,
+  "h": 420,
+  "titre": "Planche de photos d'instruments fournie par Sébastien",
+  "auteur": "source à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "clarinettes": {
+  "f": "clarinettes.jpg",
+  "w": 63,
+  "h": 420,
+  "titre": "Planche de photos d'instruments fournie par Sébastien",
+  "auteur": "source à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "bassons": {
+  "f": "bassons.jpg",
+  "w": 167,
+  "h": 420,
+  "titre": "Planche de photos d'instruments fournie par Sébastien",
+  "auteur": "source à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "trombones": {
+  "f": "trombones.jpg",
+  "w": 672,
+  "h": 342,
+  "titre": "Planche de photos d'instruments fournie par Sébastien",
+  "auteur": "source à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "tuba": {
+  "f": "tuba.jpg",
+  "w": 269,
+  "h": 420,
+  "titre": "Planche de photos d'instruments fournie par Sébastien",
+  "auteur": "source à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "xylophone": {
+  "f": "xylophone.jpg",
+  "w": 665,
+  "h": 420,
+  "titre": "Planche de photos d'instruments fournie par Sébastien",
+  "auteur": "source à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "caisseClaire": {
+  "f": "caisse_claire.jpg",
+  "w": 564,
+  "h": 420,
+  "titre": "Planche de photos d'instruments fournie par Sébastien",
+  "auteur": "source à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "cymbales": {
+  "f": "cymbales.jpg",
+  "w": 568,
+  "h": 420,
+  "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
+  "auteur": "Orchestre symphonique de Québec, images à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "timbales": {
+  "f": "timbales.jpg",
+  "w": 362,
+  "h": 420,
+  "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
+  "auteur": "Orchestre symphonique de Québec, images à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "grosseCaisse": {
+  "f": "grosse_caisse.jpg",
+  "w": 350,
+  "h": 420,
+  "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
+  "auteur": "Orchestre symphonique de Québec, images à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "tamTam": {
+  "f": "tam_tam.jpg",
+  "w": 383,
+  "h": 420,
+  "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
+  "auteur": "Orchestre symphonique de Québec, images à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "triangle": {
+  "f": "triangle.jpg",
+  "w": 351,
+  "h": 420,
+  "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
+  "auteur": "Orchestre symphonique de Québec, images à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "tambourBasque": {
+  "f": "tambour_basque.jpg",
+  "w": 317,
+  "h": 420,
+  "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
+  "auteur": "Orchestre symphonique de Québec, images à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "castagnettes": {
+  "f": "castagnettes.jpg",
+  "w": 627,
+  "h": 420,
+  "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
+  "auteur": "Orchestre symphonique de Québec, images à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "blocsChinois": {
+  "f": "blocs_chinois.jpg",
+  "w": 355,
+  "h": 420,
+  "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
+  "auteur": "Orchestre symphonique de Québec, images à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
+ },
+ "fouet": {
+  "f": "fouet.jpg",
+  "w": 672,
+  "h": 139,
+  "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
+  "auteur": "Orchestre symphonique de Québec, images à confirmer",
+  "licence": "À confirmer",
+  "fournie": true
  }
 };

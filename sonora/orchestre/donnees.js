@@ -61,6 +61,16 @@ export const INSTRUMENTS = [
     texte: "Des lames de bois de longueurs différentes, frappées avec des baguettes dures. Le son est sec et brillant : il fait penser à des os qui s'entrechoquent." },
   { id: "cloches", effectif: "1", visuels: 1, nom: "Cloches tubulaires", fam: "percussions", rang: 3, g0: 48, g1: 80, banque: "cloche", echant: [60, 78], tess: [60, 77], mode: "tubes de métal frappés",
     texte: "Des tubes de métal suspendus, frappés d'un coup de maillet : ils imitent les cloches d'une église sans avoir besoin de leur poids." },
+  { id: "triangle", effectif: "1", visuels: 1, nom: "Triangle", fam: "percussions", rang: 4, g0: -60, g1: -36, banque: null, tess: null, mode: "métal frappé",
+    texte: "Une tige d'acier pliée en triangle, suspendue à un cordon et frappée avec une petite baguette de métal. Un son aigu et clair, qui tinte longtemps si on le laisse vibrer. Sans hauteur précise." },
+  { id: "tambourBasque", effectif: "1", visuels: 1, nom: "Tambour de basque", fam: "percussions", rang: 4, g0: -36, g1: -12, banque: null, tess: null, mode: "peau tendue et cymbalettes",
+    texte: "Un cadre de bois recouvert d'une peau, bordé de petites cymbalettes de métal : on le frappe avec la main ou on le secoue pour faire sonner les cymbalettes. Sans hauteur précise." },
+  { id: "castagnettes", effectif: "1", visuels: 1, nom: "Castagnettes", fam: "percussions", rang: 4, g0: -12, g1: 12, banque: null, tess: null, mode: "bois entrechoqués",
+    texte: "Deux petites coques de bois dur reliées par un cordon, que l'on fait claquer. Un claquement sec, qui évoque tout de suite l'Espagne. Sans hauteur précise." },
+  { id: "blocsChinois", effectif: "1", visuels: 1, nom: "Blocs chinois", fam: "percussions", rang: 4, g0: 12, g1: 36, banque: null, tess: null, mode: "blocs de bois frappés",
+    texte: "Des blocs de bois creux, de tailles différentes, alignés sur un support et frappés avec une baguette : un son sec et creux, d'autant plus grave que le bloc est grand. Sans hauteur précise." },
+  { id: "fouet", effectif: "1", visuels: 1, nom: "Fouet", fam: "percussions", rang: 4, g0: 36, g1: 60, banque: null, tess: null, mode: "bois claqués",
+    texte: "Deux planchettes de bois articulées que l'on referme d'un coup sec : le claquement imite le bruit d'un fouet. Sans hauteur précise." },
 ];
 
 export const ORDRE_FAMILLES = ["cordes", "bois", "cuivres", "percussions"];
@@ -89,7 +99,7 @@ export function gamme(inst) {
 }
 
 // Où poser un secteur du plan : coordonnées polaires autour du chef. Renvoie le chemin SVG d'une portion d'anneau.
-export const ANNEAUX = [[112, 214], [220, 292], [298, 366], [372, 432]];
+export const ANNEAUX = [[112, 214], [220, 292], [298, 366], [372, 432], [440, 500]];
 export function secteur(inst, cx = 500, cy = 540, ecart = 1.2) {
   const [r0, r1] = ANNEAUX[inst.rang], a0 = (inst.g0 + ecart) * Math.PI / 180, a1 = (inst.g1 - ecart) * Math.PI / 180;
   const p = (r, a) => (cx + r * Math.sin(a)).toFixed(1) + " " + (cy - r * Math.cos(a)).toFixed(1);

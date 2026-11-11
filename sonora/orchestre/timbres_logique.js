@@ -1,9 +1,13 @@
 // SONORA Orchestre, espace 03 « Reconnaître les timbres » : la logique des questions et de la comparaison (sans DOM, testée dans Node).
 // Seuls les instruments enregistrés dans la banque du site sont interrogés : on ne fait jamais deviner un son qui n'existe pas. Les seconds violons ont le même son que les premiers : une seule entrée, « Violons ».
-import { INSTRUMENTS, FAMILLES, ORDRE_FAMILLES, jouables } from "./donnees.js?v=49855e5e9a";
+import { INSTRUMENTS, FAMILLES, ORDRE_FAMILLES, jouables } from "./donnees.js?v=a6bd026c2d";
 
 export const POOL = INSTRUMENTS.filter(i => i.banque && i.id !== "violons2");
 export const etiquette = i => (i.id === "violons1" ? "Violons" : i.nom);
+// Pour le test « à l'image », tous les instruments du plan comptent, même ceux qu'on ne sait pas faire entendre (seconds violons exceptés : même image que les premiers).
+export const POOL_IMAGE = INSTRUMENTS.filter(i => i.id !== "violons2");
+// Le vocabulaire du timbre : des mots pour décrire un son, à choisir pour chaque instrument.
+export const MOTS_TIMBRE = ["résonnant", "sec", "lisse", "granuleux", "strident", "chaud", "puissant", "nasillard", "scintillant", "chaleureux", "explosif", "grinçant", "métallique", "rond", "perçant", "éclatant"];
 export const NOTE_COMMUNE = 60;   // do4 : la note que presque tous les instruments peuvent jouer
 export const peutJouer = (i, m) => { const z = jouables(i); return !!z && m >= z[0] && m <= z[1]; };
 
@@ -24,10 +28,10 @@ export function noteCommune(a, b) {
 // n questions sans répétition. options : { mode: "famille" | "instrument", memeNote: bool }. Une question : { id, note, choix, bonne }.
 // En mode « instrument », les trois mauvaises réponses viennent d'abord de la même famille : distinguer deux bois est plus fin que distinguer un bois d'un cuivre.
 export function creerQuestions(n, options, rnd) {
-  const mode = options.mode === "famille" ? "famille" : "instrument", reserve = options.memeNote ? POOL.filter(i => peutJouer(i, NOTE_COMMUNE)) : POOL;
+  const mode = options.mode === "famille" ? "famille" : "instrument", reserve = options.image ? POOL_IMAGE : options.memeNote ? POOL.filter(i => peutJouer(i, NOTE_COMMUNE)) : POOL;
   const tirage = melanger(reserve, rnd).slice(0, Math.min(n, reserve.length));
   return tirage.map(inst => {
-    const note = options.memeNote ? NOTE_COMMUNE : noteAleatoire(inst, rnd);
+    const note = options.image ? null : options.memeNote ? NOTE_COMMUNE : noteAleatoire(inst, rnd);
     if (mode === "famille") return { id: inst.id, note, choix: ORDRE_FAMILLES.slice(), bonne: inst.fam };
     const memeFam = melanger(reserve.filter(i => i.id !== inst.id && i.fam === inst.fam), rnd), autres = melanger(reserve.filter(i => i.id !== inst.id && i.fam !== inst.fam), rnd);
     const faux = memeFam.concat(autres).slice(0, 3).map(i => i.id);
