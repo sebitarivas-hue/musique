@@ -21,7 +21,7 @@
     window.SONORA_PEUT = o => !(espace === "eleves" && I[classe] !== undefined && I[classe] < I[MIN[o]]); window.SONORA_MIN = MIN;   // l'accueil de SONORA s'en sert pour dire « dès la 4e »
     if (espace === "eleves" && outil && I[classe] !== undefined && I[classe] < I[MIN[outil]]) { location.replace(racine + "eleves/index.html#labo"); return; } }
   const dernier = lire(localStorage, "cours:dernier");
-  const coursU = dernier && memeSite(dernier.u) && (!espace || dernier.espace === espace) ? dernier.u : base ? base + (espace === "eleves" ? "#documents" : "#cours") : racine + "choix.html";
+  const coursU = dernier && memeSite(dernier.u) && (!espace || dernier.espace === espace) ? dernier.u : base ? base + "#cours" : racine + "choix.html";
   const retourU = origine ? origine.u : racine + "choix.html";
   const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const titre = origine && origine.t ? origine.t.replace(/\s+/g, " ").trim().slice(0, 48) : "";
@@ -32,10 +32,10 @@
   // Deux modes (03/11/2026) : Réviser (calme, par défaut) et Jouer (points, badges). Hors du mode Jouer, aucun point n'est donné ni montré, dans SONORA comme sur le site du cours.
   const jeuOn = () => { try { return localStorage.getItem("mode") === "jouer" && localStorage.getItem("gamification") !== "non"; } catch (_) { return false; } };
   let xp = null; if (espace === "eleves" && jeuOn()) { const j = lire(localStorage, "jeu"); if (j && typeof j.xp === "number") xp = j.xp; }
-  const rub = espace === "eleves" ? [["semaine", "Accueil"], ["documents", "Ressources"], ["ecouter", "Écouter"], ["jouer", "Jouer"], ["labo", "Labo"]] : [["semaine", "Semaine"], ["cours", "Cours"], ["ecouter", "Écouter"], ["jouer", "Jouer"], ["labo", "Labo"]];   // l'espace élève n'a pas de cours détaillé : Ressources à la place
+  const rub = [["semaine", "Semaine"], ["cours", "Cours"], ["ecouter", "Écouter"], ["jouer", "Jouer"], ["labo", "Labo"]];
   const nav = document.createElement("nav"); nav.className = "barre-cours"; nav.setAttribute("aria-label", "Revenir au cours");
   nav.innerHTML = `<a class="bc-retour" href="${esc(retourU)}"><span class="bc-fl" aria-hidden="true"></span>${titre ? `<span class="bc-pre">Retour :</span><span class="bc-t">${esc(titre)}</span>` : "Choisir son espace"}</a>`
-    + (base ? `<a class="bc-b" href="${esc(coursU)}">${espace === "eleves" ? "Mes ressources" : "Mon cours"}</a>` : "")
+    + (base ? `<a class="bc-b" href="${esc(coursU)}">Mon cours</a>` : "")
     + (espace === "eleves" && jeuOn() ? `<a class="bc-b" href="${esc(base)}#parcours">Mon parcours${xp !== null ? ` <span class="bc-xp">${xp} XP</span>` : ""}</a>` : "")
     + (base ? `<span class="bc-rub">${rub.map(([h, t]) => `<a href="${esc(base)}#${h}">${t}</a>`).join("")}</span>` : "");
   const css = document.createElement("style");

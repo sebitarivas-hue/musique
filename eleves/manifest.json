@@ -8,7 +8,7 @@
  "orientation": "portrait",
  "background_color": "#22364d",
  "theme_color": "#22364d",
- "description": "L'éducation musicale en jeu : écouter, jouer, le labo, les ressources, les quiz et les badges.",
+ "description": "Le cours d'éducation musicale en jeu : séances, écoutes, quiz, badges.",
  "icons": [
   {
    "src": "icon-192.png",
