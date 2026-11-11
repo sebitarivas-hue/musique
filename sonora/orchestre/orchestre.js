@@ -1,14 +1,14 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=6824ea2219";
-import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=6824ea2219";
-import { monterTimbres } from "./timbres.js?v=6824ea2219";
-import { monterFugue } from "./fugue.js?v=6824ea2219";
-import { monterBritten } from "./britten.js?v=6824ea2219";
-import { monterVariations } from "./variations.js?v=6824ea2219";
-import { svgIcone, dessin } from "./icones.js?v=6824ea2219";
-import { PHOTOS } from "./photos.js?v=6824ea2219";
-import { FICHES } from "./fiches.js?v=6824ea2219";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=f8d06958f4";
+import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=f8d06958f4";
+import { monterTimbres } from "./timbres.js?v=f8d06958f4";
+import { monterFugue } from "./fugue.js?v=f8d06958f4";
+import { monterBritten } from "./britten.js?v=f8d06958f4";
+import { monterVariations } from "./variations.js?v=f8d06958f4";
+import { svgIcone, dessin } from "./icones.js?v=f8d06958f4";
+import { PHOTOS } from "./photos.js?v=f8d06958f4";
+import { FICHES } from "./fiches.js?v=f8d06958f4";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -177,19 +177,22 @@ function vue(v) {
 }
 const ESPACES = [["01", "Explorer l'orchestre", "explorer", "violons1", "Le plan, les quatre familles, 29 instruments, leurs tessitures."], ["02", "Écouter Britten", "britten", "tamTam", "Un guide d'écoute : le thème, treize variations, la fugue. Sans enregistrement : l'œuvre est protégée."], ["03", "Reconnaître les timbres", "timbres", "hautbois", "Comparer deux timbres, puis tester ses oreilles à l'aveugle."], ["04", "Comprendre les variations", "variations", "harpe", "Transformer un thème de huit façons et l'écouter avec d'autres instruments."], ["05", "Construire une fugue", "fugue", "violoncelles", "Dessiner un sujet, faire entrer les voix, écouter la superposition."]];
 let timbresPret = false, fuguePret = false, brittenPret = false, variationsPret = false;
-function espace(nom) {
+function espace(nom, clic) {
   if (nom === "timbres" && !timbresPret) { timbresPret = true; monterTimbres(visuel); }
   if (nom === "fugue" && !fuguePret) { fuguePret = true; monterFugue(); }
   if (nom === "britten" && !brittenPret) { brittenPret = true; monterBritten(visuel); }
   if (nom === "variations") { if (!variationsPret) variationsPret = true; monterVariations(); }
   arreter(); for (const s of ["explorer", "timbres", "fugue", "britten", "variations"]) $(s).hidden = nom !== s;
   document.querySelectorAll("#parcours li[data-e]").forEach(li => { const sur = li.dataset.e === nom; li.classList.toggle("actif", sur); const b = li.querySelector("button"); if (sur) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current"); });
+  const e5 = ESPACES.find(x => x[2] === nom), d = $("parcours-desc"); if (d && e5) d.textContent = e5[0] + " " + e5[1] + " : " + e5[4];
+  const actif = document.querySelector("#parcours li.actif"); if (actif && actif.scrollIntoView) { try { actif.scrollIntoView({ inline: "center", block: "nearest" }); } catch (x) {} }
+  if (clic && window.matchMedia("(max-width: 700px)").matches) { const s = $(nom); if (s && s.scrollIntoView) s.scrollIntoView({ block: "start" }); window.scrollBy(0, -80); }
   try { if (nom !== "explorer") history.replaceState(null, "", "#" + nom); else if (["#timbres", "#fugue", "#britten", "#variations"].indexOf(location.hash) >= 0) history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
 }
 function parcours() {
   const corps = e => '<span class="pico" aria-hidden="true">' + visuel(e[3], 44, "") + '</span><span class="ptxt"><span class="num">' + e[0] + '</span><span class="pnom">' + esc(e[1]) + '</span><span class="pdesc">' + esc(e[4]) + "</span>";
   $("parcours").innerHTML = ESPACES.map(e => e[2] ? '<li data-e="' + e[2] + '"><button type="button">' + corps(e) + "</span></button></li>" : '<li class="bientot">' + corps(e) + '<small>à venir</small></span></li>').join("");
-  $("parcours").addEventListener("click", e => { const li = e.target.closest("li[data-e]"); if (li) espace(li.dataset.e); });
+  $("parcours").addEventListener("click", e => { const li = e.target.closest("li[data-e]"); if (li) espace(li.dataset.e, true); });
 }
 // La page de crédits : chaque photo avec son auteur et sa licence, et le lien vers sa page sur Commons.
 function credits() {

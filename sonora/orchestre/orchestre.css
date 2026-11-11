@@ -124,3 +124,18 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
 /* Liens d'écoute Spotify et YouTube */
 .paire-ec { display: inline-flex; gap: 6px; vertical-align: middle; } .paire-ec a { display: inline-flex; align-items: center; min-height: 34px; padding: 2px 12px; border: 2px solid var(--noir); background: #fff; color: var(--noir); text-decoration: none; font-weight: 700; font-size: .85rem; } .paire-ec a:hover, .paire-ec a:focus-visible { background: var(--acide); }
 .lecteur { position: absolute; left: -9999px; } .liens-ecoute { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; } .ecoute-section { margin: 8px 0; } .ecouter-oeuvre h3 { margin: 10px 0 4px; }
+
+/* Téléphone : le parcours devient une barre compacte qui défile, collée en haut ; la description de l'étape en cours se lit dessous */
+.parcours-desc { display: none; }
+@media (max-width: 700px) {
+  .intro p { display: none; } .intro h1 { font-size: 1.7rem; margin: 2px 0 8px; }
+  .parcours { position: sticky; top: 0; z-index: 30; display: flex; overflow-x: auto; scroll-snap-type: x proximity; gap: 6px; margin: 0 -16px 6px; padding: 8px 16px; background: var(--papier); border-bottom: 2px solid var(--noir); -webkit-overflow-scrolling: touch; }
+  .parcours li { flex: 0 0 auto; min-height: 0; scroll-snap-align: center; } .parcours li.actif { box-shadow: none; }
+  .parcours li button { min-height: 52px; padding: 5px 10px 5px 6px; align-items: center; gap: 6px; } .parcours li.bientot { padding: 5px 10px; }
+  .pico { width: 36px; height: 36px; } .pdesc, .parcours small { display: none; } .pnom { font-size: .82rem; white-space: nowrap; } .parcours .num { font-size: .68rem; }
+  .parcours-desc { display: block; font-size: .85rem; color: var(--gris); margin: 0 0 12px; }
+  #explorer h2, #timbres h2, #fugue h2, #britten h2, #variations h2 { margin-top: 6px; } .chapeau { font-size: .92rem; }
+}
+
+.contexte-det { margin: 8px 0; border: 2px solid var(--noir); padding: 6px 10px; background: #fff; } .contexte-det summary { font-weight: 700; cursor: pointer; min-height: 34px; display: flex; align-items: center; } .contexte-det p { font-size: .92rem; }
+@media (max-width: 700px) { .rate-doux { font-size: .85rem; } .frise button { min-width: 34px; min-height: 40px; } .fiche-fugue { padding: 12px; } .vig { width: 64px; height: 64px; } }

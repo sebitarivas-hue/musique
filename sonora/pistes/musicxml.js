@@ -3,7 +3,7 @@
 // Les dates et durées sont en temps (1 = une noire). Une portée = une piste ; un instrument à deux portées (piano, harpe) donne deux pistes.
 // Les reprises sont dépliées (barres de reprise et maisons 1, 2), les liaisons de prolongation fusionnées, les instruments transpositeurs
 // rendus à la hauteur réelle (clarinette en si bémol, cor en fa...), les nuances traduites en vitesses. Sans DOM : testé dans Node.
-import { depuisMidi, nettoyerNotes } from "./notes.js?v=6824ea2219";
+import { depuisMidi, nettoyerNotes } from "./notes.js?v=f8d06958f4";
 
 // ---------------------------------------------------------------- un petit lecteur XML (le même dans le navigateur et dans Node)
 const ENTITES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
