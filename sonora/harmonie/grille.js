@@ -1,7 +1,7 @@
 // La grille d'accords du Composer : un modèle simple (fondamentale, type, durée en temps), des déplacements, la pulsation (clic, batterie) rendue en signal, les événements joués.
 // Sans DOM : testé dans Node.
-import * as H from "./theorie.js?v=c227b2d74f";
-import { construire, racinePar, RACINES, TYPE, TYPES } from "./accords.js?v=c227b2d74f";
+import * as H from "./theorie.js?v=6824ea2219";
+import { construire, racinePar, RACINES, TYPE, TYPES } from "./accords.js?v=6824ea2219";
 export const DUREES = [1, 2, 3, 4, 6, 8];
 export const nouvelAccord = (racine, type, duree = 4) => ({ racine: typeof racine === "string" ? racine : racine.nom, type, duree });
 export function normaliser(grille) { return (Array.isArray(grille) ? grille : []).filter(a => a && racinePar(a.racine) && TYPE[a.type]).map(a => ({ racine: a.racine, type: a.type, duree: DUREES.includes(a.duree) ? a.duree : 4 })).slice(0, 32); }

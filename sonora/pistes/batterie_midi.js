@@ -1,7 +1,7 @@
 // La batterie en MIDI : les notes de batterie de la norme General MIDI (36 grosse caisse, 38 caisse claire, 42 charleston fermé...) jouent les pièces des kits de SONORA.
 // Un clip de batterie est donc un clip de notes comme les autres : on l'enregistre au clavier, on le change dans le rouleau, il suit le tempo, il s'exporte en fichier MIDI
 // (les notes de batterie de General MIDI sont comprises par tous les logiciels). Sans DOM : testé dans Node.
-import { son, KITS, kitPret, chargerKit } from "../harmonie/batterie.js?v=c227b2d74f";
+import { son, KITS, kitPret, chargerKit } from "../harmonie/batterie.js?v=6824ea2219";
 
 // La pièce du kit que joue chaque note. Les notes qui n'ont pas de pièce propre (les autres toms, les autres cymbales) jouent la plus proche.
 export const PIECE_DE_NOTE = {

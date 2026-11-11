@@ -1,10 +1,11 @@
 // SONORA Orchestre, espace 02 : écouter Britten. Un guide d'écoute : l'œuvre est protégée, aucun enregistrement n'est fourni ici. On écoute ailleurs (en classe, en bibliothèque, sur une plateforme autorisée)
 // et ce guide indique, section après section, qui joue, avec le timbre de l'instrument enregistré dans la banque du site et un jeu pour remettre les entrées de la fugue dans l'ordre.
-import { FAMILLES, parId } from "./donnees.js?v=c227b2d74f";
-import { OEUVRE, CONTEXTE, EFFECTIF, THEME, VARIATIONS, FUGUE, parcoursOeuvre, melangeFugue, trous, banqueDeMots, CARACTERES, NOMS_EXPOSITION, ATTENDU, verifierTableau } from "./britten_logique.js?v=c227b2d74f";
-import { alea } from "./timbres_logique.js?v=c227b2d74f";
-import { registresDe_ } from "./audio_aide.js?v=c227b2d74f";
-import { jouer, message } from "./audio.js?v=c227b2d74f";
+import { FAMILLES, parId } from "./donnees.js?v=6824ea2219";
+import { liensEcoute } from "./ecoutes.js?v=6824ea2219";
+import { RECHERCHE_OEUVRE, RECHERCHE_PURCELL, rechercheSection, OEUVRE, CONTEXTE, EFFECTIF, THEME, VARIATIONS, FUGUE, parcoursOeuvre, melangeFugue, trous, banqueDeMots, CARACTERES, NOMS_EXPOSITION, ATTENDU, verifierTableau } from "./britten_logique.js?v=6824ea2219";
+import { alea } from "./timbres_logique.js?v=6824ea2219";
+import { registresDe_ } from "./audio_aide.js?v=6824ea2219";
+import { jouer, message } from "./audio.js?v=6824ea2219";
 
 const $ = id => document.getElementById(id), CLE = "sonora.orchestre.britten";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -26,6 +27,7 @@ function carte() {
   if (s.partie === "theme") h += "<p>" + (s.cle === "t-tutti" ? "Le thème de Purcell est d'abord exposé par tout l'orchestre." : s.cle === "t-tutti2" ? "Pour finir, tout l'orchestre rejoue le thème." : "Le même thème, repris par " + esc(s.titre.replace("Thème : ", "")) + " : écoute comme la couleur change sans que la mélodie change.") + "</p>";
   if (s.partie === "variations") h += "<p>Le thème est transformé, joué par " + esc(VARIATIONS.find(v => "v-" + v.lettre === s.cle).nom.toLowerCase()) + ". Repère le timbre, puis ce qui change par rapport au thème.</p>";
   if (s.partie === "fugue") h += "<p>Les instruments entrent un à un dans le même ordre que sur la liste ci-dessous. À la fin, tout l'orchestre joue et le thème de Purcell revient aux cuivres.</p>";
+  h += '<p class="ecoute-section"><span class="etq">Écouter cette section</span> ' + liensEcoute(rechercheSection(s), s.titre) + "</p>";
   if (s.ids.length) h += '<div class="rangee"><button type="button" data-entendre="' + s.ids[0] + '">Entendre ' + esc(parId(s.ids[0]).nom.toLowerCase()) + '</button></div>';
   const nt = etat.notes[s.cle] || {};
   h += '<div class="ma-desc"><h4>Ma description personnelle</h4><div class="cercles">' + [["pense", "Ça me fait penser à…"], ["gout", "Ça me donne le goût de…"], ["sens", "Ça me fait sentir…"]].map(x => '<label class="cercle">' + x[1] + '<textarea data-note="' + x[0] + '" rows="3" maxlength="300">' + esc(nt[x[0]] || "") + "</textarea></label>").join("") + "</div></div>";
@@ -60,7 +62,7 @@ function effacer(sel) { document.querySelectorAll(sel).forEach(s => s.classList.
 function dessiner() {
   const el = $("britten-corps");
   el.innerHTML = '<div class="entete-oeuvre"><p><span class="etq">Œuvre</span> ' + esc(OEUVRE.compositeur + ", " + OEUVRE.titre + " (" + OEUVRE.original + "), " + OEUVRE.opus + ", composé en " + OEUVRE.annee + " et créé en " + OEUVRE.creation + ". " + OEUVRE.soustitre + ". Le thème est " + OEUVRE.theme + ".") + "</p>"
-    + '<ul class="contexte">' + CONTEXTE.map(c => "<li>" + esc(c) + "</li>").join("") + '</ul><p class="rate-doux">Aucun enregistrement n\'est fourni : l\'œuvre est protégée. Écoute-la en classe, en bibliothèque ou sur une plateforme autorisée, puis suis ce guide en passant à la section suivante à chaque changement. Les instruments sont donnés d\'après la structure de l\'œuvre, à vérifier avec la partition.</p>'
+    + '<ul class="contexte">' + CONTEXTE.map(c => "<li>" + esc(c) + "</li>").join("") + '</ul><div class="ecouter-oeuvre"><h3>Écouter l\'œuvre</h3><p class="rate-doux">Aucun enregistrement n\'est copié ici : l\'œuvre est protégée. Chaque écoute a deux liens, une recherche Spotify et une recherche YouTube, qui s\'ouvrent dans un nouvel onglet. Tu peux aussi l\'écouter en classe ou en bibliothèque. Passe à la section suivante à chaque changement. Les instruments sont donnés d\'après la structure de l\'œuvre, à vérifier avec la partition.</p><ul class="liens-ecoute"><li><span class="etq">Œuvre</span> Britten, Le Guide de l\'orchestre ' + liensEcoute(RECHERCHE_OEUVRE, "Britten, Le Guide de l\'orchestre") + '</li><li><span class="etq">Thème</span> Purcell, Rondeau d\'Abdelazer, l\'original ' + liensEcoute(RECHERCHE_PURCELL, "Purcell, Rondeau d\'Abdelazer") + "</li></ul></div>"
     + '<p class="progres" role="status">' + nbReconnues() + " sections reconnues sur " + PARCOURS.length + ".</p></div>" + frise() + carte() + effectif() + ordre() + exercices();
   el.querySelectorAll("[data-pos]").forEach(b => { b.onclick = () => { etat.pos = +b.dataset.pos; dessiner(); }; });
   el.querySelectorAll("[data-entendre]").forEach(b => { b.onclick = () => entendre([b.dataset.entendre]); });

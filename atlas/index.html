@@ -53,7 +53,7 @@ details.concept .corps { padding: 0 0 14px; } details.concept .ecoute { backgrou
 .sonora-liens a:hover, .sonora-liens a:focus-visible { background: var(--noir); color: #fff; outline: none; }
 .sonora-liens .verbe { font: 500 11px/1 ui-monospace, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; }
 .sonora-liens .nom { font-weight: 700; font-size: 1.05rem; } .sonora-liens .phrase { font-size: .9rem; opacity: .85; }
-.ecouter { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ecouter { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; } .paire { display: inline-flex; gap: 2px; } .paire .alt { font-size: .8rem; opacity: .85; } .duo a.alt { background: #fff; color: var(--noir); border: 2px solid var(--noir); } .duo a.alt span { color: var(--noir); }
 .chemin { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; } .chemin i { font-style: normal; color: var(--gris); }
 .etapes { list-style: none; counter-reset: e; margin: 14px 0 0; padding: 0; display: grid; gap: 0; }
 .etapes li { counter-increment: e; position: relative; padding: 0 0 22px 56px; border-left: 4px solid var(--noir); margin-left: 20px; }
@@ -285,8 +285,11 @@ const texteRel = (r) => (D.liens.find(l => l.de === r.target && l.vers === r.sou
 const periode = e => `${e.periode_approx ? "vers " : ""}${e.period.start} à ${e.period.end || "aujourd'hui"}`;
 const coul = e => COUL[e.family] || "#11110F";
 const nomLien = (id, txt) => `<a class="nom" href="#e/${id}">${esc(txt || E[id].name)}</a>`;
-/* Tous les liens d'écoute sont des recherches Spotify (demande de Sébastien du 09/11/2026). */
-const yt = q => "https://open.spotify.com/search/" + encodeURIComponent(q);
+/* Chaque écoute a deux liens : une recherche Spotify et une recherche YouTube (demande de Sébastien : les deux, partout). */
+const spot = q => "https://open.spotify.com/search/" + encodeURIComponent(q);
+const yt = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
+/* Un lien d'écoute à deux liens : le premier (Spotify) porte le texte, le second (YouTube) est une petite pastille collée. */
+const paire = (q, txt, cls = "pastille clair", style = "") => `<span class="paire"><a class="${cls}"${style ? ` style="${style}"` : ""} href="${spot(q)}" target="_blank" rel="noopener" title="Recherche Spotify (recherche externe)">${txt}</a><a class="${cls} alt" href="${yt(q)}" target="_blank" rel="noopener" title="Recherche YouTube (recherche externe)">YouTube</a></span>`;
 const conceptsDe = e => D.concepts.filter(c => c.mots.some(m => e.characteristics.includes(m)));
 const parentDe = id => { const r = REL.sort[id].find(r => r.type === "SUBGENRE_OF"); return r && r.target; };
 const enfantsDe = id => REL.ent[id].filter(r => r.type === "SUBGENRE_OF").map(r => r.source);
@@ -370,8 +373,8 @@ function vuePasserelle(id) {
   const liste = L => `<ul>${L.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
   const outil = p.experience.outil === "faust" ? "Faust" : "SONORA";
   const r = p.riche;
-  const note = "Recherche externe : aucun enregistrement n'est encore identifié. Chaque lien ouvre une recherche Spotify dans un nouvel onglet.";
-  const ecouter = qs => `<div class="ecouter">${qs.map(q => `<a class="pastille clair" href="${yt(q)}" target="_blank" rel="noopener">${esc(q)}</a>`).join("")}</div>`;
+  const note = "Recherche externe : aucun enregistrement n'est encore identifié. Chaque écoute a deux liens, une recherche Spotify et une recherche YouTube, dans un nouvel onglet.";
+  const ecouter = qs => `<div class="ecouter">${qs.map(q => paire(q, esc(q))).join("")}</div>`;
   const complet = !r ? "" : `
   <nav class="sommaire" aria-label="Dans cette page"><a href="#" data-ancre="pa-mots">Les mots</a><a href="#" data-ancre="pa-cours">Le cours</a><a href="#" data-ancre="pa-guide">Écouter pas à pas</a><a href="#" data-ancre="pa-playlist">La playlist</a><a href="#" data-ancre="pa-ailleurs">Ailleurs dans le monde</a><a href="#" data-ancre="pa-atelier">Atelier</a></nav>
   <p>${esc(r.accroche)}</p>
@@ -379,7 +382,7 @@ function vuePasserelle(id) {
   <h2 id="pa-cours">Le cours</h2>${r.cours.map(s => `<section class="cours-bloc"><h3>${esc(s.titre)}</h3>${s.p.map(t => `<p>${esc(t)}</p>`).join("")}${s.liste ? liste(s.liste) : ""}</section>`).join("")}
   <h2 id="pa-guide">Écouter pas à pas</h2><ol class="guide">${r.guide.map(t => `<li>${esc(t)}</li>`).join("")}</ol>
   <h2 id="pa-playlist">La playlist</h2><p class="petit">${esc(r.playlist_note)}</p>
-  ${r.playlist.map(g => `<section class="pl-groupe"><h3>${esc(g.titre)}</h3><p class="petit">${esc(g.intro)}</p><ol class="pl">${g.pistes.map(([t, a, an, c]) => `<li><a class="pl-titre" href="${yt(t + " " + a)}" target="_blank" rel="noopener"><b>${esc(t)}</b>, ${esc(a)} <span class="petit">(${esc(an)})</span></a><span class="pl-note">${esc(c)}</span></li>`).join("")}</ol></section>`).join("")}
+  ${r.playlist.map(g => `<section class="pl-groupe"><h3>${esc(g.titre)}</h3><p class="petit">${esc(g.intro)}</p><ol class="pl">${g.pistes.map(([t, a, an, c]) => `<li><span><a class="pl-titre" href="${spot(t + " " + a)}" target="_blank" rel="noopener"><b>${esc(t)}</b>, ${esc(a)} <span class="petit">(${esc(an)})</span></a> <a class="petit" href="${yt(t + " " + a)}" target="_blank" rel="noopener">YouTube</a></span><span class="pl-note">${esc(c)}</span></li>`).join("")}</ol></section>`).join("")}
   <h2 id="pa-ailleurs">Le même geste ailleurs dans le monde</h2><p class="petit">${esc(r.ailleurs_note)}</p>
   ${r.ailleurs.map(g => `<section class="pl-groupe"><h3>${esc(g.titre)}</h3><p class="petit">${esc(g.intro)}</p><div class="ailleurs">${g.elements.map(e => `<article class="ail"><h4>${esc(e.nom)}</h4><p class="petit">${esc(e.ou)}</p><p>${esc(e.texte)}</p><p class="ail-compare"><span class="etiq-mini">À comparer avec le rap</span> ${esc(e.compare)}</p>${ecouter(e.ecoute)}</article>`).join("")}</div></section>`).join("")}
   <h2>Pour discuter</h2>${liste(r.questions)}
@@ -426,7 +429,7 @@ function fichePedago(e) {
   const rub = [["origines", "Origines historiques"], ["contexte", "Contexte social et politique"], ["histoire", "Histoire en trois temps"], ["rythme", "Rythme"], ["melodie", "Mélodie"], ["harmonie", "Harmonie"], ["timbres", "Timbres et instruments"], ["production", "Production"], ["formes", "Formes"]];
   return `<h2>La fiche pédagogique</h2>${f.statut === "brouillon" ? `<p class="brouillon">Brouillon à relire : ce texte est rédigé sans avoir consulté de source en ligne (voir <a href="#sources">Sources et méthode</a>). Les dates et les titres sont donnés pour être vérifiés avant d'être cités.</p>` : ""}<div class="sections">${rub.filter(([k]) => f[k]).map(([k, n]) => `<section><h3>${n}</h3><p>${esc(f[k])}</p></section>`).join("")}</div>
   ${f.reperes && f.reperes.length ? `<h2>Repères</h2><ul class="reperes">${f.reperes.map(([a, t]) => `<li><span class="an">${esc(a)}</span><span>${esc(t)}</span></li>`).join("")}</ul>` : ""}
-  ${f.ecoute && f.ecoute.length ? `<h2>Écoute comparée</h2><p class="petit">Recherche externe : aucun enregistrement n'est encore identifié. Chaque lien ouvre une recherche Spotify dans un nouvel onglet.</p><div class="ecouter">${f.ecoute.map(([t, q]) => `<a class="pastille" style="--c:#11110F" href="${yt(q)}" target="_blank" rel="noopener" title="Recherche Spotify (recherche externe)">${esc(t)}</a>`).join("")}</div>` : ""}
+  ${f.ecoute && f.ecoute.length ? `<h2>Écoute comparée</h2><p class="petit">Recherche externe : aucun enregistrement n'est encore identifié. Chaque écoute a deux liens, une recherche Spotify et une recherche YouTube, dans un nouvel onglet.</p><div class="ecouter">${f.ecoute.map(([t, q]) => paire(q, esc(t), "pastille", "--c:#11110F")).join("")}</div>` : ""}
   ${(f.questions || []).map(q => `<p class="question">${esc(q)}</p>`).join("")}`;
 }
 /* Aller plus loin : des recherches vers les grandes bases (leur adresse de recherche n'a pas pu être testée depuis l'environnement de travail) et, quand ils existent, des constats réels datés. */
@@ -457,14 +460,14 @@ function vueEntree(id) {
   <div class="pastilles"><button type="button" class="pastille clair" id="fav" aria-pressed="${fav.est(id)}">${fav.est(id) ? "Retirer des favoris" : "Ajouter aux favoris"}</button><a class="pastille" style="--c:#11110F" href="#graphe/${id}">Graphe</a><a class="pastille" style="--c:#4658ff" href="#frise/${id}">Frise</a>${e.geo ? `<a class="pastille" style="--c:#12a07a" href="#monde/${id}">Carte</a>` : ""}</div>
   ${chemin}${fichePedago(e)}
   ${sonoraHtml(id)}
-  ${e.works.length ? `<h2>Œuvres représentatives</h2><p class="petit">Recherche externe : aucun enregistrement n'est encore identifié. Chaque lien ouvre une recherche Spotify dans un nouvel onglet.</p><div class="ecouter">${e.works.map(w => `<a class="pastille clair" href="${yt(e.name + " " + w.titre)}" target="_blank" rel="noopener">${esc(w.titre)}${w.annee ? ` (${w.annee})` : ""}</a>`).join("")}</div>` : ""}
+  ${e.works.length ? `<h2>Œuvres représentatives</h2><p class="petit">Recherche externe : aucun enregistrement n'est encore identifié. Chaque écoute a deux liens, une recherche Spotify et une recherche YouTube, dans un nouvel onglet.</p><div class="ecouter">${e.works.map(w => paire(e.name + " " + w.titre, `${esc(w.titre)}${w.annee ? ` (${w.annee})` : ""}`)).join("")}</div>` : ""}
   ${co.length ? `<h2>Ce qui la rend possible</h2><p class="petit">Les idées et les techniques qu'elle utilise. Touche une idée pour la comprendre.</p><div class="concepts">${co.map(c => conceptHtml(c, id)).join("")}</div>` : ""}
   ${outils.length ? `<h2>Outils et techniques</h2>${listeRel(outils, "ent")}` : ""}
   ${venu.length ? `<h2>D'où elle vient</h2>${listeRel(venu, "ent")}` : ""}
   ${donne.length || enf.length ? `<h2>Ce qu'elle a donné</h2>${listeRel(donne, "sor")}${enf.length ? `<p class="petit">Sous-genres et variantes</p><div class="pastilles">${enf.map(x => `<a class="pastille" style="--c:${coul(E[x])}" href="#e/${x}">${esc(E[x].name)}</a>`).join("")}</div>` : ""}` : ""}
   ${utilisee.length ? `<h2>Elle est utilisée par</h2><div class="pastilles">${utilisee.map(r => `<a class="pastille" style="--c:${coul(E[r.source])}" href="#e/${r.source}">${esc(E[r.source].name)}</a>`).join("")}</div>` : ""}
   ${croise.length ? `<h2>À rapprocher</h2><ul class="liens">${croise.map(r => { const o = r.source === id ? r.target : r.source, t = texteRel(r); return `<li><span class="nat">${TNOM[r.type]}</span><span>${nomLien(o)} ${statutHtml(r)}</span>${t ? `<p>${esc(t)}</p>` : ""}</li>`; }).join("")}</ul>` : ""}
-  ${e.artists.length && !D.fiches[id] ? `<h2>Écouter</h2><p class="petit">Recherche externe : aucun enregistrement n'est encore identifié. Chaque lien ouvre une recherche Spotify dans un nouvel onglet.</p><div class="ecouter">${e.artists.map(a => `<a class="pastille clair" href="${yt(a + (["artist", "group", "composer"].includes(e.type) ? "" : " " + e.name))}" target="_blank" rel="noopener">${esc(a)}</a>`).join("")}</div>` : ""}
+  ${e.artists.length && !D.fiches[id] ? `<h2>Écouter</h2><p class="petit">Recherche externe : aucun enregistrement n'est encore identifié. Chaque écoute a deux liens, une recherche Spotify et une recherche YouTube, dans un nouvel onglet.</p><div class="ecouter">${e.artists.map(a => paire(a + (["artist", "group", "composer"].includes(e.type) ? "" : " " + e.name), esc(a))).join("")}</div>` : ""}
   ${(D.carteCours || {})[id] ? `<h2>Sur la carte du cours</h2><div class="pastilles">${D.carteCours[id].map(([c, nom]) => `<a class="pastille" style="--c:#12a07a" href="${window.BARRE_COURS && window.BARRE_COURS.espace === "prof" ? "../index.html" : "../eleves/index.html"}#monde-${encodeURIComponent(c)}">${esc(nom)}</a>`).join("")}</div>` : ""}
   ${e.archives && e.archives.length ? `<h2>Archives à consulter</h2><ul class="liens">${e.archives.map(([t, u, n]) => `<li><span class="nat">Archive</span><span><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a></span><p>${esc(n)}</p></li>`).join("")}</ul>` : ""}
   ${cours.length ? `<h2>Dans le cours</h2><div class="pastilles">${cours.map(k => `<a class="pastille" style="--c:#11110F" href="../eleves/${D.cours[k][1]}">${esc(D.cours[k][0])}</a>`).join("")}</div>` : ""}
@@ -816,8 +819,8 @@ function vueTechniques() {
 
 /* ---------- Bibliothèque d'écoute ---------- */
 function vueEcoute() {
-  return `<span class="etiq">Bibliothèque d'écoute</span><h1>Comparer pour comprendre</h1><p class="lead">Deux morceaux, une question. Les liens ouvrent une recherche sur Spotify dans un nouvel onglet : choisis une version officielle ou un enregistrement d'archive.</p>
-  ${D.ecoutes.map(c => `<section class="comparaison"><h3>${esc(c.titre)}</h3><div class="duo">${c.morceaux.map(([t, q]) => `<a href="${yt(q)}" target="_blank" rel="noopener">${esc(t)}<span>Chercher sur Spotify (recherche externe, nouvel onglet)</span></a>`).join("")}</div>
+  return `<span class="etiq">Bibliothèque d'écoute</span><h1>Comparer pour comprendre</h1><p class="lead">Deux morceaux, une question. Chaque morceau a deux liens, une recherche sur Spotify et une recherche sur YouTube, dans un nouvel onglet : choisis une version officielle ou un enregistrement d'archive.</p>
+  ${D.ecoutes.map(c => `<section class="comparaison"><h3>${esc(c.titre)}</h3><div class="duo">${c.morceaux.map(([t, q]) => `<a href="${spot(q)}" target="_blank" rel="noopener">${esc(t)}<span>Chercher sur Spotify (recherche externe, nouvel onglet)</span></a><a class="alt" href="${yt(q)}" target="_blank" rel="noopener">${esc(t)}<span>Chercher sur YouTube (recherche externe, nouvel onglet)</span></a>`).join("")}</div>
    <p class="question">${esc(c.question)}</p><div class="pastilles">${c.entrees.map(i => `<a class="pastille" style="--c:${coul(E[i])}" href="#e/${i}">${esc(E[i].name)}</a>`).join("")}</div></section>`).join("")}`;
 }
 

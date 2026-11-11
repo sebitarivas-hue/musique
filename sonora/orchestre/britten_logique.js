@@ -2,6 +2,10 @@
 // The Young Person's Guide to the Orchestra, Op. 34, Benjamin Britten, 1945, sous-titrée Variations et fugue sur un thème de Purcell. Le thème est le Rondeau d'Abdelazer.
 // On ne donne ici que la structure : l'ordre des sections et les instruments qui jouent, jamais la musique. L'œuvre et ses enregistrements sont protégés ; la partition n'est pas libre.
 export const OEUVRE = { titre: "Le Guide de l'orchestre pour les jeunes", original: "The Young Person's Guide to the Orchestra", compositeur: "Benjamin Britten", opus: "Op. 34", annee: 1945, creation: 1946, soustitre: "Variations et fugue sur un thème de Purcell", theme: "le Rondeau de la suite Abdelazer, Z.570, de Henry Purcell" };
+// Les recherches d'écoute (Spotify et YouTube) : l'œuvre entière, le thème de Purcell dans son original, et chaque section.
+export const RECHERCHE_OEUVRE = "Britten The Young Person's Guide to the Orchestra";
+export const RECHERCHE_PURCELL = "Purcell Abdelazer Rondeau";
+export const rechercheSection = s => RECHERCHE_OEUVRE + (s.partie === "variations" ? " variation " + s.cle.slice(2) + " " + VARIATIONS.find(v => "v-" + v.lettre === s.cle).en : s.partie === "fugue" ? " fugue" : " theme");
 
 // Le contexte : une commande pour l'éducation, des dates, un thème emprunté. Repères de cours courants.
 export const CONTEXTE = [
@@ -27,19 +31,19 @@ export const THEME = [
 ];
 // Les treize variations, de A à M : un instrument ou un groupe d'instruments chacune, dans l'ordre des familles.
 export const VARIATIONS = [
-  { lettre: "A", nom: "Flûtes et piccolo", ids: ["piccolo", "flutes"], famille: "bois" },
-  { lettre: "B", nom: "Hautbois", ids: ["hautbois"], famille: "bois" },
-  { lettre: "C", nom: "Clarinettes", ids: ["clarinettes"], famille: "bois" },
-  { lettre: "D", nom: "Bassons", ids: ["bassons"], famille: "bois" },
-  { lettre: "E", nom: "Violons", ids: ["violons1", "violons2"], famille: "cordes" },
-  { lettre: "F", nom: "Altos", ids: ["altos"], famille: "cordes" },
-  { lettre: "G", nom: "Violoncelles", ids: ["violoncelles"], famille: "cordes" },
-  { lettre: "H", nom: "Contrebasses", ids: ["contrebasses"], famille: "cordes" },
-  { lettre: "I", nom: "Harpe", ids: ["harpe"], famille: "cordes" },
-  { lettre: "J", nom: "Cors", ids: ["cors"], famille: "cuivres" },
-  { lettre: "K", nom: "Trompettes", ids: ["trompettes"], famille: "cuivres" },
-  { lettre: "L", nom: "Trombones et tuba", ids: ["trombones", "tuba"], famille: "cuivres" },
-  { lettre: "M", nom: "Percussions", ids: ["timbales", "grosseCaisse", "cymbales", "tambourBasque", "triangle", "caisseClaire", "blocsChinois", "xylophone", "castagnettes", "tamTam", "fouet"], famille: "percussions" },
+  { lettre: "A", en: "Flutes and Piccolo", nom: "Flûtes et piccolo", ids: ["piccolo", "flutes"], famille: "bois" },
+  { lettre: "B", en: "Oboes", nom: "Hautbois", ids: ["hautbois"], famille: "bois" },
+  { lettre: "C", en: "Clarinets", nom: "Clarinettes", ids: ["clarinettes"], famille: "bois" },
+  { lettre: "D", en: "Bassoons", nom: "Bassons", ids: ["bassons"], famille: "bois" },
+  { lettre: "E", en: "Violins", nom: "Violons", ids: ["violons1", "violons2"], famille: "cordes" },
+  { lettre: "F", en: "Violas", nom: "Altos", ids: ["altos"], famille: "cordes" },
+  { lettre: "G", en: "Cellos", nom: "Violoncelles", ids: ["violoncelles"], famille: "cordes" },
+  { lettre: "H", en: "Double basses", nom: "Contrebasses", ids: ["contrebasses"], famille: "cordes" },
+  { lettre: "I", en: "Harp", nom: "Harpe", ids: ["harpe"], famille: "cordes" },
+  { lettre: "J", en: "Horns", nom: "Cors", ids: ["cors"], famille: "cuivres" },
+  { lettre: "K", en: "Trumpets", nom: "Trompettes", ids: ["trompettes"], famille: "cuivres" },
+  { lettre: "L", en: "Trombones and Tuba", nom: "Trombones et tuba", ids: ["trombones", "tuba"], famille: "cuivres" },
+  { lettre: "M", en: "Percussion", nom: "Percussions", ids: ["timbales", "grosseCaisse", "cymbales", "tambourBasque", "triangle", "caisseClaire", "blocsChinois", "xylophone", "castagnettes", "tamTam", "fouet"], famille: "percussions" },
 ];
 // La fugue : les entrées dans l'ordre. Dans la conclusion, le thème de Purcell revient aux cuivres pendant que le reste continue le sujet de la fugue.
 export const FUGUE = [

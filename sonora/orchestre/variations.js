@@ -1,10 +1,11 @@
 // SONORA Orchestre, espace 04 : comprendre les variations. On part d'un thème (celui de l'élève, sinon le sujet d'exemple) et on le transforme de huit façons ; chaque variation s'écoute avec l'instrument de son choix,
 // après le thème, pour entendre à la fois ce qui change (la forme) et ce qui reste (l'identité). Le Rondeau de Purcell, thème de Britten, s'ajoutera quand une partition libre sera dans le dépôt.
-import { FAMILLES, parId, nomNote } from "./donnees.js?v=c227b2d74f";
-import { POOL, etiquette } from "./timbres_logique.js?v=c227b2d74f";
-import { caler, PAS } from "./fugue_logique.js?v=c227b2d74f";
-import { SUJET_EXEMPLE, melodie, TRANSFORMATIONS, FAMILLES_THEME, dureeTemps, evenements } from "./variations_logique.js?v=c227b2d74f";
-import { rendreMelodie, sommer, lire, arreter, message } from "./audio.js?v=c227b2d74f";
+import { FAMILLES, parId, nomNote } from "./donnees.js?v=6824ea2219";
+import { POOL, etiquette } from "./timbres_logique.js?v=6824ea2219";
+import { caler, PAS } from "./fugue_logique.js?v=6824ea2219";
+import { SUJET_EXEMPLE, melodie, TRANSFORMATIONS, FAMILLES_THEME, dureeTemps, evenements } from "./variations_logique.js?v=6824ea2219";
+import { liensEcoute } from "./ecoutes.js?v=6824ea2219";
+import { rendreMelodie, sommer, lire, arreter, message } from "./audio.js?v=6824ea2219";
 
 const $ = id => document.getElementById(id), CLE_FUGUE = "sonora.orchestre.fugue";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -30,7 +31,7 @@ const optionsInst = sel => INSTRUMENTS.map(i => '<option value="' + i.id + '"' +
 
 function dessiner() {
   const th = melodie(etat.sujet), el = $("variations-corps");
-  let h = '<div class="entete-oeuvre"><p><span class="etq">Ton thème</span> ' + (etat.source === "eleve" ? "Le sujet que tu as dessiné dans l'espace 05." : "Le sujet d'exemple écrit pour ce cours (do mi sol mi fa ré do). Dessine le tien dans l'espace 05 : il apparaîtra ici.") + '</p><div class="actions-fiche"><button type="button" id="v-recharger">' + (etat.source === "eleve" ? "Utiliser le sujet d'exemple" : "Reprendre mon sujet de l'espace 05") + '</button></div></div>'
+  let h = '<div class="entete-oeuvre"><p><span class="etq">Ton thème</span> ' + (etat.source === "eleve" ? "Le sujet que tu as dessiné dans l'espace 05." : "Le sujet d'exemple écrit pour ce cours (do mi sol mi fa ré do). Dessine le tien dans l'espace 05 : il apparaîtra ici.") + '</p><p class="ecoute-section"><span class="etq">Écouter l\'original</span> Purcell, Rondeau d\'Abdelazer ' + liensEcoute("Purcell Abdelazer Rondeau", "Purcell, Rondeau d\'Abdelazer") + '</p><div class="actions-fiche"><button type="button" id="v-recharger">' + (etat.source === "eleve" ? "Utiliser le sujet d'exemple" : "Reprendre mon sujet de l'espace 05") + '</button></div></div>'
     + '<div class="reglages-fugue"><fieldset><legend>Tempo : <output id="v-bpm-val">' + etat.bpm + '</output> pulsations par minute</legend><input type="range" id="v-bpm" min="60" max="140" step="4" value="' + etat.bpm + '" aria-label="Tempo"></fieldset>'
     + '<label class="champ">Instrument du thème<select id="v-theme-inst">' + optionsInst(etat.themeInst) + '</select></label></div>'
     + '<div class="actions-fiche"><button type="button" class="principal" id="v-theme">Écouter le thème</button><button type="button" id="v-familles">Le thème dans chaque famille</button><button type="button" id="v-stop">Arrêter</button></div>'

@@ -120,3 +120,7 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
 .galerie { padding: 6px 8px 12px; } .bloc-gal h3 { margin: 12px 0 6px; font-size: 1rem; border-left: 12px solid var(--c); padding-left: 8px; }
 .cartes-g { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; } .carte-g { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; min-height: 0; background: var(--p); border: 2px solid var(--noir); }
 .carte-g .vg { width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; background: var(--p); } .carte-g .ng { font-size: .78rem; font-weight: 700; line-height: 1.1; text-align: center; } .carte-g[aria-pressed="true"] { background: var(--acide); } .carte-g.attenue { opacity: .25; }
+
+/* Liens d'écoute Spotify et YouTube */
+.paire-ec { display: inline-flex; gap: 6px; vertical-align: middle; } .paire-ec a { display: inline-flex; align-items: center; min-height: 34px; padding: 2px 12px; border: 2px solid var(--noir); background: #fff; color: var(--noir); text-decoration: none; font-weight: 700; font-size: .85rem; } .paire-ec a:hover, .paire-ec a:focus-visible { background: var(--acide); }
+.lecteur { position: absolute; left: -9999px; } .liens-ecoute { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; } .ecoute-section { margin: 8px 0; } .ecouter-oeuvre h3 { margin: 10px 0 4px; }

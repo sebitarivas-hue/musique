@@ -1,7 +1,7 @@
 // Éditeur de code SONORA : une zone de texte transparente au-dessus d'un calque coloré. Aucune dépendance.
 // Coloration syntaxique, numéros de ligne, soulignement des erreurs, autocomplétion, mot sous le curseur (pour l'aide contextuelle).
-import { MOTS } from "../src/lexeur.js?v=c227b2d74f";
-import { MODULES, MATHS } from "../src/index.js?v=c227b2d74f";
+import { MOTS } from "../src/lexeur.js?v=6824ea2219";
+import { MODULES, MATHS } from "../src/index.js?v=6824ea2219";
 
 const RE = /(\/\/[^\n]*)|(\/\*[\s\S]*?(?:\*\/|$))|("(?:[^"\\\n]|\\.)*"?)|(\b\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?(?:[ \t]?(?:kHz|Hz|ms|ech|dB|tour|rad|deg|dt|ct|bpm|s)\b|%)?)|(\b(?:do|re|mi|fa|sol|la|si)[#b]?-?\d\b)|([\p{L}_][\p{L}\p{N}_]*)|(->|[=<>!]=|\.\.|[+\-*/%^<>(){}\[\],:.=])/gu;
 const echapper = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

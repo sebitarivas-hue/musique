@@ -1,7 +1,7 @@
 // Le vocabulaire des accords : tous les types courants, de la triade au treizième de jazz, l'accord de Tristan et les sixtes augmentées.
 // Chaque type est décrit par ses intervalles (nombre diatonique, demi-tons) : l'orthographe des notes en découle (un Fa♯ et un Sol♭ ne s'écrivent pas pareil).
 // Sans DOM : testé dans Node.
-import { LETTRES, nomNote, classe, frequence } from "./theorie.js?v=c227b2d74f";
+import { LETTRES, nomNote, classe, frequence } from "./theorie.js?v=6824ea2219";
 const NATURELS = [0, 2, 4, 5, 7, 9, 11];
 // [nombre, demitons] au-dessus de la fondamentale ; 9, 11 et 13 sont écrits à l'octave supérieure (demi-tons > 12).
 const T = (id, nom, symbole, famille, iv, extra = {}) => ({ id, nom, symbole, famille, iv, ...extra });
