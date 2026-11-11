@@ -163,3 +163,13 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
 .pico svg, .vignette svg, .vg svg, .vig svg, .grand-icone svg { max-width: 100%; max-height: 100%; width: 100%; height: 100%; }
 .pico { width: 48px; height: 48px; } .pico svg, .pico img { margin: 0; }
 @media (max-width: 700px) { .pico { width: 40px; height: 40px; } }
+
+/* Anatomie d'une fugue : glossaire, choix des sections, plan sous le rouleau */
+.glossaire { border: 2px solid var(--noir); background: #fff; padding: 6px 12px; margin-bottom: 14px; } .glossaire summary { font-weight: 700; cursor: pointer; min-height: 36px; display: flex; align-items: center; }
+.glossaire dl { margin: 6px 0 4px; display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font-size: .92rem; } .glossaire dt { font: 700 .75rem var(--f-mono, monospace); text-transform: uppercase; padding-top: 3px; } .glossaire dd { margin: 0; line-height: 1.4; }
+@media (max-width: 700px) { .glossaire dl { grid-template-columns: 1fr; gap: 0; } .glossaire dd { margin-bottom: 8px; } }
+.sections-fugue { border: 2px solid var(--noir); padding: 8px 12px; margin: 10px 0; background: #fff; } .sections-fugue legend { font-weight: 700; padding: 0 6px; } .cases-sections { display: flex; flex-wrap: wrap; gap: 8px 18px; } .case-section { display: flex; align-items: center; gap: 6px; font-weight: 700; min-height: 34px; } .case-section input { width: 20px; height: 20px; }
+.rouleau .sec-bande { fill: #fff; } .rouleau .sec-bande.s1 { fill: #F4F3EC; } .rouleau .sec-nom { font: 700 13px var(--f-body, sans-serif); fill: #11110F; pointer-events: none; } .rouleau .note.tenue { fill-opacity: .8; }
+.plan-fugue { list-style: none; padding: 0; margin: 6px 0 12px; display: grid; gap: 6px; } .plan-fugue li { border-left: 8px solid var(--noir); background: #fff; padding: 6px 10px; font-size: .9rem; line-height: 1.4; } .plan-fugue .sec-pl { font: 700 .78rem var(--f-mono, monospace); text-transform: uppercase; } .plan-fugue .sec-d { font: 600 .75rem var(--f-mono, monospace); color: var(--gris); margin: 0 6px; }
+
+.fugue-britten { margin: 8px 0; } .fugue-britten h4 { margin: 4px 0 6px; } .fugue-britten ol { padding-left: 1.3em; margin: 6px 0; } .fugue-britten li { margin: 6px 0; line-height: 1.45; }

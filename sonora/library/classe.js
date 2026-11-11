@@ -2,8 +2,8 @@
 // Aucun serveur, aucun compte : la proposition est un petit fichier que l'élève remet au professeur par le moyen habituel de la classe,
 // et le catalogue publié est un fichier (classe.json) que seul le professeur ajoute au dépôt du site.
 // Sans DOM : testé dans Node. Tout ce qui vient d'un fichier est traité comme non fiable : types vérifiés, longueurs bornées, caractères de contrôle retirés.
-import { compiler } from "../src/index.js?v=6185710770";
-import { profil } from "./profil.js?v=6185710770";
+import { compiler } from "../src/index.js?v=d9eaf9b6ef";
+import { profil } from "./profil.js?v=d9eaf9b6ef";
 
 export const FORMAT_PROPOSITION = "sonora-proposition", FORMAT_CLASSE = "sonora-classe", VERSION = 1;
 export const LIMITES = { titre: 60, texte: 300, pseudo: 20, mots: 5, mot: 20, code: 20000, fichier: 100000, propositions: 60 };

@@ -1,11 +1,12 @@
 // SONORA Orchestre, espace 02 : écouter Britten. Un guide d'écoute : l'œuvre est protégée, aucun enregistrement n'est fourni ici. On écoute ailleurs (en classe, en bibliothèque, sur une plateforme autorisée)
 // et ce guide indique, section après section, qui joue, avec le timbre de l'instrument enregistré dans la banque du site et un jeu pour remettre les entrées de la fugue dans l'ordre.
-import { FAMILLES, parId } from "./donnees.js?v=6185710770";
-import { liensEcoute } from "./ecoutes.js?v=6185710770";
-import { RECHERCHE_OEUVRE, RECHERCHE_PURCELL, rechercheSection, OEUVRE, CONTEXTE, EFFECTIF, THEME, VARIATIONS, FUGUE, parcoursOeuvre, melangeFugue, trous, banqueDeMots, CARACTERES, NOMS_EXPOSITION, ATTENDU, verifierTableau } from "./britten_logique.js?v=6185710770";
-import { alea } from "./timbres_logique.js?v=6185710770";
-import { registresDe_ } from "./audio_aide.js?v=6185710770";
-import { jouer, message } from "./audio.js?v=6185710770";
+import { FAMILLES, parId } from "./donnees.js?v=d9eaf9b6ef";
+import { liensEcoute } from "./ecoutes.js?v=d9eaf9b6ef";
+import { htmlGlossaire } from "./fugue_glossaire.js?v=d9eaf9b6ef";
+import { RECHERCHE_OEUVRE, RECHERCHE_PURCELL, rechercheSection, OEUVRE, CONTEXTE, EFFECTIF, THEME, VARIATIONS, FUGUE, parcoursOeuvre, melangeFugue, trous, banqueDeMots, CARACTERES, NOMS_EXPOSITION, ATTENDU, verifierTableau } from "./britten_logique.js?v=d9eaf9b6ef";
+import { alea } from "./timbres_logique.js?v=d9eaf9b6ef";
+import { registresDe_ } from "./audio_aide.js?v=d9eaf9b6ef";
+import { jouer, message } from "./audio.js?v=d9eaf9b6ef";
 
 const $ = id => document.getElementById(id), CLE = "sonora.orchestre.britten";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -26,7 +27,11 @@ function carte() {
   if (s.caractere) h += '<p class="carac"><span class="etq">Caractère</span> ' + esc(s.caractere) + "</p>";
   if (s.partie === "theme") h += "<p>" + (s.cle === "t-tutti" ? "Le thème de Purcell est d'abord exposé par tout l'orchestre." : s.cle === "t-tutti2" ? "Pour finir, tout l'orchestre rejoue le thème." : "Le même thème, repris par " + esc(s.titre.replace("Thème : ", "")) + " : écoute comme la couleur change sans que la mélodie change.") + "</p>";
   if (s.partie === "variations") h += "<p>Le thème est transformé, joué par " + esc(VARIATIONS.find(v => "v-" + v.lettre === s.cle).nom.toLowerCase()) + ". Repère le timbre, puis ce qui change par rapport au thème.</p>";
-  if (s.partie === "fugue") h += "<p>Les instruments entrent un à un dans le même ordre que sur la liste ci-dessous. À la fin, tout l'orchestre joue et le thème de Purcell revient aux cuivres.</p>";
+  if (s.partie === "fugue") h += '<div class="fugue-britten"><h4>La fugue de Britten, en trois temps</h4><ol>'
+    + "<li><b class=\"nb\">Le sujet</b> Le sujet de la fugue est une mélodie nouvelle, écrite par Britten : ce n'est pas le thème de Purcell. Il est d'abord confié à un seul instrument, le piccolo.</li>"
+    + "<li><b class=\"nb\">L'exposition</b> Puis chaque instrument ou groupe entre à son tour avec ce même sujet, famille après famille : les bois, les cordes avec la harpe, les cuivres, enfin les percussions. Chaque entrée s'ajoute aux précédentes : l'orchestre se remplit voix après voix, comme dans une fugue à quinze voix.</li>"
+    + "<li><b class=\"nb\">Les deux thèmes ensemble</b> Pour finir, le thème de Purcell revient aux cuivres, et il se superpose au sujet de la fugue, que les autres instruments continuent de jouer. On entend donc deux thèmes à la fois, avec deux orchestrations différentes : les cuivres d'un côté, le reste de l'orchestre de l'autre.</li></ol>"
+    + '<p class="legende">Ce déroulement est celui que l\'on décrit couramment ; à vérifier avec la partition. Tu peux construire toi-même une fugue complète, avec divertissement, strette, pédale et conclusion, dans l\'étape 05.</p>' + htmlGlossaire(false) + "</div>";
   h += '<p class="ecoute-section"><span class="etq">Écouter cette section</span> ' + liensEcoute(rechercheSection(s), s.titre) + "</p>";
   if (s.ids.length) h += '<div class="rangee"><button type="button" data-entendre="' + s.ids[0] + '">Entendre ' + esc(parId(s.ids[0]).nom.toLowerCase()) + '</button></div>';
   const nt = etat.notes[s.cle] || {};
