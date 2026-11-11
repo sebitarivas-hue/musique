@@ -139,3 +139,16 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
 
 .contexte-det { margin: 8px 0; border: 2px solid var(--noir); padding: 6px 10px; background: #fff; } .contexte-det summary { font-weight: 700; cursor: pointer; min-height: 34px; display: flex; align-items: center; } .contexte-det p { font-size: .92rem; }
 @media (max-width: 700px) { .rate-doux { font-size: .85rem; } .frise button { min-width: 34px; min-height: 40px; } .fiche-fugue { padding: 12px; } .vig { width: 64px; height: 64px; } }
+
+/* Portée du sujet et clavier de couleurs (espace 05) */
+.bloc-portee h3 { margin: 4px 0 2px; } .portee { background: #fff; border: 2px solid var(--noir); padding: 4px; max-width: 700px; } .portee:focus-visible { outline: 3px solid var(--acide); outline-offset: 2px; }
+.svg-portee { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; }
+.p-fente { fill: transparent; cursor: pointer; } .p-fente:hover { fill: rgba(214, 255, 0, .25); } .p-fente.sel { fill: rgba(214, 255, 0, .6); }
+.p-ligne, .p-mesure, .p-supp, .p-hampe { stroke: #11110F; } .p-ligne { stroke-width: 1.4; } .p-mesure { stroke-width: 2.4; } .p-supp { stroke-width: 1.8; } .p-hampe { stroke-width: 2; }
+.p-note { stroke: #11110F; stroke-width: 1.8; pointer-events: none; } .p-num { font: 700 11px var(--f-mono, monospace); fill: #77766d; text-anchor: middle; pointer-events: none; } .p-lib { font: 700 12px var(--f-body, sans-serif); text-anchor: middle; fill: #11110F; pointer-events: none; }
+.p-silence { fill: none; stroke: #11110F; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; } .p-cle { font: 64px "Noto Music", "Bravura", "Segoe UI Symbol", "Apple Symbols", serif; fill: #11110F; pointer-events: none; }
+.clavier-p { display: flex; gap: 4px; margin: 8px 0; max-width: 700px; } .clavier-p .p-touche { flex: 1; min-width: 0; min-height: 66px; padding: 0; border: 2px solid var(--noir); border-top: 16px solid var(--n); border-radius: 0; background: #fff; display: flex; align-items: flex-end; justify-content: center; }
+.p-touche .p-nom { font: 700 .72rem var(--f-mono, monospace); padding-bottom: 6px; } .clavier-p .p-touche:hover { background: #F4F3EC; filter: brightness(.98); } .clavier-p .p-touche.actif { background: var(--acide); }
+.p-actions { margin: 4px 0; } .p-etat { margin: 2px 0 10px; font: 700 .8rem var(--f-mono, monospace); color: var(--gris); }
+@media (max-width: 520px) { .p-touche .p-nom { font-size: .58rem; } .clavier-p { gap: 2px; } .clavier-p .p-touche { min-height: 58px; } }
+.p-vide { fill: none; stroke: #b9b8ae; stroke-width: 1.6; stroke-dasharray: 3 3; pointer-events: none; }

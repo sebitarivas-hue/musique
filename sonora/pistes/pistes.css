@@ -420,8 +420,8 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .moteurs textarea { font-family: var(--f-mono, monospace); min-height: 0; line-height: 1.45; }
 .midi select:focus-visible, .midi input:focus-visible, .moteurs select:focus-visible, .moteurs textarea:focus-visible { outline: 2px solid var(--acide); outline-offset: 1px; }
 .midi input[type=checkbox], .moteurs input[type=checkbox], .auto input[type=checkbox] { accent-color: var(--acide); width: 18px; height: 18px; }
-.midi button:not(.notion):not(.croix-b):not(.touche):not(.pad), .moteurs button:not(.notion):not(.croix-b):not(.mot-carte), .liste-projets button { min-height: 44px; padding: 0 14px; border-radius: 10px; background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); font-weight: 600; cursor: pointer; }
-.midi button:not(.notion):not(.croix-b):not(.touche):not(.pad):hover:not(:disabled), .moteurs button:not(.notion):not(.croix-b):not(.mot-carte):hover:not(:disabled), .liste-projets button:hover:not(:disabled) { border-color: var(--acide); }
+.midi button:not(.notion):not(.croix-b):not(.touche):not(.pad):not(.pas-case), .moteurs button:not(.notion):not(.croix-b):not(.mot-carte), .liste-projets button { min-height: 44px; padding: 0 14px; border-radius: 10px; background: var(--daw-piste2); color: var(--daw-texte); border: 1px solid var(--daw-trait); font-weight: 600; cursor: pointer; }
+.midi button:not(.notion):not(.croix-b):not(.touche):not(.pad):not(.pas-case):hover:not(:disabled), .moteurs button:not(.notion):not(.croix-b):not(.mot-carte):hover:not(:disabled), .liste-projets button:hover:not(:disabled) { border-color: var(--acide); }
 .midi button:disabled, .moteurs button:disabled, .liste-projets button:disabled { opacity: .4; cursor: default; }
 .midi button.principal, .moteurs button.principal, .midi .enreg[aria-pressed="true"] { background: var(--acide); color: var(--noir); border-color: var(--acide); }
 .midi .enreg .pastille-rec { background: #FF5A3C; }
@@ -657,3 +657,12 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
   #rouleau .rl-haut.pt-barre .mini { min-width: 0; } #rouleau .rl-haut.pt-barre .mini select { width: 100%; min-width: 0; text-overflow: ellipsis; }
   #rouleau .rl-haut.pt-barre2 { flex-wrap: wrap; overflow: visible; }
 }
+
+/* Séquenceur à pas : de vraies cases colorées (la règle générale des boutons du panneau les passait en sombre avec un simple liseré). Chaque ligne a sa couleur ; fort = couleur pleine, doux = couleur éclaircie. */
+.pas-case { cursor: pointer; min-height: 0; padding: 0; transition: transform .05s; } .pas-case:active { transform: scale(.94); }
+.pas-case[data-e="x"] { background: var(--c-pas, #FF6B57); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .3), inset 0 2px 0 rgba(255, 255, 255, .4); }
+.pas-case[data-e="o"] { background: linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, .55)), var(--c-pas, #FF6B57); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .2); }
+.midi .pas-case:hover:not(:disabled) { background: #34343e; border: 0; }
+.midi .pas-case[data-e="x"]:hover:not(:disabled) { background: var(--c-pas, #FF6B57); filter: brightness(1.12); }
+.midi .pas-case[data-e="o"]:hover:not(:disabled) { background: linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, .55)), var(--c-pas, #FF6B57); filter: brightness(1.08); }
+.pas-case.curseur { outline: 3px solid var(--acide); outline-offset: 1px; z-index: 1; position: relative; }

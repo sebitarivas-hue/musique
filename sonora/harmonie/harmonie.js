@@ -1,21 +1,21 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=f8d06958f4";
-import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=f8d06958f4";
-import { BANQUE, preparer } from "./echantillons.js?v=f8d06958f4";
-import { GENRES, LISTE_GENRES, rendreGenre, mettreReel } from "./genres.js?v=f8d06958f4";
-import { chargerKit } from "./batterie.js?v=f8d06958f4";
-import { heros, etatBouton } from "../studio/heros.js?v=f8d06958f4";
-import { encoderWAV } from "../studio/wav.js?v=f8d06958f4";
-import { dessinerOscillo } from "../studio/visuels.js?v=f8d06958f4";
-import * as P from "../pistes/projet.js?v=f8d06958f4";
-import { Stockage } from "../pistes/stockage.js?v=f8d06958f4";
-import * as A from "./accords.js?v=f8d06958f4";
-import * as V from "./voicings.js?v=f8d06958f4";
-import * as G from "./grille.js?v=f8d06958f4";
-import { partitionSVG } from "./partition.js?v=f8d06958f4";
-import { monterNotions } from "../pistes/notions.js?v=f8d06958f4";
-import { NOTIONS_H, ORDRE_H } from "./notions.js?v=f8d06958f4";
+import * as H from "./theorie.js?v=bae1304164";
+import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=bae1304164";
+import { BANQUE, preparer } from "./echantillons.js?v=bae1304164";
+import { GENRES, LISTE_GENRES, rendreGenre, mettreReel } from "./genres.js?v=bae1304164";
+import { chargerKit } from "./batterie.js?v=bae1304164";
+import { heros, etatBouton } from "../studio/heros.js?v=bae1304164";
+import { encoderWAV } from "../studio/wav.js?v=bae1304164";
+import { dessinerOscillo } from "../studio/visuels.js?v=bae1304164";
+import * as P from "../pistes/projet.js?v=bae1304164";
+import { Stockage } from "../pistes/stockage.js?v=bae1304164";
+import * as A from "./accords.js?v=bae1304164";
+import * as V from "./voicings.js?v=bae1304164";
+import * as G from "./grille.js?v=bae1304164";
+import { partitionSVG } from "./partition.js?v=bae1304164";
+import { monterNotions } from "../pistes/notions.js?v=bae1304164";
+import { NOTIONS_H, ORDRE_H } from "./notions.js?v=bae1304164";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -30,11 +30,19 @@ const garder = (k, v) => { try { localStorage.setItem("sonora:harmonie:" + k, JS
 // ---------------------------------------------------------------- jouer un son rendu
 function contexte() { if (!etat.ctx) { etat.ctx = new (window.AudioContext || window.webkitAudioContext)(); etat.analyseur = etat.ctx.createAnalyser(); etat.analyseur.fftSize = 2048; etat.analyseur.connect(etat.ctx.destination); } if (etat.ctx.state === "suspended") etat.ctx.resume(); return etat.ctx; }
 function stop() { if (etat.source) { try { etat.source.stop(); } catch (_) {} etat.source = null; } etat.lecture = false; etat.suivi = null; etat.vivant = null; majVivant([], -1); document.querySelectorAll(".jouer-pseudo").forEach(b => etatBouton(b, false)); document.querySelectorAll(".carte-acc.actif").forEach(c => c.classList.remove("actif")); badge("prêt"); }
-function jouerCanaux(canaux, { boucle = false, suivi = null, bouton = null, evenements = null, colonnes = null } = {}) {
-  stop(); const ctx = contexte(), buf = ctx.createBuffer(canaux.length, canaux[0].length, SR); canaux.forEach((c, i) => buf.copyToChannel(c, i));
-  const s = ctx.createBufferSource(); s.buffer = buf; s.loop = boucle; s.connect(etat.analyseur); const t0 = ctx.currentTime + 0.03; s.start(t0); etat.finSon = boucle ? Infinity : t0 + buf.duration;
+function jouerCanaux(canaux, { boucle = false, suivi = null, bouton = null, evenements = null, colonnes = null, continuer = false } = {}) {
+  // continuer : une boucle déjà en cours est remplacée sans s'arrêter, au même point du morceau (fondu de 12 ms) : modifier un accord, le tempo, le style ou l'instrument s'entend tout de suite.
+  const ancien = continuer && boucle && etat.lecture && etat.finSon === Infinity && etat.source && etat.vivant ? { s: etat.source, g: etat.gainBoucle, t0: etat.vivant.t0, duree: etat.vivant.duree } : null;
+  if (!ancien) stop(); const ctx = contexte(), buf = ctx.createBuffer(canaux.length, canaux[0].length, SR); canaux.forEach((c, i) => buf.copyToChannel(c, i));
+  const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = buf; s.loop = boucle; s.connect(g); g.connect(etat.analyseur); const debut = ctx.currentTime + 0.03; let decalage = 0;
+  if (ancien) {
+    const pos = (((debut - ancien.t0) % ancien.duree) + ancien.duree) % ancien.duree; decalage = ((pos / ancien.duree) * buf.duration) % buf.duration;
+    g.gain.setValueAtTime(0, debut); g.gain.linearRampToValueAtTime(1, debut + 0.012);
+    if (ancien.g) { ancien.g.gain.setValueAtTime(1, debut); ancien.g.gain.linearRampToValueAtTime(0.0001, debut + 0.012); } try { ancien.s.stop(debut + 0.03); } catch (_) {}
+  }
+  s.start(debut, decalage); const t0 = debut - decalage; etat.finSon = boucle ? Infinity : debut + buf.duration;
   s.onended = () => { if (etat.source === s) stop(); };
-  etat.source = s; etat.lecture = true; etat.vivant = evenements ? { evenements, colonnes, t0, duree: buf.duration, boucle, cle: "" } : null; etat.suivi = suivi ? { ...suivi, t0, duree: buf.duration } : null; if (bouton) etatBouton(bouton, true); badge("en écoute", "marche");
+  etat.source = s; etat.gainBoucle = g; etat.lecture = true; etat.vivant = evenements ? { evenements, colonnes, t0, duree: buf.duration, boucle, cle: "" } : null; etat.suivi = suivi ? { ...suivi, t0, duree: buf.duration } : null; if (bouton) etatBouton(bouton, true); badge("en écoute", "marche");
   etat.dernierRendu = { duree: buf.duration, canaux: canaux.length };
 }
 const jouerEv = (ev, opts = {}) => jouerCanaux(rendreSuite(ev, { instrument: etat.instrument }), { ...opts, evenements: ev });
@@ -139,8 +147,11 @@ function vueProgressions() {
     <h2>Toutes les progressions</h2><div class="liste-prog">${fams.map(f => { const ouv = f === prog.famille || (etat.famOuv || []).includes(f); return `<button type="button" class="fam fam-tit" data-fam="${esc(f)}" aria-expanded="${ouv}">${esc(f)}</button><div class="fam-corps${ouv ? " ouvert" : ""}">${H.PROGRESSIONS.filter(p => p.famille === f).map(p => `<button type="button" data-prog="${p.id}" aria-pressed="${p.id === etat.prog}"><b>${esc(p.nom)}</b><br><span class="petit">${esc(H.accordsProgression(p, H.TONIQUES[0]).map(a => a.romain).join(", "))}</span></button>`).join("")}</div>`; }).join("")}</div>`;
   { const v = H.voicing(acc), m = mesureDe(v); montrerFond(v.map((x, i) => ({ nom: acc[i].nom, notes: [x.basse, ...x.voix], duree: 4, de: i * m, a: (i + 1) * m }))); }
   $("b-prog").dataset.libelle = "Écouter en boucle";
-  $("b-prog").onclick = () => { if (etat.lecture) return stop(); const x = rendreProgression(prog, t); jouerCanaux(x.canaux, { boucle: true, bouton: $("b-prog"), evenements: x.r.evenements, colonnes: true, suivi: { mesure: x.r.mesure, selecteur: "#acc-prog .carte-acc", i: -1 } }); };
-  const relancer = () => { const jouait = etat.lecture; vueProgressions(); if (jouait) $("b-prog").click(); };
+  const lancer = continuer => { const x = rendreProgression(prog, t); jouerCanaux(x.canaux, { boucle: true, continuer, bouton: $("b-prog"), evenements: x.r.evenements, colonnes: true, suivi: { mesure: x.r.mesure, selecteur: "#acc-prog .carte-acc", i: -1 } }); };
+  $("b-prog").onclick = () => { if (etat.lecture) return stop(); lancer(false); };
+  // Tonalité, tempo, genre, style, variation, instrument : si la boucle joue, elle continue au même endroit avec le nouveau réglage (plus d'arrêt ni de retour au début).
+  const relancer = () => { etat.reprise = etat.lecture && etat.finSon === Infinity; vueProgressions(); };
+  if (etat.reprise) { etat.reprise = false; lancer(true); }
   $("pr-ton").onchange = e => { etat.tonP = +e.target.value; relancer(); }; $("pr-tempo").onchange = e => { etat.tempo = Math.max(40, Math.min(200, +e.target.value || 90)); relancer(); };
   $("pr-style").onchange = e => { etat.style = e.target.value; relancer(); };
   /* Choisir un genre règle le tempo, la batterie, la basse et le son des accords ; on peut ensuite tout changer à la main. */
@@ -271,8 +282,9 @@ function vueComposer() {
   document.querySelectorAll("#v-composer details.plus").forEach(d => d.addEventListener("toggle", () => { etat.ouverts[d.id] = d.open; }));   // un volet ouvert le reste quand la page se redessine
   montrerFond(plan ? plan.colonnes : null);
   const sonOuvrir = oui => { document.body.classList.toggle("son-ouvert", oui); $("b-son-feuille").setAttribute("aria-expanded", String(oui)); }; $("b-son-feuille").onclick = () => sonOuvrir(!document.body.classList.contains("son-ouvert")); $("b-son-fermer").onclick = () => sonOuvrir(false); sonOuvrir(document.body.classList.contains("son-ouvert"));
-  const change = (g, message) => { empilerG(etat.grille); etat.grille = g; sauver(); stop(); vueComposer(); if (message) $("msg-compo").textContent = message; };
-  const retour = (fait, texte) => { if (!fait) return; etat.sel = Math.min(etat.sel, etat.grille.length - 1); stop(); vueComposer(); $("msg-compo").textContent = texte; };
+  const boucleEnCours = () => etat.lecture && etat.finSon === Infinity;   // modifier la grille pendant que la boucle joue : elle continue, avec le nouvel accord, au même endroit
+  const change = (g, message) => { empilerG(etat.grille); etat.grille = g; sauver(); etat.reprise = boucleEnCours(); vueComposer(); if (message) $("msg-compo").textContent = message; };
+  const retour = (fait, texte) => { if (!fait) return; etat.sel = Math.min(etat.sel, etat.grille.length - 1); etat.reprise = boucleEnCours(); vueComposer(); $("msg-compo").textContent = texte; };
   $("b-annuler-g").onclick = $("b-annuler-g2").onclick = () => retour(annulerG(), "Annulé : ta grille est revenue à l'état d'avant."); $("b-refaire-g").onclick = () => retour(refaireG(), "Rétabli.");
   const lu = () => ({ racine: $("co-racine").value, type: $("co-type").value, duree: +$("co-duree").value });
   const entendre = a => { const v = V.disposer(G.accordsDe([a]), "proche")[0]; jouerEv([{ t: 0, duree: 1.4, notes: [v.basse, ...v.voix] }]); };
@@ -294,13 +306,15 @@ function vueComposer() {
       if (act === "gauche" && i > 0) { etat.sel = i - 1; change(G.deplacer(etat.grille, i, i - 1)); } else if (act === "droite" && i < n - 1) { etat.sel = i + 1; change(G.deplacer(etat.grille, i, i + 1)); }
       else if (act === "dup") { etat.sel = i + 1; change(G.dupliquer(etat.grille, i)); } else if (act === "retirer") { etat.sel = Math.min(etat.sel, n - 2); change(G.retirer(etat.grille, i)); } });
   });
-  $("co-ton").onchange = e => { etat.tonC = +e.target.value; vueComposer(); }; $("co-mode").onchange = e => { etat.modeC = e.target.value; vueComposer(); }; $("co-sons").onchange = e => { etat.sons = +e.target.value; vueComposer(); };
-  const relancer = () => { const jouait = etat.lecture; vueComposer(); if (jouait && etat.grille.length) $("b-compo").click(); };
+  const relancer = () => { etat.reprise = boucleEnCours(); vueComposer(); };
+  $("co-ton").onchange = e => { etat.tonC = +e.target.value; relancer(); }; $("co-mode").onchange = e => { etat.modeC = e.target.value; relancer(); }; $("co-sons").onchange = e => { etat.sons = +e.target.value; relancer(); };
   $("co-tempo").onchange = e => { etat.tempo = Math.max(40, Math.min(200, +e.target.value || 90)); garder("tempo", etat.tempo); relancer(); };
   $("co-style").onchange = e => { etat.style = e.target.value; relancer(); }; $("co-pulse").onchange = e => { etat.pulse = e.target.value; garder("pulse", etat.pulse); relancer(); };
   $("co-dispo").onchange = e => { etat.dispo = e.target.value; garder("dispo", etat.dispo); relancer(); }; $("co-instr").onchange = e => changerInstr(e.target.value, relancer);
   $("b-compo").dataset.libelle = "Écouter en boucle";
-  $("b-compo").onclick = () => { if (etat.lecture && etat.finSon === Infinity) return stop();   /* on arrête la boucle ; un accord qu'on vient d'entendre ne bloque pas le départ de la musique */ if (!plan) { $("msg-compo").textContent = "Ajoute d'abord des accords."; return; } jouerCanaux(rendreGrille(plan), { boucle: true, bouton: $("b-compo"), evenements: plan.p.evenements, colonnes: true }); };
+  $("b-compo").onclick = () => { if (etat.lecture && etat.finSon === Infinity) return stop();   /* on arrête la boucle ; un accord qu'on vient d'entendre ne bloque pas le départ de la musique */ if (!plan) { $("msg-compo").textContent = "Ajoute d'abord des accords."; return; } lancerCompo(false); };
+  const lancerCompo = continuer => jouerCanaux(rendreGrille(plan), { boucle: true, continuer, bouton: $("b-compo"), evenements: plan.p.evenements, colonnes: true });
+  if (etat.reprise) { etat.reprise = false; if (plan) lancerCompo(true); else stop(); }
   $("b-vider").onclick = () => { if (!n) return; etat.sel = -1; change([], "Grille effacée. Touche « Annuler » pour la retrouver : rien n'est perdu."); };
   $("b-co-wav").onclick = () => { if (!plan) return; telecharger(rendreGrille(plan), "ma-grille-" + t.nom); $("msg-compo").textContent = `WAV exporté : ${n} accords, ${plan.p.duree.toFixed(1).replace(".", ",")} s.`; };
   $("b-co-pistes").onclick = () => { if (!plan) return; versPistes(() => rendreGrille(plan), "Ma grille en " + t.nom, $("msg-compo"), $("b-co-pistes")); };

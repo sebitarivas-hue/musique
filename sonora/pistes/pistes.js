@@ -1,32 +1,32 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=f8d06958f4";
-import * as Ed from "./editions.js?v=f8d06958f4";
-import * as P from "./projet.js?v=f8d06958f4";
-import { Stockage } from "./stockage.js?v=f8d06958f4";
-import { creerBouton } from "./bouton.js?v=f8d06958f4";
-import * as MI from "./midi.js?v=f8d06958f4";
-import * as N from "./notes.js?v=f8d06958f4";
-import { Rouleau } from "./rouleau.js?v=f8d06958f4";
-import { PanneauPartition } from "./partition/panneau.js?v=f8d06958f4";
-import { separer, NOMS_PARTIES } from "./separation.js?v=f8d06958f4";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=f8d06958f4";
-import * as BM from "./batterie_midi.js?v=f8d06958f4";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=f8d06958f4";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=f8d06958f4";
-import * as INS from "./instruments.js?v=f8d06958f4";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=f8d06958f4";
-import * as OMR from "./omr.js?v=f8d06958f4";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=f8d06958f4";
-import * as MO from "./moteurs.js?v=f8d06958f4";
-import { monterPanneaux } from "./panneaux.js?v=f8d06958f4";
-import { monterNotions } from "./notions.js?v=f8d06958f4";
-import { DEMOS } from "./demos.js?v=f8d06958f4";
-import * as B from "./bibliotheque.js?v=f8d06958f4";
-import { encoderWAV } from "../studio/wav.js?v=f8d06958f4";
-import { ENTREES } from "../library/catalogue.js?v=f8d06958f4";
-import { compiler } from "../src/index.js?v=f8d06958f4";
-import { rendre } from "../src/rendu.js?v=f8d06958f4";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=bae1304164";
+import * as Ed from "./editions.js?v=bae1304164";
+import * as P from "./projet.js?v=bae1304164";
+import { Stockage } from "./stockage.js?v=bae1304164";
+import { creerBouton } from "./bouton.js?v=bae1304164";
+import * as MI from "./midi.js?v=bae1304164";
+import * as N from "./notes.js?v=bae1304164";
+import { Rouleau } from "./rouleau.js?v=bae1304164";
+import { PanneauPartition } from "./partition/panneau.js?v=bae1304164";
+import { separer, NOMS_PARTIES } from "./separation.js?v=bae1304164";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=bae1304164";
+import * as BM from "./batterie_midi.js?v=bae1304164";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=bae1304164";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=bae1304164";
+import * as INS from "./instruments.js?v=bae1304164";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=bae1304164";
+import * as OMR from "./omr.js?v=bae1304164";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=bae1304164";
+import * as MO from "./moteurs.js?v=bae1304164";
+import { monterPanneaux } from "./panneaux.js?v=bae1304164";
+import { monterNotions } from "./notions.js?v=bae1304164";
+import { DEMOS } from "./demos.js?v=bae1304164";
+import * as B from "./bibliotheque.js?v=bae1304164";
+import { encoderWAV } from "../studio/wav.js?v=bae1304164";
+import { ENTREES } from "../library/catalogue.js?v=bae1304164";
+import { compiler } from "../src/index.js?v=bae1304164";
+import { rendre } from "../src/rendu.js?v=bae1304164";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -62,7 +62,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=f8d06958f4"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=bae1304164"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -134,6 +134,25 @@ async function lire() {
   etat.sources = planifier(ctx, etat.projet, etat.tete, etat.debutCtx, chaines); etat.chaines = chaines; appliquerEnveloppes(etat.projet, chaines, etat.tete, etat.debutCtx);
   if ($("metro").checked) etat.metro = metronome(ctx, etat.tete, etat.debutCtx);
   etat.lecture = true; $("b-lire").innerHTML = '<span class="ic ic-stop" aria-hidden="true"></span> Arrêter'; badge(etat.enreg ? "enregistrement" : "lecture", etat.enreg ? "erreur" : "marche");
+}
+// Modifier le projet PENDANT la lecture : la lecture continue. Les chaînes de pistes et les clips sont reprogrammés depuis l'endroit exact où l'on en est, et l'ancien son s'éteint en 12 ms à l'instant du remplacement
+// (au lieu d'arrêter la lecture à chaque geste, comme avant : il fallait arrêter et relire pour entendre une modification).
+let replanOccupe = false, replanEnAttente = false;
+async function replanifierLecture() {
+  if (!etat.lecture || etat.enreg || etat.notes || !etat.ctx) return;
+  if (replanOccupe) { replanEnAttente = true; return; }
+  replanOccupe = true; const ctx = etat.ctx;
+  try {
+    let chaines; try { chaines = await chainesProjet(ctx, etat.projet, ctx.destination); } catch (_) { arreter(); return; }
+    if (!etat.lecture) { for (const ch of Object.values(chaines)) { try { ch.vol.disconnect(); (ch.veilles || []).forEach(v => v.stop()); } catch (_) {} } return; }
+    const t0 = ctx.currentTime + 0.03, pos = etat.debutTete + t0 - etat.debutCtx, sources = planifier(ctx, etat.projet, pos, t0, chaines); appliquerEnveloppes(etat.projet, chaines, pos, t0);
+    for (const s of etat.sources) { try { s.stop(t0 + 0.012); } catch (_) {} }
+    const anciennes = etat.chaines || {};
+    for (const ch of Object.values(anciennes)) { try { ch.vol.gain.cancelScheduledValues(t0); ch.vol.gain.setValueAtTime(ch.vol.gain.value, t0); ch.vol.gain.linearRampToValueAtTime(0.0001, t0 + 0.012); } catch (_) {} }
+    setTimeout(() => { for (const ch of Object.values(anciennes)) { try { ch.vol.disconnect(); (ch.veilles || []).forEach(v => v.stop()); } catch (_) {} } }, 250);
+    etat.sources = sources; etat.chaines = chaines; etat.debutCtx = t0; etat.debutTete = pos;
+    if (etat.metro) { etat.metro.stop(); etat.metro = null; } if ($("metro").checked) etat.metro = metronome(ctx, pos, t0);
+  } finally { replanOccupe = false; if (replanEnAttente) { replanEnAttente = false; replanifierLecture(); } }
 }
 // La session audio de Safari (iOS 16.4 et après) : le micro n'est accessible qu'en « play-and-record » ; ailleurs, la propriété n'existe pas.
 function sessionAudio(type) { try { if (navigator.audioSession && navigator.audioSession.type !== type) navigator.audioSession.type = type; } catch (_) {} }
@@ -401,7 +420,7 @@ async function refaireSource(id) {
 let majMidiEnCours = null;
 async function remettreAJourMidi() {
   const faire = Object.keys(etat.projet.sons).filter(id => { const s = etat.projet.sons[id]; return (P.estMidi(s) && (s.midi.rendu !== etat.projet.tempo || !etat.buffers[id])) || (P.estSource(s) && (s.source.rendu !== etat.projet.tempo || !etat.buffers[id])); });
-  if (!faire.length) return; const p = majMidiEnCours = Promise.all(faire.map(id => P.estSource(etat.projet.sons[id]) ? refaireSource(id) : rendreMidiSon(id))).then(() => { if (majMidiEnCours === p) { majMidiEnCours = null; afficher(); planifierRangement(250); } }); await p;
+  if (!faire.length) return; const p = majMidiEnCours = Promise.all(faire.map(id => P.estSource(etat.projet.sons[id]) ? refaireSource(id) : rendreMidiSon(id))).then(() => { if (majMidiEnCours === p) { majMidiEnCours = null; afficher(); planifierRangement(250); if (etat.lecture) replanifierLecture(); } }); await p;
 }
 function finirNotes() {
   const r = etat.notes, inst = etat.notesInstrument, e = etat.notesEntree; etat.notes = null; $("b-notes").setAttribute("aria-pressed", "false"); r.fermer(dateProjet()); document.querySelectorAll(".clip.enreg-notes").forEach(x => x.remove());
@@ -835,7 +854,7 @@ const TEXTE_ONGLETS = "Ce projet est aussi ouvert dans un autre onglet. Garde un
 const annoncerProjet = () => { if (canal) canal.postMessage({ t: "ouvert", id: etat.projet.id, de: MOI }); };
 if (canal) canal.onmessage = e => { const m = e.data || {}; if (m.de === MOI || !etat.projet || m.id !== etat.projet.id) return; if (m.t === "ouvert") canal.postMessage({ t: "present", id: m.id, de: MOI }); alerter("onglets", TEXTE_ONGLETS); };
 const ranger = () => planifierRangement(300);
-function changer() { etat.toutEcoute = false; empiler(); afficher(); planifierRangement(250); if (etat.lecture && !etat.enreg && !etat.notes) { arreter(); } }
+function changer() { etat.toutEcoute = false; empiler(); afficher(); planifierRangement(250); if (etat.lecture && !etat.enreg && !etat.notes) { replanifierLecture(); } }
 
 function brancherEntetes() {
   for (const el of document.querySelectorAll(".entete")) {
@@ -968,7 +987,7 @@ const REGLAGES_FX = {
 function afficherEffets() {
   const z = $("effets"), pi = etat.fx && P.trouverPiste(etat.projet, etat.fx); z.hidden = !pi; if (!pi) return;
   const e = P.effetsDe(pi), rack = P.rackDe(pi), L = P.LIMITES_EFFETS, manque = P.EFFETS_ORDRE.filter(k => !rack.includes(k));
-  const relancer = () => { if (etat.lecture) { arreter(); lire(); } };
+  const relancer = () => { if (etat.lecture) replanifierLecture(); };
   z.innerHTML = `<div class="fx-haut"><h2>Effets de la piste « ${esc(pi.nom)} »</h2><button type="button" class="notion" data-notion="effets" aria-label="Comprendre : les effets">?</button>
     <label class="fx-ajout"><span class="sr-seul">Ajouter un effet</span><select id="fx-ajouter" aria-label="Ajouter un effet"><option value="">+ Ajouter un effet</option>${manque.map(k => `<option value="${k}">${NOMS_FX[k]}</option>`).join("")}</select></label>
     <button type="button" class="croix-b" id="fx-fermer" aria-label="Fermer les effets"><span class="croix" aria-hidden="true"></span></button></div>
