@@ -77,8 +77,8 @@
 .carte-fam .vignette { flex: 0 0 auto; width: 58px; height: 58px; background: #fff; border: 1.5px solid var(--noir); display: flex; align-items: center; justify-content: center; } .carte-fam .nf { display: block; font: 700 1rem var(--f-display, sans-serif); } .carte-fam .df { display: block; font-size: .85rem; font-weight: 500; line-height: 1.25; } .carte-fam .cf { display: block; font: 700 .72rem var(--f-mono, monospace); margin-top: 2px; }
 @media (max-width: 520px) { .fiche-tete { flex-direction: column; align-items: flex-start; } }
 
-/* Photos d'instruments : le fond blanc des photos disparaît sur la teinte de la famille */
-.photo { display: block; mix-blend-mode: multiply; max-width: 100%; height: auto; } .photo-svg { mix-blend-mode: multiply; }
+/* Photos d'instruments : le fond des photos est transparent, la teinte de la famille se voit derrière */
+.photo { display: block; max-width: 100%; height: auto; }   /* photos au fond transparent : plus de mode de fusion (il laissait des zones blanches sur Safari iOS) */
 .grand-icone { width: 164px; height: 164px; } .credits { margin-top: 28px; } .credits ul { padding-left: 1.2em; margin: 6px 0; font-size: .85rem; color: var(--gris); } .credits a { color: inherit; }
 
 /* Rubriques de la fiche */
@@ -152,3 +152,6 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
 .p-actions { margin: 4px 0; } .p-etat { margin: 2px 0 10px; font: 700 .8rem var(--f-mono, monospace); color: var(--gris); }
 @media (max-width: 520px) { .p-touche .p-nom { font-size: .58rem; } .clavier-p { gap: 2px; } .clavier-p .p-touche { min-height: 58px; } }
 .p-vide { fill: none; stroke: #b9b8ae; stroke-width: 1.6; stroke-dasharray: 3 3; pointer-events: none; }
+
+/* Les vues et panneaux masqués le sont toujours, quoi qu'en dise une autre règle d'affichage (Safari iOS laissait des blocs vides). */
+#plan[hidden], #galerie[hidden], #tessitures[hidden], .melange[hidden], #explorer[hidden], #timbres[hidden], #fugue[hidden], #britten[hidden], #variations[hidden], #credits[hidden] { display: none !important; }

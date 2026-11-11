@@ -9,7 +9,7 @@
 // Au-delà de 11 kHz le réseau ne voit rien : Spleeter y met des zéros (stems sans aigus). Ici (option `extension: "tenue"`, par défaut), le masque des derniers bins est prolongé : les cymbales et les « s » gardent leur aigu avec leur instrument,
 // et la somme des quatre stems est exactement le morceau d'origine.
 // Le réseau est caché derrière un « moteur » { executer(nom, Float32Array [1,2,512,1024]) -> Float32Array } : ce fichier se teste dans Node sans réseau de neurones (voir tests/stems.test.js).
-import { fft } from "../science/analyse.js?v=bae1304164";
+import { fft } from "../science/analyse.js?v=e613fe7e37";
 
 export const STEMS = ["vocals", "drums", "bass", "other"];
 export const NOMS_STEMS = { vocals: "Voix", drums: "Batterie", bass: "Basse", other: "Autres instruments" };

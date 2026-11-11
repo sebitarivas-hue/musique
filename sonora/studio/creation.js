@@ -1,12 +1,12 @@
 // Création avancée du Studio : export WAV, partage par lien, clavier MIDI, séquenceur. Branche les modules purs (wav, partage, midi, sequence) sur la page.
-import { encoderWAV } from "./wav.js?v=bae1304164";
-import { Stockage as RangementPistes } from "../pistes/stockage.js?v=bae1304164";
-import { encoder, decoder, motif as MOTIF_LIEN } from "./partage.js?v=bae1304164";
-import { Clavier, brancher } from "./midi.js?v=bae1304164";
-import { euclide, arpege, motifDepuis, planDeNotes, Sequenceur } from "./sequence.js?v=bae1304164";
-import { rendre } from "../src/rendu.js?v=bae1304164";
-import { compiler } from "../src/index.js?v=bae1304164";
-import { creerProposition, slug } from "../library/classe.js?v=bae1304164";
+import { encoderWAV } from "./wav.js?v=e613fe7e37";
+import { Stockage as RangementPistes } from "../pistes/stockage.js?v=e613fe7e37";
+import { encoder, decoder, motif as MOTIF_LIEN } from "./partage.js?v=e613fe7e37";
+import { Clavier, brancher } from "./midi.js?v=e613fe7e37";
+import { euclide, arpege, motifDepuis, planDeNotes, Sequenceur } from "./sequence.js?v=e613fe7e37";
+import { rendre } from "../src/rendu.js?v=e613fe7e37";
+import { compiler } from "../src/index.js?v=e613fe7e37";
+import { creerProposition, slug } from "../library/classe.js?v=e613fe7e37";
 
 const GAMMES = { penta: [60, 62, 64, 67, 69, 72, 74, 76], mineur: [57, 59, 60, 62, 64, 65, 67, 69], accord: [48, 55, 59, 64, 67, 71, 76], chromatique: [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71] };
 const SR_EXPORT = 44100;

@@ -12,7 +12,7 @@ export class Moteur {
   }
 
   constructor(options = {}) {
-    this.urlProcesseur = options.urlProcesseur || new URL("./processeur.js?v=bae1304164", import.meta.url);
+    this.urlProcesseur = options.urlProcesseur || new URL("./processeur.js?v=e613fe7e37", import.meta.url);
     this.ctx = null; this.noeud = null; this.charge = null;
     this.noms = []; this.valeurs = new Map(); // dernières valeurs de réglage connues, rejouées après un changement de programme
     this.ecouteurs = {};
@@ -104,8 +104,8 @@ export class Moteur {
 
 // Compile dans un Worker de module ; si le navigateur ne le permet pas, compile sur le fil principal.
 export function compilerDansWorker(source, options = {}, urls = {}) {
-  const urlWorker = urls.worker || new URL("./worker-compilation.js?v=bae1304164", import.meta.url);
-  const direct = async () => { const { compiler } = await import("./index.js?v=bae1304164"); const r = compiler(source, options); const { ast, graphe, ...module } = r.module || {}; return { ok: r.ok, diagnostics: r.diagnostics, source, module: r.module ? module : undefined, modules: r.modules, via: "principal" }; };
+  const urlWorker = urls.worker || new URL("./worker-compilation.js?v=e613fe7e37", import.meta.url);
+  const direct = async () => { const { compiler } = await import("./index.js?v=e613fe7e37"); const r = compiler(source, options); const { ast, graphe, ...module } = r.module || {}; return { ok: r.ok, diagnostics: r.diagnostics, source, module: r.module ? module : undefined, modules: r.modules, via: "principal" }; };
   if (typeof Worker === "undefined") return direct();
   return new Promise(ok => {
     let w;

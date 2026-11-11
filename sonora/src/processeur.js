@@ -2,7 +2,7 @@
 // par le compilateur, en fabrique des noyaux au moment du chargement (hors du chemin de calcul), puis ne fait que calculer.
 // Messages reçus : charger, regler, note-on, note-off, tout-couper, arreter, analyse, lot (plusieurs messages appliqués ensemble, avec accusé de réception).
 // Messages envoyés : pret, charge, ack, etat (tous les ~1 s), analyse (tampons pour l'oscilloscope et la FFT), erreur, arrete.
-import { Polyphonie } from "./voix.js?v=bae1304164";
+import { Polyphonie } from "./voix.js?v=e613fe7e37";
 
 const BLOC_MAX = 512;
 const FONDU_PROGRAMME = 0.02, FONDU_ARRET = 0.03; // secondes

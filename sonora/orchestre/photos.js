@@ -2,7 +2,7 @@
 // Chaque entrée garde le titre du fichier d'origine, son auteur et sa licence pour la page de crédits.
 export const PHOTOS = {
  "violons1": {
-  "f": "violons.jpg",
+  "f": "violons.png",
   "w": 152,
   "h": 420,
   "titre": "Violin VL100.png",
@@ -10,7 +10,7 @@ export const PHOTOS = {
   "licence": "CC0"
  },
  "violons2": {
-  "f": "violons.jpg",
+  "f": "violons.png",
   "w": 152,
   "h": 420,
   "titre": "Violin VL100.png",
@@ -18,7 +18,7 @@ export const PHOTOS = {
   "licence": "CC0"
  },
  "altos": {
-  "f": "altos.jpg",
+  "f": "altos.png",
   "w": 160,
   "h": 420,
   "titre": "Bratsche.jpg",
@@ -26,7 +26,7 @@ export const PHOTOS = {
   "licence": "Domaine public"
  },
  "clarinetteBasse": {
-  "f": "clarinette_basse.jpg",
+  "f": "clarinette_basse.png",
   "w": 102,
   "h": 420,
   "titre": "Bass clarinet Yamaha transparent.png",
@@ -34,7 +34,7 @@ export const PHOTOS = {
   "licence": "CC BY-SA 4.0"
  },
  "corAnglais": {
-  "f": "cor_anglais.jpg",
+  "f": "cor_anglais.png",
   "w": 68,
   "h": 420,
   "titre": "English Horn - white background.jpg",
@@ -42,7 +42,7 @@ export const PHOTOS = {
   "licence": "CC BY-SA 4.0"
  },
  "flutes": {
-  "f": "flutes.jpg",
+  "f": "flutes.png",
   "w": 52,
   "h": 420,
   "titre": "Western Concert Flute.jpg",
@@ -50,7 +50,7 @@ export const PHOTOS = {
   "licence": "CC BY-SA 4.0"
  },
  "harpe": {
-  "f": "harpe.jpg",
+  "f": "harpe.png",
   "w": 182,
   "h": 420,
   "titre": "Salvi harp Diana.jpg",
@@ -58,7 +58,7 @@ export const PHOTOS = {
   "licence": "CC BY-SA 4.0"
  },
  "hautbois": {
-  "f": "hautbois.jpg",
+  "f": "hautbois.png",
   "w": 101,
   "h": 420,
   "titre": "Mönnig, Oboe Modell 155 Albrecht Mayer.jpg",
@@ -66,7 +66,7 @@ export const PHOTOS = {
   "licence": "CC BY-SA 4.0"
  },
  "piccolo": {
-  "f": "piccolo.jpg",
+  "f": "piccolo.png",
   "w": 197,
   "h": 420,
   "titre": "Piccolo.jpg",
@@ -74,7 +74,7 @@ export const PHOTOS = {
   "licence": "Domaine public"
  },
  "cors": {
-  "f": "cors.jpg",
+  "f": "cors.png",
   "w": 584,
   "h": 420,
   "titre": "French horn front.png",
@@ -82,7 +82,7 @@ export const PHOTOS = {
   "licence": "CC BY 2.5"
  },
  "trompettes": {
-  "f": "trompettes.jpg",
+  "f": "trompettes.png",
   "w": 139,
   "h": 420,
   "titre": "Yamaha Trumpet YTR-8335LA crop.jpg",
@@ -90,7 +90,7 @@ export const PHOTOS = {
   "licence": "CC BY-SA 4.0"
  },
  "violoncelles": {
-  "f": "violoncelles.jpg",
+  "f": "violoncelles.png",
   "w": 143,
   "h": 420,
   "titre": "Planche de photos d'instruments fournie par Sébastien",
@@ -99,7 +99,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "contrebasses": {
-  "f": "contrebasses.jpg",
+  "f": "contrebasses.png",
   "w": 147,
   "h": 420,
   "titre": "Planche de photos d'instruments fournie par Sébastien",
@@ -108,7 +108,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "clarinettes": {
-  "f": "clarinettes.jpg",
+  "f": "clarinettes.png",
   "w": 63,
   "h": 420,
   "titre": "Planche de photos d'instruments fournie par Sébastien",
@@ -117,7 +117,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "bassons": {
-  "f": "bassons.jpg",
+  "f": "bassons.png",
   "w": 167,
   "h": 420,
   "titre": "Planche de photos d'instruments fournie par Sébastien",
@@ -126,7 +126,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "trombones": {
-  "f": "trombones.jpg",
+  "f": "trombones.png",
   "w": 672,
   "h": 342,
   "titre": "Planche de photos d'instruments fournie par Sébastien",
@@ -135,7 +135,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "tuba": {
-  "f": "tuba.jpg",
+  "f": "tuba.png",
   "w": 269,
   "h": 420,
   "titre": "Planche de photos d'instruments fournie par Sébastien",
@@ -144,7 +144,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "xylophone": {
-  "f": "xylophone.jpg",
+  "f": "xylophone.png",
   "w": 665,
   "h": 420,
   "titre": "Planche de photos d'instruments fournie par Sébastien",
@@ -153,7 +153,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "caisseClaire": {
-  "f": "caisse_claire.jpg",
+  "f": "caisse_claire.png",
   "w": 564,
   "h": 420,
   "titre": "Planche de photos d'instruments fournie par Sébastien",
@@ -162,7 +162,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "cymbales": {
-  "f": "cymbales.jpg",
+  "f": "cymbales.png",
   "w": 568,
   "h": 420,
   "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
@@ -171,7 +171,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "timbales": {
-  "f": "timbales.jpg",
+  "f": "timbales.png",
   "w": 362,
   "h": 420,
   "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
@@ -180,7 +180,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "grosseCaisse": {
-  "f": "grosse_caisse.jpg",
+  "f": "grosse_caisse.png",
   "w": 350,
   "h": 420,
   "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
@@ -189,7 +189,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "tamTam": {
-  "f": "tam_tam.jpg",
+  "f": "tam_tam.png",
   "w": 383,
   "h": 420,
   "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
@@ -198,7 +198,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "triangle": {
-  "f": "triangle.jpg",
+  "f": "triangle.png",
   "w": 351,
   "h": 420,
   "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
@@ -207,7 +207,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "tambourBasque": {
-  "f": "tambour_basque.jpg",
+  "f": "tambour_basque.png",
   "w": 317,
   "h": 420,
   "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
@@ -216,7 +216,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "castagnettes": {
-  "f": "castagnettes.jpg",
+  "f": "castagnettes.png",
   "w": 627,
   "h": 420,
   "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
@@ -225,7 +225,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "blocsChinois": {
-  "f": "blocs_chinois.jpg",
+  "f": "blocs_chinois.png",
   "w": 355,
   "h": 420,
   "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
@@ -234,7 +234,7 @@ export const PHOTOS = {
   "fournie": true
  },
  "fouet": {
-  "f": "fouet.jpg",
+  "f": "fouet.png",
   "w": 672,
   "h": 139,
   "titre": "Cahier d'élève de l'Orchestre symphonique de Québec (La galerie symphonique), fourni par Sébastien",
