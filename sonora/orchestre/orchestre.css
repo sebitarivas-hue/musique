@@ -3,24 +3,24 @@
 .intro h1 { font: 400 clamp(1.8rem, 5vw, 3rem)/1.05 var(--f-display, sans-serif); margin: 6px 0 10px; text-transform: none; } .intro h1 span { background: var(--acide); padding: 0 .15em; }
 .intro p { max-width: 62ch; font-size: 1.05rem; margin: 0 0 14px; color: var(--gris); }
 .parcours { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 0 0 22px; padding: 0; }
-.parcours li { border: 2px solid var(--noir); min-height: 64px; background: #fff; padding: 0; }
-.parcours li.bientot { padding: 8px 10px; border-style: dashed; color: var(--gris); }
-.parcours .num { display: block; font: 700 .78rem var(--f-mono, monospace); } .parcours li span + span { font-weight: 700; font-size: .95rem; line-height: 1.15; display: block; }
-.parcours li button { width: 100%; height: 100%; min-height: 64px; border: 0; background: transparent; text-align: left; padding: 8px 10px; font: inherit; }
-.parcours li button:hover { background: var(--acide); } .parcours li.actif { background: var(--acide); } .parcours li small { display: block; font-size: .75rem; margin-top: 2px; }
+.parcours li { border: 2px solid var(--noir); background: #fff; padding: 0; display: flex; } .parcours li.bientot { border-style: dashed; color: var(--gris); padding: 10px 10px 8px; gap: 8px; background: transparent; }
+.parcours li button { display: flex; gap: 8px; width: 100%; min-height: 96px; border: 0; background: transparent; text-align: left; padding: 10px 10px 8px; font: inherit; align-items: flex-start; } .parcours li button:hover { background: var(--acide); }
+.parcours li.actif { background: var(--acide); box-shadow: 0 5px 0 var(--noir); }
+.pico { flex: 0 0 auto; width: 44px; height: 44px; background: #F4F3EC; border: 1.5px solid var(--noir); display: block; } .bientot .pico { opacity: .45; } .pico svg { display: block; }
+.ptxt { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .parcours .num { font: 700 .74rem var(--f-mono, monospace); } .pnom { font-weight: 700; font-size: .95rem; line-height: 1.12; } .pdesc { font-size: .78rem; line-height: 1.25; font-weight: 500; } .parcours li small { font: 700 .72rem var(--f-mono, monospace); text-transform: uppercase; margin-top: 2px; }
 #explorer h2 { font-size: 1.15rem; margin-bottom: 10px; }
 .outils { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; margin-bottom: 10px; }
 .vues { display: flex; } .vues button { border-radius: 0; } .vues button + button { margin-left: -2px; } .vues button[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
 .familles { display: flex; flex-wrap: wrap; gap: 6px; }
 .familles button { display: inline-flex; align-items: center; gap: 7px; } .familles button::before { content: ""; width: 14px; height: 14px; background: var(--c); border: 2px solid var(--noir); }
 .familles button[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
-.cadre { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr); gap: 16px; align-items: start; }
+.cadre { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
 .scene { background: #fff; border: 2px solid var(--noir); padding: 6px; }
 .scene svg { display: block; width: 100%; height: auto; }
-.sect path { fill: var(--c); stroke: var(--noir); stroke-width: 2; cursor: pointer; transition: opacity .15s; }
+.sect path { fill: var(--p, #fff); stroke: var(--noir); stroke-width: 2; cursor: pointer; transition: opacity .15s; }
 .sect:hover path, .sect:focus-visible path { stroke-width: 4; } .sect:focus { outline: none; } .sect:focus-visible path { stroke: #000; stroke-width: 5; }
-.sect[aria-pressed="true"] path { fill: var(--noir); } .sect[aria-pressed="true"] text { fill: var(--acide); }
-.sect text { font: 700 13px var(--f-body, sans-serif); fill: var(--noir); text-anchor: middle; pointer-events: none; }
+.sect[aria-pressed="true"] path { fill: var(--acide); stroke-width: 4; }
+.sect .etiq { font: 700 11px var(--f-body, sans-serif); fill: var(--noir); text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: var(--p, #fff); stroke-width: 3px; } .sect[aria-pressed="true"] .etiq { stroke: var(--acide); } .ico { pointer-events: none; }
 .attenue { opacity: .22; }
 .chef circle { fill: var(--noir); } .chef text { font: 700 12px var(--f-mono, monospace); fill: var(--noir); text-anchor: middle; }
 .public { font: 700 12px var(--f-mono, monospace); fill: var(--gris); text-anchor: middle; }
@@ -37,7 +37,8 @@
 .tess-ligne:hover rect.barre, .tess-ligne:focus-visible rect.barre { stroke-width: 3; } .tess-ligne:focus { outline: none; } .tess-ligne[aria-pressed="true"] rect.barre { fill: var(--noir); }
 .tess-axe line { stroke: #cfcec4; } .tess-axe text { font: 600 11px var(--f-mono, monospace); fill: var(--gris); text-anchor: middle; } .tess-sans { font-style: italic; fill: var(--gris); }
 @media (max-width: 900px) { .cadre { grid-template-columns: 1fr; } .fiche { position: static; } .parcours { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 520px) { .sect text { font-size: 17px; } }
+@media (max-width: 520px) { .parcours { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .sect .etiq { font-size: 15px; stroke-width: 4px; } }
 @media (prefers-reduced-motion: reduce) { .sect path { transition: none; } }
 
 /* Espace 03 : timbres */
@@ -68,3 +69,14 @@
 .rouleau #tete { stroke: var(--noir); stroke-width: 3; }
 @media (max-width: 700px) { .grilles { grid-template-columns: 1fr; } .g-ligne { grid-template-columns: 34px repeat(8, 1fr); } .cell { height: 30px; } }
 .fiche-fugue h3 + .noms-voix, .fiche-fugue .actions-fiche + h3 { margin-top: 18px; }
+
+/* Fiche illustrée et cartes de familles */
+.fiche-tete { display: flex; gap: 14px; align-items: center; margin-bottom: 8px; } .grand-icone { flex: 0 0 auto; width: 140px; height: 140px; background: var(--p); border: 2px solid var(--noir); display: flex; align-items: center; justify-content: center; } .grand-icone svg { display: block; }
+.effectif { margin: 4px 0 0; font-size: .92rem; color: var(--gris); }
+.cartes-familles { display: grid; gap: 8px; margin-top: 10px; } .carte-fam { display: flex; gap: 12px; text-align: left; align-items: center; padding: 8px; border: 2px solid var(--noir); background: var(--p); min-height: 72px; } .carte-fam[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
+.carte-fam .vignette { flex: 0 0 auto; width: 58px; height: 58px; background: #fff; border: 1.5px solid var(--noir); display: flex; align-items: center; justify-content: center; } .carte-fam .nf { display: block; font: 700 1rem var(--f-display, sans-serif); } .carte-fam .df { display: block; font-size: .85rem; font-weight: 500; line-height: 1.25; } .carte-fam .cf { display: block; font: 700 .72rem var(--f-mono, monospace); margin-top: 2px; }
+@media (max-width: 520px) { .fiche-tete { flex-direction: column; align-items: flex-start; } }
+
+/* Photos d'instruments : le fond blanc des photos disparaît sur la teinte de la famille */
+.photo { display: block; mix-blend-mode: multiply; max-width: 100%; height: auto; } .photo-svg { mix-blend-mode: multiply; }
+.grand-icone { width: 164px; height: 164px; } .credits { margin-top: 28px; } .credits ul { padding-left: 1.2em; margin: 6px 0; font-size: .85rem; color: var(--gris); } .credits a { color: inherit; }
