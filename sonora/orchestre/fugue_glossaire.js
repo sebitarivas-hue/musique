@@ -1,5 +1,5 @@
 // Le vocabulaire d'une fugue, pour l'espace 05 (construire) et l'espace 02 (la fugue de Britten). Une seule source : les définitions des sections viennent de fugue_logique.js.
-import { SECTIONS } from "./fugue_logique.js?v=d9eaf9b6ef";
+import { SECTIONS } from "./fugue_logique.js?v=b900c284ee";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const section = id => SECTIONS.find(s => s.id === id).texte;
 export const TERMES = [
