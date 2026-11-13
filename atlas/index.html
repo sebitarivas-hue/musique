@@ -297,6 +297,8 @@ h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-trans
 .gcase { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 52px; padding: 8px 10px; background: #F3F3F3; border: 2px solid var(--noir); border-left: 8px solid var(--c); color: var(--noir); text-decoration: none; font-weight: 600; font-size: .95rem; }
 .gcase:hover, .gracine:hover { background: #fff; outline: 3px solid var(--noir); }
 .gfleche { text-align: center; font-size: 1.6rem; line-height: 1.4; }
+.suggestions li { display: grid; gap: 4px; } .sugchips { display: flex; flex-wrap: wrap; gap: 6px; } .suggestions .sugchips a { padding: 4px 10px; border-width: 1.5px; border-radius: 999px; font-size: .8rem; font-weight: 600; background: var(--fond, #F0EFE8); }
+.parcours-menu { margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -358,26 +360,54 @@ function brancherRecherche() {
 
 /* ---------- Départ ---------- */
 const DEPARTS = ["kpop", "cumbia-villera", "detroit-techno", "zouk", "drill", "vaporwave", "afrobeats", "reggaeton", "spectral", "hyperpop", "french-rap", "city-pop"];
+/* Parcours qui expliquent une musique : les schémas et les trajets où elle figure, elle ou l'un de ses ancêtres (genre, scène). */
+function parcoursDe(id) {
+  const lignee = [id, ...ancetres(id)].reverse().reverse();
+  const dedans = ids => lignee.find(x => ids.includes(x));
+  const gen = (D.genealogies || []).filter(g => dedans([...(g.racine ? [g.racine.id] : []), ...g.niveaux.flatMap(n => n.ids)])).map(g => ({ href: "#genealogies/" + g.id, nom: g.titre }));
+  const tra = D.parcours.filter(p => dedans(p.etapes.map(x => x.id))).slice(0, 4).map(p => ({ href: "#p/" + p.id, nom: p.titre }));
+  return { gen, tra };
+}
+function chipsParcours(id) {
+  const { gen, tra } = parcoursDe(id), e = E[id];
+  const l = [...gen.slice(0, 1).map(g => [g.href, "Généalogie"]), ...tra.slice(0, 1).map(t => [t.href, "Trajet"]), ["#graphe/" + id, "Graphe"], ["#frise/" + id, "Frise"], ...(e.geo ? [["#monde/" + id, "Carte"]] : [])];
+  return `<div class="sugchips">${l.map(([h, n]) => `<a href="${h}">${n}</a>`).join("")}</div>`;
+}
+function menuParcours(id) {
+  const e = E[id], { gen, tra } = parcoursDe(id);
+  const carte = (href, c, titre, texte) => `<a class="carte" style="--c:${c}" href="${href}"><b>${esc(titre)}</b><span>${esc(texte)}</span></a>`;
+  const cartes = [
+    ...gen.map(g => carte(g.href, "#5a2bd6", g.nom, "Le schéma où cette musique trouve sa place.")),
+    ...tra.map(t => carte(t.href, "#e0457b", t.nom, "Un trajet guidé qui passe par cette musique ou par son genre.")),
+    carte("#graphe/" + id, "#11110F", "Graphe des influences", "Ce qui l'a nourrie, ce qu'elle a donné."),
+    carte("#frise/" + id, "#4658ff", "Frise chronologique", "Quand, et avec quelles autres musiques."),
+    ...(e.geo ? [carte("#monde/" + id, "#12a07a", "Carte mondiale", "Où elle est née.")] : [])];
+  return `<h2>Pour comprendre cette musique</h2><div class="grille parcours-menu">${cartes.join("")}</div>`;
+}
 function vueAccueil() {
   const f = fav.lire();
-  return `${uneHtml()}<h2 class="titre-recherche">Quelle musique aimes-tu ?</h2>
-  <p class="lead">Écris une musique, un artiste, un pays ou une idée. L'Atlas te montre d'où elle vient, avec quoi elle est faite, et ce qu'elle a donné ensuite.</p>
+  const nb = D.parcours.length, ng = (D.genealogies || []).length;
+  const carte = (href, c, titre, texte, suite) => `<a class="carte" style="--c:${c}" href="${href}"><b>${titre}</b><span>${texte}</span><span class="suite">${suite} &#8250;</span></a>`;
+  return `<h2 class="titre-recherche">Quelle musique aimes-tu ?</h2>
+  <p class="lead">Écris une musique, un artiste, un pays ou une idée. L'Atlas te propose aussitôt les parcours pour la comprendre : généalogie, trajet, carte, frise, graphe.</p>
   <div class="recherche"><input id="q" type="search" placeholder="Beyoncé, Nirvana, Jul, K-pop, drill, Boulez..." autocomplete="off" aria-label="Chercher une musique ou un artiste"><ul class="suggestions" id="sug" aria-live="polite"></ul></div>
   <p class="petit" style="margin-top:14px">${D.entries.length} entrées, dont ${D.entries.filter(e => ["artist", "group", "composer"].includes(e.type)).length} artistes, groupes et compositeurs. Un nom ou un titre absent ? Écris-le dans la recherche : s'il manque, dis-le à ton professeur.</p>
-  ${(D.ecoutes_aujourdhui || []).length ? `<h2>Ce que tu écoutes</h2><p class="petit">Ce que les élèves écoutent aujourd'hui. Touche un nom pour voir d'où il vient, ce qui l'a nourri et ce qu'il a donné.</p>${D.ecoutes_aujourdhui.map(g => `<h3>${esc(g.titre)}</h3><p class="petit">${esc(g.texte)}</p><div class="pastilles">${g.ids.map(id => `<a class="pastille" style="--c:${coul(E[id])}" href="#e/${id}">${esc(E[id].name)}</a>`).join("")}</div>`).join("")}` : ""}
+  ${uneHtml()}
+  ${f.length ? `<h2>Mes favoris</h2><div class="pastilles">${f.map(id => `<a class="pastille" style="--c:${coul(E[id])}" href="#e/${id}">${esc(E[id].name)}</a>`).join("")}</div>` : ""}
+  <h2>Des parcours pour comprendre</h2><p class="petit">Chaque parcours explique les musiques à sa façon. Tu peux aussi les ouvrir sans chercher.</p>
+  <div class="grille">
+   ${carte("#genealogies", "#5a2bd6", "Généalogies", "D'où vient une musique et où elle va : rap, rock, jazz, pop, traditions, femmes, diasporas.", ng + " schémas")}
+   ${carte("#parcours", "#e0457b", "Trajets guidés", "D'une musique à la suivante, en disant ce qui se transmet.", nb + " trajets")}
+   ${carte("#monde", "#12a07a", "Carte mondiale", "Où chaque musique est née, sur une carte du monde.", "Ouvrir")}
+   ${carte("#frise", "#4658ff", "Frise chronologique", "De la flûte en os à aujourd'hui, une époque à la fois.", "Ouvrir")}
+   ${carte("#graphe/detroit-techno", "#11110F", "Graphe des influences", "Une musique au centre, ce qui l'a nourrie à gauche, ce qu'elle a donné à droite.", "Ouvrir")}
+   ${carte("#arbre", "#5a2bd6", "Arbre des genres", "Les familles et leurs sous-genres, du plus général au plus précis.", "Ouvrir")}
+   ${carte("#techniques", "#e08a00", "Laboratoire des techniques", "Les idées, les machines et les gestes qui rendent les musiques possibles.", "Ouvrir")}
+   ${carte("#ecoute", "#e0457b", "Bibliothèque d'écoute", "Des morceaux à comparer deux par deux, avec une question.", "Ouvrir")}
+   ${carte("#passerelles", "#12a07a", "Passerelles", "Des rapprochements entre musiques lointaines.", "Ouvrir")}</div>
   <h2>Tout l'Atlas</h2>
   <div class="grille">${D.families.map(fa => { const n = D.entries.filter(e => e.family === fa.id).length; return `<a class="carte" style="--c:${coul({family: fa.id})}" href="#f/${fa.id}"><b>${esc(fa.name)}</b><span>${esc(fa.description)}</span><span class="suite">${n} entrées &#8250;</span></a>`; }).join("")}</div>
   <div class="pastilles" style="margin-top:12px"><a class="pastille" style="--c:#11110F" href="#tout">Toutes les entrées de A à Z</a><a class="pastille" style="--c:#11110F" href="#tout/composer">Tous les compositeurs</a><a class="pastille" style="--c:#11110F" href="#tout/artist">Tous les artistes</a><a class="pastille" style="--c:#11110F" href="#tout/genre">Tous les genres</a><a class="pastille" style="--c:#11110F" href="#tout/technique">Toutes les techniques</a><a class="pastille" style="--c:#11110F" href="#tout/instrument">Tous les instruments</a><a class="pastille clair" href="#hasard">Au hasard</a></div>
-  ${f.length ? `<h2>Mes favoris</h2><div class="pastilles">${f.map(id => `<a class="pastille" style="--c:${coul(E[id])}" href="#e/${id}">${esc(E[id].name)}</a>`).join("")}</div>` : ""}
-  <h2>Six façons d'explorer</h2><div class="grille">
-   <a class="carte" style="--c:#5a2bd6" href="#arbre"><b>Arbre des genres</b><span>Les familles et leurs sous-genres, du plus général au plus précis.</span><span class="suite">Ouvrir &#8250;</span></a>
-   <a class="carte" style="--c:#11110F" href="#graphe/detroit-techno"><b>Graphe des influences</b><span>Une musique au centre, ce qui l'a nourrie à gauche, ce qu'elle a donné à droite.</span><span class="suite">Ouvrir &#8250;</span></a>
-   <a class="carte" style="--c:#4658ff" href="#frise"><b>Frise chronologique</b><span>De la flûte en os à aujourd'hui, une époque à la fois, dans le monde entier.</span><span class="suite">Ouvrir &#8250;</span></a>
-   <a class="carte" style="--c:#12a07a" href="#monde"><b>Carte mondiale</b><span>Où chaque musique est née, sur une carte du monde.</span><span class="suite">Ouvrir &#8250;</span></a>
-   <a class="carte" style="--c:#e08a00" href="#techniques"><b>Laboratoire des techniques</b><span>Les idées, les machines et les gestes qui rendent les musiques possibles.</span><span class="suite">Ouvrir &#8250;</span></a>
-   <a class="carte" style="--c:#e0457b" href="#ecoute"><b>Bibliothèque d'écoute</b><span>Des morceaux à comparer deux par deux, avec une question.</span><span class="suite">Ouvrir &#8250;</span></a></div>
-  <h2>Des trajets pour comprendre</h2><p class="petit">Chaque trajet suit une idée d'une musique à la suivante, en disant ce qui se transmet. Pour voir d'où vient une musique et où elle va : <a href="#genealogies">les généalogies</a> (rap, rock, jazz, pop, traditions, femmes, diasporas).</p>
-  <div class="grille">${D.parcours.map(p => `<a class="carte" style="--c:${coul(E[p.etapes[0].id])}" href="#p/${p.id}"><b>${esc(p.titre)}</b><span>${esc(p.intro)}</span><span class="suite">${p.etapes.length} étapes &#8250;</span></a>`).join("")}</div>
   <footer class="bas petit">${D.entries.length} entrées, ${D.relations.length} relations typées, ${D.concepts.length} idées, ${D.parcours.length} trajets. Corpus de départ, non exhaustif. <a href="#sources">Sources et méthode</a>.</footer>`;
 }
 
@@ -442,7 +472,7 @@ function vuePasserelle(id) {
 }
 function brancherAccueil() {
   const q = $("#q"), sug = $("#sug");
-  q.oninput = () => { const r = chercher(q.value); sug.innerHTML = r.map(e => `<li><a href="#e/${e.id}"><b>${esc(e.name)}</b><span class="petit">${esc(TYPE[e.type])}, ${esc(FAM[e.family].name)}</span></a></li>`).join("") || (q.value.length > 1 ? `<li class="petit">Rien pour « ${esc(q.value)} ». Essaie un nom de genre ou d'artiste.</li>` : ""); };
+  q.oninput = () => { const r = chercher(q.value); sug.innerHTML = r.map(e => `<li><a href="#e/${e.id}"><b>${esc(e.name)}</b><span class="petit">${esc(TYPE[e.type])}, ${esc(FAM[e.family].name)}</span></a>${chipsParcours(e.id)}</li>`).join("") || (q.value.length > 1 ? `<li class="petit">Rien pour « ${esc(q.value)} ». Essaie un nom de genre ou d'artiste.</li>` : ""); };
   q.onkeydown = e => { if (e.key === "Enter") { const r = chercher(q.value, 1)[0]; if (r) location.hash = "#e/" + r.id; } };
 }
 
@@ -498,6 +528,7 @@ function vueEntree(id) {
   return `<div class="fiche-tete" style="--c:${coul(e)}"><span class="etiq">${esc(FAM[e.family].name)}</span><h1>${esc(e.name)}</h1>
     <div class="meta"><span>${esc(TYPE[e.type] || e.type)}</span>${dates ? `<span>${dates}</span>` : ""}<span>Actif ${esc(periode(e))}</span><span>${esc(e.region)}</span></div><p>${esc(e.description)}</p></div>
   <div class="pastilles"><button type="button" class="pastille clair" id="fav" aria-pressed="${fav.est(id)}">${fav.est(id) ? "Retirer des favoris" : "Ajouter aux favoris"}</button><a class="pastille" style="--c:#11110F" href="#graphe/${id}">Graphe</a><a class="pastille" style="--c:#4658ff" href="#frise/${id}">Frise</a>${e.geo ? `<a class="pastille" style="--c:#12a07a" href="#monde/${id}">Carte</a>` : ""}</div>
+  ${menuParcours(id)}
   ${chemin}${fichePedago(e)}
   ${sonoraHtml(id)}
   ${e.works.length ? `<h2>Œuvres représentatives</h2><p class="petit">Recherche externe : aucun enregistrement n'est encore identifié. Chaque écoute a deux liens, une recherche Spotify et une recherche YouTube, dans un nouvel onglet.</p><div class="ecouter">${e.works.map(w => paire(e.name + " " + w.titre, `${esc(w.titre)}${w.annee ? ` (${w.annee})` : ""}`)).join("")}</div>` : ""}
