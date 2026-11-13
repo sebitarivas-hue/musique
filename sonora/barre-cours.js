@@ -104,7 +104,16 @@
     function verifier() { if (fini) return; cumul(); if (vu && temps >= besoin && (!condition || condition())) { fini = true; arreter(); gagner(cle, points, compteur); if (apres) apres(); } }
     return () => { if (!fini) { fini = true; arreter(); } };
   }
-  window.COURS_POINTS = { gagner, lecture, deja };
+  /* Une partie terminée compte pour la flamme du jour et les défis de la page Jouer (même registre que le site : jeu.dj). Aucun point : seule l'activité est notée. */
+  function partie(famille, etoiles) {
+    if (espace !== "eleves" || !jeuOn()) return false;
+    const j = Object.assign({ xp: 0, faits: {}, badges: {}, c: {}, pays: {}, jours: [], serie: 0 }, lire(localStorage, "jeu") || {}), d = new Date(), k = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    j.dj = j.dj || {}; const a = j.dj[k] = j.dj[k] || { p: 0, b: 0, f: [] }; a.p++; if (etoiles >= 2) a.b++; if (famille && !a.f.includes(famille)) a.f.push(famille);
+    for (const x of Object.keys(j.dj).sort().slice(0, -40)) delete j.dj[x];
+    try { localStorage.setItem("jeu", JSON.stringify(j)); } catch (_) { return false; }
+    miroir(j); return true;
+  }
+  window.COURS_POINTS = { gagner, lecture, deja, partie };
   // les points demandés avant le chargement de ce fichier (l'Atlas rend sa première page avant)
   (window.__pointsEnAttente || []).forEach(a => gagner(...a)); window.__pointsEnAttente = [];
 })();

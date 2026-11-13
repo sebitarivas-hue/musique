@@ -2,8 +2,8 @@
 // On comprend le cœur de LilyPond, pas tout : notes (c d e ... ou do ré mi ...), silences, accords, durées, points, liaisons, nuances, soufflets, articulations, triolets, reprises,
 // \relative, \clef, \key, \time, \tempo, \partial, variables, \new Staff et \new PianoStaff. Les autres commandes sont refusées avec un message qui dit quoi faire.
 // Sans DOM : testé dans Node (tests/partition.test.js).
-import { ecrireMidi, midiDe, quintesArmure, MODES, NUANCES } from "./hauteurs.js?v=b900c284ee";
-import { codeValeur, chiffreValeur, unitesValeur, valeurDeUnites, mesurer, U_NOIRE, longueurMesure } from "./modele.js?v=b900c284ee";
+import { ecrireMidi, midiDe, quintesArmure, MODES, NUANCES } from "./hauteurs.js?v=0c2ed3b721";
+import { codeValeur, chiffreValeur, unitesValeur, valeurDeUnites, mesurer, U_NOIRE, longueurMesure } from "./modele.js?v=0c2ed3b721";
 
 export class ErreurLily extends Error {
   constructor(message, debut = 0, fin = debut + 1, texte = "") {
