@@ -134,7 +134,7 @@ code { font-family: var(--f-mono); font-size: .88em; }
 .mode-sw button { font: 600 12px/1 var(--f-mono, monospace); padding: 7px 10px; border: 0; background: transparent; color: inherit; cursor: pointer; text-transform: uppercase; letter-spacing: .04em; }
 .mode-sw button[aria-pressed="true"] { background: #D6FF00; color: #11110F; }
 body.porte .mode-sw { display: none; }
-@media (max-width: 700px) { .entete-in:has(.mode-sw) .en-prof, .entete-in:has(.mode-sw) .en-an, .entete-in:has(.mode-sw) .en-ecole span { display: none; } }
+@media (max-width: 700px) { .entete-in:has(.mode-sw) .en-prof, .entete-in:has(.mode-sw) .en-an, .entete-in:has(.mode-sw) .en-ecole span { display: none; } .entete-in:has(.mode-sw) .en-ecole { display: none; } }
 body.porte nav.tabs, body.porte header.haut nav.actions, body.porte #barre { display: none !important; }
 nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--surface); border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
@@ -1198,7 +1198,7 @@ html.signal .labo .labo-myst .btn2 { color: var(--papier); border-color: var(--p
 html.signal .pseq-lieu, html.signal .pseq-chant { border-radius: 0; border: 2px solid var(--noir); } html.signal .pseq-lieu:hover, html.signal .pseq-chant:hover { background: var(--acide); }
 /* Projets de l'année */
 .ludo-fam { margin-top: 26px; scroll-margin-top: 70px; }
-.ludo-band { display: flex; gap: 12px; align-items: center; background: var(--c); color: #fff; padding: 14px 16px; }
+.ludo-band { display: flex; gap: 12px; align-items: center; background: var(--c); color: var(--tx, #fff); padding: 14px 16px; }
 .ludo-band h2, html.signal .ludo-band h2 { color: #fff; margin: 0; font-size: 1.35rem; } .ludo-band .small { color: #fff; opacity: .92; }
 .ludo-bi svg { width: 44px; height: 44px; display: block; }
 .ludo-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-top: 10px; }
@@ -1210,8 +1210,8 @@ html.signal .pseq-lieu, html.signal .pseq-chant { border-radius: 0; border: 2px 
 .ludo-et span { color: #888; } .ludo-et .on { color: #ffd23f; }
 .ludo-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .ludo-pills a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; background: var(--c); color: #fff !important; text-decoration: none; font-weight: 600; font-size: .9rem; } .ludo-pills svg { width: 18px; height: 18px; }
-.jouer-jour { display: grid; grid-template-columns: 1fr auto; gap: 6px 14px; margin-top: 14px; padding: 18px; background: var(--c); color: #fff !important; text-decoration: none; }
-.jouer-jour .label, html.signal .jouer-jour .label { color: #fff; grid-column: 1; } .jouer-jour b { font: 400 clamp(1.6rem, 7vw, 2.4rem)/1 var(--f-display); grid-column: 1; }
+.jouer-jour { display: grid; grid-template-columns: 1fr auto; gap: 6px 14px; margin-top: 14px; padding: 18px; background: var(--c); color: var(--tx, #fff) !important; text-decoration: none; }
+.jouer-jour .label, html.signal .jouer-jour .label { color: var(--tx, #fff); grid-column: 1; } .jouer-jour b { font: 400 clamp(1.6rem, 7vw, 2.4rem)/1 var(--f-display); grid-column: 1; }
 .jouer-jour > span:not(.label):not(.jj-ic):not(.jj-go) { grid-column: 1; }
 .jj-ic { grid-column: 2; grid-row: 1 / span 3; } .jj-ic svg { width: 64px; height: 64px; }
 .jj-go { grid-column: 1 / -1; justify-self: start; background: #11110F; color: #D6FF00; padding: 8px 14px; font-weight: 700; margin-top: 6px; }
@@ -1219,7 +1219,7 @@ html.signal .pseq-lieu, html.signal .pseq-chant { border-radius: 0; border: 2px 
 .jouer-stats a { border: 2px solid var(--ink); padding: 10px; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
 .jouer-stats b { font: 400 1.7rem/1 var(--f-display); } .jouer-stats span { font-size: .78rem; color: var(--muted); }
 .jouer-fams, .jouer-plus { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 8px; }
-.jouer-fam { display: flex; flex-direction: column; gap: 4px; padding: 14px; min-height: 120px; background: var(--c); color: #fff !important; text-decoration: none; }
+.jouer-fam { display: flex; flex-direction: column; gap: 4px; padding: 14px; min-height: 120px; background: var(--c); color: var(--tx, #fff) !important; text-decoration: none; }
 .jouer-fam svg { width: 34px; height: 34px; } .jouer-fam b { font-size: 1.05rem; line-height: 1.15; } .jouer-fam span { font-size: .82rem; opacity: .92; margin-top: auto; }
 .ludo-jeu { border-top: 6px solid var(--c); }
 .ludo-pad { display: block; width: 100%; min-height: 34vh; margin-top: 10px; border: 0; border-radius: 18px; background: var(--c); color: #fff; font: 800 1.6rem var(--f-display, sans-serif); touch-action: manipulation; user-select: none; -webkit-user-select: none; }
@@ -1600,7 +1600,7 @@ a.en-ecole { color: inherit; text-decoration: none; } a.en-ecole:hover b, a.en-e
 .ludo-carte.verrou { opacity: .6; border-style: dashed; background: transparent; } .ludo-carte.verrou .ludo-ic { background: transparent; color: var(--ink); border: 2px dashed var(--ink); }
 .ludo-carte.neuf { box-shadow: 0 0 0 3px #D6FF00, 0 0 0 5px #11110F; } .ludo-et .on { color: #ffb000; }
 .chip.verrou { opacity: .5; border-style: dashed; cursor: not-allowed; }
-.prog-suite .pastille { white-space: normal; text-align: left; margin-top: 6px; }
+.prog-suite .pastille { display: block; width: fit-content; max-width: 100%; white-space: normal; text-align: left; margin-top: 6px; } .jouer-fams > .jouer-fam:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .prog-seq.maitrisee .prog-jeu { color: #fff !important; }
 /* Familles nommées d'un carrefour (Labo) */
 .car-famille { margin: 28px 0 10px; padding-top: 12px; border-top: 3px solid var(--noir, #11110F); } .car-famille p { max-width: 75ch; }
@@ -4689,6 +4689,8 @@ function guide() {
 /* ---------- La ludothèque (outils/ludotheque.py) ----------
    Les jeux du site en cinq familles, chacun relié à une séance et à une notion du cours. Les jeux du moteur
    (« moteur » dans la fiche) fabriquent leur son ici, dans LUDO_GEN ; les autres renvoient à leur page. */
+/* Texte noir ou blanc selon la luminance du fond (contraste WCAG), pour les cartes de couleur. */
+const texteSur = c => { const m = /^#([0-9a-f]{6})$/i.exec(c || ""); if (!m) return "#fff"; const v = [0, 2, 4].map(i => parseInt(m[1].substr(i, 2), 16) / 255).map(u => u <= .03928 ? u / 12.92 : Math.pow((u + .055) / 1.055, 2.4)), L = .2126 * v[0] + .7152 * v[1] + .0722 * v[2]; return 1.05 / (L + .05) >= (L + .05) / .05 ? "#fff" : "#11110F"; };
 const ludoFam = id => D.ludo.familles.find(f => f[0] === id);
 const ludoSeance = ([k, a, b]) => `${k}, séquence ${a}, séance ${b}`;
 const ludoLien = j => j.lien ? `href="${j.lien[0]}"${j.lien[1] ? ` data-ancre="${j.lien[1]}"` : ""}` : `href="#ludo-${j.id}"`;
@@ -4778,15 +4780,15 @@ function vueJouer() {
   const etoiles = mot.reduce((a, j) => a + ludoEtoiles(j.id), 0), x = jeu(), n = niveauDe(x.xp);
   let h = head("Jouer", "Apprendre en jouant", modeJeu() || role() === "prof" ? "Des jeux courts, reliés à tes séances. Écoute, réponds, gagne des étoiles et des points." : "Des jeux courts, reliés à tes séances. Écoute et réponds, sans points : pour jouer avec des points et des badges, passe en mode Jouer en haut de la page.");
   if (!(D.eleves && D.codes)) h += `<nav class="levels" aria-label="Classe">${NIV.map(c => `<a href="#jouer" data-niv="${c}" aria-current="${c === k ? "page" : "false"}">${c}</a>`).join("")}</nav>`;
-  if (jj) h += `<a class="jouer-jour" href="#ludo-${jj.id}" style="--c:${fj[2]}"><span class="label">Le jeu du jour, ${k}</span><span class="jj-ic">${famIco(jj.famille)}</span><b>${insec(jj.titre)}</b><span>${esc(jj.consigne)}</span><span class="jj-go">Jouer maintenant &#8250;</span></a>`;
+  if (jj) h += `<a class="jouer-jour" href="#ludo-${jj.id}" style="--c:${fj[2]};--tx:${texteSur(fj[2])}"><span class="label">Le jeu du jour, ${k}</span><span class="jj-ic">${famIco(jj.famille)}</span><b>${insec(jj.titre)}</b><span>${esc(jj.consigne)}</span><span class="jj-go">Jouer maintenant &#8250;</span></a>`;
   h += carteProgression(k);
   if (modeJeu() || role() === "prof") h += `<div class="jouer-stats"><a href="#parcours"><b>${x.xp}</b><span>points</span></a><a href="#parcours"><b>${n + 1}</b><span>niveau, ${esc(NIVEAUX_JEU[n][1])}</span></a><a href="#ludo-${k}"><b>${etoiles}</b><span>étoiles sur ${mot.length * 9}</span></a></div>`;
   h += `<h2 class="sec">La ludothèque de la ${k} : ${J.length} jeux</h2><div class="jouer-fams">${D.ludo.familles.map(([id, nom, c]) => { const L = J.filter(j => j.famille === id);
-    return `<a class="jouer-fam" href="#ludo-${k}" data-ancre="fam-${id}" style="--c:${c}">${famIco(id)}<b>${esc(nom.split(",")[0])}</b><span>${L.length} jeu${L.length > 1 ? "x" : ""}</span></a>`; }).join("")}</div>`;
+    return `<a class="jouer-fam" href="#ludo-${k}" data-ancre="fam-${id}" style="--c:${c};--tx:${texteSur(c)}">${famIco(id)}<b>${esc(nom.split(",")[0])}</b><span>${L.length} jeu${L.length > 1 ? "x" : ""}</span></a>`; }).join("")}</div>`;
   h += `<h2 class="sec">Et aussi</h2><div class="jouer-plus"><a class="jouer-fam" href="#pratiquer-${k}-jeux" style="--c:#11110F">${famIco("creation")}<b>Les jeux de son</b><span>L'oreille fine, le clavier, compose un rythme, l'orchestre, la frise</span></a>`
-    + (D.sonora_harmonie ? `<a class="jouer-fam" href="${D.sonora_harmonie}" style="--c:#D6FF00">${ICONES_NAV.parcours}<b>Le jeu d'harmonie</b><span>Gammes et modes, accords, progressions ; un jeu d'oreille et de quoi composer</span></a>` : "")
-    + (D.sonora_orchestre ? `<a class="jouer-fam" href="${D.sonora_orchestre}" style="--c:#FF9F43">${ICONES_NAV.parcours}<b>L'orchestre</b><span>Le plan, chaque instrument, Britten, les timbres, une fugue à construire</span></a>` : "")
-    + (role() === "prof" || !modeJeu() ? "" : `<a class="jouer-fam" href="#parcours" style="--c:#4658FF">${ICONES_NAV.parcours}<b>Mon parcours</b><span>Mes badges et les quêtes de la semaine</span></a>`) + `<a class="jouer-fam" href="#ludo" style="--c:#4B4A44">${famIco("theorie")}<b>Tous les jeux</b><span>Les ${D.ludo.jeux.length} jeux, toutes classes</span></a></div>`;
+    + (D.sonora_harmonie ? `<a class="jouer-fam" href="${D.sonora_harmonie}" style="--c:#D6FF00;--tx:#11110F">${famIco("theorie")}<b>Le jeu d'harmonie</b><span>Gammes et modes, accords, progressions ; un jeu d'oreille et de quoi composer</span></a>` : "")
+    + (D.sonora_orchestre ? `<a class="jouer-fam" href="${D.sonora_orchestre}" style="--c:#FF9F43;--tx:#11110F">${famIco("instruments")}<b>L'orchestre</b><span>Le plan, chaque instrument, Britten, les timbres, une fugue à construire</span></a>` : "")
+    + (role() === "prof" || !modeJeu() ? "" : `<a class="jouer-fam" href="#parcours" style="--c:#4658FF">${ICONES_NAV.parcours}<b>Mon parcours</b><span>Mes badges et les quêtes de la semaine</span></a>`) + `</div><p class="small"><a href="#ludo">Les ${D.ludo.jeux.length} jeux de toutes les classes</a></p>`;
   return h;
 }
 /* Visualisation en temps réel, la même dans tous les jeux : forme d'onde, spectre et niveau du son réellement joué (celui qui sort du maître), avec une ligne de repos quand rien ne joue. */
