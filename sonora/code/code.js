@@ -1,8 +1,8 @@
 // SONORA Code : le laboratoire de programmation musicale. Faust, Csound et Pure Data, compilés et joués dans la page (aucun envoi, aucun serveur).
 // Les moteurs et les exemples sont ceux de SONORA Pistes (../pistes/moteurs.js) ; ici, on les travaille un par un, avec de quoi apprendre.
-import * as MO from "../pistes/moteurs.js?v=7f779f809a";
-import { assemblerCanaux } from "../pistes/projet.js?v=7f779f809a";
-import { Stockage as RangementPistes } from "../pistes/stockage.js?v=7f779f809a";
+import * as MO from "../pistes/moteurs.js?v=d3ff7950f5";
+import { assemblerCanaux } from "../pistes/projet.js?v=d3ff7950f5";
+import { Stockage as RangementPistes } from "../pistes/stockage.js?v=d3ff7950f5";
 
 const $ = id => document.getElementById(id), esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const LANGAGES = {

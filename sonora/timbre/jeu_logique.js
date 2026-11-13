@@ -1,5 +1,5 @@
 // TIMBRE : la logique du jeu, sans DOM (testée dans Node) : niveaux, questions, points, étoiles.
-import { alea } from "../orchestre/timbres_logique.js?v=7f779f809a";
+import { alea } from "../orchestre/timbres_logique.js?v=d3ff7950f5";
 export { alea };
 
 export const MANCHES = 10;
@@ -50,5 +50,36 @@ export function points({ juste, restant, total, serie }) {
 export const etoilesDe = (bonnes, manches = MANCHES) => bonnes >= manches - 1 ? 3 : bonnes >= Math.ceil(manches * .75) ? 2 : bonnes >= Math.ceil(manches * .5) ? 1 : 0;
 export const niveauOuvert = (etoiles, univers, n) => n === 1 || (etoiles[`${univers}:${n - 1}`] || 0) >= 2;
 
-// Le défi du jour : la même série pour toute la classe le même jour (la graine est la date), tous les univers mélangés. On compare les scores à voix haute.
-export const graineDuJour = (d = new Date()) => { const s = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`; return parseInt(s, 10); };
+/* ---------- Les autres jeux : tout est tiré au hasard à chaque partie, deux élèves côte à côte n'ont jamais la même série ---------- */
+const pioche = (liste, rnd) => liste[Math.floor(rnd() * liste.length)];
+// Une note que les deux instruments savent jouer, au milieu de leurs zones (sinon la note commune).
+export function notePartagee(a, b, rnd) {
+  const lo = Math.max(a.echant[0] + 1, b.echant[0] + 1, 48), hi = Math.min(a.echant[1] - 1, b.echant[1] - 1, 76);
+  return lo <= hi ? lo + Math.floor(rnd() * (hi - lo + 1)) : NOTE_COMMUNE;
+}
+// L'intrus : trois sons sur la même note, deux du même instrument, un d'un autre. difficulte de 0 à 1 : au-dessus de 0,5 l'intrus est de la même famille.
+export function creerIntrus(pool, difficulte, rnd) {
+  const base = pool.filter(i => peut(i, NOTE_COMMUNE)), a = pioche(base, rnd), autres = base.filter(i => i.id !== a.id);
+  const proches = autres.filter(i => i.groupe === a.groupe), loin = autres.filter(i => i.groupe !== a.groupe);
+  const b = pioche(difficulte > .5 && proches.length ? proches : loin.length ? loin : autres, rnd);
+  return { majorite: a.id, intrus: b.id, note: notePartagee(a, b, rnd), position: Math.floor(rnd() * 3) };
+}
+// Plus haut, plus bas : l'écart rétrécit avec la série (de 7 demi-tons à 1).
+export function creerHautBas(inst, serie, rnd) {
+  const ecart = Math.max(1, 7 - Math.floor(serie / 2)), dir = rnd() < .5 ? -1 : 1;
+  const lo = Math.max(inst.echant[0] + ecart + 1, 48), hi = Math.min(inst.echant[1] - ecart - 1, 79), a = lo <= hi ? lo + Math.floor(rnd() * (hi - lo + 1)) : NOTE_COMMUNE;
+  return { a, b: a + dir * ecart, haut: dir > 0, ecart };
+}
+// Mémoire : la suite gagne un élément par tour, jamais trois fois le même à la suite.
+export function ajouterMemoire(seq, rnd, n = 4) { let x; do { x = Math.floor(rnd() * n); } while (seq.length >= 2 && seq[seq.length - 1] === x && seq[seq.length - 2] === x); return seq.concat(x); }
+// Paires : nb instruments, chacun deux fois, cartes mélangées. Tous jouent la même note : seul le timbre distingue les cartes.
+export function creerPaires(pool, nb, rnd) {
+  const insts = melanger(pool.filter(i => peut(i, NOTE_COMMUNE)), rnd).slice(0, nb);
+  return melanger(insts.concat(insts).map(i => i.id), rnd);
+}
+// Survie : plus on avance, plus il y a de choix et moins il y a de temps.
+export const survieParams = n => ({ choix: Math.min(6, 4 + Math.floor(n / 6)), secondes: Math.max(5, 12 - Math.floor(n / 3)), note: "variee", proches: n >= 10 });
+// Le niveau du joueur dans TIMBRE (gardé sur l'appareil) : il faut de plus en plus de points pour monter.
+export function niveauJoueur(xp) { const n = Math.floor(Math.sqrt(Math.max(0, xp) / 120)) + 1, bas = 120 * (n - 1) ** 2, haut = 120 * n ** 2; return { n, bas, haut, part: (xp - bas) / (haut - bas) }; }
+const TITRES = ["Oreille curieuse", "Oreille attentive", "Oreille fine", "Oreille experte", "Oreille d'or", "Oreille absolue"];
+export const titreJoueur = n => TITRES[Math.min(TITRES.length - 1, Math.floor((n - 1) / 3))];

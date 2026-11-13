@@ -2,81 +2,70 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TIMBRE, le jeu de l'oreille</title>
-<meta name="description" content="TIMBRE : un jeu pour reconnaître les instruments à l'oreille, avec de vrais enregistrements. Trois univers, trois niveaux, un défi du jour.">
-<meta name="theme-color" content="#070a24">
-<link rel="stylesheet" href="timbre.css?v=7f779f809a">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TIMBRE, la salle de jeux de l'oreille</title>
+<meta name="description" content="TIMBRE : six jeux pour entraîner son oreille avec de vrais instruments enregistrés. Les questions sont tirées au hasard à chaque partie.">
+<meta name="theme-color" content="#06070d">
+<link rel="stylesheet" href="timbre.css?v=d3ff7950f5">
 </head>
 <body>
+<div class="halos" aria-hidden="true"><i></i><i></i><i></i></div>
+<canvas id="fx" aria-hidden="true"></canvas>
 <a class="saut" href="#jeu">Aller au jeu</a>
 <header class="haut">
   <a class="retour" href="../../choix.html" aria-label="Retour au cours">&#8249;</a>
-  <span class="marque">SONORA <b>TIMBRE</b></span>
-  <a class="tous" href="../index.html">Tous les outils</a>
+  <span class="marque">TIMBRE</span>
+  <button type="button" class="joueur" id="joueur" aria-label="Mon niveau et ma collection"></button>
 </header>
 <main id="jeu" tabindex="-1">
 
-  <!-- Menu : le logo, les trois univers, le défi du jour -->
-  <section id="ecran-menu" class="ecran" aria-labelledby="titre-menu">
-    <div class="logo">
-      <svg class="casque" viewBox="0 0 200 170" aria-hidden="true"><defs>
-        <linearGradient id="gc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#35e0ff"/><stop offset="1" stop-color="#9b6bff"/></linearGradient>
-        <linearGradient id="gb1" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#35e0ff"/><stop offset="1" stop-color="#9b6bff"/></linearGradient>
-        <linearGradient id="gb2" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffd23f"/><stop offset="1" stop-color="#ff4560"/></linearGradient></defs>
-        <path d="M32 112V92a68 68 0 0 1 136 0v20" fill="none" stroke="url(#gc)" stroke-width="14" stroke-linecap="round"/>
-        <rect x="16" y="94" width="36" height="62" rx="15" fill="url(#gc)"/><rect x="148" y="94" width="36" height="62" rx="15" fill="url(#gc)"/>
-        <g class="barres"><rect x="68" y="74" width="9" height="60" rx="4.5" fill="url(#gb1)"/><rect x="82" y="54" width="9" height="100" rx="4.5" fill="url(#gb1)"/><rect x="96" y="38" width="9" height="132" rx="4.5" fill="url(#gb2)"/><rect x="110" y="62" width="9" height="84" rx="4.5" fill="url(#gb2)"/><rect x="124" y="80" width="9" height="48" rx="4.5" fill="url(#gb1)"/></g></svg>
-      <h1 id="titre-menu" class="titre-jeu">TIMBRE</h1>
-      <p class="ruban"><span>Écoute. Devine. Monte de niveau.</span></p>
-    </div>
-    <p class="intro">Des vrais instruments enregistrés, dix sons par partie. Reconnais-les avant la fin du temps : plus tu es rapide et plus tu enchaînes, plus tu marques.</p>
-    <h2 class="rubrique">Choisis ton univers</h2>
-    <div class="univers" id="univers"></div>
-    <h2 class="rubrique">Le défi du jour</h2>
-    <button type="button" class="tuile defi" id="defi"></button>
-    <p class="petit">Même série pour toute la classe le même jour, tous les univers mélangés. Compare ton score à voix haute avec les autres.</p>
-    <p class="stats" id="stats"></p>
+  <section id="ecran-accueil" class="ecran" aria-labelledby="t-accueil">
+    <h1 id="t-accueil" class="grand">Entraîne ton oreille.</h1>
+    <p class="chapo">Six jeux, de vrais instruments. Les questions changent à chaque partie.</p>
+    <div class="affiches" id="affiches" role="list"></div>
+    <div class="points" id="points" aria-hidden="true"></div>
+    <button type="button" class="bande-collection" id="vers-collection"></button>
   </section>
 
-  <!-- Niveaux d'un univers -->
-  <section id="ecran-niveaux" class="ecran" hidden aria-labelledby="titre-niveaux">
-    <button type="button" class="retour-menu" data-menu>&#8249; Les univers</button>
-    <h2 id="titre-niveaux" class="titre-univers"></h2>
-    <p class="intro" id="sous-univers"></p>
+  <section id="ecran-niveaux" class="ecran" hidden aria-labelledby="t-niveaux">
+    <button type="button" class="lien-retour" data-accueil>&#8249; Les jeux</button>
+    <h2 id="t-niveaux" class="grand">Qui joue ?</h2>
+    <div class="onglets" id="onglets" role="tablist" aria-label="Univers"></div>
     <div class="niveaux" id="niveaux"></div>
-    <details class="apprendre"><summary>Les instruments de cet univers</summary><ul id="liste-instruments"></ul></details>
   </section>
 
-  <!-- La partie -->
   <section id="ecran-partie" class="ecran" hidden aria-label="Partie en cours">
     <div class="hud">
-      <button type="button" class="quitter" id="quitter" aria-label="Quitter la partie">&#10005;</button>
-      <span class="rang" id="rang"></span>
-      <span class="serie" id="serie" aria-live="polite"></span>
-      <span class="score" id="score">0</span>
+      <button type="button" class="rond" id="quitter" aria-label="Quitter la partie">&#10005;</button>
+      <span class="hud-info" id="hud-info"></span>
+      <span class="hud-vies" id="hud-vies"></span>
+      <span class="hud-score" id="hud-score">0</span>
     </div>
-    <div class="chrono" role="img" aria-label="Temps restant"><span id="chrono-barre"></span><b id="chrono-nb"></b></div>
-    <div class="scene"><canvas id="onde" width="640" height="150" aria-hidden="true"></canvas>
-      <button type="button" class="ecouter" id="ecouter" aria-label="Réécouter le son"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v6h4l5 4V5L9 9z"/><path d="M17 8a5 5 0 0 1 0 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="ecouter-t">Réécouter</span></button></div>
-    <h3 class="question" id="question">Quel instrument entends-tu ?</h3>
-    <div class="reponses" id="reponses" role="group" aria-label="Réponses"></div>
+    <div class="chrono" id="chrono" role="img" aria-label="Temps restant"><span id="chrono-barre"></span></div>
+    <div class="zone" id="zone"></div>
     <div class="verdict" id="verdict" role="status" aria-live="polite" hidden></div>
   </section>
 
-  <!-- Fin de partie -->
-  <section id="ecran-fin" class="ecran" hidden aria-labelledby="titre-fin">
-    <h2 id="titre-fin" class="titre-fin"></h2>
+  <section id="ecran-fin" class="ecran" hidden aria-labelledby="t-fin">
+    <p class="fin-mode" id="fin-mode"></p>
+    <h2 id="t-fin" class="grand centre"></h2>
     <div class="etoiles-fin" id="etoiles-fin" role="img"></div>
     <p class="gros-score"><b id="fin-score">0</b><span>points</span></p>
     <p class="fin-detail" id="fin-detail"></p>
-    <p class="fin-xp" id="fin-xp" hidden></p>
+    <div class="fin-niveau" id="fin-niveau"></div>
     <div class="actions" id="fin-actions"></div>
     <div id="fin-retenir"></div>
   </section>
+
+  <section id="ecran-collection" class="ecran" hidden aria-labelledby="t-collection">
+    <button type="button" class="lien-retour" data-accueil>&#8249; Les jeux</button>
+    <h2 id="t-collection" class="grand">Ma collection</h2>
+    <p class="chapo" id="collection-bilan"></p>
+    <div class="collection" id="collection"></div>
+  </section>
 </main>
-<script type="module" src="timbre.js?v=7f779f809a"></script>
-<script src="../barre-cours.js?v=7f779f809a"></script>
-<script src="../retour.js?v=7f779f809a"></script>
+<script type="module" src="timbre.js?v=d3ff7950f5"></script>
+<script src="../barre-cours.js?v=d3ff7950f5"></script>
+<script src="../retour.js?v=d3ff7950f5"></script>
 </body>
 </html>
