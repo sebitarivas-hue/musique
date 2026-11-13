@@ -78,7 +78,7 @@ header.haut { flex-wrap: wrap; } header.haut nav { flex-wrap: wrap; }
 .graphe-wrap { border: 2px solid var(--noir); border-radius: 24px; background: #fff; margin-top: 12px; overflow: auto; } .graphe-wrap svg { display: block; width: 100%; height: auto; min-width: 640px; } .graphe-wrap text { font: 600 12px var(--f-txt); pointer-events: none; }
 .monde-wrap { position: relative; border: 2px solid var(--noir); border-radius: 24px; overflow: hidden; margin-top: 12px; background: #dfe9f0; } .monde-wrap svg { touch-action: none; cursor: grab; } .monde-wrap svg.glisse { cursor: grabbing; } .monde-wrap .m-nom { font: 600 11px var(--f-txt); fill: #11110F; paint-order: stroke; stroke: #f6f2e6; stroke-width: 3px; pointer-events: none; }
 .monde-ctrl { position: absolute; right: 10px; bottom: 10px; display: flex; } .monde-ctrl button { font: 700 1rem/1 ui-monospace, Menlo, monospace; min-width: 40px; height: 40px; padding: 0 10px; background: var(--noir); color: var(--acide); border: 2px solid var(--noir); border-left-width: 0; cursor: pointer; } .monde-ctrl button:first-child { border-left-width: 2px; } .monde-ctrl button:hover, .monde-ctrl button:focus-visible { background: var(--acide); color: var(--noir); outline: none; }
-@media (max-width: 640px) { .monde-ctrl button { min-width: 34px; height: 34px; font-size: .8rem; } } .monde-wrap svg { display: block; width: 100%; height: auto; } .monde-wrap .terre { fill: #f6f2e6; stroke: #b8b2a0; stroke-width: .5; } .pt-monde { cursor: pointer; } .pt-monde circle { stroke: #fff; stroke-width: 1.5px; vector-effect: non-scaling-stroke; } .pt-monde:hover circle, .pt-monde:focus circle, .pt-monde.sel circle { stroke: #11110F; stroke-width: 3px; }
+@media (max-width: 640px) { .monde-ctrl button { min-width: 34px; height: 34px; font-size: .8rem; } } .monde-wrap svg { display: block; width: 100%; height: 100%; } .monde-wrap .terre { fill: #f6f2e6; stroke: #b8b2a0; stroke-width: .5; } .pt-monde { cursor: pointer; } .pt-monde circle { stroke: #fff; stroke-width: 1.5px; vector-effect: non-scaling-stroke; } .pt-monde:hover circle, .pt-monde:focus circle, .pt-monde.sel circle { stroke: #11110F; stroke-width: 3px; }
 .champs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; } .champs label { font-weight: 600; font-size: .9rem; } .champs input[type=number] { width: 5.5em; padding: 6px 10px; border: 2px solid var(--noir); border-radius: 999px; font: 600 .95rem var(--f-txt); }
 .sections { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin-top: 10px; } .sections section { background: #fff; border: 2px solid var(--noir); border-radius: 20px; padding: 12px 16px; } .sections h3 { font: 600 .8rem/1 ui-monospace, Menlo, monospace; text-transform: uppercase; letter-spacing: .06em; margin: 2px 0 8px; } .sections p { margin: 0; font-size: .96rem; }
 .question { background: var(--acide); border-radius: 18px; padding: 10px 16px; margin-top: 8px; font-weight: 600; }
@@ -257,6 +257,38 @@ h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-trans
 @media (max-width: 620px) { .ep-region.sans { display: none; } .ep-vide { display: block; } .ep-monde:not(:has(.ep-region:not(.sans))) { display: none; } .ep-monde { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 @media (max-width: 420px) { .ep-monde, .ep-reps { grid-template-columns: minmax(0, 1fr); } .ep-suite b { font-size: 1.1rem; } }
 @media (prefers-reduced-motion: no-preference) { .ep { animation: ep-entree .28s ease-out; } @keyframes ep-entree { from { opacity: .35; transform: translateX(var(--dx, 0)); } to { opacity: 1; transform: none; } } }
+
+/* Carte mondiale : cadre haut, familles à toucher, recherche, grappes, fiche collée en bas, liste de la zone. */
+.monde-wrap { border-radius: 0; aspect-ratio: 1000 / 470; } @media (max-width: 900px) { .monde-wrap { aspect-ratio: 4 / 3; } }
+.pt-monde.grappe text { font-family: ui-monospace, Menlo, monospace; font-weight: 700; fill: #fff; stroke: rgba(17,17,15,.75); paint-order: stroke; pointer-events: none; } .pt-monde.grappe circle { stroke-width: 2px; } .pt-monde.grappe:hover circle, .pt-monde.grappe:focus circle { stroke: #11110F; stroke-width: 3px; }
+.pt-monde .zone { stroke: none; } .pt-monde.sel circle:first-child { stroke: #11110F; }
+.m-rech { position: relative; margin: 6px 0 10px; } .m-rech input { width: 100%; font: 500 1rem var(--f-mono); padding: 14px 16px; border: 2px solid var(--noir); border-radius: 0; background: #fff; color: var(--noir); }
+.m-rech ul { position: absolute; z-index: 30; left: 0; right: 0; top: 100%; margin: 0; padding: 0; list-style: none; background: #fff; border: 2px solid var(--noir); border-top: 0; display: none; max-height: 50vh; overflow: auto; } .m-rech ul.on { display: block; }
+.m-rech li button, .m-rech li a { width: 100%; display: flex; justify-content: space-between; gap: 12px; text-align: left; padding: 12px 14px; min-height: 46px; background: #fff; color: var(--noir); border: 0; border-bottom: 1px solid #d8d7ce; font: inherit; text-decoration: none; cursor: pointer; } .m-rech li span { font: 500 .7rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--gris); align-self: center; text-align: right; } .m-rech li button:hover, .m-rech li button:focus-visible, .m-rech li a:hover { background: var(--acide); outline: none; }
+.m-fams { display: flex; flex-wrap: wrap; gap: 6px; } .m-fam { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px 0 0; background: #fff; color: var(--noir); border: 2px solid var(--noir); border-left: 0; font: 500 .74rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+.m-fam::before { content: ""; align-self: stretch; width: 14px; background: var(--c, var(--noir)); margin-right: 2px; border-left: 2px solid var(--noir); border-right: 2px solid var(--noir); } .m-fam i { font-style: normal; color: var(--gris); }
+.m-fam:hover { background: var(--acide); } .m-fam[aria-pressed=true] { background: var(--noir); color: var(--papier); } .m-fam[aria-pressed=true] i { color: var(--acide); } .m-toutes::before { background: var(--acide); }
+.m-etat { margin: 10px 0 0; font: 500 .78rem var(--f-mono); letter-spacing: .04em; color: var(--gris); min-height: 1.5em; } .m-lien { background: none; border: 0; padding: 0; font: inherit; color: var(--noir); text-decoration: underline; cursor: pointer; text-underline-offset: 3px; } .m-lien:hover { background: var(--acide); }
+.m-aide { margin: 8px 0 0; }
+.m-detail { position: sticky; bottom: 0; z-index: 12; margin-top: 12px; } .m-detail.vide { position: static; }
+.m-fiche { position: relative; background: var(--noir); color: var(--papier); border-top: 8px solid var(--c); padding: 12px 52px 12px 14px; box-shadow: 0 -4px 0 var(--papier); }
+.m-fiche h3 { font: 900 1.5rem/1 var(--f-cond); font-stretch: 62%; text-transform: uppercase; margin: 2px 0 6px; color: var(--papier); } .m-fam-nom { font: 500 .66rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--acide); }
+.m-fiche .meta { display: flex; flex-wrap: wrap; gap: 6px; } .m-fiche .meta span { font: 500 .7rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; border: 1px solid #55554E; padding: 3px 7px; }
+.m-fiche p { margin: 8px 0 0; font-size: .92rem; line-height: 1.4; color: #D3D2CA; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.m-fiche .pastilles { margin-top: 10px; } .m-fiche .pastille { background: var(--acide); color: var(--noir); } .m-fiche .pastille.clair, .m-fiche .paire .pastille.clair { background: transparent; color: var(--papier); border: 1.5px solid var(--papier); } .m-fiche .pastille:hover, .m-fiche .pastille:focus-visible, .m-fiche .pastille.clair:hover { background: var(--papier); color: var(--noir); }
+.m-ferme { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; background: transparent; border: 0; color: var(--papier); font: 400 2rem/1 var(--f-mono); cursor: pointer; } .m-ferme:hover, .m-ferme:focus-visible { background: var(--acide); color: var(--noir); outline: none; }
+.m-zone { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 8px; }
+.m-item { position: relative; width: 100%; min-height: 56px; display: flex; flex-direction: column; justify-content: center; gap: 2px; text-align: left; padding: 8px 12px 8px 22px; background: #fff; color: var(--noir); border: 2px solid var(--noir); cursor: pointer; font: inherit; }
+.m-item::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: var(--c, var(--noir)); } .m-item b { font-weight: 600; } .m-item span { font: 500 .66rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--gris); }
+.m-item:hover, .m-item:focus-visible, .m-item.sel { background: var(--acide); outline: none; }
+.m-plus { min-height: 44px; padding: 0 16px; background: var(--noir); color: var(--acide); border: 0; font: 500 .78rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; } .m-plus:hover { background: var(--acide); color: var(--noir); outline: 2px solid var(--noir); }
+@media (max-width: 640px) {
+  .m-fams { flex-wrap: nowrap; overflow-x: auto; margin-right: -16px; padding-right: 16px; scrollbar-width: none; } .m-fams::-webkit-scrollbar { display: none; } .m-fam { flex: 0 0 auto; }
+  .m-fiche { padding: 8px 48px 8px 12px; } .m-fiche h3 { font-size: 1.2rem; margin-bottom: 4px; } .m-fiche p { -webkit-line-clamp: 1; margin-top: 6px; } .m-fiche .pastilles { margin-top: 8px; gap: 6px; } .m-fiche .pastille { padding: 7px 10px; font-size: .68rem; }
+  /* Sur téléphone, le titre et la recherche défilent, mais la barre des modes reste collée en haut : on peut toujours changer de page. */
+  header.haut { display: contents; } header.haut .titre { display: block; flex: none; background: var(--noir); color: #fff; padding: 10px 16px 0; } .recherche-haut { flex: none; background: var(--noir); padding: 8px 16px 10px; }
+  header.haut nav { position: sticky; top: 0; z-index: 20; flex-wrap: nowrap; overflow-x: auto; background: var(--noir); padding: 8px 16px; border-bottom: 1px solid #3a3a35; scrollbar-width: none; } header.haut nav::-webkit-scrollbar { display: none; } header.haut nav a { flex: 0 0 auto; padding: 9px 12px; }
+}
 </style>
 </head>
 <body>
@@ -720,8 +752,8 @@ function remplirEpoque() {
 }
 function epAller(i, dx) { const EP = D.epoques.epoques; if (i < 0 || i >= EP.length) return; EPQ.dx = dx || 0; location.hash = "#frise/" + (i + 1); }
 function brancherEpoques() {
-  const h = $("header.haut");   // la règle se colle sous le bandeau, à sa hauteur réelle (qui change quand les polices arrivent) ; sur téléphone le bandeau ne colle pas, la règle se colle tout en haut
-  if (h && !window.__hautObs) { window.__hautObs = new ResizeObserver(() => document.documentElement.style.setProperty("--haut-h", (getComputedStyle(h).position === "sticky" ? h.offsetHeight : 0) + "px")); window.__hautObs.observe(h); }
+  const h = $("header.haut"), nb = $("header.haut nav");   // la règle se colle sous le bandeau, à sa hauteur réelle (qui change quand les polices arrivent) ; sur téléphone le bandeau ne colle pas, la règle se colle tout en haut
+  if (h && !window.__hautObs) { const mesure = () => { const e = getComputedStyle(h).position === "sticky" ? h : getComputedStyle(nb).position === "sticky" ? nb : null; document.documentElement.style.setProperty("--haut-h", (e ? e.offsetHeight : 0) + "px"); }; window.__hautObs = new ResizeObserver(mesure); window.__hautObs.observe(h); window.__hautObs.observe(nb); window.addEventListener("resize", mesure); }
   remplirEpoque(); EPQ.dx = 0;
   $("#ep-regle").onclick = ev => { const b = ev.target.closest("button"); if (b) epAller(+b.dataset.i, 0); };
   $("#ep-prec").onclick = () => epAller(EPQ.i - 1, -24); $("#ep-suiv").onclick = () => epAller(EPQ.i + 1, 24);
@@ -741,70 +773,173 @@ document.addEventListener("keydown", ev => {
 });
 
 /* ---------- Carte mondiale ---------- */
-const MONDE = { fam: new Set(D.families.map(f => f.id)), sel: null, terres: null };
-function vueMonde(sel) { if (sel && E[sel]) { MONDE.sel = sel; MONDE.fam.add(E[sel].family); MONDE.centrer = sel; }
-  return `<span class="etiq">Carte mondiale</span><h1>Où les musiques sont nées</h1><p class="lead">Chaque point est une musique placée là où elle est née ou s'est développée. ${D.entries.filter(e => e.geo).length} entrées ont un lieu ; les autres, comme les genres internationaux, n'en ont pas.</p>
-  <div class="pastilles" id="mfiltres">${D.families.map(f => `<button type="button" class="pastille" data-f="${f.id}" style="--c:${COUL[f.id]}" aria-pressed="${MONDE.fam.has(f.id)}">${esc(f.name.split(",")[0])}</button>`).join("")}</div>
-  <div class="monde-wrap"><svg id="msvg" viewBox="0 0 ${D.carte.w} ${D.carte.h}" role="group" aria-label="Carte du monde des musiques"><rect width="${D.carte.w}" height="${D.carte.h}" fill="#dfe9f0"/><path id="terres" class="terre" d=""/><g id="mpts"></g><g id="mnoms"></g></svg><div class="monde-ctrl" role="group" aria-label="Zoom de la carte"><button type="button" data-z="in" aria-label="Zoomer">+</button><button type="button" data-z="out" aria-label="Dézoomer">−</button><button type="button" data-z="all">Monde entier</button></div></div>
-  <p class="petit">Glisse pour te déplacer, molette, pincement ou double clic pour zoomer ; les noms apparaissent quand on s'approche.</p>
-  <div id="detail" style="margin-top:14px"></div><h2>La liste</h2><div class="pastilles" id="mliste"></div>`;
+/* Une carte lisible malgré des milliers de points : les points proches sont regroupés en ronds numérotés (toucher un rond zoome dessus), les familles se filtrent d'un toucher et la carte s'y ajuste,
+   une recherche mène à un point, la fiche reste collée en bas de l'écran, et la liste ne montre que ce qui est dans la zone affichée. */
+const MONDE = { fam: new Set(D.families.map(f => f.id)), sel: null, terres: null, vb: null, focus: null, nbListe: 24, q: "" };
+const MONDE_PAS = 30;   // taille d'une case de regroupement, en pixels d'écran
+const mTotalFam = {}; D.entries.forEach(e => { if (e.geo) mTotalFam[e.family] = (mTotalFam[e.family] || 0) + 1; });
+const mNbGeo = D.entries.filter(e => e.geo).length;
+const mToutes = () => MONDE.fam.size === D.families.length;
+const mVisibles = () => D.entries.filter(e => e.geo && MONDE.fam.has(e.family));
+const mDeg = id => REL.sort[id].length + REL.ent[id].length;
+function vueMonde(sel) { if (sel && E[sel] && E[sel].geo) { MONDE.sel = sel; MONDE.fam.add(E[sel].family); MONDE.centrer = sel; }
+  return `<span class="etiq">Carte mondiale</span><h1>Où les musiques sont nées</h1>
+  <div class="m-rech"><input id="mq" type="search" placeholder="Trouver une musique sur la carte : cumbia, Kraftwerk, gamelan" autocomplete="off" aria-label="Trouver une musique sur la carte" aria-controls="mqr"><ul id="mqr" role="listbox" aria-label="Résultats"></ul></div>
+  <div class="m-fams" id="mfiltres" role="group" aria-label="Choisir une famille de musiques"><button type="button" class="m-fam m-toutes" data-f="" aria-pressed="true">Toutes <i>${mNbGeo}</i></button>${D.families.map(f => `<button type="button" class="m-fam" data-f="${f.id}" style="--c:${COUL[f.id]}" aria-pressed="true">${esc(f.name.split(",")[0])} <i>${mTotalFam[f.id] || 0}</i></button>`).join("")}</div>
+  <p class="m-etat" id="metat" aria-live="polite"></p>
+  <div class="monde-wrap" id="mwrap"><svg id="msvg" viewBox="0 0 ${D.carte.w} ${D.carte.h}" role="group" aria-label="Carte du monde des musiques"><rect x="-3000" y="-3000" width="${D.carte.w + 6000}" height="${D.carte.h + 6000}" fill="#dfe9f0"/><path id="terres" class="terre" d=""/><g id="mpts"></g><g id="mnoms"></g></svg><div class="monde-ctrl" role="group" aria-label="Zoom de la carte"><button type="button" data-z="in" aria-label="Zoomer">+</button><button type="button" data-z="out" aria-label="Dézoomer">−</button><button type="button" data-z="all">Monde entier</button></div></div>
+  <p class="petit m-aide">Touche un rond numéroté pour zoomer dessus, un point pour ouvrir sa musique. Glisse pour te déplacer, pince ou double touche pour zoomer.</p>
+  <div id="detail" class="m-detail"></div>
+  <h2 id="mzh">Dans la zone affichée</h2><p class="petit" id="mzn" aria-live="polite"></p><ul class="m-zone" id="mliste"></ul><p><button type="button" class="m-plus" id="mplus" hidden>Voir plus</button></p>`;
 }
-function dessinerMonde() {
-  const L = D.entries.filter(e => e.geo && MONDE.fam.has(e.family));
-  const dec = {}; // petit décalage quand plusieurs points tombent au même endroit
-  $("#mpts").innerHTML = L.map(e => { const k = e.geo.join(","); const n = dec[k] = (dec[k] || 0) + 1; const a = n * 2.4, dx = n > 1 ? Math.cos(a) * 5 * Math.ceil(n / 6) : 0, dy = n > 1 ? Math.sin(a) * 5 * Math.ceil(n / 6) : 0;
-    const kz = mZoom(), x = e.geo[0] + dx / kz, y = e.geo[1] + dy / kz; e.__m = [x, y];
-    return `<g class="pt-monde${e.id === MONDE.sel ? " sel" : ""}" tabindex="0" role="button" aria-label="${esc(e.name)}, ${esc(e.region)}" data-id="${e.id}"><circle cx="${x}" cy="${y}" r="${(e.id === MONDE.sel ? 8 : 5) / Math.pow(kz, .8)}" fill="${COUL[e.family]}"/></g>`; }).join("");
-  mNoms(L);
-  $("#mliste").innerHTML = L.map(e => `<a class="pastille clair" href="#e/${e.id}">${esc(e.name)}</a>`).join("");
-  document.querySelectorAll(".pt-monde").forEach(n => { const go = () => { MONDE.sel = n.dataset.id; dessinerMonde(); detailMonde(); }; n.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); go(); } }; });
-}
-/* Zoom et déplacement : on change le viewBox du SVG (le fond de carte reste net). Les points gardent à peu près leur taille à l'écran ; les noms apparaissent quand on s'approche, sans se chevaucher. */
-function mVb() { if (!MONDE.vb) MONDE.vb = { x: 0, y: 0, w: D.carte.w, h: D.carte.h }; return MONDE.vb; }
+const mCadre = () => { const r = $("#msvg").getBoundingClientRect(); return r.width > 0 && r.height > 0 ? r : { width: 358, height: 268, left: 0, top: 0 }; };
+const mAsp = () => { const r = mCadre(); return r.width / r.height; };
+function mVb() { if (!MONDE.vb) mMondeEntier(false); return MONDE.vb; }
 const mZoom = () => D.carte.w / mVb().w;
+const mEchelle = () => mCadre().width / mVb().w;   // pixels d'écran par unité de carte
+function mCaler(v) {   // garde la carte dans le cadre : au minimum le monde entier, au maximum 40 fois
+  const W = D.carte.w, H = D.carte.h, a = mAsp(); v.w = Math.max(W / 40, Math.min(W, v.w)); v.h = v.w / a;
+  v.x = v.w >= W ? (W - v.w) / 2 : Math.max(0, Math.min(W - v.w, v.x)); v.y = v.h >= H ? (H - v.h) / 2 : Math.max(0, Math.min(H - v.h, v.y)); return v;
+}
+function mMondeEntier(dessiner = true) { MONDE.vb = mCaler({ x: 0, y: 0, w: D.carte.w, h: 0 }); if (dessiner) mAppliquer(); }
 function mAppliquer() {
-  const v = mVb(), W = D.carte.w, H = D.carte.h; v.w = Math.max(W / 16, Math.min(W, v.w)); v.h = v.w * H / W;
-  v.x = Math.max(0, Math.min(W - v.w, v.x)); v.y = Math.max(0, Math.min(H - v.h, v.y));
-  const sv = $("#msvg"); if (sv) sv.setAttribute("viewBox", `${v.x} ${v.y} ${v.w} ${v.h}`);
+  const v = mCaler(mVb()), sv = $("#msvg"); if (sv) sv.setAttribute("viewBox", `${v.x} ${v.y} ${v.w} ${v.h}`);
   window.MONDE_VUE = { zoom: +mZoom().toFixed(2), vb: [v.x, v.y, v.w, v.h].map(n => Math.round(n)), noms: document.querySelectorAll("#mnoms text").length };
 }
-function mZoomer(f, cx, cy) {   // cx, cy : point fixe en coordonnées de carte
-  const v = mVb(); cx = cx ?? v.x + v.w / 2; cy = cy ?? v.y + v.h / 2; const w2 = Math.max(D.carte.w / 16, Math.min(D.carte.w, v.w / f)), r = w2 / v.w;
-  v.x = cx - (cx - v.x) * r; v.y = cy - (cy - v.y) * r; v.w = w2; mAppliquer(); dessinerMonde();
+/* Aller vers une vue : un court glissé, sauf si l'élève demande moins de mouvement. */
+function mAller(c, anim = true) {
+  const but = mCaler({ x: c.x, y: c.y, w: c.w, h: 0 }), v = mVb();
+  if (MONDE.anim) cancelAnimationFrame(MONDE.anim);
+  if (!anim || matchMedia("(prefers-reduced-motion: reduce)").matches) { Object.assign(v, but); mAppliquer(); mDessiner(); return; }
+  const d = { ...v }, t0 = performance.now(), duree = 240;
+  const pas = t => { const u = Math.min(1, (t - t0) / duree), k = u * (2 - u); v.x = d.x + (but.x - d.x) * k; v.y = d.y + (but.y - d.y) * k; v.w = d.w + (but.w - d.w) * k; v.h = v.w / mAsp(); mAppliquer(); mDessiner(); MONDE.anim = u < 1 ? requestAnimationFrame(pas) : 0; };
+  MONDE.anim = requestAnimationFrame(pas);
 }
-function mNoms(L) {
-  const g = $("#mnoms"); if (!g) return; const k = mZoom(), v = mVb();
-  if (k < 2.2) { g.innerHTML = ""; if (window.MONDE_VUE) window.MONDE_VUE.noms = 0; return; }
-  const deg = id => REL.sort[id].length + REL.ent[id].length, pris = [], fs = 11 / k, out = [];
-  const vis = L.filter(e => e.__m && e.__m[0] >= v.x && e.__m[0] <= v.x + v.w && e.__m[1] >= v.y && e.__m[1] <= v.y + v.h).sort((a, b) => (b.id === MONDE.sel) - (a.id === MONDE.sel) || deg(b.id) - deg(a.id));
-  for (const e of vis) { if (out.length >= 60) break; const w = e.name.length * fs * 0.55, x = e.__m[0] + 7 / k, y = e.__m[1] + fs * 0.35, b = [x, y - fs, w, fs * 1.2];
+function mAjuster(L, marge = 1.3) {   // la vue qui montre tous ces points
+  if (!L.length) return mAller({ x: 0, y: 0, w: D.carte.w });
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; L.forEach(e => { x0 = Math.min(x0, e.geo[0]); x1 = Math.max(x1, e.geo[0]); y0 = Math.min(y0, e.geo[1]); y1 = Math.max(y1, e.geo[1]); });
+  const a = mAsp(), w = Math.max((x1 - x0) * marge, (y1 - y0) * marge * a, 36), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  mAller({ x: cx - w / 2, y: cy - w / a / 2, w });
+}
+function mCentrer(e, w) { const a = mAsp(); mAller({ x: e.geo[0] - w / 2, y: e.geo[1] - w / a / 2, w }); }
+/* Regroupement : une grille ancrée sur la carte (les ronds ne sautent pas quand on glisse). La fiche choisie n'est jamais absorbée dans un rond. */
+function mGrappes(L) {
+  const v = mVb(), k = mEchelle(), c = MONDE_PAS / k, mx = v.w * .35, my = v.h * .35, cases = new Map();
+  for (const e of L) { const [x, y] = e.geo; if (x < v.x - mx || x > v.x + v.w + mx || y < v.y - my || y > v.y + v.h + my || e.id === MONDE.sel) continue; const cle = Math.floor(x / c) + "," + Math.floor(y / c); let g = cases.get(cle); if (!g) cases.set(cle, g = []); g.push(e); }
+  return [...cases.values()].map(m => { if (m.length === 1) return { un: m[0], x: m[0].geo[0], y: m[0].geo[1] };
+    let sx = 0, sy = 0, x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; const fam = {}; m.forEach(e => { sx += e.geo[0]; sy += e.geo[1]; x0 = Math.min(x0, e.geo[0]); x1 = Math.max(x1, e.geo[0]); y0 = Math.min(y0, e.geo[1]); y1 = Math.max(y1, e.geo[1]); fam[e.family] = (fam[e.family] || 0) + 1; });
+    return { membres: m, x: sx / m.length, y: sy / m.length, fam: Object.entries(fam).sort((a, b) => b[1] - a[1])[0][0], etendue: Math.max(x1 - x0, y1 - y0), boite: [x0, y0, x1, y1] }; });
+}
+function mDessiner() {
+  const L = mVisibles(), G = mGrappes(L), k = mEchelle(), v = mVb(); MONDE.grappes = G;
+  const sel = MONDE.sel && E[MONDE.sel] && E[MONDE.sel].geo && MONDE.fam.has(E[MONDE.sel].family) ? E[MONDE.sel] : null, pts = G.length > 60 ? "-1" : "0";
+  const html = G.map((g, i) => {
+    if (g.un) { const e = g.un; e.__m = [g.x, g.y]; return `<g class="pt-monde" tabindex="${pts}" role="button" aria-label="${esc(e.name)}, ${esc(e.region)}" data-id="${e.id}"><circle class="zone" cx="${g.x}" cy="${g.y}" r="${20 / k}" fill="transparent" stroke="none"/><circle cx="${g.x}" cy="${g.y}" r="${6 / k}" fill="${COUL[e.family]}"/></g>`; }
+    const n = g.membres.length, r = Math.min(16, 9 + 2 * Math.log2(n)) / k;
+    return `<g class="pt-monde grappe" tabindex="${pts}" role="button" aria-label="${n} musiques, toucher pour zoomer" data-g="${i}"><circle cx="${g.x}" cy="${g.y}" r="${r}" fill="${COUL[g.fam]}"/><text x="${g.x}" y="${g.y}" dy=".35em" text-anchor="middle" style="font-size:${12 / k}px;stroke-width:${3 / k}px">${n}</text></g>`; }).join("");
+  const s = sel ? (sel.__m = sel.geo.slice(), `<g class="pt-monde sel" tabindex="0" role="button" aria-label="${esc(sel.name)}, ${esc(sel.region)}, choisie" data-id="${sel.id}"><circle cx="${sel.geo[0]}" cy="${sel.geo[1]}" r="${12 / k}" fill="none" stroke="#11110F" stroke-width="${2.5 / k}"/><circle cx="${sel.geo[0]}" cy="${sel.geo[1]}" r="${7 / k}" fill="${COUL[sel.family]}"/></g>`) : "";
+  $("#mpts").innerHTML = html + s;
+  mNoms(G, sel); mAppliquer(); mEtat(L); mZone(L);
+}
+function mNoms(G, sel) {   // les noms apparaissent de près, sans se chevaucher (calcul en pixels d'écran)
+  const g = $("#mnoms"); if (!g) return; const k = mEchelle(), z = mZoom();
+  if (z < 2.2) { g.innerHTML = ""; return; }
+  const v = mVb(), r = mCadre(), pris = [], out = [];
+  const vis = G.filter(q => q.un).map(q => q.un).concat(sel ? [sel] : []).filter(e => e.__m && e.__m[0] >= v.x && e.__m[0] <= v.x + v.w && e.__m[1] >= v.y && e.__m[1] <= v.y + v.h).sort((a, b) => (b.id === MONDE.sel) - (a.id === MONDE.sel) || mDeg(b.id) - mDeg(a.id));
+  for (const e of vis) { if (out.length >= 45) break; const w = e.name.length * 6.2, px = (e.__m[0] - v.x) * k + 9, py = (e.__m[1] - v.y) * k + 4, b = [px, py - 11, w, 14];
     if (pris.some(q => b[0] < q[0] + q[2] && b[0] + b[2] > q[0] && b[1] < q[1] + q[3] && b[1] + b[3] > q[1])) continue; pris.push(b);
-    out.push(`<text class="m-nom" x="${x}" y="${y}" style="font-size:${fs}px;stroke-width:${3 / k}px">${esc(e.name)}</text>`); }
-  g.innerHTML = out.join(""); if (window.MONDE_VUE) window.MONDE_VUE.noms = out.length;
+    out.push(`<text class="m-nom" x="${e.__m[0] + 9 / k}" y="${e.__m[1] + 4 / k}" style="font-size:${11 / k}px;stroke-width:${3 / k}px">${esc(e.name)}</text>`); }
+  g.innerHTML = out.join("");
 }
+function mEnVue(L) { const v = mVb(); return L.filter(e => e.geo[0] >= v.x && e.geo[0] <= v.x + v.w && e.geo[1] >= v.y && e.geo[1] <= v.y + v.h); }
+function mEtat(L) {
+  const f = D.families.filter(x => MONDE.fam.has(x.id)), t = $("#metat"); if (!t) return;
+  t.innerHTML = mToutes() ? `${L.length} musiques sur la carte, toutes familles.` : `${L.length} musiques : ${esc(f.map(x => x.name.split(",")[0]).join(", "))}. <button type="button" class="m-lien" data-reinit="1">Tout afficher</button>`;
+  document.querySelectorAll("#mfiltres .m-fam").forEach(b => { const id = b.dataset.f; b.setAttribute("aria-pressed", String(id ? !mToutes() && MONDE.fam.has(id) : mToutes())); });
+}
+/* La liste : seulement ce qui est dans la zone affichée (ou, après un toucher sur un rond qu'on ne peut plus séparer, les musiques de cet endroit). */
+function mZone(L) {
+  const ul = $("#mliste"); if (!ul) return;
+  const liste = MONDE.focus ? MONDE.focus.ids.map(i => E[i]).filter(Boolean) : mEnVue(L); liste.sort((a, b) => mDeg(b.id) - mDeg(a.id) || a.name.localeCompare(b.name, "fr"));
+  $("#mzh").textContent = MONDE.focus ? MONDE.focus.titre : "Dans la zone affichée";
+  $("#mzn").innerHTML = (MONDE.focus ? `${liste.length} musiques à cet endroit. <button type="button" class="m-lien" data-zone="1">Revenir à la zone</button>` : liste.length ? `${liste.length} musique${liste.length > 1 ? "s" : ""} visible${liste.length > 1 ? "s" : ""}, les plus reliées d'abord. Zoome ou déplace la carte pour changer la liste.` : "Aucune musique dans cette zone : déplace la carte ou touche « Monde entier ».");
+  const n = Math.min(liste.length, MONDE.nbListe);
+  ul.innerHTML = liste.slice(0, n).map(e => `<li><button type="button" class="m-item${e.id === MONDE.sel ? " sel" : ""}" data-id="${e.id}" style="--c:${COUL[e.family]}"><b>${esc(e.name)}</b><span>${esc(e.region)}</span></button></li>`).join("");
+  const p = $("#mplus"); p.hidden = liste.length <= n; p.textContent = `Voir ${Math.min(24, liste.length - n)} de plus (${liste.length - n} restantes)`;
+}
+function mChoisir(id, centrer = false) {
+  const e = E[id]; if (!e) return; MONDE.sel = id; if (!MONDE.fam.has(e.family)) MONDE.fam = new Set(D.families.map(f => f.id));   // la musique choisie n'est pas dans le filtre : on réaffiche tout
+  try { history.replaceState(null, "", "#monde/" + id); } catch (_) {}
+  if (centrer && e.geo) { const v = mVb(), dedans = e.geo[0] > v.x + v.w * .1 && e.geo[0] < v.x + v.w * .9 && e.geo[1] > v.y + v.h * .1 && e.geo[1] < v.y + v.h * .9; mCentrer(e, dedans && mZoom() >= 4 ? v.w : D.carte.w / 8); } else mDessiner();
+  detailMonde();
+}
+function mOuvrirGrappe(g) {
+  const k = mEchelle(), [x0, y0, x1, y1] = g.boite;
+  if (g.etendue * k < 12 && mZoom() < 12) { const v = mVb(), w = v.w / 3.5; mAller({ x: g.x - w / 2, y: g.y - w / mAsp() / 2, w }); return; }   // des points presque confondus : on s'approche d'abord
+  if (g.etendue * k < 12 || mZoom() >= 30) { MONDE.focus = { ids: g.membres.map(e => e.id), titre: "Musiques à cet endroit" }; mDessiner(); $("#mzh").scrollIntoView({ block: "start", behavior: "smooth" }); return; }
+  mAjuster(g.membres, 1.5);
+}
+function detailMonde() {
+  const e = MONDE.sel && E[MONDE.sel], d = $("#detail"); if (!d) return;
+  d.classList.toggle("vide", !e);
+  d.innerHTML = e ? `<div class="m-fiche" style="--c:${coul(e)}"><button type="button" class="m-ferme" aria-label="Fermer la fiche" data-ferme="1">×</button><span class="m-fam-nom">${esc(FAM[e.family].name.split(",")[0])}</span><h3>${esc(e.name)}</h3><div class="meta"><span>${esc(e.region)}</span><span>${esc(periode(e))}</span></div><p>${esc(e.description)}</p><div class="pastilles"><a class="pastille" style="--c:#11110F" href="#e/${e.id}">Comprendre cette musique &#8250;</a>${paire(e.name, "Écouter")}<a class="pastille clair" href="#graphe/${e.id}">Ses influences</a></div></div>` : "";
+}
+function mFiltrer(id) {
+  if (!id) MONDE.fam = new Set(D.families.map(f => f.id));
+  else if (mToutes()) MONDE.fam = new Set([id]);   // un premier toucher isole la famille
+  else if (MONDE.fam.has(id)) { MONDE.fam.delete(id); if (!MONDE.fam.size) MONDE.fam = new Set(D.families.map(f => f.id)); }
+  else MONDE.fam.add(id);
+  if (MONDE.sel && E[MONDE.sel] && !MONDE.fam.has(E[MONDE.sel].family)) { MONDE.sel = null; detailMonde(); }
+  MONDE.focus = null; MONDE.nbListe = 24; const L = mVisibles(); mDessiner(); mAjuster(mToutes() ? [] : L);
+}
+function mRecherche() {
+  const q = $("#mq"), l = $("#mqr"); if (!q) return;
+  const aff = () => { const r = chercher(q.value, 40).slice(0, 8); l.innerHTML = r.map(e => e.geo ? `<li><button type="button" data-id="${e.id}"><b>${esc(e.name)}</b><span>${esc(e.region)}</span></button></li>` : `<li><a href="#e/${e.id}"><b>${esc(e.name)}</b><span>pas de lieu, voir la fiche</span></a></li>`).join(""); l.classList.toggle("on", r.length > 0); };
+  q.oninput = aff; q.onfocus = aff;
+  q.onkeydown = ev => { if (ev.key === "Escape") { l.classList.remove("on"); q.blur(); } if (ev.key === "Enter") { const r = chercher(q.value, 40).find(e => e.geo); if (r) { ev.preventDefault(); mChoisirRecherche(r.id); } } };
+  l.onclick = ev => { const b = ev.target.closest("button[data-id]"); if (b) mChoisirRecherche(b.dataset.id); };
+  if (!window.__mondeClic) { window.__mondeClic = true; document.addEventListener("click", ev => { const m = $("#mqr"); if (m && !ev.target.closest(".m-rech")) m.classList.remove("on"); }); }
+}
+function mChoisirRecherche(id) { $("#mqr").classList.remove("on"); $("#mq").value = E[id].name; MONDE.focus = null; mChoisir(id, true); }
 function brancherZoomMonde() {
-  const sv = $("#msvg"), ptr = new Map(); let dernier = null, dep = 0, pince = 0;
+  const sv = $("#msvg"), ptr = new Map(); let dernier = null, dep = 0, pince = 0, raf = 0;
   const carte = (cx, cy) => { const r = sv.getBoundingClientRect(), v = mVb(); return [v.x + (cx - r.left) / r.width * v.w, v.y + (cy - r.top) / r.height * v.h]; };
-  sv.addEventListener("pointerdown", e => { sv.setPointerCapture(e.pointerId); ptr.set(e.pointerId, [e.clientX, e.clientY]); dep = 0; dernier = [e.clientX, e.clientY]; if (ptr.size === 2) { const [a, b] = [...ptr.values()]; pince = Math.hypot(a[0] - b[0], a[1] - b[1]); } });
+  const redessiner = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; mDessiner(); }); };
+  sv.addEventListener("pointerdown", e => { if (MONDE.anim) { cancelAnimationFrame(MONDE.anim); MONDE.anim = 0; } sv.setPointerCapture(e.pointerId); ptr.set(e.pointerId, [e.clientX, e.clientY]); dep = 0; dernier = [e.clientX, e.clientY]; if (ptr.size === 2) { const [a, b] = [...ptr.values()]; pince = Math.hypot(a[0] - b[0], a[1] - b[1]); } });
   sv.addEventListener("pointermove", e => { if (!ptr.has(e.pointerId)) return; ptr.set(e.pointerId, [e.clientX, e.clientY]);
     if (ptr.size === 2) { const [a, b] = [...ptr.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pince > 0) { const [cx, cy] = carte((a[0] + b[0]) / 2, (a[1] + b[1]) / 2); mZoomer(d / pince, cx, cy); } pince = d; dep = 99; return; }
     const dx = e.clientX - dernier[0], dy = e.clientY - dernier[1]; dep += Math.abs(dx) + Math.abs(dy); dernier = [e.clientX, e.clientY];
-    if (dep > 4) { const r = sv.getBoundingClientRect(), v = mVb(); v.x -= dx / r.width * v.w; v.y -= dy / r.height * v.h; mAppliquer(); sv.classList.add("glisse"); } });
-  const fin = e => { ptr.delete(e.pointerId); if (ptr.size < 2) pince = 0; sv.classList.remove("glisse");
-    if (ptr.size === 0 && dep <= 4) { const t = document.elementFromPoint(e.clientX, e.clientY), g = t && t.closest && t.closest(".pt-monde"); if (g) { MONDE.sel = g.dataset.id; dessinerMonde(); detailMonde(); } }
-    if (ptr.size === 0 && dep > 4) dessinerMonde(); };
+    if (dep > 4) { const r = sv.getBoundingClientRect(), v = mVb(); v.x -= dx / r.width * v.w; v.y -= dy / r.height * v.h; mAppliquer(); sv.classList.add("glisse"); redessiner(); } });
+  const fin = e => { const etait = ptr.size; ptr.delete(e.pointerId); if (ptr.size < 2) pince = 0; sv.classList.remove("glisse");
+    if (ptr.size === 0 && dep <= 4 && etait === 1) { const t = document.elementFromPoint(e.clientX, e.clientY), g = t && t.closest && t.closest(".pt-monde"); if (g) mToucher(g); }
+    if (ptr.size === 0 && dep > 4) { MONDE.focus = null; mDessiner(); } };
   sv.addEventListener("pointerup", fin); sv.addEventListener("pointercancel", e => { ptr.delete(e.pointerId); pince = 0; });
+  sv.addEventListener("keydown", ev => { if ((ev.key === "Enter" || ev.key === " ") && ev.target.closest && ev.target.closest(".pt-monde")) { ev.preventDefault(); mToucher(ev.target.closest(".pt-monde")); } });
   sv.addEventListener("wheel", e => { e.preventDefault(); const [cx, cy] = carte(e.clientX, e.clientY); mZoomer(Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.002)), cx, cy); }, { passive: false });
   sv.addEventListener("dblclick", e => { const [cx, cy] = carte(e.clientX, e.clientY); mZoomer(2, cx, cy); });
-  $(".monde-ctrl").addEventListener("click", e => { const b = e.target.closest("[data-z]"); if (!b) return; if (b.dataset.z === "in") mZoomer(1.6); else if (b.dataset.z === "out") mZoomer(1 / 1.6); else { MONDE.vb = null; mAppliquer(); dessinerMonde(); } });
+  $(".monde-ctrl").addEventListener("click", e => { const b = e.target.closest("[data-z]"); if (!b) return; MONDE.focus = null; if (b.dataset.z === "in") mZoomer(1.6, null, null, true); else if (b.dataset.z === "out") mZoomer(1 / 1.6, null, null, true); else { if (!mToutes()) MONDE.fam = new Set(D.families.map(f => f.id)); mAller({ x: 0, y: 0, w: D.carte.w }); } });
 }
-function detailMonde() { const e = MONDE.sel && E[MONDE.sel]; $("#detail").innerHTML = e ? `<div class="fiche-tete" style="--c:${coul(e)}"><h3 style="font:400 1.5rem var(--f-aff)">${esc(e.name)}</h3><div class="meta"><span>${esc(e.region)}</span><span>${esc(periode(e))}</span></div><p>${esc(e.description)}</p><div class="pastilles"><a class="pastille clair" href="#e/${e.id}">Comprendre cette musique &#8250;</a></div></div>` : `<p class="petit">Choisis un point pour voir la musique.</p>`; }
+function mToucher(g) { if (g.dataset.id) { MONDE.focus = null; mChoisir(g.dataset.id); } else if (g.dataset.g != null) { const gr = MONDE.grappes[+g.dataset.g]; if (gr) mOuvrirGrappe(gr); } }
+function mZoomer(f, cx, cy, anim) {   // cx, cy : point fixe en coordonnées de carte
+  const v = mVb(); cx = cx ?? v.x + v.w / 2; cy = cy ?? v.y + v.h / 2; const w2 = Math.max(D.carte.w / 40, Math.min(D.carte.w, v.w / f)), r = w2 / v.w;
+  const c = { x: cx - (cx - v.x) * r, y: cy - (cy - v.y) * r, w: w2 };
+  if (anim) mAller(c); else { v.x = c.x; v.y = c.y; v.w = w2; MONDE.focus = null; mAppliquer(); mDessiner(); }
+}
 function brancherMonde() {
   const fond = d => { MONDE.terres = d.terres; $("#terres").setAttribute("d", d.terres); };
   if (MONDE.terres) fond({ terres: MONDE.terres }); else fetch("../monde/carte.json").then(r => r.json()).then(d => { if ($("#terres")) fond(d); }).catch(() => {});
-  $("#mfiltres").querySelectorAll("[data-f]").forEach(b => b.onclick = () => { const f = b.dataset.f; if (MONDE.fam.has(f)) { if (MONDE.fam.size > 1) MONDE.fam.delete(f); } else MONDE.fam.add(f); b.setAttribute("aria-pressed", MONDE.fam.has(f)); dessinerMonde(); });
-  if (MONDE.centrer && E[MONDE.centrer] && E[MONDE.centrer].geo) { const [x, y] = E[MONDE.centrer].geo, w = D.carte.w / 4; MONDE.vb = { x: x - w / 2, y: y - w * D.carte.h / D.carte.w / 2, w, h: 0 }; MONDE.centrer = null; }
-  mAppliquer(); brancherZoomMonde(); dessinerMonde(); detailMonde(); mAppliquer();
+  $("#mfiltres").onclick = ev => { const b = ev.target.closest("[data-f]"); if (b) mFiltrer(b.dataset.f); };
+  $("#metat").onclick = ev => { if (ev.target.closest("[data-reinit]")) mFiltrer(""); };
+  $("#mliste").onclick = ev => { const b = ev.target.closest("[data-id]"); if (b) { mChoisir(b.dataset.id, true); } };
+  $("#mzn").onclick = ev => { if (ev.target.closest("[data-zone]")) { MONDE.focus = null; mDessiner(); } };
+  $("#mplus").onclick = () => { MONDE.nbListe += 24; mDessiner(); };
+  $("#detail").onclick = ev => { if (ev.target.closest("[data-ferme]")) { MONDE.sel = null; try { history.replaceState(null, "", "#monde"); } catch (_) {} mDessiner(); detailMonde(); } };
+  mRecherche();
+  MONDE.vb = null; MONDE.focus = null; MONDE.nbListe = 24; mMondeEntier(false);
+  if (MONDE.centrer && E[MONDE.centrer] && E[MONDE.centrer].geo) { const e = E[MONDE.centrer], w = D.carte.w / 4, a = mAsp(); MONDE.vb = mCaler({ x: e.geo[0] - w / 2, y: e.geo[1] - w / a / 2, w, h: 0 }); MONDE.centrer = null; }
+  mAppliquer(); brancherZoomMonde(); mDessiner(); detailMonde(); mAppliquer();
+  if (!window.__mondeRedim) { window.__mondeRedim = true; let t; window.addEventListener("resize", () => { clearTimeout(t); t = setTimeout(() => { if ($("#msvg")) { mCaler(mVb()); mAppliquer(); mDessiner(); } }, 120); }); }
+  if (!window.__mondeEchap) { window.__mondeEchap = true; document.addEventListener("keydown", ev => { if (ev.key === "Escape" && $("#msvg") && MONDE.sel && !ev.target.closest("input")) { MONDE.sel = null; mDessiner(); detailMonde(); } }); }
 }
 
 /* ---------- Laboratoire des techniques ---------- */
@@ -891,6 +1026,7 @@ function rendre() {
   if (r === "e" && E[a] && window.COURS_POINTS) window.__arretLecture = window.COURS_POINTS.lecture(app, "atlas:e:" + a, 1, "atlas", { apres: () => {
     for (const pc of D.parcours || []) if (pc.etapes.some(x => x.id === a) && pc.etapes.every(x => window.COURS_POINTS.deja("atlas:e:" + x.id))) window.COURS_POINTS.gagner("atlas:p:" + pc.id, 5, "atlas"); } });
   document.querySelectorAll("header.haut nav a").forEach(x => x.toggleAttribute("aria-current", x.dataset.n === onglet));
+  { const nb = $("header.haut nav"), cur = nb && nb.querySelector("[aria-current]"); if (cur && nb.scrollWidth > nb.clientWidth) nb.scrollLeft = Math.max(0, cur.offsetLeft - (nb.clientWidth - cur.offsetWidth) / 2); }
   const nom = r === "e" && E[a] ? E[a].name + ", " : ""; document.title = nom + "Atlas mondial des musiques";
   window.scrollTo(0, 0);
 }
