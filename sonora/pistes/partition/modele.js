@@ -3,7 +3,7 @@
 //   · le même modèle est produit par l'analyseur de texte façon LilyPond (lily.js) et lu par la gravure (gravure.js).
 // Le temps s'écrit en UNITÉS : 1 noire = 24 unités (la ronde 96, la croche 12, la double croche 6, la triple croche 3, la croche de triolet 8).
 // Sans DOM : testé dans Node (tests/partition.test.js).
-import { ecrireMidi, midiDe, memeNote, nuanceDeVitesse, VITESSE_NUANCE } from "./hauteurs.js?v=0c2ed3b721";
+import { ecrireMidi, midiDe, memeNote, nuanceDeVitesse, VITESSE_NUANCE } from "./hauteurs.js?v=7f779f809a";
 
 export const U_NOIRE = 24, U_RONDE = 96;
 export const VALEURS = { w: 96, h: 48, q: 24, "8": 12, "16": 6, "32": 3 };   // valeur écrite -> unités

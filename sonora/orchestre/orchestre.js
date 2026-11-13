@@ -1,14 +1,14 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=0c2ed3b721";
-import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=0c2ed3b721";
-import { monterTimbres } from "./timbres.js?v=0c2ed3b721";
-import { monterFugue } from "./fugue.js?v=0c2ed3b721";
-import { monterBritten } from "./britten.js?v=0c2ed3b721";
-import { monterVariations } from "./variations.js?v=0c2ed3b721";
-import { svgIcone, dessin } from "./icones.js?v=0c2ed3b721";
-import { PHOTOS } from "./photos.js?v=0c2ed3b721";
-import { FICHES } from "./fiches.js?v=0c2ed3b721";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=7f779f809a";
+import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=7f779f809a";
+import { monterTimbres } from "./timbres.js?v=7f779f809a";
+import { monterFugue } from "./fugue.js?v=7f779f809a";
+import { monterBritten } from "./britten.js?v=7f779f809a";
+import { monterVariations } from "./variations.js?v=7f779f809a";
+import { svgIcone, dessin } from "./icones.js?v=7f779f809a";
+import { PHOTOS } from "./photos.js?v=7f779f809a";
+import { FICHES } from "./fiches.js?v=7f779f809a";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -194,15 +194,8 @@ function parcours() {
   $("parcours").innerHTML = ESPACES.map(e => e[2] ? '<li data-e="' + e[2] + '"><button type="button">' + corps(e) + "</span></button></li>" : '<li class="bientot">' + corps(e) + '<small>à venir</small></span></li>').join("");
   $("parcours").addEventListener("click", e => { const li = e.target.closest("li[data-e]"); if (li) espace(li.dataset.e, true); });
 }
-// La page de crédits : chaque photo avec son auteur et sa licence, et le lien vers sa page sur Commons.
-function credits() {
-  const vus = {}, liste = []; for (const k of Object.keys(PHOTOS)) { const p = PHOTOS[k]; if (!vus[p.titre]) { vus[p.titre] = 1; liste.push(p); } }
-  const el = $("credits-liste"); if (!el) return;
-  el.innerHTML = liste.map(p => "<li>" + esc(p.titre.replace(/\.[A-Za-z]+$/, "")) + ", " + esc(p.auteur) + ", " + esc(p.licence) + (p.fournie ? " (fournie, source à confirmer)" : ' (<a href="https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(p.titre.replace(/ /g, "_")) + '">Wikimedia Commons</a>)') + "</li>").join("");
-  const t = $("credits"); if (t) t.hidden = !liste.length;
-}
 function demarrer() {
-  parcours(); dessinerPlan(); dessinerGalerie(); dessinerTessitures(); credits();
+  parcours(); dessinerPlan(); dessinerGalerie(); dessinerTessitures();
   $("familles").innerHTML = ORDRE_FAMILLES.map(f => '<button type="button" data-f="' + f + '" aria-pressed="false" style="--c:' + FAMILLES[f].couleur + '">' + esc(FAMILLES[f].court) + "</button>").join("");
   $("familles").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; etat.famille = etat.famille === b.dataset.f ? null : b.dataset.f; marquer(); });
   $("explorer").addEventListener("click", e => { const g = e.target.closest(".sect, .tess-ligne, .carte-g"); if (!g) return; if (etat.choisir && g.classList.contains("sect")) { const k = etat.melange.indexOf(g.dataset.id); if (k >= 0) etat.melange.splice(k, 1); else etat.melange.push(g.dataset.id); majMelange(); return; } choisir(g.dataset.id, true); });

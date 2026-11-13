@@ -1,7 +1,7 @@
 // SONORA Orchestre, espace 05 « Construire une fugue » : la logique (sans DOM, testée dans Node).
 // Aucune mélodie existante n'est reprise : le sujet et le contre-sujet sont ceux de l'élève (le sujet d'exemple est écrit pour ce cours).
 // Exposition à 2, 3 ou 4 voix : chaque voix entre à son tour, d'abord avec le sujet (ou la réponse, le sujet transposé à la quinte), puis elle joue le contre-sujet pendant l'entrée de la voix suivante.
-import { jouables } from "./donnees.js?v=0c2ed3b721";
+import { jouables } from "./donnees.js?v=7f779f809a";
 
 export const PAS = 8;                                   // temps du sujet
 export const DEGRES = [72, 71, 69, 67, 65, 64, 62, 60, 59, 57];   // les lignes de la grille, de l'aigu au grave : do5 à la3, gamme de do majeur

@@ -1,7 +1,7 @@
 // TIMBRE : l'interface du jeu. La logique (questions, points, étoiles) est dans jeu_logique.js ; les sons sont de vrais enregistrements de la banque du site.
-import { UNIVERS, TOUS, parUnivers, NOM_JEU } from "./univers.js?v=0c2ed3b721";
-import { NIVEAUX, MANCHES, creerQuestions, alea, points, etoilesDe, niveauOuvert, graineDuJour } from "./jeu_logique.js?v=0c2ed3b721";
-import { preparer, mixer } from "../harmonie/echantillons.js?v=0c2ed3b721";
+import { UNIVERS, TOUS, parUnivers, NOM_JEU } from "./univers.js?v=7f779f809a";
+import { NIVEAUX, MANCHES, creerQuestions, alea, points, etoilesDe, niveauOuvert, graineDuJour } from "./jeu_logique.js?v=7f779f809a";
+import { preparer, mixer } from "../harmonie/echantillons.js?v=7f779f809a";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

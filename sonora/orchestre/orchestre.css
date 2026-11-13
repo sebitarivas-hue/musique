@@ -79,9 +79,7 @@
 
 /* Photos d'instruments : le fond des photos est transparent, la teinte de la famille se voit derrière */
 .photo { display: block; max-width: 100%; height: auto; }   /* photos au fond transparent : plus de mode de fusion (il laissait des zones blanches sur Safari iOS) */
-.grand-icone { width: 164px; height: 164px; } .credits { margin-top: 28px; } .credits ul { padding-left: 1.2em; margin: 6px 0; font-size: .85rem; color: var(--gris); } .credits a { color: inherit; }
-
-/* Rubriques de la fiche */
+.grand-icone { width: 164px; height: 164px; } /* Rubriques de la fiche */
 .savoir p { margin: 6px 0; font-size: .95rem; line-height: 1.45; } .etq { display: inline-block; font: 700 .7rem var(--f-mono, monospace); text-transform: uppercase; background: var(--noir); color: var(--papier); padding: 1px 6px; margin-right: 4px; }
 .rubrique { margin: 10px 0; } .rangee { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; } .rangee button { min-height: 34px; font-size: .82rem; }
 .pierre { background: #FFF4C2; border-left: 6px solid #FFC53D; padding: 6px 10px; font-size: .92rem; margin: 10px 0; }
@@ -154,7 +152,7 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
 .p-vide { fill: none; stroke: #b9b8ae; stroke-width: 1.6; stroke-dasharray: 3 3; pointer-events: none; }
 
 /* Les vues et panneaux masqués le sont toujours, quoi qu'en dise une autre règle d'affichage (Safari iOS laissait des blocs vides). */
-#plan[hidden], #galerie[hidden], #tessitures[hidden], .melange[hidden], #explorer[hidden], #timbres[hidden], #fugue[hidden], #britten[hidden], #variations[hidden], #credits[hidden] { display: none !important; }
+#plan[hidden], #galerie[hidden], #tessitures[hidden], .melange[hidden], #explorer[hidden], #timbres[hidden], #fugue[hidden], #britten[hidden], #variations[hidden] { display: none !important; }
 
 /* Tous les cadres qui reçoivent un instrument le centrent et le font tenir entier, avec une marge : plus d'icône collée dans un coin ou qui déborde. */
 .pico, .vignette, .vg, .vig, .grand-icone { display: flex; align-items: center; justify-content: center; box-sizing: border-box; overflow: hidden; }
