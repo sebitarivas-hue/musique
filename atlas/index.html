@@ -301,6 +301,8 @@ h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-trans
 .parcours-menu { margin-bottom: 8px; }
 .pcomprendre { margin: 12px 0 4px; } .pcomprendre a { font-weight: 600; }
 details.plusloin { margin: 28px 0 10px; border: 2px solid var(--noir); background: #fff; } details.plusloin > summary { cursor: pointer; padding: 14px 16px; font-weight: 700; } details.plusloin[open] > summary { border-bottom: 2px solid var(--noir); } details.plusloin > :not(summary) { margin-left: 16px; margin-right: 16px; }
+details.theme { margin: 10px 0; border: 2px solid var(--noir); background: #fff; } details.theme > summary { cursor: pointer; padding: 12px 16px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; list-style: none; } details.theme > summary::-webkit-details-marker { display: none; } details.theme > summary h2 { margin: 0; font-size: 1.15rem; } details.theme[open] > summary { border-bottom: 2px solid var(--noir); } details.theme > :not(summary) { margin: 12px 16px 16px; }
+.lettres a { min-width: 44px; justify-content: center; }
 </style>
 </head>
 <body>
@@ -393,19 +395,10 @@ function vueAccueil() {
   <p class="petit" style="margin-top:14px">${D.entries.length} entrées, dont ${D.entries.filter(e => ["artist", "group", "composer"].includes(e.type)).length} artistes, groupes et compositeurs. Un nom ou un titre absent ? Écris-le dans la recherche : s'il manque, dis-le à ton professeur.</p>`;
   return `${uneHtml(rech)}
   ${f.length ? `<h2>Mes favoris</h2><div class="pastilles">${f.map(id => `<a class="pastille" style="--c:${coul(E[id])}" href="#e/${id}">${esc(E[id].name)}</a>`).join("")}</div>` : ""}
-  <h2>Des parcours pour comprendre</h2><p class="petit">Chaque parcours explique les musiques à sa façon. Tu peux aussi les ouvrir sans chercher.</p>
-  <div class="grille">
-   ${carte("#genealogies", "#5a2bd6", "Généalogies", "D'où vient une musique et où elle va : rap, rock, jazz, pop, traditions, femmes, diasporas.", ng + " schémas")}
-   ${carte("#parcours", "#e0457b", "Trajets guidés", "D'une musique à la suivante, en disant ce qui se transmet.", nb + " trajets")}
-   ${carte("#monde", "#12a07a", "Carte mondiale", "Où chaque musique est née, sur une carte du monde.", "Ouvrir")}
-   ${carte("#frise", "#4658ff", "Frise chronologique", "De la flûte en os à aujourd'hui, une époque à la fois.", "Ouvrir")}
-   ${carte("#graphe/detroit-techno", "#11110F", "Graphe des influences", "Une musique au centre, ce qui l'a nourrie à gauche, ce qu'elle a donné à droite.", "Ouvrir")}
-   ${carte("#arbre", "#5a2bd6", "Arbre des genres", "Les familles et leurs sous-genres, du plus général au plus précis.", "Ouvrir")}
-   ${carte("#techniques", "#e08a00", "Laboratoire des techniques", "Les idées, les machines et les gestes qui rendent les musiques possibles.", "Ouvrir")}
-   ${carte("#ecoute", "#e0457b", "Bibliothèque d'écoute", "Des morceaux à comparer deux par deux, avec une question.", "Ouvrir")}
-   ${carte("#passerelles", "#12a07a", "Passerelles", "Des rapprochements entre musiques lointaines.", "Ouvrir")}</div>
+  <h2>Des parcours pour comprendre</h2>
+  <div class="pastilles parcours-pastilles">${[["#genealogies", "Généalogies (" + ng + ")"], ["#parcours", "Trajets guidés (" + nb + ")"], ["#monde", "Carte mondiale"], ["#frise", "Frise"], ["#graphe/detroit-techno", "Graphe"], ["#arbre", "Arbre"], ["#techniques", "Techniques"], ["#ecoute", "Écoute"], ["#passerelles", "Passerelles"]].map(([h, n]) => `<a class="pastille" style="--c:#11110F" href="${h}">${n}</a>`).join("")}</div>
   <h2>Tout l'Atlas</h2>
-  <div class="grille">${D.families.map(fa => { const n = D.entries.filter(e => e.family === fa.id).length; return `<a class="carte" style="--c:${coul({family: fa.id})}" href="#f/${fa.id}"><b>${esc(fa.name)}</b><span>${esc(fa.description)}</span><span class="suite">${n} entrées &#8250;</span></a>`; }).join("")}</div>
+  <div class="pastilles">${D.families.map(fa => `<a class="pastille" style="--c:${coul({family: fa.id})}" href="#f/${fa.id}">${esc(fa.name.split(",")[0])} <span class="petit">${D.entries.filter(e => e.family === fa.id).length}</span></a>`).join("")}</div>
   <div class="pastilles" style="margin-top:12px"><a class="pastille" style="--c:#11110F" href="#tout">Toutes les entrées de A à Z</a><a class="pastille" style="--c:#11110F" href="#tout/composer">Tous les compositeurs</a><a class="pastille" style="--c:#11110F" href="#tout/artist">Tous les artistes</a><a class="pastille" style="--c:#11110F" href="#tout/genre">Tous les genres</a><a class="pastille" style="--c:#11110F" href="#tout/technique">Toutes les techniques</a><a class="pastille" style="--c:#11110F" href="#tout/instrument">Tous les instruments</a><a class="pastille clair" href="#hasard">Au hasard</a></div>
   <footer class="bas petit">${D.entries.length} entrées, ${D.relations.length} relations typées, ${D.concepts.length} idées, ${D.parcours.length} trajets. Corpus de départ, non exhaustif. <a href="#sources">Sources et méthode</a>.</footer>`;
 }
@@ -477,16 +470,19 @@ function brancherAccueil() {
 }
 
 /* ---------- Tout : l'index complet de A à Z ---------- */
-function vueTout(type) {
+function vueTout(arg) {
+  const parts = (arg || "").split("/"), type = parts.find(x => TYPE[x]) || "", choix = parts.find(x => /^[A-Z0]$/.test(x));
   const norm = x => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   const liste = D.entries.filter(e => !type || e.type === type).sort((a, b) => norm(a.name).localeCompare(norm(b.name)));
-  const lettres = {}; liste.forEach(e => { const l = (norm(e.name)[0] || "#").toUpperCase(); (lettres[/[A-Z]/.test(l) ? l : "#"] = lettres[/[A-Z]/.test(l) ? l : "#"] || []).push(e); });
-  const ks = Object.keys(lettres).sort();
+  const lettres = {}; liste.forEach(e => { const l = (norm(e.name)[0] || "0").toUpperCase(), k = /[A-Z]/.test(l) ? l : "0"; (lettres[k] = lettres[k] || []).push(e); });
+  const ks = Object.keys(lettres).sort(), L = choix && lettres[choix] ? choix : ks.find(k => k !== "0") || ks[0];
   const filtres = [["", "Tout"], ...Object.keys(TYPE).filter(k => D.entries.some(e => e.type === k)).map(k => [k, TYPE[k]])];
+  const lien = (t, l) => "#tout" + (t ? "/" + t : "") + (l ? "/" + l : "");
   return `<span class="etiq">Index</span><h1>${type ? esc(TYPE[type]) + "s" : "Toutes les entrées"} (${liste.length})</h1>
-  <div class="pastilles">${filtres.map(([k, n]) => `<a class="pastille ${k === (type || "") ? "" : "clair"}" ${k === (type || "") ? 'style="--c:#11110F"' : ""} href="#tout${k ? "/" + k : ""}">${esc(n)}</a>`).join("")}</div>
-  <p class="petit">${ks.map(l => `<a href="#" data-l="${l}">${l}</a>`).join(" ")}</p>
-  ${ks.map(l => `<h2 id="l-${l}">${l}</h2><div class="pastilles">${lettres[l].map(e => `<a class="pastille" style="--c:${coul(e)}" href="#e/${e.id}">${esc(e.name)}</a>`).join("")}</div>`).join("")}`;
+  <p class="petit">Choisis une lettre. Pour chercher un nom précis, la recherche en haut de la page est plus rapide.</p>
+  <div class="pastilles">${filtres.map(([k, n]) => `<a class="pastille ${k === type ? "" : "clair"}" ${k === type ? 'style="--c:#11110F"' : ""} href="${lien(k, "")}">${esc(n)}</a>`).join("")}</div>
+  <div class="pastilles lettres">${ks.map(l => `<a class="pastille ${l === L ? "" : "clair"}" ${l === L ? 'style="--c:#11110F"' : ""} href="${lien(type, l)}">${l === "0" ? "#" : l} <span class="petit">${lettres[l].length}</span></a>`).join("")}</div>
+  <h2>${L === "0" ? "#" : L}</h2><div class="pastilles">${(lettres[L] || []).map(e => `<a class="pastille" style="--c:${coul(e)}" href="#e/${e.id}">${esc(e.name)}</a>`).join("")}</div>`;
 }
 
 /* ---------- Fiche ---------- */
@@ -557,13 +553,17 @@ function brancherFiche(id) { const b = $("#fav"); if (b) b.onclick = () => { fav
 /* ---------- Famille et arbre des genres ---------- */
 function vueFamille(id) {
   const f = FAM[id]; if (!f) return vueAccueil();
-  const L = D.entries.filter(e => e.family === id).sort((a, b) => a.period.start - b.period.start);
-  return `<span class="etiq">Famille</span><h1>${esc(f.name)}</h1><p class="lead">${esc(f.description)}</p><div class="grille">${L.map(e => `<a class="carte" style="--c:${coul(e)}" href="#e/${e.id}"><b>${esc(e.name)}</b><span>${esc(TYPE[e.type])}, ${esc(periode(e))}</span><span>${esc(e.region)}</span></a>`).join("")}</div>`;
+  const L = D.entries.filter(e => e.family === id);
+  const racines = L.filter(e => !parentDe(e.id) || E[parentDe(e.id)].family !== id).map(e => [e, enfantsDe(e.id).length]).sort((a, b) => b[1] - a[1] || a[0].period.start - b[0].period.start).slice(0, 36);
+  return `<span class="etiq">Famille</span><h1>${esc(f.name)}</h1><p class="lead">${esc(f.description)}</p>
+  <p class="petit">${L.length} entrées. Pour trouver un nom, utilise la recherche en haut de la page ; pour parcourir, l'arbre.</p>
+  <div class="pastilles"><a class="pastille" style="--c:#11110F" href="#arbre/${id}">Arbre de cette famille</a><a class="pastille clair" href="#frise">Frise</a><a class="pastille clair" href="#monde">Carte</a></div>
+  <h2>Les grands courants</h2><div class="pastilles">${racines.map(([e, n]) => `<a class="pastille" style="--c:${coul(e)}" href="#e/${e.id}">${esc(e.name)}${n ? ` <span class="petit">${n}</span>` : ""}</a>`).join("")}</div>`;
 }
 function noeudArbre(id, prof) {
   const e = E[id], enf = enfantsDe(id).sort((a, b) => E[a].period.start - E[b].period.start);
   const lien = `<a href="#e/${id}">${esc(e.name)}</a>`;
-  return enf.length ? `<li><details${prof < 1 ? " open" : ""}><summary><span class="pt" style="--c:${coul(e)}"></span>${esc(e.name)} <span class="petit">${enf.length}</span></summary><ul><li>${lien}</li>${enf.map(x => noeudArbre(x, prof + 1)).join("")}</ul></details></li>` : `<li>${lien}</li>`;
+  return enf.length ? `<li><details><summary><span class="pt" style="--c:${coul(e)}"></span>${esc(e.name)} <span class="petit">${enf.length}</span></summary><ul><li>${lien}</li>${enf.map(x => noeudArbre(x, prof + 1)).join("")}</ul></details></li>` : `<li>${lien}</li>`;
 }
 function vueArbre(fam) {
   const f = fam && FAM[fam] ? fam : D.families[0].id;
@@ -985,9 +985,9 @@ function brancherMonde() {
 function vueTechniques() {
   const instr = D.entries.filter(e => e.type === "instrument").sort((a, b) => a.period.start - b.period.start);
   return `<span class="etiq">Laboratoire des techniques</span><h1>Ce qui rend les musiques possibles</h1><p class="lead">Des idées d'écriture, des façons de fabriquer le son, des rythmes, des machines. Une idée traverse souvent des musiques très éloignées.</p>
-  ${D.rubriques.map(r => `<h2>${esc(r.nom)}</h2><div class="concepts">${r.concepts.map(i => conceptHtml(CO[i])).join("")}</div>`).join("")}
-  <h2>Les instruments et les machines</h2><div class="grille">${instr.map(e => `<a class="carte" style="--c:${coul(e)}" href="#e/${e.id}"><b>${esc(e.name)}</b><span>${e.period.start}, ${esc(e.region)}</span><span>${esc(e.description)}</span></a>`).join("")}</div>
-  <h2>Les techniques</h2><div class="pastilles">${D.entries.filter(e => e.type === "technique").map(e => `<a class="pastille" style="--c:${coul(e)}" href="#e/${e.id}">${esc(e.name)}</a>`).join("")}</div>
+  ${D.rubriques.map((r, k) => `<details class="theme"${k === 0 ? " open" : ""}><summary><h2>${esc(r.nom)}</h2><span class="petit">${r.concepts.length} idées</span></summary><div class="concepts">${r.concepts.map(i => conceptHtml(CO[i])).join("")}</div></details>`).join("")}
+  <details class="theme"><summary><h2>Les instruments et les machines</h2><span class="petit">${instr.length}</span></summary><div class="grille">${instr.map(e => `<a class="carte" style="--c:${coul(e)}" href="#e/${e.id}"><b>${esc(e.name)}</b><span>${e.period.start}, ${esc(e.region)}</span><span>${esc(e.description)}</span></a>`).join("")}</div></details>
+  <details class="theme"><summary><h2>Les techniques</h2><span class="petit">${D.entries.filter(e => e.type === "technique").length}</span></summary><div class="pastilles">${D.entries.filter(e => e.type === "technique").map(e => `<a class="pastille" style="--c:${coul(e)}" href="#e/${e.id}">${esc(e.name)}</a>`).join("")}</div></details>
   <h2>Essayer soi-même</h2><p>Le Labo du cours permet de fabriquer et de transformer des sons avec Faust : <a href="../eleves/#labo">ouvrir le Labo</a>.</p>`;
 }
 
@@ -1001,14 +1001,15 @@ function vueEcoute() {
 /* ---------- Trajets ---------- */
 function vueGenealogies(cible) {
   const G = D.genealogies || [];
+  const choisi = cible && cible !== "toutes" ? cible : G[0] && G[0].id;
   const case_ = id => { const e = E[id]; return e ? `<a class="gcase" style="--c:${coul(e)}" href="#e/${id}">${esc(e.name.replace(/^Rap : /, ""))}</a>` : ""; };
   const schema = g => `<section class="gen" id="gen-${g.id}"><h2>${esc(g.titre)}</h2><p class="petit">${esc(g.intro)}</p>
     ${g.racine ? `<a class="gracine" href="#e/${g.racine.id}">${esc(g.racine.libelle)}</a>` : ""}
     ${g.niveaux.map((n, i) => `${g.racine || i ? '<div class="gfleche" aria-hidden="true">&#8595;</div>' : ""}${n.libelle ? `<div class="glibelle">${esc(n.libelle)}</div>` : ""}<div class="ggrille">${n.ids.map(case_).join("")}</div>`).join("")}</section>`;
-  const aff = cible ? G.filter(g => g.id === cible) : G;
+  const aff = cible === "toutes" ? G : G.filter(g => g.id === (cible || G[0].id));
   return `<p class="fil"><a href="#">Départ</a> &#8250; Généalogies</p><h1>Généalogies</h1>
   <p class="lead">Des schémas pour voir d'où vient une musique et où elle va. Chaque case ouvre une fiche. Ce sont des repères à relire, pas des filiations certaines.</p>
-  <div class="pastilles">${G.map(g => `<a class="pastille ${g.id === cible ? "" : "clair"}" href="#genealogies/${g.id}">${esc(g.titre)}</a>`).join("")}${cible ? '<a class="pastille clair" href="#genealogies">Toutes</a>' : ""}</div>
+  <div class="pastilles">${G.map(g => `<a class="pastille ${g.id === choisi ? "" : "clair"}" href="#genealogies/${g.id}">${esc(g.titre)}</a>`).join("")}<a class="pastille clair" href="#genealogies/toutes">Toutes</a></div>
   ${aff.map(schema).join("")}${AVIS}`;
 }
 function vueParcoursListe() {
@@ -1022,9 +1023,7 @@ function vueParcoursListe() {
   return `<span class="etiq">Trajets</span><h1>Des chemins dans l'Atlas</h1>
   <p class="lead">${D.parcours.length} trajets guidés montrent ce qui change à chaque étape. Ce sont des chemins possibles, pas les seuls, et ils sont à relire.</p>
   <div class="pastilles">${themes.map((t, i) => `<a class="pastille clair" href="#parcours" data-saut="th-${i}">${esc(t)}</a>`).join("")}</div>
-  ${themes.map((t, i) => `<h2 id="th-${i}">${esc(t)}</h2><div class="grille">${D.parcours.filter(p => p.theme === t).map(carteP).join("")}</div>`).join("")}
-  <h2>Le cadre : toutes les familles</h2><p class="petit">L'Atlas est organisé en ${D.families.length} grandes familles musicologiques, qui couvrent les musiques écrites, le jazz, le rock, la pop, les musiques urbaines, électroniques, d'Amérique latine, d'Afrique, des Caraïbes, d'Asie et du Moyen-Orient. Chaque trajet ci-dessous n'est qu'un chemin à travers ce cadre.</p>
-  <div class="grille">${cadre}</div>
+  ${themes.map((t, i) => { const L = D.parcours.filter(p => p.theme === t); return `<details class="theme" id="th-${i}"><summary><h2>${esc(t)}</h2><span class="petit">${L.length} trajets</span></summary><div class="grille">${L.map(carteP).join("")}</div></details>`; }).join("")}
   <div class="pastilles" style="margin-top:12px"><a class="pastille" style="--c:#11110F" href="#tout">Toutes les entrées de A à Z</a><a class="pastille" style="--c:#11110F" href="#arbre">Arbre des genres</a><a class="pastille" style="--c:#11110F" href="#frise">Frise chronologique</a></div>
   <p class="avis">Ce corpus n'est pas encore exhaustif : ${D.entries.length} entrées pour un cadre qui en demandera des milliers. Les familles sont musicologiques (pratiques, esthétiques, régions), non des catégories de plateformes. Les trajets sont des interprétations et le disent à chaque étape.</p>
 `;
@@ -1115,7 +1114,7 @@ document.addEventListener("click", e => {
   let u; try { u = new URL(a.href); } catch (_) { return; } if (u.origin === location.origin) return;
   if (ouvrirFenetreExterne(a.href, (a.textContent || "").replace(/\s+/g, " ").trim().slice(0, 80))) e.preventDefault();
 }, true);
-document.addEventListener("click", e => { const a = e.target.closest && e.target.closest("[data-saut]"); if (!a) return; const c = document.getElementById(a.dataset.saut); if (c) { e.preventDefault(); c.scrollIntoView({ block: "start" }); } });   // sauts dans la page (thèmes des trajets)
+document.addEventListener("click", e => { const a = e.target.closest && e.target.closest("[data-saut]"); if (!a) return; const c = document.getElementById(a.dataset.saut); if (c) { e.preventDefault(); if (c.tagName === "DETAILS") c.open = true; c.scrollIntoView({ block: "start" }); } });   // sauts dans la page (thèmes des trajets)
 brancherRecherche(); window.addEventListener("hashchange", rendre); rendre();
 </script>
 </body>
