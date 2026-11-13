@@ -388,11 +388,11 @@ function vueAccueil() {
   const f = fav.lire();
   const nb = D.parcours.length, ng = (D.genealogies || []).length;
   const carte = (href, c, titre, texte, suite) => `<a class="carte" style="--c:${c}" href="${href}"><b>${titre}</b><span>${texte}</span><span class="suite">${suite} &#8250;</span></a>`;
-  return `<h2 class="titre-recherche">Quelle musique aimes-tu ?</h2>
+  const rech = `<h2 class="titre-recherche">Quelle musique aimes-tu ?</h2>
   <p class="lead">Écris une musique, un artiste, un pays ou une idée. L'Atlas te propose aussitôt les parcours pour la comprendre : généalogie, trajet, carte, frise, graphe.</p>
   <div class="recherche"><input id="q" type="search" placeholder="Beyoncé, Nirvana, Jul, K-pop, drill, Boulez..." autocomplete="off" aria-label="Chercher une musique ou un artiste"><ul class="suggestions" id="sug" aria-live="polite"></ul></div>
-  <p class="petit" style="margin-top:14px">${D.entries.length} entrées, dont ${D.entries.filter(e => ["artist", "group", "composer"].includes(e.type)).length} artistes, groupes et compositeurs. Un nom ou un titre absent ? Écris-le dans la recherche : s'il manque, dis-le à ton professeur.</p>
-  ${uneHtml()}
+  <p class="petit" style="margin-top:14px">${D.entries.length} entrées, dont ${D.entries.filter(e => ["artist", "group", "composer"].includes(e.type)).length} artistes, groupes et compositeurs. Un nom ou un titre absent ? Écris-le dans la recherche : s'il manque, dis-le à ton professeur.</p>`;
+  return `${uneHtml(rech)}
   ${f.length ? `<h2>Mes favoris</h2><div class="pastilles">${f.map(id => `<a class="pastille" style="--c:${coul(E[id])}" href="#e/${id}">${esc(E[id].name)}</a>`).join("")}</div>` : ""}
   <h2>Des parcours pour comprendre</h2><p class="petit">Chaque parcours explique les musiques à sa façon. Tu peux aussi les ouvrir sans chercher.</p>
   <div class="grille">
@@ -415,7 +415,7 @@ function vueAccueil() {
 const SYMB = { "Comparaison d'écoute": "↔", "Analogie de procédé": "≈", "Proximité esthétique": "≈", "Emprunt (échantillon)": "→" };
 const BANDE = [["bande-gamelan", 314], ["bande-onde", 215], ["bande-djembe", 302], ["bande-statue", 203], ["bande-partition", 285], ["bande-signal", 312]];
 const passe = id => (D.passerelles || []).find(p => p.id === id);
-function uneHtml() {
+function uneHtml(apresVisuel = "") {
   const porte = (href, titre, texte, liens) => `<div class="porte"><a href="${href}"><b>${titre}<span aria-hidden="true">&#8599;</span></b><span>${texte}</span></a><ul>${liens.map(([h, n]) => `<li><a href="${h}">${n}</a></li>`).join("")}</ul></div>`;
   return `<section class="une" aria-labelledby="une-titre">
    <p class="une-kicker">Sebastian Rivas, professeur d'éducation musicale, Cours du Sacré-Cœur, Ablon-sur-Seine, 2026-2027</p>
@@ -425,6 +425,7 @@ function uneHtml() {
   </section>
   <div class="une-bande" aria-hidden="true">${BANDE.map(([n, w]) => `<img src="images/${n}.webp" alt="" width="${w}" height="156" style="flex-grow:${w}" loading="lazy">`).join("")}</div>
   <p class="une-credit">Illustrations générées pour l'Atlas par Sebastian Rivas : ce ne sont pas des documents d'archive.</p>
+  ${apresVisuel}
   <nav class="portes" aria-label="Les quatre portes de l'Atlas">
    ${porte("#tout", "Explorer", "Artistes, œuvres, genres et territoires", [["#arbre", "Arbre"], ["#monde", "Carte"], ["#frise", "Frise"], ["#graphe", "Graphe"]])}
    ${porte("#techniques", "Apprendre", "Comprendre les musiques et leurs langages", [["#parcours", "Trajets"], ["#ecoute", "Écoute"], ["#passerelles", "Passerelles"]])}
