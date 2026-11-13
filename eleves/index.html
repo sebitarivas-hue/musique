@@ -1597,6 +1597,47 @@ a.en-ecole { color: inherit; text-decoration: none; } a.en-ecole:hover b, a.en-e
 .prog-b { height: 8px; border-radius: 4px; background: rgba(128,128,128,.28); margin: 10px 0 8px; overflow: hidden; } .prog-b span { display: block; height: 100%; background: #ff5a36; border-radius: 4px; } .prog-seq.validee .prog-b span { background: #11110F; } .prog-seq.maitrisee .prog-b span { background: #D6FF00; }
 .prog-jeux { display: flex; flex-wrap: wrap; gap: 6px; } .prog-jeu { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 6px; border-radius: 999px; background: var(--c, #555); color: #fff !important; text-decoration: none; font: 700 .85rem var(--f-body); } .prog-jeu svg { width: 18px; height: 18px; } .prog-jeu.verrou { background: transparent; color: inherit !important; border: 1.5px dashed currentColor; padding: 4px 8px; }
 .prog-suite { margin: 12px 0 0; }
+/* Jouer, à la Duolingo : flamme, anneau, semaine, défis, coffre, chemin de jeux. */
+.duo-haut { margin-top: 14px; background: var(--surface); border: 2px solid var(--ink); border-radius: 20px; padding: 14px; }
+.duo-stats { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; text-align: center; }
+.duo-flamme { color: #aaa9a0; } .duo-flamme svg { width: 46px; height: 46px; fill: currentColor; } .duo-flamme .coeur { fill: rgba(255,255,255,.7); } .duo-flamme b { display: block; font: 700 2rem/1 var(--f-display); color: var(--ink); } .duo-flamme span { font-size: .8rem; color: var(--muted); }
+.duo-flamme.allumee { color: #ff7a1a; } .duo-flamme.allumee svg { filter: drop-shadow(0 0 8px rgba(255,122,26,.55)); transform-origin: 50% 90%; animation: vacille 1.7s ease-in-out infinite; } .duo-flamme.allumee .coeur { fill: #ffd23f; }
+@keyframes vacille { 0%, 100% { transform: rotate(-3deg) scale(1); } 50% { transform: rotate(3deg) scale(1.1); } }
+.duo-anneau { position: relative; width: 96px; height: 96px; } .duo-anneau svg { width: 100%; height: 100%; transform: rotate(-90deg); } .duo-anneau circle { fill: none; stroke-width: 9; } .duo-anneau .fond { stroke: rgba(128,128,128,.25); } .duo-anneau .val { stroke: #12a07a; stroke-linecap: round; transition: stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1); }
+.duo-anneau > span { position: absolute; inset: 0; display: grid; place-content: center; font: 500 .8rem var(--f-mono, monospace); color: var(--muted); } .duo-anneau > span b { font: 700 1.7rem/1 var(--f-display); color: var(--ink); }
+.duo-niv b { display: grid; place-items: center; width: 46px; height: 46px; margin: 0 auto 4px; border-radius: 50%; background: var(--ink); color: #D6FF00; font: 700 1.3rem/1 var(--f-display); } .duo-niv span { display: block; font-weight: 600; font-size: .85rem; line-height: 1.2; } .duo-niv small { color: var(--muted); font-size: .78rem; }
+.duo-semaine { list-style: none; display: flex; justify-content: space-between; gap: 4px; margin: 14px 0 0; padding: 0; } .duo-semaine li { flex: 1; display: grid; place-items: center; } .duo-semaine span { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: rgba(128,128,128,.2); color: var(--muted); font: 600 .78rem var(--f-mono, monospace); }
+.duo-semaine .fait span { background: #ff7a1a; color: #fff; font-size: 1rem; } .duo-semaine .auj span { outline: 3px solid var(--ink); outline-offset: 2px; }
+.duo-msg { margin: 12px 0 0; text-align: center; font-weight: 600; }
+.duo-obj { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin-top: 10px; } .duo-obj > span { font-size: .8rem; color: var(--muted); margin-right: 4px; }
+.duo-obj button { min-height: 40px; padding: 0 12px; border: 2px solid var(--ink); border-radius: 999px; background: transparent; color: var(--ink); font: 600 .82rem var(--f-body, inherit); cursor: pointer; } .duo-obj button i { font-style: normal; opacity: .6; } .duo-obj button[aria-pressed="true"] { background: var(--ink); color: #D6FF00; }
+.duo-go { display: flex; flex-direction: column; gap: 2px; margin-top: 14px; padding: 14px 18px; background: #D6FF00; color: #11110F !important; border-radius: 18px; border-bottom: 7px solid #9fbd00; text-decoration: none; transition: transform .08s, border-bottom-width .08s; } .duo-go span { font: 600 .75rem var(--f-mono, monospace); letter-spacing: .12em; text-transform: uppercase; } .duo-go b { font: 700 1.5rem/1.1 var(--f-display); }
+.duo-go:hover, .duo-go:focus-visible { filter: brightness(1.05); } .duo-go:active { transform: translateY(5px); border-bottom-width: 2px; }
+.duo-defis ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; } .duo-defis li { display: grid; grid-template-columns: 28px 1fr auto; grid-template-areas: "c t n" "c b n"; gap: 2px 10px; align-items: center; padding: 10px 12px; background: var(--surface); border: 2px solid var(--ink); border-radius: 16px; }
+.duo-coche { grid-area: c; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--ink); display: grid; place-items: center; font-weight: 700; } .duo-defis li.fait .duo-coche { background: #12a07a; border-color: #12a07a; color: #fff; }
+.duo-dt { grid-area: t; font-weight: 600; font-size: .92rem; line-height: 1.25; } .duo-db { grid-area: b; height: 10px; border-radius: 5px; background: rgba(128,128,128,.25); overflow: hidden; } .duo-db i { display: block; height: 100%; background: #12a07a; border-radius: 5px; transition: width .6s; } .duo-dn { grid-area: n; font: 500 .8rem var(--f-mono, monospace); color: var(--muted); }
+.duo-coffre { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin-top: 10px; padding: 12px 14px; border: 2px dashed var(--ink); border-radius: 16px; } .duo-coffre svg { width: 54px; height: 50px; flex: none; } .duo-coffre svg path, .duo-coffre svg rect { fill: #b9b8ae; stroke: #8f8e84; stroke-width: 1.5; } .duo-coffre p { flex: 1 1 200px; margin: 0; font-size: .92rem; }
+.duo-coffre.ouvert { border-style: solid; background: #fff6cf; color: #11110F; } .duo-coffre.ouvert .corps { fill: #c98a1b; stroke: #7a5208; } .duo-coffre.ouvert .couv { fill: #e0a323; stroke: #7a5208; transform: rotate(-24deg) translate(-6px, -4px); transform-origin: 6px 20px; } .duo-coffre.ouvert .serrure { fill: #ffd23f; stroke: #7a5208; } .duo-coffre.ouvert svg { animation: saute 1.2s ease-in-out 2; }
+.duo-btn { display: inline-block; padding: 10px 16px; background: #11110F; color: #D6FF00 !important; border-radius: 14px; border-bottom: 5px solid #000; text-decoration: none; font-weight: 700; } .duo-btn:active { transform: translateY(3px); border-bottom-width: 2px; }
+.duo-liste { gap: 30px; margin-top: 14px; } .duo-unite { border: 0; border-radius: 0; background: none; padding: 0; box-shadow: none; } .duo-unite.fermee { opacity: 1; border: 0; } .duo-unite.prochaine { box-shadow: none; }
+.duo-ban { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--c); color: var(--tx, #fff); padding: 14px 16px; border-radius: 18px; border-bottom: 6px solid rgba(0,0,0,.25); } .duo-unite.fermee .duo-ban { filter: grayscale(.8) opacity(.7); }
+.duo-sn { display: block; font: 500 .7rem var(--f-mono, monospace); letter-spacing: .08em; text-transform: uppercase; opacity: .92; } .duo-ban b { font: 700 1.2rem/1.15 var(--f-display); }
+.duo-cours { flex: none; padding: 8px 12px; border: 2px solid currentColor; border-radius: 12px; color: inherit; text-decoration: none; font: 600 .8rem var(--f-body, inherit); } .duo-cours:hover, .duo-cours:focus-visible { background: rgba(255,255,255,.22); }
+.duo-noeuds { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 40px 0 6px; overflow: hidden; }
+.duo-n { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; width: 150px; text-decoration: none; color: var(--ink); transform: translateX(var(--dx, 0)); }
+.duo-b { width: 78px; height: 78px; border-radius: 50%; display: grid; place-items: center; background: var(--c, #6b6b63); color: #fff; border-bottom: 8px solid rgba(0,0,0,.3); transition: transform .08s, border-bottom-width .08s, filter .15s; } .duo-b svg { width: 34px; height: 34px; }
+.duo-n:hover .duo-b, .duo-n:focus-visible .duo-b { filter: brightness(1.1); } .duo-n:focus-visible { outline: none; } .duo-n:focus-visible .duo-b { outline: 3px solid var(--ink); outline-offset: 3px; } .duo-n:active .duo-b { transform: translateY(6px); border-bottom-width: 2px; }
+.duo-n.valide .duo-b { background: #ffc800; color: #11110F; border-bottom-color: #b58b00; }
+.duo-n.verrou .duo-b { background: #dcdbd3; color: #8a8a82; border-bottom-color: #bcbbb2; } .duo-n.verrou { opacity: .85; }
+.duo-n.tro { pointer-events: none; } .duo-n.tro .duo-b { background: #dcdbd3; color: #8a8a82; border-bottom-color: #bcbbb2; } .duo-n.tro.valide .duo-b { background: #ffc800; color: #11110F; border-bottom-color: #b58b00; }
+.duo-n.courant .duo-b { animation: bat 1.7s ease-out infinite; }
+@keyframes bat { 0% { box-shadow: 0 0 0 0 rgba(214,255,0,.9); } 100% { box-shadow: 0 0 0 24px rgba(214,255,0,0); } }
+.duo-bulle { position: absolute; top: -38px; padding: 6px 12px; background: var(--ink); color: #D6FF00; border-radius: 12px; font: 700 .75rem var(--f-mono, monospace); letter-spacing: .1em; text-transform: uppercase; animation: saute 1.2s ease-in-out infinite; white-space: nowrap; } .duo-bulle::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; background: var(--ink); transform: translateX(-50%) rotate(45deg); }
+@keyframes saute { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.duo-ets { display: flex; gap: 3px; } .duo-ets i { width: 15px; height: 15px; background: #d4d3cb; clip-path: polygon(50% 0, 62% 36%, 100% 38%, 70% 60%, 81% 98%, 50% 76%, 19% 98%, 30% 60%, 0 38%, 38% 36%); } .duo-ets i.on { background: #ffc800; }
+.duo-nom { font: 600 .8rem/1.25 var(--f-body, inherit); text-align: center; max-width: 140px; }
+@media (prefers-reduced-motion: reduce) { .duo-flamme.allumee svg, .duo-n.courant .duo-b, .duo-bulle, .duo-coffre.ouvert svg { animation: none; } .duo-anneau .val, .duo-db i { transition: none; } }
+
 .ludo-carte.verrou { opacity: .6; border-style: dashed; background: transparent; } .ludo-carte.verrou .ludo-ic { background: transparent; color: var(--ink); border: 2px dashed var(--ink); }
 .ludo-carte.neuf { box-shadow: 0 0 0 3px #D6FF00, 0 0 0 5px #11110F; } .ludo-et .on { color: #ffb000; }
 .chip.verrou { opacity: .5; border-style: dashed; cursor: not-allowed; }
@@ -4486,6 +4527,9 @@ const SAUV = (() => {
     for (const k of ["faits", "badges", "pays"]) o[k] = Object.assign({}, objet(a[k]), objet(b[k]));
     const cs = Object.assign({}, objet(a.c), objet(b.c)); for (const k in cs) o.c[k] = Math.max(nombre(objet(a.c)[k]), nombre(objet(b.c)[k]));
     o.jours = [...new Set([].concat(Array.isArray(a.jours) ? a.jours : [], Array.isArray(b.jours) ? b.jours : []))].sort();
+    for (const k of ["etoiles", "plafonds"]) { const m = {}, ka = objet(a[k]), kb = objet(b[k]); for (const c of new Set([...Object.keys(ka), ...Object.keys(kb)])) m[c] = Math.max(nombre(ka[c]), nombre(kb[c])); if (Object.keys(m).length) o[k] = m; }
+    const dj = {}; for (const src of [objet(a.dj), objet(b.dj)]) for (const d in src) { const x = objet(src[d]), y = dj[d] || { p: 0, b: 0, f: [] }; dj[d] = { p: Math.max(y.p, nombre(x.p)), b: Math.max(y.b, nombre(x.b)), f: [...new Set([...y.f, ...(Array.isArray(x.f) ? x.f : [])])] }; if (y.coffre || x.coffre) dj[d].coffre = 1; }
+    if (Object.keys(dj).length) o.dj = dj; if ([2, 3, 5].includes(b.obj) || [2, 3, 5].includes(a.obj)) o.obj = [2, 3, 5].includes(b.obj) ? b.obj : a.obj;
     return o;
   };
   const vide = j => !j || (!nombre(j.xp) && !Object.keys(objet(j.faits)).length && !Object.keys(objet(j.badges)).length);
@@ -4585,8 +4629,8 @@ function feteSuivante() {
   const f = FETES.shift(); if (!f) return;
   const [type, nom, g, n] = f;
   const el = document.createElement("div"); el.className = "fete"; el.setAttribute("role", "status");
-  el.innerHTML = `<div class="fete-carte">${medaille(g, true, type === "niveau" ? "#0b0b0b" : "#a9802f")}<div class="label">${type === "niveau" ? `Niveau ${n}` : "Nouveau badge"}</div><b>${esc(nom)}</b>
-    <p>${esc(type === "niveau" ? NIVEAUX_JEU[n - 1][2] : (BADGES.concat(BADGES_SEQ).find(x => x[1] === nom) || [])[2] || "")}</p><button type="button" class="btn-main">Continuer</button></div>${Array.from({ length: 36 }, (_, i) => `<i style="--x:${Math.random() * 100}vw;--d:${(Math.random() * .8).toFixed(2)}s;--r:${Math.round(Math.random() * 360)}deg;--h:${[0, 40, 200, 330][i % 4]}"></i>`).join("")}`;
+  el.innerHTML = `<div class="fete-carte">${medaille(g, true, type === "niveau" ? "#0b0b0b" : type === "serie" ? "#ff7a1a" : type === "coffre" ? "#c98a1b" : "#a9802f")}<div class="label">${{ niveau: `Niveau ${n}`, serie: "Ta flamme", objectif: "Objectif du jour", coffre: "Coffre du jour" }[type] || "Nouveau badge"}</div><b>${esc(nom)}</b>
+    <p>${esc({ serie: "Tu as joué aujourd'hui. Reviens demain pour garder ta flamme allumée.", objectif: "Tes parties du jour sont faites.", coffre: "Tes trois défis sont faits : ton coffre t'attend sur la page Jouer." }[type] || (type === "niveau" ? NIVEAUX_JEU[n - 1][2] : (BADGES.concat(BADGES_SEQ).find(x => x[1] === nom) || [])[2] || ""))}</p><button type="button" class="btn-main">Continuer</button></div>${Array.from({ length: 36 }, (_, i) => `<i style="--x:${Math.random() * 100}vw;--d:${(Math.random() * .8).toFixed(2)}s;--r:${Math.round(Math.random() * 360)}deg;--h:${[0, 40, 200, 330][i % 4]}"></i>`).join("")}`;
   document.body.appendChild(el);
   let ferme = false; const fermer = () => { if (ferme) return; ferme = true; el.remove(); setTimeout(feteSuivante, 200); };
   el.querySelector("button").onclick = fermer; el.addEventListener("click", e => { if (e.target === el) fermer(); });
@@ -4712,7 +4756,7 @@ const niveauCarte = () => NIV_CARTE || maClasse() || defautNiv();
 const ETOILES_DE = (score, manches) => score >= manches - 1 ? 3 : score >= Math.ceil(manches * .75) ? 2 : score >= Math.ceil(manches * .5) ? 1 : 0;
 const etoilesNiv = (id, niv) => ((jeu().etoiles || {})[id + ":" + niv]) || 0;
 const ludoEtoiles = id => [0, 1, 2].reduce((a, n) => a + etoilesNiv(id, n), 0);
-function noterEtoiles(id, niv, et) { if (!jeuActif()) return false; const j = jeu(); j.etoiles = j.etoiles || {}; const c = id + ":" + niv; if (et > (j.etoiles[c] || 0)) { j.etoiles[c] = et; sauverJeu(); return true; } return false; }
+function noterEtoiles(id, niv, et) { if (!jeuActif()) return false; duoNoter(id, et); const j = jeu(); j.etoiles = j.etoiles || {}; const c = id + ":" + niv; if (et > (j.etoiles[c] || 0)) { j.etoiles[c] = et; sauverJeu(); return true; } return false; }
 const niveauOuvert = (id, niv) => !jeuActif() || niv === 0 || etoilesNiv(id, niv - 1) >= 2;
 const nivMaxOuvert = id => [2, 1, 0].find(n => niveauOuvert(id, n));
 const calSeance = (k, a, b) => D.niveaux[k].calendrier.find(e => e.type === "seance" && e.seq === a && e.num === b);
@@ -4773,6 +4817,83 @@ function vueLudo(niv) {
       return `<section class="ludo-fam" id="fam-${id}" style="--c:${c}"><div class="ludo-band"><span class="ludo-bi">${famIco(id)}</span><span><h2>${esc(nom)}</h2><span class="small">${esc(txt)} ${L.length} jeu${L.length > 1 ? "x" : ""}.</span></span></div>${L.length ? `<div class="ludo-grille">${L.map(ludoCarte).join("")}</div>` : `<p class="small">Bientôt${niv ? ` pour la ${niv}` : ""}.</p>`}</section>`; }).join("")
     + (modeJeu() ? `<p class="small">Rien n'est noté ni envoyé : les étoiles et les points restent sur cet appareil, dans ton <a href="#parcours">parcours</a> (rubrique Jouer).</p>` : `<p class="small">Rien n'est noté ni envoyé. Pour jouer avec des points et des badges, passe en mode Jouer en haut de la page.</p>`);
 }
+/* ---------- Jouer, à la Duolingo : la série, l'objectif du jour, les défis, le coffre et le chemin des jeux ----------
+   Les règles du 03/11/2026 tiennent toujours : aucun point pour venir sur le site, aucun badge de série, un jeu ne rapporte qu'une fois.
+   Ici, ce qui se compte, c'est le travail fait : une journée compte quand on a terminé au moins une partie, jamais quand on a seulement ouvert la page.
+   La flamme, l'anneau et le coffre ne donnent aucun XP (le coffre ouvre une musique du monde à écouter). Tout reste sur l'appareil. */
+const jourLocal = d => { d = d || new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+const duoJour = d => (jeu().dj || {})[d || jourLocal()] || { p: 0, b: 0, f: [] };
+const duoObjectif = () => [2, 3, 5].includes(jeu().obj) ? jeu().obj : 3;
+function duoSerie() {
+  const T = jeu().dj || {}, d = new Date(); let n = 0;
+  if (!(T[jourLocal(d)] || {}).p) d.setDate(d.getDate() - 1);   // pas encore joué aujourd'hui : la série tient jusqu'à ce soir
+  while ((T[jourLocal(d)] || {}).p) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+const duoDefis = () => { const a = duoJour(), o = duoObjectif(); return [
+  { t: `Termine ${o} parties`, n: Math.min(a.p, o), max: o },
+  { t: "Obtiens deux étoiles ou plus dans une partie", n: Math.min(a.b, 1), max: 1 },
+  { t: "Essaie deux familles de jeux différentes", n: Math.min(a.f.length, 2), max: 2 }]; };
+/* Appelé à la fin de chaque partie (noterEtoiles) : compte la partie, allume la flamme, annonce l'objectif et le coffre. */
+function duoNoter(id, et) {
+  const j = jeu(); j.dj = j.dj || {}; const auj = jourLocal(), a = j.dj[auj] = j.dj[auj] || { p: 0, b: 0, f: [] }, o = duoObjectif();
+  const premiere = a.p === 0, avant = a.p; a.p++; if (et >= 2) a.b++;
+  const fam = (D.ludo.jeux.find(x => x.id === id) || {}).famille; if (fam && !a.f.includes(fam)) a.f.push(fam);
+  const cles = Object.keys(j.dj).sort(); while (cles.length > 40) delete j.dj[cles.shift()];
+  const tous = duoDefis().every(x => x.n >= x.max), coffre = tous && !a.coffre; if (coffre) a.coffre = 1;
+  sauverJeu();
+  if (premiere) setTimeout(() => celebrer("serie", `${duoSerie()} jour${duoSerie() > 1 ? "s" : ""} de suite`, "flamme", duoSerie()), 1300);
+  if (avant < o && a.p >= o) setTimeout(() => celebrer("objectif", "Objectif atteint", "etoile", o), 1700);
+  if (coffre) setTimeout(() => celebrer("coffre", "Coffre ouvert", "coupe", 0), 2100);
+}
+function duoSemaine() {
+  const t = new Date(), dow = (t.getDay() + 6) % 7, auj = jourLocal();
+  return ["L", "M", "M", "J", "V", "S", "D"].map((l, i) => { const d = new Date(t); d.setDate(t.getDate() - dow + i); const k = jourLocal(d), a = (jeu().dj || {})[k]; return { l, fait: !!(a && a.p), auj: k === auj }; });
+}
+const FLAMME_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c-4.2 0-7-2.8-7-6.6 0-3.6 2.8-5.6 3.9-9.4 2.8 1.7 3.7 4.3 3.7 6 1-.9 1.6-2.2 1.7-3.6 2.4 1.9 4.7 4.7 4.7 7.5 0 3.7-2.8 6.1-7 6.1z"/><path class="coeur" d="M12 21c-2 0-3.3-1.3-3.3-3 0-1.7 1.3-2.7 1.9-4.4 1.3.8 1.7 2 1.7 2.8.5-.4.8-1 .8-1.7 1.1.9 2.2 2.2 2.2 3.5 0 1.8-1.3 2.8-3.3 2.8z"/></svg>`;
+function panneauDuo() {
+  const j = jeu(), serie = duoSerie(), a = duoJour(), o = duoObjectif(), fait = a.p >= 1, pct = Math.min(100, Math.round(Math.min(a.p, o) / o * 100)), n = niveauDe(j.xp), C = +(2 * Math.PI * 34).toFixed(1);
+  const reste = o - a.p, msg = a.p >= o ? "Objectif du jour atteint. Bravo, reviens demain." : fait ? `Encore ${reste} partie${reste > 1 ? "s" : ""} pour ton objectif du jour.` : serie ? `Joue une partie aujourd'hui pour garder ta flamme : ${serie} jour${serie > 1 ? "s" : ""} de suite.` : "Termine une partie pour allumer ta flamme.";
+  return `<section class="duo-haut" aria-label="Ta flamme et ton objectif du jour">
+    <div class="duo-stats">
+      <div class="duo-flamme${fait ? " allumee" : ""}">${FLAMME_SVG}<b>${serie}</b><span>jour${serie > 1 ? "s" : ""} de suite</span></div>
+      <div class="duo-anneau" role="img" aria-label="${a.p} partie${a.p > 1 ? "s" : ""} terminée${a.p > 1 ? "s" : ""} sur ${o} aujourd'hui"><svg viewBox="0 0 80 80" aria-hidden="true"><circle class="fond" cx="40" cy="40" r="34"/><circle class="val" cx="40" cy="40" r="34" stroke-dasharray="${C}" stroke-dashoffset="${(C * (1 - pct / 100)).toFixed(1)}"/></svg><span><b>${Math.min(a.p, o)}</b>/${o}</span></div>
+      <div class="duo-niv"><b>${n + 1}</b><span>${esc(NIVEAUX_JEU[n][1])}</span><small>${j.xp} XP</small></div>
+    </div>
+    <ol class="duo-semaine" aria-label="Cette semaine">${duoSemaine().map(d => `<li class="${d.fait ? "fait" : ""}${d.auj ? " auj" : ""}"><span>${d.fait ? "&#10003;" : d.l}</span></li>`).join("")}</ol>
+    <p class="duo-msg">${msg}</p>
+    <div class="duo-obj" role="group" aria-label="Objectif du jour, en parties"><span>Mon objectif</span>${[[2, "Tranquille"], [3, "Normal"], [5, "Intense"]].map(([k, t]) => `<button type="button" data-obj="${k}" aria-pressed="${k === o}">${t} <i>${k}</i></button>`).join("")}</div></section>`;
+}
+const COFFRE_SVG = `<svg viewBox="0 0 48 44" aria-hidden="true"><path class="couv" d="M6 20V14a8 8 0 0 1 8-8h20a8 8 0 0 1 8 8v6z"/><rect class="corps" x="6" y="20" width="36" height="20" rx="2"/><rect class="serrure" x="21" y="17" width="6" height="9" rx="1.5"/></svg>`;
+function defisDuo() {
+  const L = duoDefis(), tous = L.every(x => x.n >= x.max);
+  return `<section class="duo-defis"><h2 class="sec">Défis du jour</h2><ul>${L.map(x => { const f = x.n >= x.max; return `<li class="${f ? "fait" : ""}"><span class="duo-coche" aria-hidden="true">${f ? "&#10003;" : ""}</span><span class="duo-dt">${esc(x.t)}</span><span class="duo-db" role="img" aria-label="${x.n} sur ${x.max}"><i style="width:${Math.round(x.n / x.max * 100)}%"></i></span><span class="duo-dn">${x.n}/${x.max}</span></li>`; }).join("")}</ul>
+    <div class="duo-coffre${tous ? " ouvert" : ""}">${COFFRE_SVG}<p>${tous ? "Ton coffre est ouvert : une musique du monde, tirée au hasard, t'attend dans l'Atlas." : "Fais les trois défis pour ouvrir ton coffre du jour."}</p>${tous && D.atlas ? `<a class="duo-btn" href="${esc(D.atlas)}#hasard">Ouvrir ma musique du jour</a>` : ""}</div></section>`;
+}
+/* Le prochain jeu à jouer : le premier jeu ouvert de la première séquence pas encore validée. */
+function duoCourant(k) {
+  const X = D.niveaux[k].sequences.map((s, i) => Object.assign({ a: i + 1, s }, etatSeq(k, i + 1))), cible = X.find(x => x.n && !x.valide && x.ouverts);
+  return { X, cible, jeu: cible && cible.L.find(j => jeuOuvert(j, k) && etoilesNiv(j.id, 0) < 2) };
+}
+const TROPHEE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M10 17h4"/></svg>';
+function cheminJeux(k) {
+  const n = D.niveaux[k], { X, cible, jeu: courant } = duoCourant(k), sec = a => n.calendrier.find(e => e.type === "seance" && e.seq === a), PAL = ["#5a2bd6", "#12a07a", "#e0457b", "#4658ff", "#a8651f", "#0f8f9e"], DX = [0, 46, 66, 46, 0, -46, -66, -46];
+  const noeud = (j, i) => {
+    const f = ludoFam(j.famille), dx = DX[i % 8];
+    if (!jeuOuvert(j, k)) { const o = ouvertureDe(j, k); return `<a class="duo-n verrou" style="--dx:${dx}px" href="${o ? `#seance-${k}-${o.seq}-${o.num}` : "#jouer"}" aria-label="${esc(j.titre)} : pas encore ouvert${o ? `, s'ouvre à la séance du ${esc(o.date)}` : ""}"><span class="duo-b">${CADENAS}</span><span class="duo-nom">${insec(j.titre)}</span></a>`; }
+    const et = etoilesNiv(j.id, 0), cur = courant && j.id === courant.id;
+    return `<a class="duo-n${et >= 2 ? " valide" : ""}${cur ? " courant" : ""}" style="--dx:${dx}px;--c:${f[2]}" href="#ludo-${j.id}" aria-label="${esc(j.titre)}, ${et} étoile${et > 1 ? "s" : ""} sur 3${cur ? ", à jouer maintenant" : ""}">${cur ? '<span class="duo-bulle">Commencer</span>' : ""}<span class="duo-b">${famIco(j.famille)}</span><span class="duo-ets" aria-hidden="true">${[1, 2, 3].map(t => `<i class="${t <= et ? "on" : ""}"></i>`).join("")}</span><span class="duo-nom">${insec(j.titre)}</span></a>`;
+  };
+  return `<section class="duo-chemin"><h2 class="sec">Ton chemin en ${k}</h2><p class="small">Un jeu après l'autre. Deux étoiles au premier niveau valident un jeu ; quand tous les jeux d'une séquence sont validés, la séquence l'est aussi. De nouveaux jeux s'ouvrent avec les séances du cours.</p>
+    <ol class="prog-liste duo-liste">${X.map((x, i) => { const o = x.ouverts > 0, etat = x.maitrise ? "maitrisee" : x.valide ? "validee" : o ? "ouverte" : "fermee", s0 = sec(x.a), c = PAL[i % PAL.length],
+      lib = x.maitrise ? "Séquence maîtrisée" : x.valide ? "Séquence validée" : o ? `${x.L.filter(j => etoilesNiv(j.id, 0) >= 2).length} jeu${x.L.filter(j => etoilesNiv(j.id, 0) >= 2).length > 1 ? "x" : ""} validé${x.L.filter(j => etoilesNiv(j.id, 0) >= 2).length > 1 ? "s" : ""} sur ${x.n}` : `S'ouvre le ${s0 ? s0.semaine : "bientôt"}`;
+      return `<li class="prog-seq duo-unite ${etat}${x === cible ? " prochaine" : ""}" style="--c:${c};--tx:${texteSur(c)}"><div class="duo-ban"><div><span class="duo-sn">Séquence ${x.a} · ${esc(lib)}</span><b>${esc(x.s.titre)}</b></div><a class="duo-cours" href="#seq-${k}-${x.a}">Le cours</a></div>
+        <div class="duo-noeuds">${x.L.map(noeud).join("")}${x.n ? `<span class="duo-n tro${x.valide ? " valide" : ""}" style="--dx:0px"><span class="duo-b">${TROPHEE_SVG}</span><span class="duo-nom">${x.maitrise ? "Maîtrisée" : x.valide ? "Validée" : "Valide la séquence"}</span></span>` : ""}</div></li>`; }).join("")}</ol></section>`;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-obj]"); if (b && jeuActif()) { const y = scrollY; jeu().obj = +b.dataset.obj; sauverJeu(); rendre(); scrollTo(0, y); return; }
+  if (e.target.closest && e.target.closest("[data-passer-jouer]")) { const s = document.querySelector('.mode-sw [data-mode="jouer"]'); if (s) s.click(); }
+});
 /* La page Jouer : le jeu du jour, les cinq familles, les jeux de son et le parcours. */
 function vueJouer() {
   const k = maClasse() || defautNiv(), J = D.ludo.jeux.filter(j => j.seances.some(s => s[0] === k)), mot = J.filter(j => j.moteur); NIV_CARTE = k;
@@ -4780,9 +4901,11 @@ function vueJouer() {
   const etoiles = mot.reduce((a, j) => a + ludoEtoiles(j.id), 0), x = jeu(), n = niveauDe(x.xp);
   let h = head("Jouer", "Apprendre en jouant", modeJeu() || role() === "prof" ? "Des jeux courts, reliés à tes séances. Écoute, réponds, gagne des étoiles et des points." : "Des jeux courts, reliés à tes séances. Écoute et réponds, sans points : pour jouer avec des points et des badges, passe en mode Jouer en haut de la page.");
   if (!(D.eleves && D.codes)) h += `<nav class="levels" aria-label="Classe">${NIV.map(c => `<a href="#jouer" data-niv="${c}" aria-current="${c === k ? "page" : "false"}">${c}</a>`).join("")}</nav>`;
+  const duo = jeuActif(), cur = duoCourant(k);
+  if (duo) { h += panneauDuo(); h += cur.jeu ? `<a class="duo-go" href="#ludo-${cur.jeu.id}"><span>Continuer</span><b>${insec(cur.jeu.titre)}</b></a>` : ""; h += defisDuo(); }
+  else if (role() === "eleve") h += `<section class="duo-haut"><p class="duo-msg">En mode Réviser, on joue sans points. Passe en mode Jouer pour la flamme, l'objectif du jour, les défis, le coffre et ton chemin d'étoiles.</p><p style="text-align:center;margin:10px 0 0"><button type="button" class="duo-btn" data-passer-jouer>Passer en mode Jouer</button></p></section>`;
   if (jj) h += `<a class="jouer-jour" href="#ludo-${jj.id}" style="--c:${fj[2]};--tx:${texteSur(fj[2])}"><span class="label">Le jeu du jour, ${k}</span><span class="jj-ic">${famIco(jj.famille)}</span><b>${insec(jj.titre)}</b><span>${esc(jj.consigne)}</span><span class="jj-go">Jouer maintenant &#8250;</span></a>`;
-  h += carteProgression(k);
-  if (modeJeu() || role() === "prof") h += `<div class="jouer-stats"><a href="#parcours"><b>${x.xp}</b><span>points</span></a><a href="#parcours"><b>${n + 1}</b><span>niveau, ${esc(NIVEAUX_JEU[n][1])}</span></a><a href="#ludo-${k}"><b>${etoiles}</b><span>étoiles sur ${mot.length * 9}</span></a></div>`;
+  if (duo || role() === "prof") h += cheminJeux(k);
   h += `<h2 class="sec">La ludothèque de la ${k} : ${J.length} jeux</h2><div class="jouer-fams">${D.ludo.familles.map(([id, nom, c]) => { const L = J.filter(j => j.famille === id);
     return `<a class="jouer-fam" href="#ludo-${k}" data-ancre="fam-${id}" style="--c:${c};--tx:${texteSur(c)}">${famIco(id)}<b>${esc(nom.split(",")[0])}</b><span>${L.length} jeu${L.length > 1 ? "x" : ""}</span></a>`; }).join("")}</div>`;
   h += `<h2 class="sec">Et aussi</h2><div class="jouer-plus"><a class="jouer-fam" href="#pratiquer-${k}-jeux" style="--c:#11110F">${famIco("creation")}<b>Les jeux de son</b><span>L'oreille fine, le clavier, compose un rythme, l'orchestre, la frise</span></a>`
