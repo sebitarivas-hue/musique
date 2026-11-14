@@ -68,6 +68,12 @@ function voix() {
     + t("M14.500 27.500a17.500 17.500 0 0 0 35 0", 4.200) + r(29.900, 45, 4.200, 10, F, 1) + r(20.500, 54.500, 23, 4.500, F, 2.250);
   return svg(corps);
 }
+// Le saxophone alto : bec, bocal, corps en J, pavillon relevé, clés.
+function sax() {
+  const corps = t("M16 6c3 0 6 2 9 6", 4.200) + t("M25 12c3 9 4 20 3 30-1 8-5 12-11 11-5-1-6-6-4-9", 5.600) + p("M7 41 24 36l4 14-12 5z") + p("M5 43c1-2 3-3 5-3l2 6c-2 1-5 1-7-3z")
+    + [[28.500, 22], [29, 29], [29, 36]].map(([x, y]) => c(x, y, 1.700, C)).join("") + r(13, 2, 8, 5, F, 1.600);
+  return svg(corps);
+}
 // Un son de synthèse : une onde, sur un petit synthétiseur.
 function onde() {
   return svg(r(3, 12, 58, 40, F, 6) + t("M9 32c4-13 7-13 11 0s7 13 11 0 7-13 11 0 7 13 11 0", 4, C) + c(10.500, 19, 1.700, C) + c(17, 19, 1.700, C) + c(53.500, 19, 1.700, C));
@@ -77,4 +83,4 @@ function note() {
   return svg(r(22.500, 11, 5, 36, F, 1) + r(43.500, 8, 5, 36, F, 1) + p("M22.500 10.500 48.500 5v9l-26 5.500z") + `<ellipse cx="18.500" cy="48" rx="8.300" ry="6.200" transform="rotate(-20 18.500 48)" fill="${F}"/><ellipse cx="39.500" cy="45" rx="8.300" ry="6.200" transform="rotate(-20 39.500 45)" fill="${F}"/>`);
 }
 
-export const PICTOS = { piano: piano(), guitare: guitare(), basse: basse(), violon: violon(), flute: flute(), trompette: trompette(), batterie: batterie(), voix: voix(), onde: onde(), note: note() };
+export const PICTOS = { piano: piano(), guitare: guitare(), basse: basse(), violon: violon(), flute: flute(), trompette: trompette(), sax: sax(), batterie: batterie(), voix: voix(), onde: onde(), note: note() };

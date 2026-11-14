@@ -1,12 +1,12 @@
 // L'écran du mode blocs de SONORA Pistes (le modèle est dans blocs.js, sans DOM et testé dans Node).
 // Une grille : une ligne par instrument (une pastille de couleur que l'on touche pour changer d'instrument), une colonne par mesure, quatre mesures à la fois.
 // Toucher une case vide pose un bloc et ouvre ses notes ; toucher un bloc l'ouvre. Le piano roll et la partition existants servent d'éditeur : rien n'est doublé.
-import * as B from "./blocs.js?v=a384b25981";
-import * as M from "./motifs.js?v=a384b25981";
-import { PICTOS } from "./pictos.js?v=a384b25981";
+import * as B from "./blocs.js?v=5981075a04";
+import * as M from "./motifs.js?v=5981075a04";
+import { PICTOS } from "./pictos.js?v=5981075a04";
 
 // Les instruments qu'on propose en gros boutons quand on touche une pastille : les plus connus d'abord, les autres dans la liste.
-const PRINCIPAUX = [["ech:clavier", "Piano"], ["ech:guitare-folk", "Guitare"], ["ech:basse", "Basse"], ["ech:violon", "Violon"], ["ech:souffle", "Flûte"], ["ech:trompette", "Trompette"], ["batt:reel", "Batterie"], ["ech:choeur-f", "Chœur"]];
+const PRINCIPAUX = [["ech:clavier", "Piano"], ["ech:wurlitzer", "Piano électrique"], ["ech:guitare-folk", "Guitare"], ["ech:basse-moderne", "Basse"], ["ech:sax-alto", "Saxophone"], ["ech:synthe", "Synthé"], ["ech:violon", "Violon"], ["batt:reel", "Batterie"]];
 
 // Les petits dessins de l'interface (haut-parleur, lecture, plus) ; les silhouettes d'instruments sont dans pictos.js.
 const SVG = d => `<svg viewBox="0 0 32 32" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
@@ -21,15 +21,16 @@ export function sorteDe(id) {
   if (/^ech:(contrebasse|basse)|^syn:basse|^lib:basse|^ech:basses/.test(i)) return "basse";
   if (/^ech:guitare|^ech:harpe/.test(i)) return "guitare";
   if (/^ech:(violon|cordes|violons|altos|violoncelle|violoncelles)/.test(i)) return "violon";
+  if (/^ech:sax/.test(i)) return "sax";
   if (/^ech:(souffle|hautbois|anche|basson)|^lib:flute/.test(i)) return "flute";
   if (/^ech:(trompette|trombone|cor|tuba|trompettes)/.test(i)) return "trompette";
   if (/^ech:(voix|choeur)|^lib:(voyelles|diphonique)/.test(i)) return "voix";
-  if (/^ech:(clavier|orgue|clavecin)|^syn:pianoElec|^syn:orgue/.test(i)) return "piano";
-  if (/^syn:|^lib:/.test(i)) return "onde";
+  if (/^ech:(clavier|piano-droit|wurlitzer|pianet|cp80|orgue|clavecin)|^syn:pianoElec|^syn:orgue/.test(i)) return "piano";
+  if (/^syn:|^lib:|^ech:synthe/.test(i)) return "onde";
   return "note";
 }
 export const pictoDe = id => PICTOS[sorteDe(id)];
-const COULEUR_SORTE = { piano: "#4C9BF5", guitare: "#FFC53D", basse: "#A86CF0", violon: "#FF6B57", flute: "#3FC79A", trompette: "#F26BA3", batterie: "#FF8A3D", voix: "#4FC3E0", onde: "#8E9BFF", note: "#B7B6AC" };
+const COULEUR_SORTE = { piano: "#4C9BF5", guitare: "#FFC53D", basse: "#A86CF0", violon: "#FF6B57", flute: "#3FC79A", trompette: "#F26BA3", sax: "#F2A93B", batterie: "#FF8A3D", voix: "#4FC3E0", onde: "#8E9BFF", note: "#B7B6AC" };
 const FAM_COULEUR = { rythme: "#FF8A3D", basse: "#A86CF0", accords: "#4C9BF5", melodie: "#3FC79A" };
 
 export function creerVueBlocs(d) {
