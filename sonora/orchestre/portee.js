@@ -1,8 +1,8 @@
 // SONORA Orchestre : une portée pour écrire un sujet, à la place d'une grille de boîte à rythmes. On voit des notes sur cinq lignes, on les pose en touchant le clavier de couleurs ou la portée elle-même,
 // et au clavier de l'ordinateur on les monte ou les descend d'un degré. Huit temps, une noire par temps ; une case peut rester vide (un silence). Les hauteurs sont les notes de do majeur, de la3 à do5.
 // Sans état à lui : le tableau des notes est tenu par l'appelant (get / set), la portée ne fait que l'afficher et le modifier.
-import { nomNote } from "./donnees.js?v=3c9c8dbe0a";
-import { DEGRES, PAS } from "./fugue_logique.js?v=3c9c8dbe0a";
+import { nomNote } from "./donnees.js?v=5a761f0ed5";
+import { DEGRES, PAS } from "./fugue_logique.js?v=5a761f0ed5";
 
 // La couleur de chaque note (comme les lames colorées d'un jeu de carillon d'école) : elle aide à retrouver une note d'un coup d'œil, sur le clavier comme sur la portée.
 export const COULEUR_NOTE = { 0: "#E63946", 2: "#F4A261", 4: "#F2D043", 5: "#52B788", 7: "#3FA7D6", 9: "#7B6CF6", 11: "#D45BA6" };

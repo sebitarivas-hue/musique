@@ -41,7 +41,7 @@
 .bl-pastille-cadre { position: relative; display: flex; flex-direction: column; min-height: 120px; padding: 6px; border-radius: 22px; background: var(--col); box-shadow: 0 4px 0 rgba(17, 17, 15, .2); }
 .blocs .bl-pastille { flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 2px; padding: 8px 10px; border-radius: 16px; background: transparent; color: #11110F; text-align: left; }
 .blocs .bl-pastille:hover { background: rgba(255, 255, 255, .22); }
-.bl-ico { width: 42px; height: 42px; margin-bottom: auto; color: #11110F; }
+.bl-ico { width: 54px; height: 54px; margin-bottom: auto; padding: 7px; border-radius: 16px; background: #fff; color: #11110F; --tuile: #fff; box-shadow: 0 2px 0 rgba(17, 17, 15, .18); }
 .bl-pastille b { font-size: 1.02rem; font-weight: 800; line-height: 1.1; } .bl-pastille small { font-size: .72rem; font-weight: 600; opacity: .68; }
 .blocs .bl-muet { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(17, 17, 15, .14); color: #11110F; }
 .blocs .bl-muet:hover { background: rgba(17, 17, 15, .26); }
@@ -71,10 +71,10 @@
 .bl-q { margin: 0; font-size: 1.1rem; font-weight: 800; line-height: 1.2; }
 .blocs .bl-fermer { background: #11110F; color: #F0EFE8; }
 .bl-inst { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-.blocs .bl-inst button { min-height: 116px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border-radius: 22px; background: var(--col); color: #11110F; font-size: 1rem; box-shadow: 0 4px 0 rgba(17, 17, 15, .2); }
+.blocs .bl-inst button { min-height: 140px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border-radius: 22px; background: var(--col); color: #11110F; font-size: 1rem; box-shadow: 0 4px 0 rgba(17, 17, 15, .2); }
 .blocs .bl-inst button:hover { filter: brightness(1.07); }
 .blocs .bl-inst button[aria-pressed="true"] { outline: 4px solid #4658FF; outline-offset: 3px; }
-.bl-ico-g { width: 46px; height: 46px; display: block; }
+.bl-ico-g { width: 76px; height: 76px; padding: 11px; display: block; border-radius: 22px; background: #fff; color: #11110F; --tuile: #fff; box-shadow: 0 3px 0 rgba(17, 17, 15, .18); }
 .bl-tous { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; font-weight: 600; }
 .bl-tous select, .bl-palette select { min-height: 44px; padding: 0 12px; border: 2px solid #11110F; border-radius: 12px; background: #fff; color: #11110F; font: 600 .95rem var(--f-body); }
 

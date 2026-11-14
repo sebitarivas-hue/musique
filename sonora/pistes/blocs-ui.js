@@ -1,26 +1,15 @@
 // L'écran du mode blocs de SONORA Pistes (le modèle est dans blocs.js, sans DOM et testé dans Node).
 // Une grille : une ligne par instrument (une pastille de couleur que l'on touche pour changer d'instrument), une colonne par mesure, quatre mesures à la fois.
 // Toucher une case vide pose un bloc et ouvre ses notes ; toucher un bloc l'ouvre. Le piano roll et la partition existants servent d'éditeur : rien n'est doublé.
-import * as B from "./blocs.js?v=3c9c8dbe0a";
-import * as M from "./motifs.js?v=3c9c8dbe0a";
+import * as B from "./blocs.js?v=5a761f0ed5";
+import * as M from "./motifs.js?v=5a761f0ed5";
+import { PICTOS } from "./pictos.js?v=5a761f0ed5";
 
 // Les instruments qu'on propose en gros boutons quand on touche une pastille : les plus connus d'abord, les autres dans la liste.
 const PRINCIPAUX = [["ech:clavier", "Piano"], ["ech:guitare", "Guitare"], ["ech:basse", "Basse"], ["ech:violon", "Violon"], ["ech:souffle", "Flûte"], ["ech:trompette", "Trompette"], ["batt:reel", "Batterie"], ["ech:voix", "Voix"]];
 
-// Les pictogrammes des instruments (traits simples, 32 x 32) : ils remplacent les mots dans les pastilles et sur les tuiles de choix.
+// Les petits dessins de l'interface (haut-parleur, lecture, plus) ; les silhouettes d'instruments sont dans pictos.js.
 const SVG = d => `<svg viewBox="0 0 32 32" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
-const PICTOS = {
-  piano: SVG('<rect x="3.5" y="7" width="25" height="18" rx="2.5"/><path d="M9.7 25v-7M15.8 25v-7M21.9 25v-7"/><path d="M9 7v10M15 7v10M21 7v10" stroke-width="3.4"/>'),
-  guitare: SVG('<path d="M16 15c-3.200 0-5.500 2-5.500 4.500 0 1.600.9 2.600 2.100 3.200-1.600.600-2.600 2.100-2.600 3.800C10 28 12.700 30 16 30s6-2 6-3.500c0-1.700-1-3.200-2.600-3.800 1.200-.600 2.100-1.600 2.100-3.200C21.500 17 19.200 15 16 15z"/><circle cx="16" cy="23" r="2"/><path d="M16 15V5"/><path d="M14 1.500h4V6h-4z"/>'),
-  basse: SVG('<ellipse cx="10.5" cy="22.5" rx="5.5" ry="6"/><path d="M14.5 18 28 4M25.5 2l4.5 4.5"/><path d="M8 22.5h5"/>'),
-  violon: SVG('<path d="M16 11c-2.800 0-4.800 1.700-4.800 3.800 0 1.400.8 2.300 1.800 2.800-1.400.700-2.300 1.900-2.300 3.300C10.700 24.800 13 27 16 27s5.300-2.200 5.300-6.100c0-1.400-.9-2.600-2.300-3.300 1-.500 1.800-1.400 1.800-2.800C20.800 12.700 18.800 11 16 11z"/><path d="M16 11V6"/><circle cx="16" cy="4" r="2"/><path d="M13.300 17.500v4.500M18.700 17.500v4.500"/><path d="M13 27.500h6"/>'),
-  flute: SVG('<rect x="2" y="13.500" width="28" height="5.500" rx="2.750" transform="rotate(-14 16 16)"/><circle cx="10" cy="17.800" r=".9" fill="currentColor"/><circle cx="15" cy="16.600" r=".9" fill="currentColor"/><circle cx="20" cy="15.400" r=".9" fill="currentColor"/>'),
-  trompette: SVG('<path d="M3 13h14l11-6v18l-11-6H3z"/><path d="M8 13v7M12.500 13v7"/>'),
-  batterie: SVG('<ellipse cx="16" cy="19" rx="10" ry="4"/><path d="M6 19v5.500c0 2 4.500 3.500 10 3.500s10-1.500 10-3.500V19"/><path d="M7 4l8 11M25 4l-8 11"/>'),
-  voix: SVG('<rect x="12" y="3" width="8" height="14" rx="4"/><path d="M8 14a8 8 0 0 0 16 0M16 22v6M11 28h10"/>'),
-  onde: SVG('<path d="M2 16c3-9 5-9 7 0s4 9 7 0 4-9 7 0 3 9 7 0"/>'),
-  note: SVG('<path d="M12 24V7l13-3v16"/><circle cx="8.500" cy="24" r="3.500"/><circle cx="21.500" cy="20" r="3.500"/>'),
-};
 const HP_ON = SVG('<path d="M4 12h5l7-6v20l-7-6H4z"/><path d="M21 11c2.500 3 2.500 7 0 10M25 7.500c4.500 5 4.500 12 0 17"/>');
 const HP_OFF = SVG('<path d="M4 12h5l7-6v20l-7-6H4z"/><path d="M21 12l7 8M28 12l-7 8"/>');
 const PLAY = SVG('<path d="M9 5l17 11L9 27z" fill="currentColor"/>');

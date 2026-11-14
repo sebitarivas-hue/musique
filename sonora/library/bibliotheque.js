@@ -1,16 +1,16 @@
 // SONORA Library : catalogue d'instruments et d'effets, recherche, écoute, mesure, ouverture dans le Studio, enregistrement dans les projets.
-import { Moteur, ErreurMoteur } from "../src/moteur.js?v=3c9c8dbe0a";
-import { MODULES } from "../src/index.js?v=3c9c8dbe0a";
-import { Editeur } from "../studio/editeur.js?v=3c9c8dbe0a";
-import { Projets } from "../studio/projets.js?v=3c9c8dbe0a";
-import { encoder } from "../studio/partage.js?v=3c9c8dbe0a";
-import { ENTREES } from "./catalogue.js?v=3c9c8dbe0a";
-import { profil, modulesEmployes, accordDeTest, bruitDeTest, melodieDeTest, sourceDe } from "./profil.js?v=3c9c8dbe0a";
-import { trouver } from "./recherche.js?v=3c9c8dbe0a";
-import { preparer } from "../science/executeur.js?v=3c9c8dbe0a";
-import { heros, etatBouton } from "../studio/heros.js?v=3c9c8dbe0a";
-import { dessinerOscillo } from "../studio/visuels.js?v=3c9c8dbe0a";
-import { lireProposition, lireClasse, construireClasse, sérialiser, valider, FORMAT_CLASSE, LIMITES } from "./classe.js?v=3c9c8dbe0a";
+import { Moteur, ErreurMoteur } from "../src/moteur.js?v=5a761f0ed5";
+import { MODULES } from "../src/index.js?v=5a761f0ed5";
+import { Editeur } from "../studio/editeur.js?v=5a761f0ed5";
+import { Projets } from "../studio/projets.js?v=5a761f0ed5";
+import { encoder } from "../studio/partage.js?v=5a761f0ed5";
+import { ENTREES } from "./catalogue.js?v=5a761f0ed5";
+import { profil, modulesEmployes, accordDeTest, bruitDeTest, melodieDeTest, sourceDe } from "./profil.js?v=5a761f0ed5";
+import { trouver } from "./recherche.js?v=5a761f0ed5";
+import { preparer } from "../science/executeur.js?v=5a761f0ed5";
+import { heros, etatBouton } from "../studio/heros.js?v=5a761f0ed5";
+import { dessinerOscillo } from "../studio/visuels.js?v=5a761f0ed5";
+import { lireProposition, lireClasse, construireClasse, sérialiser, valider, FORMAT_CLASSE, LIMITES } from "./classe.js?v=5a761f0ed5";
 
 const TOUS = [...ENTREES];
 const $ = id => document.getElementById(id);
