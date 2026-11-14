@@ -1,11 +1,11 @@
 // SONORA Orchestre, espace 05 : construire une fugue. Le sujet et le contre-sujet s'écrivent sur une portée, avec un clavier de couleurs ; les voix entrent l'une après l'autre (sujet, réponse à la quinte, sujet à l'octave, réponse),
 // chacune avec l'instrument choisi, et le contre-sujet accompagne l'entrée suivante. Les sons sont ceux de la banque du site.
-import { parId, nomNote } from "./donnees.js?v=586e91cf4f";
-import { POOL, etiquette } from "./timbres_logique.js?v=586e91cf4f";
-import { PAS, SECTIONS, SUJET_EXEMPLE, VOIX_PAR_DEFAUT, caler, exposition, fugueComplete, frottements, evenementsVoix } from "./fugue_logique.js?v=586e91cf4f";
-import { htmlGlossaire } from "./fugue_glossaire.js?v=586e91cf4f";
-import { rendreMelodie, sommer, lire, arreter, message, contexte, jouer } from "./audio.js?v=586e91cf4f";
-import { htmlPortee, lierPortee } from "./portee.js?v=586e91cf4f";
+import { parId, nomNote } from "./donnees.js?v=fdddafe35e";
+import { POOL, etiquette } from "./timbres_logique.js?v=fdddafe35e";
+import { PAS, SECTIONS, SUJET_EXEMPLE, VOIX_PAR_DEFAUT, caler, exposition, fugueComplete, frottements, evenementsVoix } from "./fugue_logique.js?v=fdddafe35e";
+import { htmlGlossaire } from "./fugue_glossaire.js?v=fdddafe35e";
+import { rendreMelodie, sommer, lire, arreter, message, contexte, jouer } from "./audio.js?v=fdddafe35e";
+import { htmlPortee, lierPortee } from "./portee.js?v=fdddafe35e";
 
 const $ = id => document.getElementById(id), CLE = "sonora.orchestre.fugue";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

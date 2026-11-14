@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=586e91cf4f">
-<link rel="stylesheet" href="pistes.css?v=586e91cf4f"><link rel="stylesheet" href="blocs.css?v=586e91cf4f"><link rel="stylesheet" href="notions.css?v=586e91cf4f">
+<link rel="stylesheet" href="../studio/studio.css?v=fdddafe35e">
+<link rel="stylesheet" href="pistes.css?v=fdddafe35e"><link rel="stylesheet" href="blocs.css?v=fdddafe35e"><link rel="stylesheet" href="notions.css?v=fdddafe35e">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -126,13 +126,24 @@
   </section>
   <section class="blocs" id="blocs" aria-label="Composer par blocs" hidden>
     <header class="bl-haut">
-      <h2 class="bl-titre">Composer par blocs</h2>
-      <nav id="bl-groupes" class="bl-groupes" aria-label="Groupes de quatre mesures"></nav>
-      <div class="bl-regles" id="bl-regles"></div>
-      <button type="button" id="bl-retour" data-tip="Revenir à la vue en pistes : c'est le même projet">Vue pistes</button>
+      <div class="bl-moniteur" id="bl-moniteur" role="img" aria-label="La note touchée, sur la portée"></div>
+      <div class="bl-console">
+        <div class="bl-rang">
+          <h2 class="bl-titre">Composer par blocs</h2>
+          <div class="bl-transport" id="bl-transport" role="group" aria-label="Lecture"></div>
+          <div class="bl-outils" id="bl-outils"></div>
+          <button type="button" id="bl-retour" data-tip="Revenir à la vue en pistes : c'est le même projet">Vue pistes</button>
+        </div>
+        <div class="bl-rang bl-rang-prog">
+          <div class="bl-progres" id="bl-progres" aria-hidden="true"><i id="bl-prog-groupe"></i><i id="bl-prog-tete"></i></div>
+          <output id="bl-temps" class="bl-temps">0:00 / 0:00</output>
+        </div>
+        <nav id="bl-groupes" class="bl-groupes" aria-label="Groupes de quatre mesures"></nav>
+      </div>
     </header>
     <div class="bl-corps">
       <div class="bl-cadre"><div class="bl-grille" id="bl-grille" role="grid" aria-label="Les blocs : une ligne par instrument, une colonne par mesure"></div><div class="bl-trait" id="bl-trait" aria-hidden="true" hidden></div></div>
+      <div class="bl-regle"><b class="bl-regle-t">Règle</b><div class="bl-regles" id="bl-regles"></div></div>
       <div class="bl-palette" id="bl-palette" hidden></div>
       <div class="bl-palette bl-motifs" id="bl-motifs" hidden></div>
     </div>
@@ -256,8 +267,8 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=586e91cf4f"></script>
-<script src="../barre-cours.js?v=586e91cf4f"></script>
-<script src="../retour.js?v=586e91cf4f"></script>
+<script type="module" src="pistes.js?v=fdddafe35e"></script>
+<script src="../barre-cours.js?v=fdddafe35e"></script>
+<script src="../retour.js?v=fdddafe35e"></script>
 </body>
 </html>

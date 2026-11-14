@@ -1,34 +1,34 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=586e91cf4f";
-import * as Ed from "./editions.js?v=586e91cf4f";
-import * as P from "./projet.js?v=586e91cf4f";
-import { Stockage } from "./stockage.js?v=586e91cf4f";
-import { creerBouton } from "./bouton.js?v=586e91cf4f";
-import * as MI from "./midi.js?v=586e91cf4f";
-import * as N from "./notes.js?v=586e91cf4f";
-import { Rouleau } from "./rouleau.js?v=586e91cf4f";
-import { PanneauPartition } from "./partition/panneau.js?v=586e91cf4f";
-import { separer, NOMS_PARTIES } from "./separation.js?v=586e91cf4f";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=586e91cf4f";
-import * as BM from "./batterie_midi.js?v=586e91cf4f";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=586e91cf4f";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=586e91cf4f";
-import * as INS from "./instruments.js?v=586e91cf4f";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=586e91cf4f";
-import * as OMR from "./omr.js?v=586e91cf4f";
-import { creerVueBlocs } from "./blocs-ui.js?v=586e91cf4f";
-import { creerMaster } from "./master.js?v=586e91cf4f";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=586e91cf4f";
-import * as MO from "./moteurs.js?v=586e91cf4f";
-import { monterPanneaux } from "./panneaux.js?v=586e91cf4f";
-import { monterNotions } from "./notions.js?v=586e91cf4f";
-import { DEMOS } from "./demos.js?v=586e91cf4f";
-import * as B from "./bibliotheque.js?v=586e91cf4f";
-import { encoderWAV } from "../studio/wav.js?v=586e91cf4f";
-import { ENTREES } from "../library/catalogue.js?v=586e91cf4f";
-import { compiler } from "../src/index.js?v=586e91cf4f";
-import { rendre } from "../src/rendu.js?v=586e91cf4f";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=fdddafe35e";
+import * as Ed from "./editions.js?v=fdddafe35e";
+import * as P from "./projet.js?v=fdddafe35e";
+import { Stockage } from "./stockage.js?v=fdddafe35e";
+import { creerBouton } from "./bouton.js?v=fdddafe35e";
+import * as MI from "./midi.js?v=fdddafe35e";
+import * as N from "./notes.js?v=fdddafe35e";
+import { Rouleau } from "./rouleau.js?v=fdddafe35e";
+import { PanneauPartition } from "./partition/panneau.js?v=fdddafe35e";
+import { separer, NOMS_PARTIES } from "./separation.js?v=fdddafe35e";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=fdddafe35e";
+import * as BM from "./batterie_midi.js?v=fdddafe35e";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=fdddafe35e";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=fdddafe35e";
+import * as INS from "./instruments.js?v=fdddafe35e";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=fdddafe35e";
+import * as OMR from "./omr.js?v=fdddafe35e";
+import { creerVueBlocs } from "./blocs-ui.js?v=fdddafe35e";
+import { creerMaster } from "./master.js?v=fdddafe35e";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=fdddafe35e";
+import * as MO from "./moteurs.js?v=fdddafe35e";
+import { monterPanneaux } from "./panneaux.js?v=fdddafe35e";
+import { monterNotions } from "./notions.js?v=fdddafe35e";
+import { DEMOS } from "./demos.js?v=fdddafe35e";
+import * as B from "./bibliotheque.js?v=fdddafe35e";
+import { encoderWAV } from "../studio/wav.js?v=fdddafe35e";
+import { ENTREES } from "../library/catalogue.js?v=fdddafe35e";
+import { compiler } from "../src/index.js?v=fdddafe35e";
+import { rendre } from "../src/rendu.js?v=fdddafe35e";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -65,7 +65,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=586e91cf4f"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=fdddafe35e"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -501,6 +501,7 @@ function majVitesseBarre() { const g = rouleau.choisies, v = Math.round((g.lengt
 $("rl-vitesse").oninput = e => { $("rl-vitesse-val").textContent = e.target.value; rouleau.reglerVitesse(+e.target.value / 100); };
 function majRouleauBarre() { const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; $("rl-mesures").textContent = (s.midi.temps / etat.projet.temps) + (s.midi.temps / etat.projet.temps > 1 ? " mesures" : " mesure"); const nb = rouleau.choix.size; $("rl-suppr").disabled = nb === 0; $("rl-copier").disabled = nb === 0; $("rl-dupliquer").disabled = nb === 0; $("rl-suppr").lastChild.textContent = nb > 1 ? ` Supprimer les ${nb} notes` : " Supprimer la note"; $("rl-octave-moins").disabled = $("rl-octave-plus").disabled = !!rouleau.lignes; $("rl-moins").disabled = s.midi.temps <= etat.projet.temps; }
 async function ecouterNote(n, v) {
+  if (vueBlocs && Number.isFinite(n)) vueBlocs.montrerNote(n);
   const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; const cat = INS.catalogue(), e = cat.find(x => x.id === s.midi.instrument) || cat.find(x => x.id === "ech:clavier"); const ctx = contexte();
   try { const inst = await INS.charger(e, ctx); if (!rl.samp) rl.samp = new INS.Sampleur(ctx, ctx.destination); if (rl.samp.inst !== inst) rl.samp.utiliser(inst); rl.samp.noteOn(n, 440 * Math.pow(2, (n - 69) / 12), v); setTimeout(() => rl.samp.noteOff(n), 380); } catch (_) {}
 }

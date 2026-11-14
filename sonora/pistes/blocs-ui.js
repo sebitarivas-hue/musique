@@ -1,9 +1,10 @@
 // L'écran du mode blocs de SONORA Pistes (le modèle est dans blocs.js, sans DOM et testé dans Node).
 // Une grille : une ligne par instrument (une pastille de couleur que l'on touche pour changer d'instrument), une colonne par mesure, quatre mesures à la fois.
 // Toucher une case vide pose un bloc et ouvre ses notes ; toucher un bloc l'ouvre. Le piano roll et la partition existants servent d'éditeur : rien n'est doublé.
-import * as B from "./blocs.js?v=586e91cf4f";
-import * as M from "./motifs.js?v=586e91cf4f";
-import { PICTOS } from "./pictos.js?v=586e91cf4f";
+import * as B from "./blocs.js?v=fdddafe35e";
+import * as M from "./motifs.js?v=fdddafe35e";
+import { PICTOS } from "./pictos.js?v=fdddafe35e";
+import { NOM_NOTE } from "./bibliotheque.js?v=fdddafe35e";
 
 // Les instruments qu'on propose en gros boutons quand on touche une pastille : les plus connus d'abord, les autres dans la liste.
 const PRINCIPAUX = [["ech:clavier", "Piano"], ["ech:rhodes", "Piano électrique"], ["ech:guitare-folk", "Guitare"], ["ech:basse-moderne", "Basse"], ["ech:sax-alto", "Saxophone"], ["ech:synthe", "Synthé"], ["ech:violoncelle-solo", "Violoncelle"], ["batt:reel", "Batterie"]];
@@ -13,6 +14,12 @@ const SVG = d => `<svg viewBox="0 0 32 32" width="100%" height="100%" fill="none
 const HP_ON = SVG('<path d="M4 12h5l7-6v20l-7-6H4z"/><path d="M21 11c2.500 3 2.500 7 0 10M25 7.500c4.500 5 4.500 12 0 17"/>');
 const HP_OFF = SVG('<path d="M4 12h5l7-6v20l-7-6H4z"/><path d="M21 12l7 8M28 12l-7 8"/>');
 const PLAY = SVG('<path d="M9 5l17 11L9 27z" fill="currentColor"/>');
+const STOP = SVG('<rect x="7" y="7" width="18" height="18" rx="2" fill="currentColor"/>');
+const DEBUT = SVG('<path d="M7 6v20M26 7 12 16l14 9z" fill="currentColor"/>');
+const METRO = SVG('<path d="M11 28 14 6h4l3 22zM16 22 23 8M8 28h16"/>');
+const ANNULER = SVG('<path d="M12 8 6 14l6 6M6 14h12a8 8 0 0 1 0 16h-4"/>');
+const REFAIRE = SVG('<path d="M20 8l6 6-6 6M26 14H14a8 8 0 0 0 0 16h4"/>');
+const PREC = SVG('<path d="M20 6 10 16l10 10"/>'), SUIV = SVG('<path d="M12 6l10 10-10 10"/>');
 const PLUS = SVG('<path d="M16 6v20M6 16h20"/>');
 // La sorte d'un instrument d'après son identifiant : elle donne le pictogramme et la couleur de sa ligne (une couleur par sorte, pour qu'on distingue les lignes d'un coup d'œil).
 export function sorteDe(id) {
@@ -46,7 +53,7 @@ const FAM_COULEUR = { rythme: "#FF8A3D", basse: "#A86CF0", accords: "#4C9BF5", m
 
 export function creerVueBlocs(d) {
   const { $, P, INS, etat, esc, message, changer, afficherPistes, ouvrirRouleau, fermerRouleau, remettreAJourMidi, rouleauOuvert, ecouterMotif, arreterMotif } = d;
-  const v = { actif: false, groupe: 0, choix: null, presse: null, palette: null, motifs: false, modeles: false, onglet: null, famille: "Favoris", tonique: 0 };
+  const v = { actif: false, groupe: 0, choix: null, presse: null, palette: null, motifs: false, modeles: false, onglet: null, essai: null, famille: "Favoris", tonique: 0 };
   try { const t = +localStorage.getItem("sonora:pistes:tonique"); if (M.TONALITES.some(x => x[1] === t)) v.tonique = t; } catch (_) { /* la tonalité n'est pas gardée : do */ }
   const racine = $("blocs");
   const catalogue = () => INS.catalogue(), nomInstrument = id => (catalogue().find(x => x.id === id) || { nom: id }).nom;
@@ -54,16 +61,54 @@ export function creerVueBlocs(d) {
 
   function apercuHtml(notes, temps) { return B.apercu(notes, temps).map(n => `<i style="left:${(n.x * 100).toFixed(1)}%;width:${(n.w * 100).toFixed(1)}%;top:${(n.y * 80 + 6).toFixed(1)}%"></i>`).join(""); }
 
+
+  // Le moniteur de note, en haut à gauche : une petite portée (clé de sol au-dessus du do du milieu, clé de fa en dessous), la note posée dessus avec ses lignes supplémentaires, et son nom.
+  const DEGRE = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6], DIESE = [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0];
+  function montrerNote(n) {
+    const z = $("bl-moniteur"); if (!z) return; const aigu = n === null || n >= 60;
+    let corps = [0, 1, 2, 3, 4].map(k => `<line x1="8" x2="112" y1="${22 + k * 8}" y2="${22 + k * 8}" stroke="#F0EFE8" stroke-width="1.4"/>`).join("");
+    corps += aigu ? `<text x="9" y="56" font-size="46" fill="#F0EFE8" font-family="'Noto Music','Bravura Text','Segoe UI Symbol',serif">\u{1D11E}</text>` : `<text x="9" y="50" font-size="40" fill="#F0EFE8" font-family="'Noto Music','Bravura Text','Segoe UI Symbol',serif">\u{1D122}</text>`;
+    let nom = "";
+    if (n !== null) {
+      const dn = Math.floor(n / 12) * 7 + DEGRE[n % 12], base = aigu ? 5 * 7 + 2 : 3 * 7 + 4, d = dn - base, y = 54 - d * 4;
+      for (let k = -2; k >= d; k -= 2) corps += `<line x1="58" x2="78" y1="${54 - k * 4}" y2="${54 - k * 4}" stroke="#F0EFE8" stroke-width="1.4"/>`;
+      for (let k = 10; k <= d; k += 2) corps += `<line x1="58" x2="78" y1="${54 - k * 4}" y2="${54 - k * 4}" stroke="#F0EFE8" stroke-width="1.4"/>`;
+      corps += `<ellipse cx="68" cy="${y}" rx="5.6" ry="4.1" transform="rotate(-18 68 ${y})" fill="#D6FF00"/>`;
+      if (DIESE[n % 12]) corps += `<text x="50" y="${y + 5}" font-size="15" fill="#D6FF00" font-weight="700">♯</text>`;
+      nom = NOM_NOTE(n);
+    }
+    z.innerHTML = `<svg viewBox="0 0 120 76" aria-hidden="true" focusable="false">${corps}</svg><span class="bl-note-nom">${nom || "&nbsp;"}</span>`;
+    z.setAttribute("aria-label", n === null ? "Aucune note touchée" : `Note touchée : ${nom}`);
+  }
+  const mmss = t => { t = Math.max(0, Math.round(t)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; };
+  // La console : lecture et arrêt, début, métronome, annuler, rétablir : ce sont les mêmes boutons que ceux de la barre du haut.
+  function dessinerConsole() {
+    const tr = $("bl-transport"); if (!tr) return;
+    tr.innerHTML = `<button type="button" class="bl-rond bl-rond-lire" id="bl-t-lire" data-relais="b-lire" aria-pressed="${!!etat.lecture}" aria-label="${etat.lecture ? "Arrêter" : "Lire"}" title="Lire et arrêter (barre d'espace)">${etat.lecture ? STOP : PLAY}</button>
+      <button type="button" class="bl-rond" data-relais="b-debut" aria-label="Revenir au début" title="Revenir au début">${DEBUT}</button>
+      <button type="button" class="bl-rond" data-relais="metro" aria-pressed="${$("metro").checked}" aria-label="Métronome" title="Métronome">${METRO}</button>`;
+    $("bl-outils").innerHTML = `<button type="button" class="bl-pilule" data-relais="b-annuler" ${$("b-annuler").disabled ? "disabled" : ""} title="Annuler la dernière action (Ctrl+Z)"><span class="bl-pi">${ANNULER}</span>Annuler</button>
+      <button type="button" class="bl-pilule" data-relais="b-refaire" ${$("b-refaire").disabled ? "disabled" : ""} title="Rétablir"><span class="bl-pi">${REFAIRE}</span>Rétablir</button>
+      <button type="button" class="bl-pilule bl-pilule-fort" id="bl-modeles" aria-expanded="${v.modeles}" title="Poser quatre mesures sur plusieurs lignes d'un coup"><span class="bl-pi">${PLUS}</span>Morceau tout prêt</button>`;
+  }
+  function dureeGrille(p) { return B.nombreDeGroupes(p) * B.MESURES_PAR_GROUPE * 60 / p.tempo * p.temps; }
+  function majProgres(tete) {
+    const p = etat.projet; if (!p || !$("bl-prog-tete")) return; const tot = dureeGrille(p), ng = B.nombreDeGroupes(p);
+    $("bl-prog-groupe").style.left = (v.groupe / ng * 100).toFixed(2) + "%"; $("bl-prog-groupe").style.width = (100 / ng).toFixed(2) + "%";
+    $("bl-prog-tete").style.left = Math.min(100, tete / tot * 100).toFixed(2) + "%"; $("bl-temps").textContent = `${mmss(tete)} / ${mmss(tot)}`;
+    const lire = $("bl-t-lire"); if (lire && lire.getAttribute("aria-pressed") !== String(!!etat.lecture)) dessinerConsole();
+  }
+
   function dessiner() {
     if (!v.actif || !etat.projet) return;
     const p = etat.projet, ng = B.nombreDeGroupes(p); v.groupe = Math.max(0, Math.min(v.groupe, ng - 1));
     // la barre du haut : les groupes de quatre mesures, puis les réglages
-    $("bl-groupes").innerHTML = Array.from({ length: ng }, (_, g) => `<button type="button" data-g="${g}" aria-pressed="${g === v.groupe}" aria-label="Mesures ${B.etiquetteGroupe(g)}">${B.etiquetteGroupe(g).replace(" à ", "&ndash;")}</button>`).join("");
+    $("bl-groupes").innerHTML = `<button type="button" class="bl-page" data-page="-1" aria-label="Groupe précédent" ${v.groupe === 0 ? "disabled" : ""}>${PREC}</button>` + Array.from({ length: ng }, (_, g) => `<button type="button" data-g="${g}" aria-pressed="${g === v.groupe}" aria-label="Mesures ${B.etiquetteGroupe(g)}">${B.etiquetteGroupe(g).replace(" à ", "&ndash;")}</button>`).join("") + `<button type="button" class="bl-page" data-page="1" aria-label="Groupe suivant" ${v.groupe >= ng - 1 ? "disabled" : ""}>${SUIV}</button>`;
+    dessinerConsole(); majProgres(etat.tete || 0);
     $("bl-regles").innerHTML = `<span class="bl-chip" title="Nombre de temps par mesure">${p.temps} temps</span>
       <button type="button" class="bl-chip" id="bl-tempo" title="Changer le tempo">${p.tempo} par minute</button>
       <label class="bl-chip bl-tonalite" title="La tonalité des motifs prêts : les accords et les mélodies sont transposés"><span>Tonalité</span><select id="bl-tonalite" aria-label="Tonalité des motifs prêts">${M.TONALITES.map(([nom, t]) => `<option value="${t}"${t === v.tonique ? " selected" : ""}>${esc(nom)}</option>`).join("")}</select></label>
-      <button type="button" class="bl-chip bl-chip-son" id="bl-master" aria-pressed="${p.master === "pro"}" title="Son pro : niveau, tonalité, salle, largeur stéréo et compression d'un morceau actuel, comme à l'export">Son pro</button>
-      <button type="button" class="bl-chip bl-chip-fort" id="bl-modeles" aria-expanded="${v.modeles}" title="Poser quatre mesures sur plusieurs lignes d'un coup">Morceau tout prêt</button>`;
+      <button type="button" class="bl-chip bl-chip-son" id="bl-master" aria-pressed="${p.master === "pro"}" title="Son pro : niveau, tonalité, salle, largeur stéréo et compression d'un morceau actuel, comme à l'export">Son pro</button>`;
     // la grille : les numéros de mesure, puis une ligne par instrument
     const g0 = v.groupe * B.MESURES_PAR_GROUPE;
     let html = `<div class="bl-ligne bl-nums" aria-hidden="true"><span></span>${[0, 1, 2, 3].map(k => `<span class="bl-num">${g0 + k + 1}</span>`).join("")}</div>`;
@@ -89,13 +134,14 @@ export function creerVueBlocs(d) {
     // le choix de l'instrument d'une ligne : de grosses tuiles
     const pal = $("bl-palette");
     if (v.palette && p.pistes.some(x => x.id === v.palette)) {
-      const cur = B.instrumentDePiste(p, v.palette);
+      const actuel = B.instrumentDePiste(p, v.palette), cur = v.essai || actuel;
       pal.hidden = false;
       // comme un sélecteur de studio : des onglets par famille, puis de grandes tuiles numérotées (silhouette noire sur fond blanc, la tuile choisie en bleu)
       const onglets = ["Favoris", ...INS.GROUPES.filter(gr => catalogue().some(x => x.groupe === gr))];
       if (!onglets.includes(v.famille)) v.famille = "Favoris";
       const liste = v.famille === "Favoris" ? PRINCIPAUX.map(([id, nom]) => ({ id, nom })) : catalogue().filter(x => x.groupe === v.famille);
-      pal.innerHTML = `<div class="bl-panneau-haut"><p class="bl-q">Quel instrument pour « ${esc(P.trouverPiste(p, v.palette).nom)} » ?</p><button type="button" id="bl-fermer-palette" class="bl-fermer" aria-label="Fermer le choix d'instrument">Fermer</button></div>
+      const numPiste = p.pistes.findIndex(x => x.id === v.palette) + 1, choisi = catalogue().find(x => x.id === cur) || { nom: nomInstrument(cur) };
+      pal.innerHTML = `<div class="bl-panneau-haut"><div class="bl-actuel"><span class="bl-actuel-n">Ligne ${numPiste}</span><b>${esc(choisi.nom)}</b></div><div class="bl-valider"><button type="button" id="bl-valider" class="bl-ok">Choisir ce son</button><button type="button" id="bl-fermer-palette" class="bl-fermer" aria-label="Annuler le choix d'instrument">Annuler</button></div></div>
         <div class="bl-familles" role="tablist" aria-label="Familles d'instruments">${onglets.map(o => `<button type="button" role="tab" data-famille="${esc(o)}" aria-selected="${o === v.famille}">${esc(o)}</button>`).join("")}</div>
         <div class="bl-inst">${liste.map((x, k) => `<button type="button" data-inst="${esc(x.id)}" aria-pressed="${x.id === cur}"><i class="bl-num">${k + 1}</i><span class="bl-ico-g">${pictoDe(x.id)}</span><b>${esc(x.nom)}</b></button>`).join("")}</div>`;
     } else { pal.hidden = true; pal.innerHTML = ""; }
@@ -179,8 +225,11 @@ export function creerVueBlocs(d) {
     const mu = e.target.closest("[data-muet]"); if (mu) { const pi = P.trouverPiste(etat.projet, mu.dataset.muet); if (pi) { pi.muet = !pi.muet; changer(); } return; }
     const pa = e.target.closest(".bl-pastille"); if (pa) { v.motifs = false; v.modeles = false; v.palette = v.palette === pa.dataset.piste ? null : pa.dataset.piste; choisir(pa.dataset.piste, v.choix ? v.choix.mesure : v.groupe * B.MESURES_PAR_GROUPE); dessiner(); return; }
     const fa = e.target.closest("[data-famille]"); if (fa && v.palette) { v.famille = fa.dataset.famille; dessiner(); return; }
-    const ins = e.target.closest("[data-inst]"); if (ins && v.palette) { await regler(v.palette, ins.dataset.inst); return; }
-    if (e.target.closest("#bl-fermer-palette")) { v.palette = null; dessiner(); return; }
+    const ins = e.target.closest("[data-inst]"); if (ins && v.palette) { v.essai = ins.dataset.inst; dessiner(); await essayer(v.essai); return; }
+    if (e.target.closest("#bl-valider") && v.palette) { await regler(v.palette, v.essai || B.instrumentDePiste(etat.projet, v.palette)); return; }
+    const rel = e.target.closest("[data-relais]"); if (rel && racine.contains(rel)) { const cible = $(rel.dataset.relais); if (cible) { cible.click(); setTimeout(dessiner, 60); } return; }
+    const pg = e.target.closest("[data-page]"); if (pg && !pg.disabled) { v.groupe = Math.max(0, Math.min(B.nombreDeGroupes(etat.projet) - 1, v.groupe + +pg.dataset.page)); dessiner(); return; }
+    if (e.target.closest("#bl-fermer-palette")) { v.palette = null; v.essai = null; dessiner(); return; }
     const on = e.target.closest("[data-onglet]"); if (on) { v.onglet = on.dataset.onglet; arreterMotif(); dessiner(); return; }
     const ec = e.target.closest("[data-ecouter]"); if (ec && v.choix) { const m = M.motifDe(ec.dataset.ecouter), inst = B.instrumentDePiste(etat.projet, v.choix.piste); try { await ecouterMotif(M.notesDuMotif(m, v.tonique), m.temps, inst); } catch (err) { message(err && err.message || "Ce motif n'a pas pu être joué."); } return; }
     const po = e.target.closest("[data-poser]"); if (po && v.choix) { await poser(po.dataset.poser); return; }
@@ -197,8 +246,15 @@ export function creerVueBlocs(d) {
     else if (e.target.id === "bl-tonalite") { v.tonique = +e.target.value; try { localStorage.setItem("sonora:pistes:tonique", String(v.tonique)); } catch (_) { /* pas gardé */ } arreterMotif(); dessiner(); }
   });
 
+  // Un petit motif pour entendre l'instrument avant de le choisir.
+  async function essayer(id) {
+    const batt = String(id).startsWith("batt:"), grave = sorteDe(id) === "basse";
+    const notes = batt ? [[0, .5, 36], [1, .5, 42], [2, .5, 38], [3, .5, 42]] : grave ? [[0, 1, 40], [1, 1, 43], [2, 2, 47]] : [[0, 1, 60], [1, 1, 64], [2, 2, 67]];
+    try { await ecouterMotif(notes.map(([t, d, n]) => ({ t, d, n, v: .8 })), 4, id); } catch (err) { message(err && err.message || "Ce son n'a pas pu être joué."); }
+    for (const n of notes.slice(0, 1)) montrerNote(n[2]);
+  }
   async function regler(piste, instrument) {
-    const refaire = B.reglerInstrumentPiste(etat.projet, piste, instrument); v.palette = null; changer();
+    const refaire = B.reglerInstrumentPiste(etat.projet, piste, instrument); v.palette = null; v.essai = null; changer();
     await remettreAJourMidi(); message(`${nomInstrument(instrument)} : ${refaire.length ? "les blocs de cette ligne le jouent maintenant." : "les prochains blocs de cette ligne le joueront."}`); dessiner();
   }
   async function ajouterInstrument() {
@@ -224,11 +280,13 @@ export function creerVueBlocs(d) {
   }
   // Le trait de lecture : à suivre quand la tête de lecture bouge.
   function suivre(tete) {
-    if (!v.actif) return; const trait = $("bl-trait"); if (!trait) return;
+    if (!v.actif) return; majProgres(tete); const trait = $("bl-trait"); if (!trait) return;
     const pos = B.positionDansGrille(etat.projet, tete);
     if (!etat.lecture || !pos) { trait.hidden = true; return; }
     if (pos.groupe !== v.groupe && etat.lecture) { v.groupe = Math.min(pos.groupe, B.nombreDeGroupes(etat.projet) - 1); dessiner(); }
+    majProgres(tete);
     trait.hidden = false; trait.style.left = `calc(var(--bl-pastille) + var(--bl-gap) + (100% - var(--bl-pastille) - var(--bl-gap)) * ${pos.x.toFixed(4)})`;
   }
-  return { montrer, basculer: () => montrer(!v.actif), afficher: dessiner, suivre, get actif() { return v.actif; }, etat: v };
+  montrerNote(null);
+  return { montrer, montrerNote, basculer: () => montrer(!v.actif), afficher: dessiner, suivre, get actif() { return v.actif; }, etat: v };
 }
