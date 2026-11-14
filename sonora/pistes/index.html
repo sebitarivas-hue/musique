@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=d3ff7950f5">
-<link rel="stylesheet" href="pistes.css?v=d3ff7950f5"><link rel="stylesheet" href="notions.css?v=d3ff7950f5">
+<link rel="stylesheet" href="../studio/studio.css?v=090ca757ad">
+<link rel="stylesheet" href="pistes.css?v=090ca757ad"><link rel="stylesheet" href="notions.css?v=090ca757ad">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -124,6 +124,13 @@
     <p id="tt-texte" role="status" aria-live="polite"></p>
     <div class="tt-actions"><button type="button" id="tt-caler" class="principal"></button><button type="button" id="tt-projet"></button><button type="button" id="tt-fermer">Fermer</button></div>
   </section>
+  <section class="blocs" id="blocs" aria-label="Composer par blocs" hidden>
+    <div class="bl-haut"><h2>Composer par blocs</h2><button type="button" id="bl-retour" data-tip="Revenir à la vue en pistes : c'est le même projet"><span class="ic ic-piste" aria-hidden="true"></span> Vue pistes</button><nav id="bl-groupes" class="bl-groupes" aria-label="Groupes de quatre mesures"></nav><div class="bl-regles" id="bl-regles"></div></div>
+    <div class="bl-cadre"><div class="bl-grille" id="bl-grille" role="grid" aria-label="Les blocs : une ligne par instrument, une colonne par mesure"></div><div class="bl-trait" id="bl-trait" aria-hidden="true" hidden></div></div>
+    <div class="bl-palette" id="bl-palette" hidden></div>
+    <div class="bl-actions" id="bl-actions" aria-live="polite"></div>
+    <button type="button" id="bl-piste" class="bl-ajout"><span class="ic ic-plus" aria-hidden="true"></span> Ajouter un instrument</button>
+  </section>
   <section class="rouleau" id="rouleau" aria-label="Notes du clip" hidden>
     <div class="rl-onglets" role="tablist" aria-label="Façon de voir les notes">
       <button type="button" role="tab" id="rl-onglet-roll" aria-selected="true" aria-controls="rl-corps" data-tip="Les notes en piano roll : on pose, on déplace, on allonge à la souris"><span class="ic ic-piano" aria-hidden="true"></span> Piano roll</button>
@@ -228,6 +235,7 @@
   <section class="debut" id="debut" aria-label="Par où commencer ?" hidden>
     <h2>Par où commencer ?</h2>
     <div class="debut-cartes">
+      <button type="button" data-go="blocs" style="--c:#F26BA3"><span class="ic ic-pas" aria-hidden="true"></span><b>Composer par blocs</b><span>Une case par mesure, un instrument par ligne : tu construis ta musique morceau par morceau.</span></button>
       <button type="button" data-go="instrument" style="--c:#4C9BF5"><span class="ic ic-piano" aria-hidden="true"></span><b>Jouer un instrument</b><span>Un clavier sur l'écran ou sur ton ordinateur : tes notes s'enregistrent toutes seules.</span></button>
       <button type="button" data-go="partition" style="--c:#A86CF0"><span class="ic ic-partition" aria-hidden="true"></span><b>Écrire une partition</b><span>Glisse des notes sur la portée : tu les vois écrites et tu les entends tout de suite.</span></button>
       <button type="button" data-go="pas" style="--c:#FF8A3D"><span class="ic ic-pas" aria-hidden="true"></span><b>Construire un rythme</b><span>Allume des cases sur une grille : une batterie joue ce que tu as écrit.</span></button>
@@ -241,8 +249,8 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=d3ff7950f5"></script>
-<script src="../barre-cours.js?v=d3ff7950f5"></script>
-<script src="../retour.js?v=d3ff7950f5"></script>
+<script type="module" src="pistes.js?v=090ca757ad"></script>
+<script src="../barre-cours.js?v=090ca757ad"></script>
+<script src="../retour.js?v=090ca757ad"></script>
 </body>
 </html>

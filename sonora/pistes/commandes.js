@@ -25,7 +25,7 @@ export const COMMANDES = [
   { id: "reglage-double-voix", menu: "Effets", libelle: "Double voix…", touches: [], clip: true }, { id: "reglage-harmonies", menu: "Effets", libelle: "Harmonies : chanter en accord avec soi-même…", touches: [], clip: true },
   { id: "separer-ia", menu: "Effets", libelle: "Séparer en stems par intelligence artificielle : voix, batterie, basse, autres…", touches: [], clip: true },
   { id: "separer", menu: "Effets", libelle: "Séparer sans IA (méthode classique) : basse, percussions, centre, côtés…", touches: [], clip: true },
-  { id: "zoom-plus", menu: "Affichage", libelle: "Zoom avant", touches: ["+", "="] }, { id: "zoom-moins", menu: "Affichage", libelle: "Zoom arrière", touches: ["-"] }, { id: "zoom-tout", menu: "Affichage", libelle: "Zoom par défaut", touches: ["0"] },
+  { id: "vue-blocs", menu: "Affichage", libelle: "Vue blocs ou vue pistes", touches: [] }, { id: "zoom-plus", menu: "Affichage", libelle: "Zoom avant", touches: ["+", "="] }, { id: "zoom-moins", menu: "Affichage", libelle: "Zoom arrière", touches: ["-"] }, { id: "zoom-tout", menu: "Affichage", libelle: "Zoom par défaut", touches: ["0"] },
   { id: "aide-raccourcis", menu: "Aide", libelle: "Raccourcis clavier", touches: ["?"] },
   { id: "aide-notions", menu: "Aide", libelle: "Comprendre les mots de Pistes", touches: [] },
 ];
