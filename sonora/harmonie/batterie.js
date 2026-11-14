@@ -4,7 +4,11 @@
 
 const SR_DEFAUT = 44100;
 export const SONS_BATTERIE = ["kick", "snare", "clap", "hatc", "hato", "rim", "tom", "cow", "shaker", "ride", "crash"];
-export const KITS = { "909": "Boîte à rythmes sèche", "808": "Boîte à rythmes grave", acoustique: "Batterie douce", reel: "Vraie batterie" };
+export const KITS = { "909": "Boîte à rythmes sèche", "808": "Boîte à rythmes grave", acoustique: "Batterie douce", reel: "Vraie batterie",
+  tr808: "TR-808 analogique", uzu: "Électro moderne", club: "Club", hiphop: "Hip-hop", brute: "Batterie brute", jazz: "Jazz", perc: "Percussions du monde", tabla: "Tabla et percussions indiennes" };
+// Les kits enregistrés : chacun a un fichier JSON dans faust/banque/batterie/ (« batterie.json » pour « reel », « <kit>.json » pour les autres). Un kit pas encore chargé (ou dans Node) joue le kit calculé de SECOURS.
+export const KITS_ENREGISTRES = ["reel", "tr808", "uzu", "club", "hiphop", "brute", "jazz", "perc", "tabla"];
+const SECOURS = { reel: "acoustique", tr808: "808", uzu: "909", club: "909", hiphop: "808", brute: "acoustique", jazz: "acoustique", perc: "acoustique", tabla: "acoustique" };
 // « reel » : une vraie batterie enregistrée (Big Rusty Drums, Karoryfer Samples, CC0 ; voir outils/banque_batterie.py), avec des coups forts, moyens et doux et plusieurs alternances de chaque coup.
 // Tant que les enregistrements ne sont pas chargés (ou dans Node), « reel » joue la batterie douce calculée.
 
@@ -52,10 +56,11 @@ function cymbale(crash, sr) {
 const CACHE = new Map();
 // Le son d'une pièce de batterie, pour un jeu de sons et une fréquence d'échantillonnage. Renvoie un Float32Array, calculé une fois.
 export function son(nom, kit = "909", sr = SR_DEFAUT, couche = "x", variante = 0) {
-  if (kit === "reel") {
-    const K = REEL.reel, P = K && K.pieces[nom];
-    if (P) { const L = P[couche] && P[couche].length ? P[couche] : P.x || Object.values(P)[0], x = L[variante % L.length], cl = `reel|${nom}|${couche}|${variante % L.length}|${sr}`; if (!REPOSE.has(cl)) REPOSE.set(cl, reechantillonner(x, K.sr, sr)); return REPOSE.get(cl); }
-    kit = "acoustique";   // pas (encore) d'enregistrement : la batterie douce calculée
+  if ((nom === "tomm" || nom === "tomh") && !(REEL[kit] && REEL[kit].pieces[nom])) nom = "tom";   // les toms médium et aigu n'existent que dans les kits qui les ont enregistrés
+  if (SECOURS[kit]) {
+    const K = REEL[kit], P = K && K.pieces[nom];
+    if (P) { const L = P[couche] && P[couche].length ? P[couche] : P.x || Object.values(P)[0], x = L[variante % L.length], cl = `${kit}|${nom}|${couche}|${variante % L.length}|${sr}`; if (!REPOSE.has(cl)) REPOSE.set(cl, reechantillonner(x, K.sr, sr)); return REPOSE.get(cl); }
+    kit = SECOURS[kit];   // pas (encore) d'enregistrement, ou pièce absente du kit : le kit calculé de secours
   }
   const cle = `${nom}|${kit}|${sr}`; if (CACHE.has(cle)) return CACHE.get(cle);
   const x = nom === "kick" ? grosseCaisse(kit, sr) : nom === "snare" ? caisseClaire(kit, sr) : nom === "clap" ? frappeMains(kit, sr) : nom === "hatc" ? charleston(false, kit, sr) : nom === "hato" ? charleston(true, kit, sr)
@@ -68,6 +73,12 @@ export function son(nom, kit = "909", sr = SR_DEFAUT, couche = "x", variante = 0
 // Les enregistrements : { kit: { piece: { couche: [Float32Array, ...] } } }, avec leur fréquence d'échantillonnage. Mémorisés une fois chargés ; dans Node, les tests les fournissent (mettreKit).
 const REEL = {}, REPOSE = new Map();
 export const kitPret = nom => !!REEL[nom];
+// Les prises d'une pièce d'un kit enregistré : { o: [...], m: [...], x: [...] } (couches douce, moyenne, forte ; chacune avec ses variantes), ou null si le kit n'est pas chargé.
+export function prisesDe(kit, nom, sr = SR_DEFAUT) {
+  const K = REEL[kit], P = K && K.pieces[nom]; if (!P) return null; const sortie = {};
+  for (const [couche, L] of Object.entries(P)) sortie[couche] = L.map((x, i) => son(nom, kit, sr, couche, i));
+  return sortie;
+}
 export function mettreKit(nom, pieces, sr = 44100) { REEL[nom] = { pieces, sr }; CACHE.clear(); REPOSE.clear(); }
 function reechantillonner(x, de, vers) {
   if (de === vers) return x; const n = Math.round(x.length * vers / de), y = new Float32Array(n), k = de / vers;
@@ -75,16 +86,18 @@ function reechantillonner(x, de, vers) {
 }
 export function racineBatterie() { return new URL("../../faust/banque/batterie/", import.meta.url).href; }
 // Charge les enregistrements de la batterie réelle (une seule fois). `ctx` : n'importe quel AudioContext (un OfflineAudioContext suffit : le décodage ne demande aucun geste).
-let ENCOURS = null;
-export function chargerKit(ctx = new OfflineAudioContext(1, 1, 44100), base = racineBatterie()) {
-  if (REEL.reel) return Promise.resolve(true); if (ENCOURS) return ENCOURS;
-  ENCOURS = fetch(base + "batterie.json").then(r => (r.ok ? r.json() : null)).then(async cat => {
+const ENCOURS = {};
+export function chargerKit(ctx = new OfflineAudioContext(1, 1, 44100), base = racineBatterie(), nom = "reel") {
+  if (REEL[nom]) return Promise.resolve(true); if (ENCOURS[nom]) return ENCOURS[nom];
+  ENCOURS[nom] = fetch(base + (nom === "reel" ? "batterie" : nom) + ".json").then(r => (r.ok ? r.json() : null)).then(async cat => {
     if (!cat) return false; const pieces = {}; let sr = 44100;
-    await Promise.all(Object.entries(cat).map(async ([piece, couches]) => { pieces[piece] = {}; for (const [couche, noms] of Object.entries(couches)) pieces[piece][couche] = await Promise.all(noms.map(async nom => {
-      const b = await new Promise((ok, ko) => { fetch(base + nom + ".mp3").then(r => r.arrayBuffer()).then(a => { const p = ctx.decodeAudioData(a, ok, ko); if (p && p.catch) p.catch(ko); }).catch(ko); }); sr = b.sampleRate; return b.getChannelData(0).slice(); })); }));
-    mettreKit("reel", pieces, sr); return true; }).catch(() => false);
-  return ENCOURS;
+    await Promise.all(Object.entries(cat).map(async ([piece, couches]) => { pieces[piece] = {}; for (const [couche, noms] of Object.entries(couches)) pieces[piece][couche] = await Promise.all(noms.map(async fichier => {
+      const b = await new Promise((ok, ko) => { fetch(base + fichier + ".mp3").then(r => r.arrayBuffer()).then(a => { const p = ctx.decodeAudioData(a, ok, ko); if (p && p.catch) p.catch(ko); }).catch(ko); }); sr = b.sampleRate; return b.getChannelData(0).slice(); })); }));
+    mettreKit(nom, pieces, sr); return true; }).catch(() => { delete ENCOURS[nom]; return false; });
+  return ENCOURS[nom];
 }
+// Tous les kits enregistrés, l'un après l'autre (la vraie batterie d'abord) : à lancer en arrière-plan au démarrage de Pistes.
+export async function chargerTousLesKits(ctx, base) { for (const k of KITS_ENREGISTRES) { try { await chargerKit(ctx, base, k); } catch (_) { /* ce kit joue son kit de secours */ } } return KITS_ENREGISTRES.filter(kitPret); }
 
 // Niveau relatif de chaque pièce dans le mélange.
 const NIVEAU = { kick: 0.95, snare: 0.8, clap: 0.7, hatc: 0.42, hato: 0.42, rim: 0.6, tom: 0.75, cow: 0.4, shaker: 0.35, ride: 0.4, crash: 0.5 };
@@ -92,7 +105,7 @@ const NIVEAU = { kick: 0.95, snare: 0.8, clap: 0.7, hatc: 0.42, hato: 0.42, rim:
 // Joue des grilles (une chaîne de 16 caractères par pièce, « x » coup normal, « o » coup doux, « . » silence) sur `mesures` mesures.
 // grilles : [{ mesure, pistes: { kick: "x...", ... } }] ou un objet unique répété. Retourne un Float32Array mono de la durée voulue ; un coup qui dépasse la fin revient au début (boucle sans couture).
 export function rendreBatterie(grille, { bpm = 100, swing = 0, mesures = 4, pas = 16, kit = "909", sr = SR_DEFAUT, parMesure = null, volumes = {} } = {}) {
-  const dur = 60 / bpm / 4, n = Math.round(mesures * pas * dur * sr), y = new Float32Array(n), reel = kit === "reel" && kitPret("reel"), tour = {};
+  const dur = 60 / bpm / 4, n = Math.round(mesures * pas * dur * sr), y = new Float32Array(n), reel = kitPret(kit), tour = {};
   // Le jeu humain de la batterie réelle, sans hasard (le même motif sonne toujours pareil) : chaque coup a un léger décalage (jusqu'à 6 ms) et un volume un peu différent, les coups de charleston qui tombent
   // entre les temps sont plus doux, et un même coup alterne entre plusieurs enregistrements pour ne pas sonner comme une mitrailleuse.
   const h = (m, i, p) => ((m * 131 + i * 31 + p.charCodeAt(0) * 17 + p.length * 7) % 97);

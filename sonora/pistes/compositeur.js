@@ -86,7 +86,7 @@ function lofi() {
     aide: "Huit mesures à 76 par minute. Le Rhodes joue des accords à neuvième qui glissent d'un accord à l'autre en bougeant le moins possible ; la quatrième mesure prépare le retour et la sixième emprunte le fa mineur au mode mineur, pour une couleur douce-amère. La batterie a un swing léger, des notes fantômes et une relance à la fin de chaque moitié.",
     harmonie: H,
     lignes: [
-      { nom: "Batterie", instrument: "batt:acoustique", volume: 0.8, mesures: batterie },
+      { nom: "Batterie", instrument: "batt:jazz", volume: 0.8, mesures: batterie },
       { nom: "Basse", instrument: "ech:basse-moderne", volume: 0.62, mesures: basse, role: "basse" },
       { nom: "Rhodes", instrument: "ech:rhodes", volume: 0.62, mesures: accords, role: "accords" },
       { nom: "Vibraphone", instrument: "ech:vibraphone", volume: 0.6, mesures: mel, role: "melodie" },
@@ -131,7 +131,7 @@ function house() {
     aide: "Huit mesures à 122 par minute en do mineur. Grosse caisse à chaque temps, charleston ouvert sur les contretemps, accords de synthé frappés à contre-temps et une basse qui joue entre les coups de grosse caisse. À la mesure 5, une nappe et un cymbale s'ajoutent, le motif du Rhodes monte d'une octave ; une montée de claps annonce chaque retour.",
     harmonie: H,
     lignes: [
-      { nom: "Batterie", instrument: "batt:909", volume: 0.82, mesures: batterie },
+      { nom: "Batterie", instrument: "batt:club", volume: 0.82, mesures: batterie },
       { nom: "Basse", instrument: "syn:sub", volume: 0.5, mesures: basse, role: "basse" },
       { nom: "Accords", instrument: "ech:synthe", volume: 0.5, mesures: accords, role: "accords" },
       { nom: "Nappe", instrument: "syn:nappe", volume: 0.4, mesures: nappe, role: "accords" },
@@ -179,7 +179,7 @@ function boombap() {
     aide: "Huit mesures à 88 par minute en do mineur, sur la descente do, si bémol, la bémol, sol (la basse descend d'un degré à chaque mesure et le sol 7 ramène au do). La caisse claire tombe un peu en retard et la grosse caisse esquive le temps : c'est ce qui donne le balancement. Le sax ténor chante une phrase qui répond à elle-même ; la seconde moitié passe par le fa mineur.",
     harmonie: H,
     lignes: [
-      { nom: "Batterie", instrument: "batt:reel", volume: 0.8, mesures: batterie },
+      { nom: "Batterie", instrument: "batt:hiphop", volume: 0.8, mesures: batterie },
       { nom: "Basse", instrument: "ech:basse-moderne", volume: 0.62, mesures: basse, role: "basse" },
       { nom: "Piano", instrument: "ech:clavier", volume: 0.6, mesures: piano, role: "accords" },
       { nom: "Sax ténor", instrument: "ech:sax-tenor", volume: 0.68, mesures: mel, role: "melodie" },
@@ -228,7 +228,7 @@ function bossa() {
     aide: "Huit mesures à 136 par minute en do majeur, avec deux accords par mesure : ré mineur 9 et sol 13, mi mineur 7 et la 7, comme dans les standards brésiliens. La batterie joue la clave (3 puis 2) à la baguette, la contrebasse alterne fondamentale et quinte, la guitare place ses accords à contretemps. La flûte garde le même contour d'une mesure à l'autre.",
     harmonie: H,
     lignes: [
-      { nom: "Batterie", instrument: "batt:acoustique", volume: 0.72, mesures: batterie },
+      { nom: "Percussions", instrument: "batt:perc", volume: 0.72, mesures: batterie },
       { nom: "Contrebasse", instrument: "ech:contrebasse", volume: 0.7, mesures: basse, role: "basse" },
       { nom: "Guitare", instrument: "ech:guitare", volume: 0.6, mesures: accords, role: "accords" },
       { nom: "Flûte", instrument: "ech:souffle", volume: 0.66, mesures: M, role: "melodie" },
@@ -317,7 +317,7 @@ function ballade() {
       { nom: "Piano", instrument: "ech:clavier", volume: 0.66, mesures: piano, role: "accords" },
       { nom: "Violoncelle", instrument: "ech:violoncelle-solo", volume: 0.64, mesures: mel, role: "melodie" },
       { nom: "Cordes", instrument: "ech:cordes", volume: 0.5, mesures: cordes, role: "accords" },
-      { nom: "Batterie", instrument: "batt:acoustique", volume: 0.5, mesures: batterie },
+      { nom: "Batterie", instrument: "batt:jazz", volume: 0.5, mesures: batterie },
     ],
   };
 }
