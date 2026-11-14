@@ -1,0 +1,43 @@
+/* La console de mixage : noir, jaune acide pour la marque, et une couleur fluo par voie (cyan, magenta, orange, vert, violet, bleu, rouge). */
+.ent-regle { display: flex; }
+.ent-regle .ent-blocs { flex: 1; width: auto; } .ent-regle .ent-console { background: #19E3FF; border-left: 2px solid var(--noir); }
+.console[hidden] { display: none; }
+.console { --enc: #14130f; --enc2: #1d1c17; --filet: #3a3a35; --pap: #F0EFE8; margin: 10px 8px 22px 0; background: #0c0c0a; color: var(--pap); border: 2px solid #19E3FF; box-shadow: 8px 8px 0 #FF2BD6; font-family: var(--f-body); }
+.cs-haut { display: flex; align-items: center; gap: 14px; padding: 10px 16px; background: #000; border-bottom: 2px solid #19E3FF; }
+.console h2.cs-h, .cs-haut h2 { margin: 0; font: 900 1.3rem "Archivo Variable", var(--f-display); font-stretch: 75%; text-transform: uppercase; color: #D6FF00; letter-spacing: .02em; } .cs-haut h2::before { display: none; }
+.cs-aide { flex: 1; min-width: 0; font: 500 .75rem var(--f-mono); color: #9a998f; letter-spacing: .02em; }
+.console button { min-height: 32px; border: 0; border-radius: 0; box-shadow: none; font: inherit; cursor: pointer; }
+.console .cs-fermer { padding: 0 14px; background: transparent; color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); font: 500 .8rem var(--f-mono); text-transform: uppercase; } .console .cs-fermer:hover { box-shadow: inset 0 0 0 2px #D6FF00; }
+.cs-corps { display: flex; gap: 0; align-items: stretch; }
+.cs-voies { flex: 1; min-width: 0; display: flex; overflow-x: auto; }
+.cs-voie { --c: #D6FF00; flex: none; width: 108px; display: flex; flex-direction: column; gap: 8px; padding: 10px 9px 12px; border-right: 1px solid var(--filet); background: linear-gradient(180deg, color-mix(in srgb, var(--c) 18%, #0c0c0a) 0, #0c0c0a 70px); border-top: 4px solid var(--c); }
+.cs-voie.cs-muette { opacity: .55; }
+.cs-maitre { width: 132px; border-right: 0; border-left: 2px solid #19E3FF; }
+.cs-tete { display: flex; align-items: center; gap: 6px; min-height: 22px; }
+.cs-num { flex: none; min-width: 22px; padding: 1px 5px; background: var(--c); color: #000; font: 700 .72rem/1.5 var(--f-mono); font-style: normal; text-align: center; }
+.cs-tete b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 .82rem var(--f-body); }
+.cs-picto { width: 44px; height: 44px; align-self: center; padding: 5px; background: var(--c); color: #000; --tuile: var(--c); }
+.cs-fx { display: grid; gap: 4px; }
+.console .cs-fx button { min-height: 26px; padding: 0 6px; background: #1d1c17; color: #9a998f; font: 600 .7rem var(--f-mono); text-transform: uppercase; letter-spacing: .05em; text-align: left; border-left: 3px solid #3a3a35; }
+.console .cs-fx button[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 22%, #1d1c17); color: var(--c); border-left-color: var(--c); }
+.cs-pan { display: grid; grid-template-columns: auto 1fr; gap: 2px 6px; align-items: center; font: 500 .68rem var(--f-mono); color: #9a998f; text-transform: uppercase; } .cs-pan output { grid-column: 1 / -1; text-align: center; color: var(--pap); font-size: .78rem; }
+.cs-pan input { width: 100%; min-width: 0; accent-color: var(--c); }
+.cs-ms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.console .cs-ms button { min-width: 0; padding: 0; min-height: 30px; background: #1d1c17; color: var(--pap); font: 700 .8rem var(--f-mono); }
+.console .cs-ms button[data-a="arme"][aria-pressed="true"] { background: #FF3D5A; color: #000; } .console .cs-ms button[data-a="muet"][aria-pressed="true"] { background: #FF8A1F; color: #000; } .console .cs-ms button[data-a="solo"][aria-pressed="true"] { background: #D6FF00; color: #000; }
+.console .cs-ms button:hover { box-shadow: inset 0 0 0 2px var(--c); }
+.cs-fader { position: relative; display: flex; justify-content: center; gap: 10px; height: 230px; }
+.cs-vol { writing-mode: vertical-lr; direction: rtl; -webkit-appearance: slider-vertical; appearance: slider-vertical; width: 34px; height: 100%; margin: 0; padding: 0; accent-color: var(--c); background: transparent; cursor: ns-resize; }
+.cs-vu { --n: 0; --k: 0; position: relative; width: 14px; height: 100%; background: #000; box-shadow: inset 0 0 0 1px var(--filet); }
+.cs-vu-g { width: 22px; }
+.cs-niv { position: absolute; inset: 0; background: linear-gradient(0deg, var(--c, #D6FF00) 0 74%, #FF8A1F 74% 88%, #FF3D5A 88%); clip-path: inset(calc((1 - var(--n)) * 100%) 0 0 0); }
+.cs-maitre .cs-niv { --c: #2BFF88; }
+.cs-vu::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent 0 3px, #000 3px 4px); pointer-events: none; }
+.cs-crete { position: absolute; left: 0; right: 0; height: 2px; bottom: calc(var(--k) * 100%); background: #fff; z-index: 2; }
+.cs-sature { box-shadow: inset 0 0 0 1px #FF3D5A, 0 0 8px #FF3D5A; }
+.cs-db { text-align: center; font: 700 .9rem var(--f-mono); color: var(--c); }
+.cs-maitre .cs-db { color: #2BFF88; font-size: 1.1rem; }
+.console .cs-pro { background: #1d1c17; color: #9a998f; font: 700 .75rem var(--f-mono); text-transform: uppercase; letter-spacing: .06em; padding: 0 8px; min-height: 34px; box-shadow: inset 0 0 0 2px var(--filet); }
+.console .cs-pro[aria-pressed="true"] { background: #D6FF00; color: #000; box-shadow: none; }
+.console button:focus-visible, .console input:focus-visible { outline: 3px solid #D6FF00; outline-offset: 2px; }
+@media (max-width: 700px) { .cs-aide { display: none; } .cs-voie { width: 96px; } .cs-fader { height: 190px; } .cs-maitre { width: 112px; } .cs-corps { flex-direction: column; } .cs-maitre { border-left: 0; border-top: 2px solid #19E3FF; width: auto; } .cs-maitre .cs-fader { height: 110px; } }
