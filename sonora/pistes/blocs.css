@@ -128,3 +128,72 @@
 }
 .blocs .bl-chip-son[aria-pressed="true"] { background: transparent; color: #D6FF00; box-shadow: inset 0 0 0 2px #D6FF00; font-weight: 800; }
 .blocs .bl-chip-son[aria-pressed="false"] { opacity: .7; }
+
+/* Direction jaune et noire (14/11/2026) : celle du reste de Pistes. Noir, vert acide, angles droits, filets de 2 px, ombres décalées. Plus de pastel : l'instrument se reconnaît à sa silhouette, non à une couleur. */
+.blocs { --enc: #14130f; --enc2: #1d1c17; --filet: #3a3a35; --ac: var(--acide, #D6FF00); --pap: var(--papier, #F0EFE8); border-radius: 0; background: var(--enc); color: var(--pap); border: 2px solid var(--ac); box-shadow: 8px 8px 0 var(--ac); margin: 10px 8px 22px 0; }
+.blocs button { border-radius: 0; transition: background .1s, color .1s; }
+.blocs button:focus-visible, .blocs select:focus-visible { outline: 3px solid var(--ac); outline-offset: 2px; }
+.bl-haut, .bl-pied { background: var(--enc); border-bottom: 2px solid var(--ac); } .bl-pied { border-bottom: 0; border-top: 2px solid var(--ac); }
+.blocs h2.bl-titre { color: var(--ac); font-family: "Archivo Variable", var(--f-display); font-stretch: 75%; font-size: 1.3rem; }
+.blocs .bl-groupes button, .blocs .bl-chip, .blocs #bl-retour { border-radius: 0; background: transparent; color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); font: 500 .85rem var(--f-mono); text-transform: uppercase; letter-spacing: .05em; }
+.blocs .bl-chip:hover:not(span), .blocs #bl-retour:hover { background: var(--enc2); box-shadow: inset 0 0 0 2px var(--ac); }
+.blocs .bl-groupes button[aria-pressed="true"], .blocs .bl-chip-fort { background: var(--ac); color: var(--enc); box-shadow: none; font-weight: 700; }
+.blocs .bl-chip-fort:hover { background: #E4FF4D; }
+.bl-tonalite select option { color: #14130f; }
+.bl-corps { background: var(--enc); }
+.bl-num { border-radius: 0; background: transparent; color: var(--ac); border-bottom: 2px solid var(--ac); height: 24px; line-height: 22px; }
+
+/* les lignes : une tuile sombre à filet jaune, la silhouette de l'instrument en jaune */
+.bl-pastille-cadre { border-radius: 0; background: var(--enc2); border: 2px solid var(--filet); box-shadow: none; }
+.blocs .bl-pastille { border-radius: 0; color: var(--pap); }
+.blocs .bl-pastille:hover { background: rgba(214, 255, 0, .08); }
+.bl-ico { border-radius: 0; background: var(--ac); color: var(--enc); --tuile: var(--ac); box-shadow: none; }
+.bl-pastille small { opacity: .6; font-family: var(--f-mono); letter-spacing: .04em; }
+.blocs .bl-muet { border-radius: 0; background: transparent; color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); }
+.blocs .bl-muet:hover { box-shadow: inset 0 0 0 2px var(--ac); background: transparent; }
+.blocs .bl-muet[aria-pressed="true"] { background: var(--filet); color: var(--pap); }
+
+/* les cases : vides en pointillés fins, pleines en jaune acide avec des barres noires */
+.blocs .bl-case { border-radius: 0; background: var(--enc2); color: var(--pap); box-shadow: none; border: 2px solid var(--filet); }
+.blocs .bl-vide:hover { background: #26251e; border-color: var(--ac); transform: none; }
+.bl-plus { border-radius: 0; background: transparent; color: var(--filet); box-shadow: inset 0 0 0 2px var(--filet); }
+.bl-vide:hover .bl-plus { background: var(--ac); color: var(--enc); box-shadow: none; }
+.blocs .bl-bloc { background: var(--ac); border-color: var(--ac); color: var(--enc); }
+.blocs .bl-bloc:hover { background: #E4FF4D; filter: none; transform: none; }
+.bl-apercu i { border-radius: 0; background: var(--enc); }
+.blocs .bl-long { background: repeating-linear-gradient(135deg, #1d1c17 0 10px, #26251e 10px 20px); }
+.bl-long > span, span.bl-long { border-radius: 0; background: var(--ac); color: var(--enc); }
+.blocs .bl-case[aria-pressed="true"] { outline: 3px solid var(--pap); outline-offset: 2px; }
+.bl-trait { border-radius: 0; background: var(--pap); box-shadow: none; width: 4px; margin-left: -2px; }
+
+/* les panneaux */
+.bl-palette { border-radius: 0; background: var(--enc2); border: 2px solid var(--ac); box-shadow: 6px 6px 0 var(--filet); }
+.bl-q { font: 900 1.25rem "Archivo Variable", var(--f-display); font-stretch: 75%; text-transform: uppercase; color: var(--ac); letter-spacing: .01em; }
+.blocs .bl-fermer { background: transparent; color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); font-family: var(--f-mono); text-transform: uppercase; font-weight: 500; font-size: .8rem; letter-spacing: .05em; } .blocs .bl-fermer:hover { box-shadow: inset 0 0 0 2px var(--ac); }
+.blocs .bl-familles button, .blocs .bl-onglets button { border-radius: 0; background: transparent; color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); font: 500 .78rem var(--f-mono); text-transform: uppercase; letter-spacing: .05em; }
+.blocs .bl-familles button:hover, .blocs .bl-onglets button:hover { box-shadow: inset 0 0 0 2px var(--ac); }
+.blocs .bl-familles button[aria-selected="true"], .blocs .bl-onglets button[aria-selected="true"] { background: var(--ac); color: var(--enc); box-shadow: none; font-weight: 700; }
+.bl-onglets { border-radius: 0; background: transparent; padding: 0; gap: 6px; }
+.blocs .bl-inst button { border-radius: 0; background: var(--enc); color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); }
+.blocs .bl-inst button:hover { background: #26251e; box-shadow: inset 0 0 0 2px var(--ac); }
+.blocs .bl-inst button[aria-pressed="true"] { background: var(--ac); color: var(--enc); box-shadow: none; --tuile: var(--ac); }
+.blocs .bl-inst button[aria-pressed="true"] .bl-ico-g { color: var(--enc); }
+.blocs .bl-inst .bl-num { border: 0; height: auto; background: var(--filet); color: var(--pap); border-radius: 0; line-height: 1.5; }
+.blocs .bl-inst button[aria-pressed="true"] .bl-num { background: var(--enc); color: var(--ac); }
+.bl-ico-g { color: var(--ac); --tuile: var(--enc); }
+.bl-motif { border-radius: 0; background: var(--enc); box-shadow: inset 0 0 0 2px var(--filet); }
+.bl-motif::before { width: 6px; background: var(--ac); }
+.bl-motif-t small, .bl-palette .bl-aide { color: #b5b4aa; }
+.blocs .bl-ecouter { border-radius: 0; background: transparent; color: var(--ac); box-shadow: inset 0 0 0 2px var(--ac); } .blocs .bl-ecouter:hover { background: var(--ac); color: var(--enc); }
+.blocs .bl-poser { background: var(--ac); color: var(--enc); font: 700 .85rem var(--f-mono); text-transform: uppercase; letter-spacing: .04em; } .blocs .bl-poser:hover { background: #E4FF4D; }
+.blocs .bl-lien { color: var(--ac); }
+.bl-tous select, .bl-palette select { border-radius: 0; background: var(--enc); color: var(--pap); border-color: var(--filet); }
+
+/* le pied */
+.bl-quoi span { color: var(--ac); opacity: 1; }
+.blocs .bl-pied button { background: transparent; color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); font: 600 .9rem var(--f-body); }
+.blocs .bl-pied button:hover:not(:disabled) { background: var(--enc2); box-shadow: inset 0 0 0 2px var(--ac); }
+.blocs .bl-pied .bl-fort { background: var(--ac); color: var(--enc); box-shadow: none; } .blocs .bl-pied .bl-fort:hover { background: #E4FF4D; box-shadow: none; }
+.blocs .bl-pied .bl-danger { color: #FF8A78; box-shadow: inset 0 0 0 2px #7a3a30; } .blocs .bl-pied .bl-danger:hover:not(:disabled) { box-shadow: inset 0 0 0 2px #FF8A78; }
+.blocs .bl-pied .bl-ajout { box-shadow: inset 0 0 0 2px var(--filet); }
+@media (max-width: 700px) { .blocs { border-radius: 0; margin: 8px 6px 14px 0; box-shadow: 5px 5px 0 var(--ac); } .bl-pastille-cadre, .blocs .bl-case { border-radius: 0; } }
