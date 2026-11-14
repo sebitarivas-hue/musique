@@ -1,33 +1,33 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=5a761f0ed5";
-import * as Ed from "./editions.js?v=5a761f0ed5";
-import * as P from "./projet.js?v=5a761f0ed5";
-import { Stockage } from "./stockage.js?v=5a761f0ed5";
-import { creerBouton } from "./bouton.js?v=5a761f0ed5";
-import * as MI from "./midi.js?v=5a761f0ed5";
-import * as N from "./notes.js?v=5a761f0ed5";
-import { Rouleau } from "./rouleau.js?v=5a761f0ed5";
-import { PanneauPartition } from "./partition/panneau.js?v=5a761f0ed5";
-import { separer, NOMS_PARTIES } from "./separation.js?v=5a761f0ed5";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=5a761f0ed5";
-import * as BM from "./batterie_midi.js?v=5a761f0ed5";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=5a761f0ed5";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=5a761f0ed5";
-import * as INS from "./instruments.js?v=5a761f0ed5";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=5a761f0ed5";
-import * as OMR from "./omr.js?v=5a761f0ed5";
-import { creerVueBlocs } from "./blocs-ui.js?v=5a761f0ed5";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=5a761f0ed5";
-import * as MO from "./moteurs.js?v=5a761f0ed5";
-import { monterPanneaux } from "./panneaux.js?v=5a761f0ed5";
-import { monterNotions } from "./notions.js?v=5a761f0ed5";
-import { DEMOS } from "./demos.js?v=5a761f0ed5";
-import * as B from "./bibliotheque.js?v=5a761f0ed5";
-import { encoderWAV } from "../studio/wav.js?v=5a761f0ed5";
-import { ENTREES } from "../library/catalogue.js?v=5a761f0ed5";
-import { compiler } from "../src/index.js?v=5a761f0ed5";
-import { rendre } from "../src/rendu.js?v=5a761f0ed5";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=069e00adf6";
+import * as Ed from "./editions.js?v=069e00adf6";
+import * as P from "./projet.js?v=069e00adf6";
+import { Stockage } from "./stockage.js?v=069e00adf6";
+import { creerBouton } from "./bouton.js?v=069e00adf6";
+import * as MI from "./midi.js?v=069e00adf6";
+import * as N from "./notes.js?v=069e00adf6";
+import { Rouleau } from "./rouleau.js?v=069e00adf6";
+import { PanneauPartition } from "./partition/panneau.js?v=069e00adf6";
+import { separer, NOMS_PARTIES } from "./separation.js?v=069e00adf6";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=069e00adf6";
+import * as BM from "./batterie_midi.js?v=069e00adf6";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=069e00adf6";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=069e00adf6";
+import * as INS from "./instruments.js?v=069e00adf6";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=069e00adf6";
+import * as OMR from "./omr.js?v=069e00adf6";
+import { creerVueBlocs } from "./blocs-ui.js?v=069e00adf6";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=069e00adf6";
+import * as MO from "./moteurs.js?v=069e00adf6";
+import { monterPanneaux } from "./panneaux.js?v=069e00adf6";
+import { monterNotions } from "./notions.js?v=069e00adf6";
+import { DEMOS } from "./demos.js?v=069e00adf6";
+import * as B from "./bibliotheque.js?v=069e00adf6";
+import { encoderWAV } from "../studio/wav.js?v=069e00adf6";
+import { ENTREES } from "../library/catalogue.js?v=069e00adf6";
+import { compiler } from "../src/index.js?v=069e00adf6";
+import { rendre } from "../src/rendu.js?v=069e00adf6";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -64,7 +64,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=5a761f0ed5"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=069e00adf6"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -118,8 +118,12 @@ function planifier(ctx, projet, depuis, debut, chaines) {
     const buf = bufferDe(ctx, e.son), ch = chaines[e.piste]; if (!buf || !ch) continue;
     const src = ctx.createBufferSource(); src.buffer = buf;
     const g = ctx.createGain(), t0 = debut + e.quand, t1 = t0 + e.duree, gc = e.gainClip;
-    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(gc, t0 + Math.min(f, e.duree / 2)); g.gain.setValueAtTime(gc, Math.max(t0 + f, t1 - f)); g.gain.linearRampToValueAtTime(0, t1);
-    src.connect(g); g.connect(ch.bus); src.start(t0, e.decalage, e.duree); sources.push(src);
+    // La queue d'un clip de notes (voir projet.js) : la note continue de résonner après la fin du clip puis s'éteint doucement, au lieu d'être coupée à la barre de mesure.
+    const q = Math.max(0, Math.min(e.queue || 0, buf.duration - (e.decalage + e.duree)));
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(gc, t0 + Math.min(f, e.duree / 2));
+    if (q > 0.02) { g.gain.setValueAtTime(gc, t1); g.gain.linearRampToValueAtTime(gc * 0.35, t1 + q * 0.4); g.gain.linearRampToValueAtTime(0, t1 + q); }
+    else { g.gain.setValueAtTime(gc, Math.max(t0 + f, t1 - f)); g.gain.linearRampToValueAtTime(0, t1); }
+    src.connect(g); g.connect(ch.bus); src.start(t0, e.decalage, e.duree + (q > 0.02 ? q : 0)); sources.push(src);
   }
   return sources;
 }
@@ -175,7 +179,7 @@ function metronome(ctx, depuis, debut) {
 }
 function boucle() {
   requestAnimationFrame(boucle);
-  if (etat.lecture && etat.ctx) { etat.tete = Math.max(0, etat.debutTete + etat.ctx.currentTime - etat.debutCtx); const fin = P.dureeTotale(etat.projet); if (!etat.enreg && !etat.notes && etat.tete > fin + 0.3 && fin > 0) { finEcoute(); arreter(); } }
+  if (etat.lecture && etat.ctx) { etat.tete = Math.max(0, etat.debutTete + etat.ctx.currentTime - etat.debutCtx); const fin = P.dureeTotale(etat.projet) + P.queueMax(etat.projet); if (!etat.enreg && !etat.notes && etat.tete > fin + 0.3 && fin > 0) { finEcoute(); arreter(); } }
   $("position").textContent = fmtT(etat.tete); $("curseur").style.left = (etat.tete * etat.pxs) + "px";
   if (vueBlocs) vueBlocs.suivre(etat.tete);
   if (etat.enreg && etat.capture) { majClipEnCours(); majNiveauMicro(); } if (etat.notes) majNotesEnCours();
@@ -397,7 +401,7 @@ $("b-notes").onclick = async () => {
 const SR_MIDI = 44100;
 // L'audio d'un clip de notes à un tempo donné (synchrone : l'instrument est déjà chargé). Une queue d'une seconde après la fin du clip laisse mourir la dernière note ; le clip, lui, s'arrête à sa durée.
 function audioDeNotes(s, inst, tempo) {
-  const sec = 60 / tempo, c = rendreSuiteEch(N.evenementsDeNotes(s.midi.notes, tempo), inst.tampons, { instrument: inst.instrument, sr: SR_MIDI, duree: s.midi.temps * sec + 1, relache: inst.relache, niveau: inst.niveau, reverb: 0, strum: 0, variation: false });
+  const sec = 60 / tempo, c = rendreSuiteEch(N.evenementsDeNotes(s.midi.notes, tempo), inst.tampons, { instrument: inst.instrument, sr: SR_MIDI, duree: s.midi.temps * sec + 1, relache: inst.relache, niveau: inst.niveau, reverb: 0.1, strum: 0.012, variation: true });   // une petite salle et un jeu un peu humain : des notes enregistrées sèches, toutes au même instant et au même volume, sonnent « boîte à musique »
   return c.slice(0, 2).map(x => Float32Array.from(x));
 }
 const rangerAudio = (id, canaux) => { etat.buffers[id] = { canaux, sr: SR_MIDI }; Stockage.ecrireSon(id, { canaux, sr: SR_MIDI }).catch(e => { message("Le son n'a pas pu être rangé dans le navigateur : " + e.message); alerteEcriture(e); }); };
@@ -1035,7 +1039,7 @@ function afficherEffets() {
 // ---------------------------------------------------------------- export
 async function exporter() {
   const p = etat.projet, duree = P.dureeTotale(p); if (!duree) { message("Rien à exporter : ajoute d'abord un son."); return; }
-  const queue = Math.max(0.05, ...p.pistes.map(pi => { const e = P.effetsDe(pi); return Math.max(e.reverb.actif ? e.reverb.duree : 0, e.echo.actif ? Math.min(6, e.echo.temps * Math.ceil(Math.log(0.001) / Math.log(Math.max(0.01, e.echo.retour)))) : 0); }));
+  const queue = Math.max(0.05, P.queueMax(p), ...p.pistes.map(pi => { const e = P.effetsDe(pi); return Math.max(e.reverb.actif ? e.reverb.duree : 0, e.echo.actif ? Math.min(6, e.echo.temps * Math.ceil(Math.log(0.001) / Math.log(Math.max(0.01, e.echo.retour)))) : 0); }));
   const sr = 44100, ctx = new OfflineAudioContext(2, Math.ceil((duree + queue) * sr), sr), t0 = performance.now();
   const chaines = await chainesProjet(ctx, p, ctx.destination); planifier(ctx, p, 0, 0, chaines); appliquerEnveloppes(p, chaines, 0, 0); const buf = await ctx.startRendering(), canaux = [buf.getChannelData(0), buf.getChannelData(1)];
   const w = encoderWAV(canaux, sr, 16); etat.dernierExport = { octets: w.octets.length, ecretes: w.ecretes, duree };

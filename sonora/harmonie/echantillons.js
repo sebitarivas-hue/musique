@@ -37,7 +37,10 @@ export function mixer(evenements, tampons, { sr = 44100, duree, instrument = "cl
       if (bouclable && pos >= d2) pos = d1 + (pos - d2);
       const j = Math.floor(pos); if (j + 1 >= x.length) break;
       const o = d0 + i; if (o >= n) break; if (o < 0) { pos += taux; continue; }
-      const f = pos - j, s = x[j] + (x[j + 1] - x[j]) * f;
+      // quatre points (Catmull-Rom) quand la note est transposée : l'interpolation linéaire écrase les aigus et ajoute du repliement, d'où un son terne
+      const f = pos - j; let s;
+      if (taux > 0.9999 && taux < 1.0001) s = x[j] + (x[j + 1] - x[j]) * f;
+      else { const p0 = x[j > 0 ? j - 1 : 0], p1 = x[j], p2 = x[j + 1], p3 = x[j + 2 < x.length ? j + 2 : j + 1]; s = p1 + 0.5 * f * (p2 - p0 + f * (2 * p0 - 5 * p1 + 4 * p2 - p3 + f * (3 * (p1 - p2) + p3 - p0))); }
       const env = Math.min(1, i / att) * (i < dN ? 1 : Math.exp(-(i - dN) / sr / tau)), v = s * env * vit;
       L[o] += v * gl; R[o] += v * gr; pos += taux;
     }

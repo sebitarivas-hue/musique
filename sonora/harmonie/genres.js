@@ -1,9 +1,9 @@
 // L'accompagnement par genre d'Harmonie : on choisit un genre (rap boom bap, trap, pop, rock, reggae, blues, bossa nova, house, valse), et les accords de la progression sont joués
 // avec une batterie, une basse et une façon de jouer les accords qui ressemblent à ce genre, au bon tempo. Chaque genre a trois variations (le beat de base, une variante, un roulement
 // toutes les quatre mesures) et renvoie à son entrée de l'Atlas des musiques. Sans DOM, sans hasard : testé dans Node.
-import { rendreSuite } from "./son.js?v=5a761f0ed5";
-import { rendreBatterie } from "./batterie.js?v=5a761f0ed5";
-import { rendreSuiteEch } from "./echantillons.js?v=5a761f0ed5";
+import { rendreSuite } from "./son.js?v=069e00adf6";
+import { rendreBatterie } from "./batterie.js?v=069e00adf6";
+import { rendreSuiteEch } from "./echantillons.js?v=069e00adf6";
 
 // Instruments enregistrés de l'accompagnement (la basse électrique de outils/banque_basses.py). Tant qu'ils ne sont pas chargés, la basse de synthèse du genre joue à leur place.
 const REELS = {};

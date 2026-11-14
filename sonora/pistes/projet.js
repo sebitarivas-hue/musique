@@ -162,6 +162,11 @@ export function assemblerCanaux(morceaux) {
 // Ce qui sonne : une piste muette se tait ; si au moins une piste est en solo, seules les pistes en solo sonnent.
 export function pistesAudibles(p) { const solo = p.pistes.some(x => x.solo); return p.pistes.filter(x => !x.muet && (!solo || x.solo)); }
 // Plan de lecture à partir de l'instant `depuis` : pour chaque clip audible, quand il démarre (relatif à `depuis`), où il commence dans le son, combien de temps.
+// Les notes d'un clip de notes qui va jusqu'au bout de son son résonnent un peu au-delà de la fin du clip : un piano, une guitare ne s'arrêtent pas net à la barre de mesure.
+// C'est la « queue » du clip, en secondes (l'audio d'un clip de notes en garde déjà une, voir audioDeNotes). Un clip coupé avant la fin de son son, bouclé ou audio n'en a pas.
+export const QUEUE_MIDI = 0.9;
+export function queueDuClip(p, c) { const s = p.sons[c.son]; return estMidi(s) && !(c.boucle > 0) && c.decalage + c.duree >= s.duree - 0.01 ? QUEUE_MIDI : 0; }
+export const queueMax = p => { let q = 0; for (const pi of pistesAudibles(p)) for (const c of pi.clips) q = Math.max(q, queueDuClip(p, c)); return q; };
 export function planLecture(p, depuis = 0) {
   const out = [];
   for (const pi of pistesAudibles(p)) for (const c of pi.clips) {
@@ -169,7 +174,7 @@ export function planLecture(p, depuis = 0) {
     const B = c.boucle ? longueurMotif(p, c) : c.duree;   // un clip bouclé est joué en répétitions du motif, la dernière coupée à la fin du clip
     for (let k = 0, d0 = c.debut; d0 < fin - 1e-9; k++, d0 = c.debut + k * B) {
       const f = Math.min(fin, d0 + B); if (f <= depuis) continue; const saute = Math.max(0, depuis - d0);
-      out.push({ piste: pi.id, clip: c.id, son: c.son, quand: Math.max(0, d0 - depuis), decalage: c.decalage + saute, duree: f - d0 - saute, gain: c.gain * pi.volume, gainClip: c.gain, pan: pi.pan });
+      out.push({ piste: pi.id, clip: c.id, son: c.son, quand: Math.max(0, d0 - depuis), decalage: c.decalage + saute, duree: f - d0 - saute, queue: B === c.duree ? queueDuClip(p, c) : 0, gain: c.gain * pi.volume, gainClip: c.gain, pan: pi.pan });
     }
   }
   return out.sort((a, b) => a.quand - b.quand);
@@ -180,13 +185,15 @@ export function gainsPan(pan) { const a = (Math.max(-1, Math.min(1, pan)) + 1) *
 // Mixage hors ligne, sans Web Audio : sert aux tests et à vérifier l'export. sons : { id: { canaux: [Float32Array], sr } }.
 // Fondu de 5 ms à chaque bord de clip : pas de clic quand on coupe au milieu d'une onde.
 export function mixer(p, sons, sr = 44100, { fondu = 0.005 } = {}) {
-  const n = Math.ceil(dureeTotale(p) * sr), g = new Float32Array(n), d = new Float32Array(n), f = Math.max(1, Math.round(fondu * sr));
+  const n = Math.ceil((dureeTotale(p) + queueMax(p)) * sr), g = new Float32Array(n), d = new Float32Array(n), f = Math.max(1, Math.round(fondu * sr));
   for (const e of planLecture(p, 0)) {
     const s = sons[e.son]; if (!s) continue; const pe = enveloppeDe(trouverPiste(p, e.piste) || {}).length ? trouverPiste(p, e.piste) : null; const pp = courbeDe(trouverPiste(p, e.piste) || {}, "pan").length ? trouverPiste(p, e.piste) : null; let [gl, gr] = gainsPan(e.pan); const k = s.sr / sr, d0 = Math.round(e.quand * sr), m = Math.round(e.duree * sr);
-    const L = s.canaux[0], R = s.canaux[1] || s.canaux[0];
-    for (let i = 0; i < m && d0 + i < n; i++) {
+    const L = s.canaux[0], R = s.canaux[1] || s.canaux[0], q = Math.min(Math.round((e.queue || 0) * sr), Math.max(0, Math.floor((L.length / k) - e.decalage * sr) - m));   // la queue ne dépasse pas ce que le son contient
+    for (let i = 0; i < m + q && d0 + i < n; i++) {
       const pos = (e.decalage * sr + i) * k, j = Math.floor(pos), fr = pos - j; if (j + 1 >= L.length) break;
-      const env = Math.min(1, i / f, (m - 1 - i) / f) * e.gain * (pe ? gainEnveloppe(pe, e.quand + i / sr) : 1); if (pp && (i & 63) === 0) [gl, gr] = gainsPan(valeurCourbe(pp, "pan", e.quand + i / sr));
+      // sans queue : fondu de 5 ms à chaque bord ; avec queue : la note continue après le bord, puis s'éteint doucement (un tiers de l'amplitude à 40 % de la queue, zéro à la fin)
+      const bord = q ? (i < m ? 1 : (x => x < 0.4 ? 1 - 0.65 * x / 0.4 : 0.35 * (1 - (x - 0.4) / 0.6))((i - m) / q)) : (m - 1 - i) / f;
+      const env = Math.min(1, i / f, bord) * e.gain * (pe ? gainEnveloppe(pe, e.quand + i / sr) : 1); if (pp && (i & 63) === 0) [gl, gr] = gainsPan(valeurCourbe(pp, "pan", e.quand + i / sr));
       g[d0 + i] += (L[j] + (L[j + 1] - L[j]) * fr) * env * gl; d[d0 + i] += (R[j] + (R[j + 1] - R[j]) * fr) * env * gr;
     }
   }
