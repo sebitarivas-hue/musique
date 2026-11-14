@@ -1602,6 +1602,55 @@ a.en-ecole { color: inherit; text-decoration: none; } a.en-ecole:hover b, a.en-e
 .jouer-timbre svg { width: 64px; height: 56px; filter: drop-shadow(0 0 8px rgba(53,224,255,.6)); } .jouer-timbre b { display: block; font: 900 italic 1.7rem/1 var(--f-display); letter-spacing: -.01em; text-shadow: 0 3px 0 #2a2f8f; } .jouer-timbre .jt-t span { display: block; margin-top: 4px; font-size: .85rem; line-height: 1.3; color: #cfd3f5; }
 .jouer-timbre .jt-go { padding: 9px 14px; border-radius: 999px; background: #35e0ff; color: #04122f; font-weight: 800; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; } .jouer-timbre:hover, .jouer-timbre:focus-visible { filter: brightness(1.12); } .jouer-timbre:active { transform: translateY(4px); }
 @media (max-width: 460px) { .jouer-timbre { grid-template-columns: 48px 1fr; } .jouer-timbre svg { width: 48px; height: 42px; } .jouer-timbre .jt-go { grid-column: 1 / -1; justify-self: start; } }
+/* La page Jouer (maquette du 14/11/2026) : noir profond, une seule couleur vive (vert), rondeurs, gros chiffres, relief doux. */
+@font-face { font-family: "Fredoka"; src: url("polices/fredoka-variable-latin.woff2") format("woff2"); font-weight: 300 700; font-display: swap; }
+html:has(body.hub-vert) { background: #0b0d0a; }
+html.signal body.jeu-nuit.hub-vert { background: radial-gradient(120% 55% at 50% -8%, rgba(150,220,40,.38), rgba(80,140,20,.12) 40%, transparent 70%), #0b0d0a !important; }
+html.signal body.hub-vert::before { display: none; } body.hub-vert #monde-site { display: none !important; }
+body.hub-vert .hud-jeu { background: rgba(11,13,10,.9); border-bottom-color: rgba(184,245,74,.35); box-shadow: none; } body.hub-vert .hj-n .v { stroke: #b8f54a; } body.hub-vert .hj-x b { color: #b8f54a; }
+.hub2 { --v: #b8f54a; --v2: #7fd320; --vs: #4b8a10; --carte: #151912; --bord: rgba(255,255,255,.09); --t2: #a7ae9f; font-family: "Fredoka", var(--f-body, sans-serif); }
+html.signal body.jeu-nuit .hub2 h1.h2-titre { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: 0; display: flex; align-items: center; gap: 10px; font: 600 1.55rem/1 "Fredoka", sans-serif; color: #fff; text-transform: none; letter-spacing: 0; }
+.h2-titre span { padding: 4px 11px; border-radius: 999px; border: 1.5px solid var(--bord); color: var(--t2); font-size: .85rem; font-weight: 500; }
+/* le héros : la flamme, le nombre, la semaine */
+.h2-heros { position: relative; display: grid; justify-items: center; text-align: center; margin: 14px 0 0; padding: 4px 0 6px; }
+.h2-flamme { position: relative; width: min(64vw, 250px); aspect-ratio: 1; } .h2-flamme canvas { position: absolute; inset: 0; width: 100%; height: 100%; } .h2-flamme::before { content: ""; position: absolute; inset: 14%; border-radius: 50%; background: radial-gradient(circle, rgba(184,245,74,.45), transparent 68%); filter: blur(12px); }
+.h2-flamme-plate { position: absolute; inset: 14%; width: 72%; height: 72%; fill: #5a5f55; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); } .allume .h2-flamme-plate { fill: var(--v); filter: drop-shadow(0 0 22px rgba(184,245,74,.6)); } .h2-flamme-plate .coeur { fill: #f7ffd8; } .h2-flamme.trois-d .h2-flamme-plate { display: none; }
+.h2-heros:not(.allume) .h2-flamme::before { background: radial-gradient(circle, rgba(255,255,255,.08), transparent 68%); }
+html.signal body.jeu-nuit .hub2 .h2-nombre { margin: -18px 0 0; font: 700 clamp(5.2rem, 26vw, 7.4rem)/.9 "Fredoka", sans-serif; letter-spacing: -.02em; color: var(--v); background: linear-gradient(180deg, #e4ff9a, var(--v) 45%, var(--v2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 6px 0 #2f5a08) drop-shadow(0 14px 22px rgba(120,200,30,.35)); }
+.h2-heros:not(.allume) .h2-nombre { filter: drop-shadow(0 6px 0 #2a2d27); background: linear-gradient(180deg, #e9ece4, #9aa093) !important; -webkit-background-clip: text !important; background-clip: text !important; }
+html.signal body.jeu-nuit .hub2 .h2-sous { margin: 6px 0 0; font: 600 1.35rem/1.2 "Fredoka", sans-serif; color: var(--v); } .h2-heros:not(.allume) .h2-sous { color: #dfe3d8; } .h2-texte { margin: 6px 0 14px; color: var(--t2); max-width: 30rem; }
+.h2-semaine { list-style: none; display: flex; justify-content: center; gap: clamp(6px, 2.6vw, 14px); margin: 22px 0 0; padding: 0; } .h2-semaine li { display: grid; justify-items: center; gap: 8px; padding: 8px 6px 9px; border-radius: 999px; min-width: 38px; }
+.h2-semaine span { font: 500 1.05rem "Fredoka", sans-serif; color: #fff; } .h2-semaine i { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.28); font: 700 .85rem sans-serif; font-style: normal; color: #fff; }
+.h2-semaine li.fait i { border-color: rgba(255,255,255,.75); } .h2-semaine li.auj { background: linear-gradient(180deg, var(--v), var(--v2)); box-shadow: 0 0 24px rgba(184,245,74,.45); } .h2-semaine li.auj span { color: #10200a; font-weight: 600; } .h2-semaine li.auj i { background: #fff; border-color: #fff; color: var(--vs); }
+/* les boutons-pilules */
+.h2-actions { display: grid; gap: 12px; margin: 26px 0 0; }
+html.signal body.jeu-nuit .hub2 .h2-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 58px; padding: 8px 22px; border-radius: 999px; text-decoration: none; font: 600 1rem/1.15 "Fredoka", sans-serif; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; transition: transform .08s, box-shadow .08s; }
+html.signal body.jeu-nuit .hub2 .h2-btn.plein { background: linear-gradient(180deg, #ccff6a, var(--v) 40%, #93e02c); color: #0f1f05 !important; border: 0; box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 5px 0 var(--vs), 0 14px 30px rgba(140,220,40,.3); }
+.hub2 .h2-btn.plein span { font-size: .78rem; opacity: .8; } .hub2 .h2-btn.plein b { font: 600 1.2rem/1.1 "Fredoka", sans-serif; text-transform: none; letter-spacing: 0; color: #0f1f05; }
+html.signal body.jeu-nuit .hub2 .h2-btn.creux { flex-direction: row; gap: 10px; background: transparent; color: #fff !important; border: 1.5px solid rgba(255,255,255,.22); } .hub2 .h2-btn.creux i { font-style: normal; color: var(--v); }
+.hub2 .h2-btn:active { transform: translateY(4px); } html.signal body.jeu-nuit .hub2 .h2-btn.plein:active { box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 1px 0 var(--vs); } .hub2 .h2-btn.mini { min-height: 40px; padding: 0 18px; flex: none; }
+/* les cartes */
+.h2-carte { margin: 26px 0 0; padding: 18px; border-radius: 28px; background: linear-gradient(180deg, #1a1f16, var(--carte)); border: 1px solid var(--bord); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 18px 40px rgba(0,0,0,.35); }
+.h2-carte header { display: flex; align-items: center; justify-content: space-between; gap: 10px; } html.signal body.jeu-nuit .hub2 .h2-carte h2 { margin: 0; padding: 0; border: 0; font: 600 1.25rem "Fredoka", sans-serif; color: #fff; text-transform: none; letter-spacing: 0; }
+.h2-temps { display: inline-flex; align-items: center; gap: 6px; color: var(--t2); font-size: .82rem; } .h2-temps svg { width: 15px; height: 15px; }
+.h2-obj { margin: 14px 0 8px; font-weight: 500; color: #fff; }
+.h2-barre { position: relative; display: block; height: 34px; border-radius: 999px; background: #0b0d0a; border: 1px solid rgba(255,255,255,.08); overflow: hidden; } .h2-barre i { position: absolute; inset: 3px auto 3px 3px; border-radius: 999px; background: linear-gradient(180deg, #d4ff7a, var(--v) 45%, var(--v2)); box-shadow: inset 0 2px 0 rgba(255,255,255,.45); transition: width .8s cubic-bezier(.2,.8,.2,1); max-width: calc(100% - 6px); }
+.h2-barre b { position: absolute; inset: 0; display: grid; place-items: center; font: 600 .92rem "Fredoka", sans-serif; color: #fff; } .h2-barre b.sur { color: #13260a; }
+.hub2 .duo-defis ul { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 14px; } html.signal body.jeu-nuit .hub2 .duo-defis li { display: grid; gap: 8px; padding: 0; border: 0 !important; background: none !important; box-shadow: none !important; grid-template-columns: 1fr; grid-template-areas: none; border-radius: 0; } html.signal body.jeu-nuit .hub2 .duo-defis .duo-dt { grid-area: auto; } .hub2 .duo-defis .duo-dt { font-size: .95rem; color: #e8ebe3; font-weight: 500; } .hub2 .duo-defis li.fait .duo-dt::after { content: "  ✓"; color: var(--v); }
+.h2-coffre { display: flex; align-items: center; gap: 14px; margin-top: 18px; padding: 12px 14px; border-radius: 20px; border: 1.5px dashed rgba(255,255,255,.16); color: #5c6255; } .h2-coffre svg { width: 46px; height: 42px; flex: none; } .h2-coffre p { flex: 1; margin: 0; color: var(--t2); font-size: .9rem; } .h2-coffre.ouvert { border-style: solid; border-color: var(--v); color: var(--v); background: rgba(184,245,74,.07); } .h2-coffre.ouvert p { color: #fff; }
+.hub2 .duo-reglage summary { color: var(--t2); margin-top: 14px; } .hub2 .duo-obj button { border-color: rgba(255,255,255,.22); color: #fff; font-family: "Fredoka", sans-serif; } .hub2 .duo-obj button[aria-pressed="true"] { background: var(--v); color: #10200a; border-color: var(--v); }
+/* les chiffres en tuiles */
+.h2-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0 0; }
+html.signal body.jeu-nuit .hub2 .h2-stat { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; gap: 6px 10px; align-items: center; padding: 14px; border-radius: 22px; background: linear-gradient(180deg, #1a1f16, var(--carte)); border: 1px solid var(--bord); color: #fff !important; text-decoration: none; }
+.h2-stat .ic { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; border: 1px solid rgba(255,255,255,.14); color: #dfe3d8; } .h2-stat .ic svg { width: 17px; height: 17px; } .h2-stat b { font: 600 1.45rem/1 "Fredoka", sans-serif; color: var(--v); } .h2-stat > span:last-child { grid-column: 1 / -1; font-size: .9rem; color: #e8ebe3; font-weight: 500; }
+.h2-stat:hover { border-color: rgba(184,245,74,.4); }
+/* les jeux, dans le même esprit */
+html.signal body.jeu-nuit .hub2 h2.hub-rub { font: 600 1.3rem "Fredoka", sans-serif; letter-spacing: 0; margin-top: 34px; } .hub2 .hub-rub span { color: var(--v); }
+.hub2 .hub-affiche { background: radial-gradient(130% 70% at 50% 0, color-mix(in srgb, var(--k) 55%, transparent), transparent 70%), linear-gradient(180deg, #1a1f16, var(--carte)); border: 1px solid var(--bord); color: #fff !important; box-shadow: 0 18px 36px -18px color-mix(in srgb, var(--k) 70%, transparent); border-radius: 28px; }
+.hub2 .hub-affiche b { font: 600 1.45rem/1.05 "Fredoka", sans-serif; letter-spacing: 0; } .hub2 .hub-affiche i { background: var(--k); color: var(--ktx, #fff); font-family: "Fredoka", sans-serif; font-weight: 600; border-radius: 999px; }
+.hub2 .hub-ligne { background: linear-gradient(180deg, #1a1f16, var(--carte)); border-color: var(--bord); border-radius: 24px; } .hub2 .hub-ligne .hub-t b { font: 600 1.08rem "Fredoka", sans-serif; } .hub2 .hub-ligne .hub-badge { background: rgba(184,245,74,.14); color: var(--v); }
+@media (min-width: 760px) { .h2-actions { grid-template-columns: 1.4fr 1fr; } .h2-stats { grid-template-columns: repeat(4, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .h2-barre i { transition: none; } }
 /* La barre de jeu (mode Jouer, partout) */
 .hud-jeu { position: sticky; top: 0; z-index: 7; display: flex; align-items: center; gap: 10px; min-height: 52px; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 6px max(16px, env(safe-area-inset-left, 0px)); background: rgba(7,10,42,.94); border-bottom: 2px solid #3b7bff; box-shadow: 0 6px 22px rgba(4,5,26,.45); color: #fff; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .hud-jeu[hidden] { display: none; } html.signal .hud-jeu a { color: #fff; text-decoration: none; }
@@ -5018,14 +5067,39 @@ const HUB_TIMBRE = [["quiz", "Qui joue ?", "Reconnais l'instrument avant la fin 
   ["hautbas", "Plus haut, plus bas", "45 secondes de notes.", "#b8f400", "#0c1400"], ["memoire", "Mémoire", "Une suite qui s'allonge.", "#ff8a00"], ["paires", "Paires", "Retrouve les sons jumeaux.", "#12b76a"]];
 function etoilesTimbre() { try { const j = JSON.parse(localStorage.getItem("timbre.jeu") || "{}"); return Object.values(j.etoiles || {}).reduce((a, b) => a + b, 0); } catch (_) { return 0; } }
 const hubTuile = (o) => `<a class="hub-tuile${o.large ? " large" : ""}" href="${esc(o.href)}" style="--a:${o.a};--b:${o.b};--tx:${o.tx || "#fff"}"><span class="hub-ico">${HUB_ICO[o.ico]}</span><span class="hub-t"><b>${o.titre}</b><span>${o.texte}</span></span>${o.badge ? `<i class="hub-badge">${o.badge}</i>` : ""}</a>`;
+/* La page Jouer, d'après la maquette de Sébastien (14/11/2026) : noir profond, lueur verte, une flamme en 3D et le nombre de jours en énorme,
+   la semaine en pastilles, un grand bouton Continuer, les défis en barres arrondies, les chiffres en tuiles, puis les jeux. */
+const HUB_SVG = {
+  horloge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  xp: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  niveau: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  etoile: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.5 2.9 6.2 6.7.8-5 4.6 1.4 6.7L12 17.4l-6 3.4 1.4-6.7-5-4.6 6.7-.8z"/></svg>',
+  record: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 22c-4.2 0-7-2.8-7-6.6 0-3.6 2.8-5.6 3.9-9.4 2.8 1.7 3.7 4.3 3.7 6 1-.9 1.6-2.2 1.7-3.6 2.4 1.9 4.7 4.7 4.7 7.5 0 3.7-2.8 6.1-7 6.1z"/></svg>',
+  coffre: '<svg viewBox="0 0 48 44" aria-hidden="true"><path d="M6 20V14a8 8 0 0 1 8-8h20a8 8 0 0 1 8 8v6z" fill="currentColor" opacity=".75"/><rect x="6" y="20" width="36" height="20" rx="3" fill="currentColor"/><rect x="21" y="16" width="6" height="10" rx="2" fill="#0b0d0a"/></svg>' };
+// La plus longue série de jours joués, gardée dans les parties du jour (jeu.dj).
+function meilleureSerie() { const jours = Object.keys(jeu().dj || {}).filter(d => (jeu().dj[d] || {}).p).sort(); let best = 0, cur = 0, prev = null;
+  for (const d of jours) { const t = new Date(d + "T12:00:00"); cur = prev && Math.round((t - prev) / 864e5) === 1 ? cur + 1 : 1; best = Math.max(best, cur); prev = t; } return best; }
+const barreH2 = (n, max, txt) => { const p = Math.round(Math.min(1, n / max) * 100); return `<span class="h2-barre" role="img" aria-label="${n} sur ${max}"><i style="width:${Math.max(p, n ? 14 : 0)}%"></i><b class="${p >= 55 ? "sur" : ""}">${txt || `${n}/${max}`}</b></span>`; };
 function vueJouer() {
   const k = maClasse() || defautNiv(), J = D.ludo.jeux.filter(j => j.seances.some(s => s[0] === k)), mot = J.filter(j => j.moteur); NIV_CARTE = k;
   const ouv = mot.filter(j => jeuOuvert(j, k)), jour = Math.floor(Date.now() / 864e5), jj = (ouv.length ? ouv : mot)[jour % Math.max(1, ouv.length || mot.length)];
   const duo = jeuActif(), cur = duoCourant(k), valides = cur.X.reduce((a, x) => a + x.L.filter(j => etoilesNiv(j.id, 0) >= 2).length, 0), total = cur.X.reduce((a, x) => a + x.n, 0), et = etoilesTimbre();
-  let h = `<div class="hub"><header class="hub-tete"><span class="hub-kick">${esc(k)}</span><h1 class="hub-titre">Jouer</h1></header>`;
+  let h = `<div class="hub hub2"><h1 class="h2-titre">Jouer <span>${esc(k)}</span></h1>`;
   if (!(D.eleves && D.codes)) h += `<nav class="levels" aria-label="Classe">${NIV.map(c => `<a href="#jouer" data-niv="${c}" aria-current="${c === k ? "page" : "false"}">${c}</a>`).join("")}</nav>`;
-  if (duo) { h += panneauDuo(); h += cur.jeu ? `<a class="duo-go" href="#ludo-${cur.jeu.id}"><span>Continuer</span><b>${insec(cur.jeu.titre)}</b></a>` : `<a class="duo-go" href="#chemin"><span>Ton chemin</span><b>${valides === total && total ? "Tout est validé : vise trois étoiles" : "Voir mon chemin"}</b></a>`; }
-  else if (role() === "eleve") h += `<section class="duo-haut"><p class="duo-msg">En mode Réviser, on joue sans points. Passe en mode Jouer pour la flamme, l'objectif du jour, les défis et ton chemin d'étoiles.</p><p style="text-align:center;margin:10px 0 0"><button type="button" class="duo-btn" data-passer-jouer>Passer en mode Jouer</button></p></section>`;
+  if (duo) {
+    const j = jeu(), serie = duoSerie(), a = duoJour(), o = duoObjectif(), fait = a.p > 0, n = niveauDe(j.xp), etoiles = Object.values(j.etoiles || {}).reduce((x, y) => x + y, 0) + et;
+    h += `<section class="h2-heros${fait ? " allume" : ""}" aria-label="Ta flamme"><div class="h2-flamme"><canvas id="flamme3d" aria-hidden="true"></canvas>${FLAMME_SVG.replace("<svg", '<svg class="h2-flamme-plate"')}</div>
+      <p class="h2-nombre">${String(serie).padStart(2, "0")}</p><p class="h2-sous">${serie ? `jour${serie > 1 ? "s" : ""} de suite !` : "Allume ta flamme aujourd'hui"}</p>
+      <ol class="h2-semaine" aria-label="Cette semaine">${duoSemaine().map(d => `<li class="${d.fait ? "fait" : ""}${d.auj ? " auj" : ""}"><span>${d.l}</span><i>${d.fait ? "&#10003;" : ""}</i></li>`).join("")}</ol></section>`;
+    h += `<div class="h2-actions">${cur.jeu ? `<a class="duo-go h2-btn plein" href="#ludo-${cur.jeu.id}"><span>Continuer</span><b>${insec(cur.jeu.titre)}</b></a>` : `<a class="duo-go h2-btn plein" href="#chemin"><span>Mon chemin</span><b>${valides === total && total ? "Vise trois étoiles partout" : "Voir mon chemin"}</b></a>`}<a class="h2-btn creux" href="#chemin">Mon chemin en ${esc(k)} <i>${valides}/${total}</i></a></div>`;
+    const D_ = duoDefis(), tous = D_.every(x => x.n >= x.max);
+    h += `<section class="h2-carte duo-defis"><header><h2>Défis du jour</h2><span class="h2-temps">${HUB_SVG.horloge}jusqu'à ce soir</span></header>
+      <p class="h2-obj">${a.p >= o ? "Objectif du jour atteint" : `Objectif du jour : ${o} parties`}</p>${barreH2(Math.min(a.p, o), o)}
+      <ul>${D_.slice(1).map(x => `<li class="${x.n >= x.max ? "fait" : ""}"><span class="duo-dt">${esc(x.t)}</span>${barreH2(x.n, x.max)}</li>`).join("")}</ul>
+      <div class="h2-coffre${tous ? " ouvert" : ""}">${HUB_SVG.coffre}<p>${tous ? "Coffre ouvert : une musique du monde t'attend." : "Fais les trois défis pour ouvrir le coffre du jour."}</p>${tous && D.atlas ? `<a class="h2-btn mini" href="${esc(D.atlas)}#hasard">Ouvrir</a>` : ""}</div>
+      <details class="duo-reglage"><summary>Changer mon objectif du jour</summary><div class="duo-obj" role="group" aria-label="Objectif du jour, en parties">${[[2, "Tranquille"], [3, "Normal"], [5, "Intense"]].map(([kk, t]) => `<button type="button" data-obj="${kk}" aria-pressed="${kk === o}">${t} <i>${kk}</i></button>`).join("")}</div></details></section>`;
+    h += `<div class="h2-stats">${[[HUB_SVG.xp, j.xp, "XP au total"], [HUB_SVG.niveau, n + 1, esc(NIVEAUX_JEU[n][1])], [HUB_SVG.etoile, etoiles, "étoiles"], [HUB_SVG.record, meilleureSerie(), "meilleure série"]].map(([ic, v, l]) => `<a class="h2-stat" href="#parcours"><span class="ic">${ic}</span><b>${v}</b><span>${l}</span></a>`).join("")}</div>`;
+  } else if (role() === "eleve") h += `<section class="h2-heros"><div class="h2-flamme">${FLAMME_SVG.replace("<svg", '<svg class="h2-flamme-plate"')}</div><p class="h2-sous">En mode Réviser, on joue sans points.</p><p class="h2-texte">Passe en mode Jouer pour la flamme, les défis du jour et ton chemin d'étoiles.</p><button type="button" class="h2-btn plein" data-passer-jouer>Passer en mode Jouer</button></section>`;
   const ligne = o => `<a class="hub-tuile hub-ligne" href="${esc(o.href)}" style="--k:${o.k}"><span class="hub-ico">${HUB_ICO[o.ico]}</span><span class="hub-t"><b>${o.titre}</b><span>${o.texte}</span></span>${o.badge ? `<i class="hub-badge">${o.badge}</i>` : ""}<span class="hub-fl" aria-hidden="true">&#8250;</span></a>`;
   if (D.sonora_timbre) h += `<h2 class="hub-rub">Jeux d'oreille${et ? `<span>${et} / 27 étoiles</span>` : ""}</h2><div class="hub-rail">${HUB_TIMBRE.map(([id, nom, pitch, kk, tx]) => `<a class="hub-affiche" href="${esc(D.sonora_timbre)}#${id}" style="--k:${kk};--ktx:${tx || "#fff"}"><b>${nom}</b><span>${pitch}</span><i>Jouer</i></a>`).join("")}</div>`;
   h += `<h2 class="hub-rub">Jeux du cours</h2><div class="hub-liste">`
@@ -5035,9 +5109,13 @@ function vueJouer() {
     + (D.sonora_harmonie ? ligne({ href: D.sonora_harmonie, titre: "Harmonie", texte: "Gammes, accords, progressions.", k: "#12b76a", ico: "harmonie" }) : "")
     + (D.sonora_orchestre ? ligne({ href: D.sonora_orchestre, titre: "Orchestre", texte: "Le plan, les instruments, une fugue.", k: "#ff3d7f", ico: "orchestre" }) : "")
     + ligne({ href: "#pratiquer-" + k + "-jeux", titre: "Jeux de son", texte: "L'oreille fine, le clavier, un rythme.", k: "#b8f400", ico: "son" }) + `</div>`;
-  if (duo) h += defisDuo();
   h += `<p class="hub-pied">${role() === "prof" || !modeJeu() ? "" : `<a href="#parcours">Mon parcours : badges et quêtes de la semaine</a>`}<a href="#ludo">Les ${D.ludo.jeux.length} jeux de toutes les classes</a></p></div>`;
   return h;
+}
+// La flamme en 3D (sonora/timbre/flamme.js), montée après l'affichage. Sans WebGL, la flamme dessinée reste.
+function brancherHeros() {
+  const cv = document.getElementById("flamme3d"); if (!cv || !D.sonora_timbre) return;
+  import(new URL(D.sonora_timbre.replace(/index\.html$/, "flamme.js"), location.href).href).then(m => { if (!document.body.contains(cv)) return; const f = m.monterFlamme(cv, { allumee: duoJour().p > 0 }); if (f) cv.closest(".h2-flamme").classList.add("trois-d"); }).catch(() => {});
 }
 /* Le chemin des jeux de la classe : une page à part, pour que l'accueil de Jouer reste un écran de jeu. */
 function vueChemin() {
@@ -6065,7 +6143,7 @@ let FERME_ETAT = null;
 setInterval(() => { const f = fermeEleve(); if (FERME_ETAT !== null && f !== FERME_ETAT) rendre(); }, 30000);
 function rendre() {
   /* La recherche et le lien Tutos n'existent qu'une fois la porte franchie : ni sur le choix de l'espace, ni devant le code de la classe ou du professeur, ni sur l'écran « fermé ». */
-  document.body.classList.remove("sans-recherche"); { const nuit = PAGE_JEU.test(location.hash); document.body.classList.toggle("jeu-nuit", nuit); mondeSite(nuit); setTimeout(majHudJeu, 0); }
+  document.body.classList.remove("sans-recherche"); { const nuit = PAGE_JEU.test(location.hash), vert = location.hash === "#jouer"; document.body.classList.toggle("jeu-nuit", nuit); document.body.classList.toggle("hub-vert", vert); mondeSite(nuit && !vert); setTimeout(majHudJeu, 0); }
   if (fermeEleve()) { document.body.classList.add("sans-recherche"); FERME_ETAT = true; document.body.classList.add("porte"); toutArreter(); barre("semaine"); menu(""); app.innerHTML = vueFerme(); window.scrollTo(0, 0); return; }
   FERME_ETAT = false;
   /* Tant qu'une porte (code de classe ou code du professeur) est fermée, les menus sont cachés : ils ne mèneraient qu'à la porte. */
@@ -6132,7 +6210,7 @@ function rendre() {
   else if (v === "themes") { app.innerHTML = vueThemes(); tab = "ecouter"; }
   else if (v.startsWith("theme-") && D.parcoursThemes.detail[v.slice(6)]) { app.innerHTML = vueTheme(v.slice(6)); tab = "ecouter"; }
   else if (v === "tutos" || v.startsWith("tutos-")) { app.innerHTML = vueTutos(v.slice(6)); tab = "semaine"; brancherTutos(v.slice(6)); }
-  else if (v === "jouer") { app.innerHTML = vueJouer(); app.querySelectorAll("[data-niv]").forEach(a => a.onclick = e => { e.preventDefault(); if (D.eleves && D.codes) return; set("niv", a.dataset.niv); set("classe", a.dataset.niv); rendre(); }); }
+  else if (v === "jouer") { app.innerHTML = vueJouer(); app.querySelectorAll("[data-niv]").forEach(a => a.onclick = e => { e.preventDefault(); if (D.eleves && D.codes) return; set("niv", a.dataset.niv); set("classe", a.dataset.niv); rendre(); });  brancherHeros(); }
   else if (v === "chemin") { app.innerHTML = vueChemin(); tab = "jouer"; app.querySelectorAll("[data-niv]").forEach(a => a.onclick = e => { e.preventDefault(); if (D.eleves && D.codes) return; set("niv", a.dataset.niv); set("classe", a.dataset.niv); rendre(); }); }
   else if (D.nav.carrefours[v]) { app.innerHTML = vueCarrefour(v); }
   else if ((m = v.match(/^ludo(?:-(.+))?$/)) && (!m[1] || NIV.includes(m[1]) || D.ludo.jeux.some(x => x.id === m[1] && x.moteur))) {
