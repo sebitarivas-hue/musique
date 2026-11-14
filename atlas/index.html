@@ -314,6 +314,8 @@ button.terme { background: none; border: 0; border-bottom: 2px dotted var(--noir
 ol.reperes-q { list-style: none; padding: 0; margin: 8px 0; border-left: 4px solid var(--noir); } ol.reperes-q li { padding: 6px 0 6px 14px; line-height: 1.5; } ol.reperes-q .d { display: inline-block; min-width: 92px; font: 600 .85rem var(--f-mono, monospace); text-transform: uppercase; }
 ul.classe { list-style: none; padding: 0; margin: 8px 0; } ul.classe li { margin: 12px 0; padding: 10px 14px; border: 2px solid var(--noir); background: #fff; } ul.classe .verbe { display: inline-block; font: 600 .72rem var(--f-mono, monospace); text-transform: uppercase; letter-spacing: .08em; color: #fff; background: var(--c); padding: 2px 6px; margin-right: 6px; }
 button.terme-liste { cursor: help; } h2.grandes { margin-top: 20px; }
+.tuiles-p { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 8px; margin: 10px 0 14px; } a.tuile-p { display: flex; flex-direction: column; justify-content: space-between; gap: 6px; min-height: 96px; padding: 10px 12px; background: #fff; border: 2px solid var(--noir); border-left: 8px solid var(--c); color: var(--noir); text-decoration: none; } a.tuile-p b { font-size: .95rem; line-height: 1.25; } a.tuile-p:hover { outline: 3px solid var(--noir); } a.tuile-p[hidden] { display: none; }
+.filtre-t { position: sticky; top: 0; z-index: 5; background: var(--fond, #F0EFE8); padding: 8px 0; } .filtre-t input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 2px solid var(--noir); font: inherit; margin-top: 6px; } details.autres-t > summary h2 { font-size: 1.1rem; }
 </style>
 </head>
 <body>
@@ -461,9 +463,8 @@ function vueAccueil() {
   <p class="lead">Écris une musique, un artiste, un pays ou une idée. L'Atlas te propose aussitôt les parcours pour la comprendre : généalogie, trajet, carte, frise, graphe.</p>
   <div class="recherche"><input id="q" type="search" placeholder="Beyoncé, Nirvana, Jul, K-pop, drill, Boulez..." autocomplete="off" aria-label="Chercher une musique ou un artiste"><ul class="suggestions" id="sug" aria-live="polite"></ul></div>
   <p class="petit" style="margin-top:14px">${D.entries.length} entrées, dont ${D.entries.filter(e => ["artist", "group", "composer"].includes(e.type)).length} artistes, groupes et compositeurs. Un nom ou un titre absent ? Écris-le dans la recherche : s'il manque, dis-le à ton professeur.</p>
-  <h2>Les grandes questions</h2><p class="petit">${D.parcours.filter(p => p.theme === "Les grandes questions").length} parcours pour comprendre les musiques, chacun autour d'une question. Chaque étape a un morceau à écouter.</p>
-  <h3>Dans l'histoire, de la 6e à la 3e</h3><div class="grille">${D.parcours.filter(p => p.id.startsWith("h-")).map(p => carte("#p/" + p.id, "#e0457b", esc(p.titre), esc(p.intro), p.etapes.length + " étapes")).join("")}</div>
-  <h3>À travers les époques et les continents</h3><div class="grille">${D.parcours.filter(p => p.id.startsWith("q-")).map(p => carte("#p/" + p.id, "#e0457b", esc(p.titre), esc(p.intro), p.etapes.length + " étapes")).join("")}</div>`;
+  <h2>Les grandes questions</h2><p class="petit">${D.parcours.filter(p => p.theme === "Les grandes questions").length} parcours pour comprendre les musiques. Chaque étape a un morceau à écouter. <a href="#parcours">Filtrer par classe ou par mot</a>.</p>
+  <div class="tuiles-p">${D.parcours.filter(p => p.theme === "Les grandes questions").map(tuileP).join("")}</div>`;
   return `${uneHtml(rech)}
   ${f.length ? `<h2>Mes favoris</h2><div class="pastilles">${f.map(id => `<a class="pastille" style="--c:${coul(E[id])}" href="#e/${id}">${esc(E[id].name)}</a>`).join("")}</div>` : ""}
   <h2>Des parcours pour comprendre</h2>
@@ -1133,22 +1134,29 @@ function vueGenealogies(cible) {
   <div class="pastilles">${G.map(g => `<a class="pastille ${g.id === choisi ? "" : "clair"}" href="#genealogies/${g.id}">${esc(g.titre)}</a>`).join("")}<a class="pastille clair" href="#genealogies/toutes">Toutes</a></div>
   ${aff.map(schema).join("")}${AVIS}`;
 }
+const NIV = ["6e", "5e", "4e", "3e"];
+const niveauxDe = p => [...new Set(((p.edito && p.edito.seances) || []).map(([k]) => k.slice(0, 2)).filter(k => NIV.includes(k)))].sort((a, b) => NIV.indexOf(a) - NIV.indexOf(b));
+const nrmT = x => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const tuileP = p => { const n = niveauxDe(p); return `<a class="tuile-p" style="--c:${coul(E[p.etapes[0].id])}" href="#p/${p.id}" data-niv="${n.join(" ")}" data-txt="${esc(nrmT(p.titre + " " + p.intro))}" title="${esc(p.intro)}"><b>${esc(p.titre)}</b><span class="petit">${p.etapes.length} étapes${n.length ? " · " + n.join(", ") : ""}</span></a>`; };
+function brancherTrajets() {
+  const champ = $("#ft"), tuiles = [...document.querySelectorAll("#app .tuile-p")], nb = $("#ft-nb"); let niv = "";
+  const maj = () => { const q = nrmT(champ ? champ.value : "").trim(); let n = 0;
+    tuiles.forEach(t => { const ok = (!niv || t.dataset.niv.split(" ").includes(niv)) && (!q || t.dataset.txt.includes(q)); t.hidden = !ok; if (ok) n++; });
+    if (nb) nb.textContent = n + (n > 1 ? " parcours" : " parcours") + (n === 0 ? " : essaie un autre mot" : ""); };
+  document.querySelectorAll("#app [data-niv-filtre]").forEach(b => b.onclick = () => { niv = b.dataset.nivFiltre; document.querySelectorAll("#app [data-niv-filtre]").forEach(x => x.classList.toggle("clair", x !== b)); maj(); });
+  if (champ) champ.oninput = maj; maj();
+}
 function vueParcoursListe() {
-  const cadre = D.families.map(fa => {
-    const L = D.entries.filter(e => e.family === fa.id), racines = L.filter(e => !e.parent || !E[e.parent] || E[e.parent].family !== fa.id).length;
-    const comp = L.filter(e => e.type === "composer" || e.type === "artist").length;
-    return `<a class="carte" style="--c:${coul({family: fa.id})}" href="#f/${fa.id}"><b>${esc(fa.name)}</b><span>${esc(fa.description)}</span><span class="suite">${L.length} entrées, ${comp} compositeurs et artistes &#8250;</span></a>`;
-  }).join("");
   const carteP = p => `<a class="carte" style="--c:${coul(E[p.etapes[0].id])}" href="#p/${p.id}"><b>${esc(p.titre)}</b><span>${esc(p.intro)}</span><span class="suite">${p.etapes.length} étapes &#8250;</span></a>`;
-  const grandes = D.parcours.filter(p => p.theme === "Les grandes questions"), themes = [...new Set(D.parcours.map(p => p.theme))].filter(t => t !== "Les grandes questions");
-  return `<span class="etiq">Trajets</span><h1>Des chemins dans l'Atlas</h1>
-  <p class="lead">${D.parcours.length} trajets guidés montrent ce qui change à chaque étape. Ce sont des chemins possibles, pas les seuls, et ils sont à relire.</p>
-  <div class="pastilles">${themes.map((t, i) => `<a class="pastille clair" href="#parcours" data-saut="th-${i}">${esc(t)}</a>`).join("")}</div>
-  ${grandes.length ? `<h2 class="grandes">Les grandes questions</h2><p class="petit">${grandes.length} parcours, chacun autour d\'une question musicologique. Chaque étape a un morceau à écouter.</p><h3>Dans l\'histoire, de la 6e à la 3e</h3><div class="grille">${grandes.filter(p => p.id.startsWith("h-")).map(carteP).join("")}</div><h3>À travers les époques et les continents</h3><div class="grille">${grandes.filter(p => !p.id.startsWith("h-")).map(carteP).join("")}</div>` : ""}
-  ${themes.map((t, i) => { const L = D.parcours.filter(p => p.theme === t); return `<details class="theme" id="th-${i}"><summary><h2>${esc(t)}</h2><span class="petit">${L.length} trajets</span></summary><div class="grille">${L.map(carteP).join("")}</div></details>`; }).join("")}
-  <div class="pastilles" style="margin-top:12px"><a class="pastille" style="--c:#11110F" href="#tout">Toutes les entrées de A à Z</a><a class="pastille" style="--c:#11110F" href="#arbre">Arbre des genres</a><a class="pastille" style="--c:#11110F" href="#frise">Frise chronologique</a></div>
-  <p class="avis">Ce corpus n'est pas encore exhaustif : ${D.entries.length} entrées pour un cadre qui en demandera des milliers. Les familles sont musicologiques (pratiques, esthétiques, régions), non des catégories de plateformes. Les trajets sont des interprétations et le disent à chaque étape.</p>
-`;
+  const grandes = D.parcours.filter(p => p.theme === "Les grandes questions"), autres = D.parcours.filter(p => p.theme !== "Les grandes questions"), themes = [...new Set(autres.map(p => p.theme))];
+  return `<span class="etiq">Trajets</span><h1>Choisis une question</h1>
+  <p class="lead">${grandes.length} parcours, chacun autour d'une question sur la musique. Chaque étape a un morceau à écouter.</p>
+  <div class="filtre-t"><div class="pastilles"><button type="button" class="pastille" style="--c:#11110F" data-niv-filtre="">Tous</button>${NIV.map(n => `<button type="button" class="pastille clair" data-niv-filtre="${n}">${n}</button>`).join("")}</div>
+   <input id="ft" type="search" placeholder="Filtrer : troubadours, rythme, voix, Bach..." autocomplete="off" aria-label="Filtrer les parcours"><p class="petit" id="ft-nb" aria-live="polite"></p></div>
+  <div class="tuiles-p">${grandes.map(tuileP).join("")}</div>
+  <details class="theme autres-t"><summary><h2>${autres.length} autres trajets, par thème</h2><span class="petit">ouvrir</span></summary>
+   ${themes.map(t => { const L = autres.filter(p => p.theme === t); return `<details class="theme"><summary><h3>${esc(t)}</h3><span class="petit">${L.length}</span></summary><div class="grille">${L.map(carteP).join("")}</div></details>`; }).join("")}</details>
+  <div class="pastilles" style="margin-top:12px"><a class="pastille" style="--c:#11110F" href="#genealogies">Généalogies</a><a class="pastille clair" href="#tout">Toutes les entrées de A à Z</a><a class="pastille clair" href="#arbre">Arbre des genres</a><a class="pastille clair" href="#frise">Frise chronologique</a></div>`;
 }
 function vueParcours(id) {
   const p = D.parcours.find(x => x.id === id); if (!p) return vueParcoursListe();
@@ -1187,7 +1195,7 @@ function rendre() {
   else if (r === "techniques" || r === "idees") { html = vueTechniques(); onglet = "techniques"; }
   else if (r === "ecoute") { html = vueEcoute(); onglet = "ecoute"; }
   else if (r === "p") { html = vueParcours(a); onglet = "parcours"; }
-  else if (r === "parcours") { html = vueParcoursListe(); onglet = "parcours"; }
+  else if (r === "parcours") { html = vueParcoursListe(); apres = brancherTrajets; onglet = "parcours"; }
   else if (r === "genealogies") { html = vueGenealogies(a); onglet = "genealogies"; }
   else if (r === "tout") { html = vueTout(a); onglet = ""; }
   else if (r === "passerelles") { html = vuePasserelles(); onglet = ""; }
