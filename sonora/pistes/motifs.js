@@ -3,8 +3,9 @@
 // Aucune mélodie connue n'est écrite de mémoire. Les motifs avec hauteur sont écrits en do ; la tonalité choisie les transpose (la batterie n'est pas transposée).
 // Un motif dure une mesure : `temps` dit à combien de temps par mesure il est écrit (4 ou 3). Les notes sont en temps (1 = une noire), comme partout dans Pistes.
 // Sans DOM : testé dans Node (tests/motifs.test.js).
-import * as B from "./blocs.js?v=b0bba24802";
-import * as P from "./projet.js?v=b0bba24802";
+import * as B from "./blocs.js?v=937e4d03c1";
+import * as P from "./projet.js?v=937e4d03c1";
+import { MORCEAUX } from "./compositeur.js?v=937e4d03c1";
 
 // Les notes de batterie (numéros généraux) : grosse caisse, caisse claire, baguette sur le cadre, charleston fermé et ouvert, claquement, tom, cloche à vache, cymbale
 const K = 36, S = 38, RIM = 37, HF = 42, HO = 46, CLAP = 39, TOM = 41, CRASH = 49;
@@ -125,38 +126,17 @@ export function poserMotif(p, pisteId, mesure, motifOuId, tonique = 0) {
   return B.collerBloc(p, pisteId, mesure, { notes: notesDuMotif(m, tonique) });
 }
 
-// ---------------------------------------------------------------- des morceaux de départ : quatre mesures sur plusieurs lignes
-// Chaque ligne : { nom, instrument, volume (le niveau de la ligne dans le mixage : une basse de synthèse écrase tout si on la laisse à fond), motifs: [quatre identifiants, un par mesure] }.
-export const MODELES = [
-  { id: "mod-pop", nom: "Pop en quatre accords", temps: 4, aide: "La suite I, vi, IV, V, souvent utilisée dans la chanson, avec une basse, une batterie et une petite phrase qui pose une question et y répond.",
-    lignes: [
-      { nom: "Batterie", instrument: "batt:reel", volume: 0.85, motifs: ["r-pop", "r-pop", "r-pop", "r-pop"] },
-      { nom: "Basse", instrument: "ech:basse-moderne", volume: 0.7, motifs: ["b-quinte", "b-quinte", "b-quinte", "b-quinte"] },
-      { nom: "Accords", instrument: "ech:clavier", volume: 0.6, motifs: ["a-I-plaque", "a-vi-plaque", "a-IV-plaque", "a-V-plaque"] },
-      { nom: "Mélodie", instrument: "ech:sax-alto", volume: 0.8, motifs: ["m-question", "m-reponse", "m-question", "m-reponse"] },
-    ] },
-  { id: "mod-danse", nom: "Musique de danse", temps: 4, aide: "Quatre sur le sol, une basse qui rebondit, un ostinato qui tourne et des accords arpégés.",
-    lignes: [
-      { nom: "Batterie", instrument: "batt:909", volume: 0.85, motifs: ["r-quatre", "r-quatre", "r-quatre", "r-quatre"] },
-      { nom: "Basse", instrument: "syn:basse808", volume: 0.4, motifs: ["b-octave", "b-octave", "b-octave", "b-octave"] },
-      { nom: "Accords", instrument: "ech:synthe", volume: 0.55, motifs: ["a-vi-arpege", "a-IV-arpege", "a-I-arpege", "a-V-arpege"] },
-      { nom: "Mélodie", instrument: "ech:rhodes", volume: 0.75, motifs: ["m-ostinato", "m-ostinato", "m-ostinato", "m-synco"] },
-    ] },
-  { id: "mod-lent", nom: "Groove lent", temps: 4, aide: "Un hip-hop lent, une basse syncopée, des accords tenus : le silence et le balancement font le travail.",
-    lignes: [
-      { nom: "Batterie", instrument: "batt:808", volume: 0.85, motifs: ["r-lent", "r-lent", "r-lent", "r-lent"] },
-      { nom: "Basse", instrument: "ech:basse-moderne", volume: 0.6, motifs: ["b-synco", "b-synco", "b-synco", "b-synco"] },
-      { nom: "Accords", instrument: "ech:rhodes", volume: 0.6, motifs: ["a-I-plaque", "a-I-plaque", "a-IV-plaque", "a-V-plaque"] },
-    ] },
-];
+// ---------------------------------------------------------------- des morceaux de départ : huit mesures sur plusieurs lignes
+// Ils sont écrits dans compositeur.js (harmonie, basse, batterie, mélodie, relief) ; ici on les pose dans le projet.
+export const MODELES = MORCEAUX;
 export const modeleDe = id => MODELES.find(m => m.id === id) || null;
 
-// Pose un morceau de départ sur le groupe de quatre mesures `groupe` : une ligne par instrument du modèle (on réutilise d'abord les lignes vides du projet).
-// Tout ou rien : si une case visée n'est pas vide, rien n'est posé et on le dit. Renvoie les identifiants des sons à refaire.
+// Pose un morceau de départ sur les mesures à partir du groupe de quatre mesures `groupe` : une ligne par instrument du morceau (on réutilise d'abord les lignes vides du projet).
+// Tout ou rien : si une case visée n'est pas vide, rien n'est posé et on le dit. Si le projet est encore vide, il prend le tempo du morceau. Renvoie les identifiants des sons à refaire.
 export function poserModele(p, modeleOuId, groupe, tonique = 0) {
   const mod = typeof modeleOuId === "string" ? modeleDe(modeleOuId) : modeleOuId; if (!mod) throw new Error("modèle inconnu");
   if (mod.temps !== p.temps) throw new Error(`ce morceau est écrit à ${mod.temps} temps par mesure, le projet est à ${p.temps}`);
-  const m0 = groupe * B.MESURES_PAR_GROUPE;
+  const m0 = groupe * B.MESURES_PAR_GROUPE, nb = mod.mesures;
   // les lignes : une ligne vide et sans instrument choisi est réutilisée, sinon on en ajoute une ; une ligne existante au même instrument est réutilisée en premier
   const libres = p.pistes.filter(pi => !pi.clips.length && !pi.instrument), prises = new Set(), choix = [];
   for (const l of mod.lignes) {
@@ -164,13 +144,15 @@ export function poserModele(p, modeleOuId, groupe, tonique = 0) {
     const pi = meme || libres.shift() || null; choix.push(pi); if (pi) prises.add(pi.id);
   }
   // on vérifie les cases avant de rien toucher
-  mod.lignes.forEach((l, i) => { const pi = choix[i]; if (!pi) return; for (let k = 0; k < B.MESURES_PAR_GROUPE; k++) if (B.caseDe(p, pi, m0 + k).type !== "vide") throw new Error(`Ce groupe de mesures n'est pas vide sur la ligne « ${pi.nom} » : choisis un groupe vide.`); });
+  mod.lignes.forEach((l, i) => { const pi = choix[i]; if (!pi) return; for (let k = 0; k < nb; k++) if (l.mesures[k].length && B.caseDe(p, pi, m0 + k).type !== "vide") throw new Error(`Ces mesures ne sont pas vides sur la ligne « ${pi.nom} » : choisis des mesures vides.`); });
+  if (p.pistes.every(pi => !pi.clips.length)) { p.tempo = mod.tempo; p.masterNiveau = mod.niveau; }   // avant de poser : la durée d'une mesure en dépend ; le niveau du morceau règle le Son pro (voir master.js)
   const refaire = new Set();
   mod.lignes.forEach((l, i) => {
     let pi = choix[i]; if (!pi) pi = B.ajouterPiste(p, l.instrument, l.nom);
     else { pi.instrument = l.instrument; pi.nom = pi.nom.startsWith("Piste ") ? l.nom : pi.nom; }
     if (l.volume != null) pi.volume = l.volume;
-    l.motifs.forEach((id, k) => { const r = poserMotif(p, pi.id, m0 + k, id, tonique); if (r) refaire.add(r.son); });
+    const bat = l.instrument.startsWith("batt:");
+    l.mesures.forEach((notes, k) => { if (!notes.length) return; const r = B.collerBloc(p, pi.id, m0 + k, { notes: notes.map(x => ({ ...x, n: bat ? x.n : Math.max(0, Math.min(127, x.n + tonique)) })) }); if (r) refaire.add(r.son); });
   });
   return [...refaire];
 }

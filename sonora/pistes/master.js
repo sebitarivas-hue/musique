@@ -57,5 +57,11 @@ export function creerMaster(ctx, reglages = {}) {
   // 6. le limiteur : rien ne dépasse -1 dBFS
   const lim = ctx.createDynamicsCompressor(); lim.threshold.value = -4; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.001; lim.release.value = 0.07;
   const plafond = gain(R.plafond); rattrapage.connect(lim); lim.connect(plafond); plafond.connect(ctx.destination);
-  return { entree, sortie: plafond, comp, lim };
+  // Le niveau général du morceau, de 0,1 à 1,5 (1 = une pop moderne très présente, comme avant ; 0,5 = une ballade qui garde ses nuances) : il baisse l'entrée, relève le seuil et adoucit le rapport du compresseur
+  // (moins de compression : les nuances restent) et baisse le gain de rattrapage. Mesuré le 14/11/2026 : sans cela, le limiteur et le compresseur ramènent tout morceau à -8 LUFS, une ballade comme une house.
+  const regler = ({ niveau = 1 } = {}) => {
+    const n = Math.max(0.1, Math.min(1.5, niveau));
+    entree.gain.value = R.avant * Math.sqrt(n); comp.threshold.value = R.seuil + (1 - n) * 18; comp.ratio.value = Math.max(1.2, 1.6 + (R.rapport - 1.6) * n); rattrapage.gain.value = R.apres * (0.5 + 0.5 * n);
+  };
+  return { entree, sortie: plafond, comp, lim, regler };
 }
