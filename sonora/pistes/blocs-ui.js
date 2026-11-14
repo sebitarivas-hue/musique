@@ -1,9 +1,9 @@
 // L'écran du mode blocs de SONORA Pistes (le modèle est dans blocs.js, sans DOM et testé dans Node).
 // Une grille : une ligne par instrument (une pastille de couleur que l'on touche pour changer d'instrument), une colonne par mesure, quatre mesures à la fois.
 // Toucher une case vide pose un bloc et ouvre ses notes ; toucher un bloc l'ouvre. Le piano roll et la partition existants servent d'éditeur : rien n'est doublé.
-import * as B from "./blocs.js?v=069e00adf6";
-import * as M from "./motifs.js?v=069e00adf6";
-import { PICTOS } from "./pictos.js?v=069e00adf6";
+import * as B from "./blocs.js?v=5a280b16f8";
+import * as M from "./motifs.js?v=5a280b16f8";
+import { PICTOS } from "./pictos.js?v=5a280b16f8";
 
 // Les instruments qu'on propose en gros boutons quand on touche une pastille : les plus connus d'abord, les autres dans la liste.
 const PRINCIPAUX = [["ech:clavier", "Piano"], ["ech:guitare-folk", "Guitare"], ["ech:basse", "Basse"], ["ech:violon", "Violon"], ["ech:souffle", "Flûte"], ["ech:trompette", "Trompette"], ["batt:reel", "Batterie"], ["ech:choeur-f", "Chœur"]];
@@ -50,6 +50,7 @@ export function creerVueBlocs(d) {
     $("bl-regles").innerHTML = `<span class="bl-chip" title="Nombre de temps par mesure">${p.temps} temps</span>
       <button type="button" class="bl-chip" id="bl-tempo" title="Changer le tempo">${p.tempo} par minute</button>
       <label class="bl-chip bl-tonalite" title="La tonalité des motifs prêts : les accords et les mélodies sont transposés"><span>Tonalité</span><select id="bl-tonalite" aria-label="Tonalité des motifs prêts">${M.TONALITES.map(([nom, t]) => `<option value="${t}"${t === v.tonique ? " selected" : ""}>${esc(nom)}</option>`).join("")}</select></label>
+      <button type="button" class="bl-chip bl-chip-son" id="bl-master" aria-pressed="${p.master === "pro"}" title="Son pro : niveau, tonalité, salle, largeur stéréo et compression d'un morceau actuel, comme à l'export">Son pro</button>
       <button type="button" class="bl-chip bl-chip-fort" id="bl-modeles" aria-expanded="${v.modeles}" title="Poser quatre mesures sur plusieurs lignes d'un coup">Morceau tout prêt</button>`;
     // la grille : les numéros de mesure, puis une ligne par instrument
     const g0 = v.groupe * B.MESURES_PAR_GROUPE;
@@ -125,10 +126,12 @@ export function creerVueBlocs(d) {
       <button type="button" data-a="vider" class="bl-danger"${bloc ? "" : " disabled"}>Vider</button></div>`;
   }
 
+  // Un projet neuf en blocs prend le « Son pro » (mixage et mastering) ; un projet qui a déjà son réglage le garde.
+  const assurerMaster = () => { if (etat.projet.master === undefined) etat.projet.master = "pro"; };
   // ---------------------------------------------------------------- les gestes
   function choisir(piste, mesure) { v.choix = { piste, mesure }; etat.arme = piste; }
   async function ecrireDans(piste, mesure) {
-    const p = etat.projet; choisir(piste, mesure);
+    const p = etat.projet; choisir(piste, mesure); assurerMaster();
     if (B.caseDe(p, piste, mesure).type === "vide") { B.creerBloc(p, piste, mesure); changer(); await remettreAJourMidi(); }
     const nv = B.caseDe(p, piste, mesure); if (nv.type === "bloc") { etat.choisi = nv.clip.id; ouvrirRouleau(nv.clip.son); message("Bloc ouvert : clique dans la grille d'en bas pour poser une note ; tu l'entends en la posant."); }
     v.motifs = false; dessiner();
@@ -141,7 +144,7 @@ export function creerVueBlocs(d) {
   }
   // Pose un motif dans la case choisie ; la case suivante, si elle est vide, devient la case choisie : on peut enchaîner les motifs.
   async function poser(id) {
-    const p = etat.projet, c = v.choix; arreterMotif();
+    const p = etat.projet, c = v.choix; arreterMotif(); assurerMaster();
     try { const r = M.poserMotif(p, c.piste, c.mesure, id, v.tonique); if (!r) { message("On ne remplace pas un clip de plusieurs mesures d'ici."); return; } }
     catch (err) { message(err.message); return; }
     changer(); await remettreAJourMidi(); const m = M.motifDe(id); message(`« ${M.nomDuMotif(m, v.tonique)} » posé, mesure ${c.mesure + 1}. Touche Lire pour l'entendre avec le reste.`);
@@ -149,13 +152,14 @@ export function creerVueBlocs(d) {
     dessiner();
   }
   async function poserMorceau(id) {
-    const p = etat.projet;
+    const p = etat.projet; assurerMaster();
     try { M.poserModele(p, id, v.groupe, v.tonique); } catch (err) { message(err.message); return; }
     v.modeles = false; v.choix = null; changer(); await remettreAJourMidi(); message(`Morceau posé sur les mesures ${B.etiquetteGroupe(v.groupe)}. Touche Lire pour l'entendre, puis change un motif, un instrument ou la tonalité.`); dessiner();
   }
   racine.addEventListener("click", async e => {
     const g = e.target.closest("[data-g]"); if (g && racine.contains(g)) { v.groupe = +g.dataset.g; dessiner(); return; }
     if (e.target.closest("#bl-tempo")) { $("tempo").focus(); $("tempo").select(); return; }
+    if (e.target.closest("#bl-master")) { etat.projet.master = etat.projet.master === "pro" ? "aucun" : "pro"; changer(); message(etat.projet.master === "pro" ? "Son pro activé : niveau, tonalité, salle, largeur stéréo et compression d'un morceau actuel. L'export WAV a le même son." : "Son pro coupé : le son brut des instruments, plus faible et plus étroit."); return; }
     const mu = e.target.closest("[data-muet]"); if (mu) { const pi = P.trouverPiste(etat.projet, mu.dataset.muet); if (pi) { pi.muet = !pi.muet; changer(); } return; }
     const pa = e.target.closest(".bl-pastille"); if (pa) { v.motifs = false; v.modeles = false; v.palette = v.palette === pa.dataset.piste ? null : pa.dataset.piste; choisir(pa.dataset.piste, v.choix ? v.choix.mesure : v.groupe * B.MESURES_PAR_GROUPE); dessiner(); return; }
     const ins = e.target.closest("[data-inst]"); if (ins && v.palette) { await regler(v.palette, ins.dataset.inst); return; }

@@ -121,3 +121,5 @@
   .bl-motif { flex-direction: column; align-items: stretch; gap: 8px; } .bl-motif-b { justify-content: flex-end; }
   .bl-pied { padding: 12px; } .blocs .bl-pied .bl-ajout { margin-left: 0; }
 }
+.blocs .bl-chip-son[aria-pressed="true"] { background: transparent; color: #D6FF00; box-shadow: inset 0 0 0 2px #D6FF00; font-weight: 800; }
+.blocs .bl-chip-son[aria-pressed="false"] { opacity: .7; }

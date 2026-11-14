@@ -1,33 +1,34 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=069e00adf6";
-import * as Ed from "./editions.js?v=069e00adf6";
-import * as P from "./projet.js?v=069e00adf6";
-import { Stockage } from "./stockage.js?v=069e00adf6";
-import { creerBouton } from "./bouton.js?v=069e00adf6";
-import * as MI from "./midi.js?v=069e00adf6";
-import * as N from "./notes.js?v=069e00adf6";
-import { Rouleau } from "./rouleau.js?v=069e00adf6";
-import { PanneauPartition } from "./partition/panneau.js?v=069e00adf6";
-import { separer, NOMS_PARTIES } from "./separation.js?v=069e00adf6";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=069e00adf6";
-import * as BM from "./batterie_midi.js?v=069e00adf6";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=069e00adf6";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=069e00adf6";
-import * as INS from "./instruments.js?v=069e00adf6";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=069e00adf6";
-import * as OMR from "./omr.js?v=069e00adf6";
-import { creerVueBlocs } from "./blocs-ui.js?v=069e00adf6";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=069e00adf6";
-import * as MO from "./moteurs.js?v=069e00adf6";
-import { monterPanneaux } from "./panneaux.js?v=069e00adf6";
-import { monterNotions } from "./notions.js?v=069e00adf6";
-import { DEMOS } from "./demos.js?v=069e00adf6";
-import * as B from "./bibliotheque.js?v=069e00adf6";
-import { encoderWAV } from "../studio/wav.js?v=069e00adf6";
-import { ENTREES } from "../library/catalogue.js?v=069e00adf6";
-import { compiler } from "../src/index.js?v=069e00adf6";
-import { rendre } from "../src/rendu.js?v=069e00adf6";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=5a280b16f8";
+import * as Ed from "./editions.js?v=5a280b16f8";
+import * as P from "./projet.js?v=5a280b16f8";
+import { Stockage } from "./stockage.js?v=5a280b16f8";
+import { creerBouton } from "./bouton.js?v=5a280b16f8";
+import * as MI from "./midi.js?v=5a280b16f8";
+import * as N from "./notes.js?v=5a280b16f8";
+import { Rouleau } from "./rouleau.js?v=5a280b16f8";
+import { PanneauPartition } from "./partition/panneau.js?v=5a280b16f8";
+import { separer, NOMS_PARTIES } from "./separation.js?v=5a280b16f8";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=5a280b16f8";
+import * as BM from "./batterie_midi.js?v=5a280b16f8";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=5a280b16f8";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=5a280b16f8";
+import * as INS from "./instruments.js?v=5a280b16f8";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=5a280b16f8";
+import * as OMR from "./omr.js?v=5a280b16f8";
+import { creerVueBlocs } from "./blocs-ui.js?v=5a280b16f8";
+import { creerMaster } from "./master.js?v=5a280b16f8";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=5a280b16f8";
+import * as MO from "./moteurs.js?v=5a280b16f8";
+import { monterPanneaux } from "./panneaux.js?v=5a280b16f8";
+import { monterNotions } from "./notions.js?v=5a280b16f8";
+import { DEMOS } from "./demos.js?v=5a280b16f8";
+import * as B from "./bibliotheque.js?v=5a280b16f8";
+import { encoderWAV } from "../studio/wav.js?v=5a280b16f8";
+import { ENTREES } from "../library/catalogue.js?v=5a280b16f8";
+import { compiler } from "../src/index.js?v=5a280b16f8";
+import { rendre } from "../src/rendu.js?v=5a280b16f8";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -64,7 +65,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=069e00adf6"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=5a280b16f8"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -110,6 +111,12 @@ function appliquerEnveloppes(projet, chaines, depuis, debut) {
     for (const q of pts) if (q.t > depuis) ch.pan.pan.linearRampToValueAtTime(q.v, debut + (q.t - depuis));
   }
 }
+// La sortie des chaînes de pistes : directe, ou par le « Son pro » (mixage et mastering, master.js) quand le projet le demande. Une seule chaîne par contexte audio.
+const masters = new WeakMap();
+function sortieProjet(ctx, projet) {
+  if (!projet || projet.master !== "pro") return ctx.destination;
+  let m = masters.get(ctx); if (!m) { m = creerMaster(ctx); masters.set(ctx, m); } return m.entree;
+}
 async function chainesProjet(ctx, projet, sortie) { const ch = {}; for (const pi of P.pistesAudibles(projet)) ch[pi.id] = await chainePiste(ctx, pi, sortie); return ch; }
 // Les clips sont programmés sur les chaînes déjà prêtes : un gain par clip, avec des fondus de 5 ms.
 function planifier(ctx, projet, depuis, debut, chaines) {
@@ -135,7 +142,7 @@ async function lire() {
   // Safari ne fait avancer l'horloge audio que si le contexte tourne vraiment : on attend la reprise (appelée dans le geste de l'utilisateur) et on le dit si elle n'a pas lieu.
   try { await Promise.race([ctx.resume(), new Promise(ok => setTimeout(ok, 1500))]); } catch (_) {}
   if (ctx.state !== "running") { etat.prepare = false; message("Le navigateur n'a pas démarré le son. Clique à nouveau sur Lire ; sur Safari, vérifie que le site n'est pas coupé dans Réglages pour ce site, Lecture automatique."); return; }
-  try { chaines = await chainesProjet(ctx, etat.projet, ctx.destination); } catch (e) { message("La lecture n'a pas pu démarrer : " + (e && e.message || e)); return; } finally { etat.prepare = false; }
+  try { chaines = await chainesProjet(ctx, etat.projet, sortieProjet(ctx, etat.projet)); } catch (e) { message("La lecture n'a pas pu démarrer : " + (e && e.message || e)); return; } finally { etat.prepare = false; }
   etat.debutCtx = ctx.currentTime + 0.06; etat.debutTete = etat.tete;
   etat.sources = planifier(ctx, etat.projet, etat.tete, etat.debutCtx, chaines); etat.chaines = chaines; appliquerEnveloppes(etat.projet, chaines, etat.tete, etat.debutCtx);
   if ($("metro").checked) etat.metro = metronome(ctx, etat.tete, etat.debutCtx);
@@ -149,7 +156,7 @@ async function replanifierLecture() {
   if (replanOccupe) { replanEnAttente = true; return; }
   replanOccupe = true; const ctx = etat.ctx;
   try {
-    let chaines; try { chaines = await chainesProjet(ctx, etat.projet, ctx.destination); } catch (_) { arreter(); return; }
+    let chaines; try { chaines = await chainesProjet(ctx, etat.projet, sortieProjet(ctx, etat.projet)); } catch (_) { arreter(); return; }
     if (!etat.lecture) { for (const ch of Object.values(chaines)) { try { ch.vol.disconnect(); (ch.veilles || []).forEach(v => v.stop()); } catch (_) {} } return; }
     const t0 = ctx.currentTime + 0.03, pos = etat.debutTete + t0 - etat.debutCtx, sources = planifier(ctx, etat.projet, pos, t0, chaines); appliquerEnveloppes(etat.projet, chaines, pos, t0);
     for (const s of etat.sources) { try { s.stop(t0 + 0.012); } catch (_) {} }
@@ -179,7 +186,7 @@ function metronome(ctx, depuis, debut) {
 }
 function boucle() {
   requestAnimationFrame(boucle);
-  if (etat.lecture && etat.ctx) { etat.tete = Math.max(0, etat.debutTete + etat.ctx.currentTime - etat.debutCtx); const fin = P.dureeTotale(etat.projet) + P.queueMax(etat.projet); if (!etat.enreg && !etat.notes && etat.tete > fin + 0.3 && fin > 0) { finEcoute(); arreter(); } }
+  if (etat.lecture && etat.ctx) { etat.tete = Math.max(0, etat.debutTete + etat.ctx.currentTime - etat.debutCtx); const fin = P.dureeTotale(etat.projet) + Math.max(P.queueMax(etat.projet), etat.projet.master === "pro" ? 2 : 0); if (!etat.enreg && !etat.notes && etat.tete > fin + 0.3 && fin > 0) { finEcoute(); arreter(); } }
   $("position").textContent = fmtT(etat.tete); $("curseur").style.left = (etat.tete * etat.pxs) + "px";
   if (vueBlocs) vueBlocs.suivre(etat.tete);
   if (etat.enreg && etat.capture) { majClipEnCours(); majNiveauMicro(); } if (etat.notes) majNotesEnCours();
@@ -524,7 +531,7 @@ function arreterEcouteRouleau() { cancelAnimationFrame(rl.anim); if (rl.lecture)
 $("rl-ecouter").onclick = async () => {
   if (rl.lecture) { arreterEcouteRouleau(); return; }
   clearTimeout(rl.minuteur); await rendreMidiSon(rl.son); const d = etat.buffers[rl.son]; if (!d) return; const ctx = contexte(), b = ctx.createBuffer(d.canaux.length, d.canaux[0].length, d.sr); d.canaux.forEach((c, i) => b.copyToChannel(c, i));
-  const s = etat.projet.sons[rl.son], sec = 60 / etat.projet.tempo, depart = Math.min(rouleau.curseur, s.midi.temps) * sec, src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination);
+  const s = etat.projet.sons[rl.son], sec = 60 / etat.projet.tempo, depart = Math.min(rouleau.curseur, s.midi.temps) * sec, src = ctx.createBufferSource(); src.buffer = b; src.connect(sortieProjet(ctx, etat.projet));
   src.onended = () => { if (rl.lecture === src) arreterEcouteRouleau(); }; rl.lecture = src; src.start(0, depart); $("rl-ecouter").lastChild.textContent = " Arrêter"; const t0 = ctx.currentTime - depart;
   const suivre = () => { if (rl.lecture !== src) return; const t = (ctx.currentTime - t0) / sec; if (t >= s.midi.temps) { rouleau.suivre(null); panneauPartition.suivre(null); return; } rouleau.suivre(t); panneauPartition.suivre(t); rl.anim = requestAnimationFrame(suivre); }; suivre();
 };
@@ -541,7 +548,7 @@ async function ecouterMotif(notes, temps, instrumentId) {
   const cat = INS.catalogue(), e = cat.find(x => x.id === instrumentId) || cat.find(x => x.id === "ech:clavier"), ctx = contexte();
   const inst = await INS.charger(e, ctx), canaux = audioDeNotes({ midi: { notes, temps } }, inst, etat.projet.tempo);
   const b = ctx.createBuffer(canaux.length, canaux[0].length, SR_MIDI); canaux.forEach((c, i) => b.copyToChannel(c, i));
-  const src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination); src.onended = () => { if (motifEnCours === src) motifEnCours = null; }; motifEnCours = src; src.start();
+  const src = ctx.createBufferSource(); src.buffer = b; src.connect(sortieProjet(ctx, etat.projet)); src.onended = () => { if (motifEnCours === src) motifEnCours = null; }; motifEnCours = src; src.start();
 }
 vueBlocs = creerVueBlocs({ $, P, INS, etat, esc, message, changer, afficherPistes: afficher, ouvrirRouleau, fermerRouleau, remettreAJourMidi, rouleauOuvert: () => !$("rouleau").hidden, ecouterMotif, arreterMotif });
 document.addEventListener("click", e => { if (e.target.closest("#b-blocs")) vueBlocs.montrer(true); else if (e.target.closest("#bl-retour")) vueBlocs.montrer(false); });
@@ -1039,9 +1046,9 @@ function afficherEffets() {
 // ---------------------------------------------------------------- export
 async function exporter() {
   const p = etat.projet, duree = P.dureeTotale(p); if (!duree) { message("Rien à exporter : ajoute d'abord un son."); return; }
-  const queue = Math.max(0.05, P.queueMax(p), ...p.pistes.map(pi => { const e = P.effetsDe(pi); return Math.max(e.reverb.actif ? e.reverb.duree : 0, e.echo.actif ? Math.min(6, e.echo.temps * Math.ceil(Math.log(0.001) / Math.log(Math.max(0.01, e.echo.retour)))) : 0); }));
+  const queue = Math.max(0.05, P.queueMax(p), p.master === "pro" ? 2 : 0, ...p.pistes.map(pi => { const e = P.effetsDe(pi); return Math.max(e.reverb.actif ? e.reverb.duree : 0, e.echo.actif ? Math.min(6, e.echo.temps * Math.ceil(Math.log(0.001) / Math.log(Math.max(0.01, e.echo.retour)))) : 0); }));
   const sr = 44100, ctx = new OfflineAudioContext(2, Math.ceil((duree + queue) * sr), sr), t0 = performance.now();
-  const chaines = await chainesProjet(ctx, p, ctx.destination); planifier(ctx, p, 0, 0, chaines); appliquerEnveloppes(p, chaines, 0, 0); const buf = await ctx.startRendering(), canaux = [buf.getChannelData(0), buf.getChannelData(1)];
+  const chaines = await chainesProjet(ctx, p, sortieProjet(ctx, p)); planifier(ctx, p, 0, 0, chaines); appliquerEnveloppes(p, chaines, 0, 0); const buf = await ctx.startRendering(), canaux = [buf.getChannelData(0), buf.getChannelData(1)];
   const w = encoderWAV(canaux, sr, 16); etat.dernierExport = { octets: w.octets.length, ecretes: w.ecretes, duree };
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([w.octets], { type: "audio/wav" })); a.download = (p.titre || "pistes").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9_-]+/g, "-") + ".wav"; document.body.appendChild(a); a.click(); a.remove();
   if (etat.toutEcoute && P.dureeTotale(p) >= 8 && p.pistes.reduce((n, pi) => n + pi.clips.length, 0) >= 2) points("pistes:export", 10, "sonora"); // points : tout le projet écouté du début à la fin, sans modification depuis

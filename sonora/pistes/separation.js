@@ -7,7 +7,7 @@
 // Les parties s'additionnent exactement pour redonner le son d'origine. Limites, dites aux élèves : une voix chantée mixée sur le côté, ou un instrument tenu au centre, tombe dans la mauvaise partie ;
 // un coup de caisse claire a une queue tenue, qui peut passer dans l'harmonique ; la voix et la guitare qui jouent au centre restent mêlées. Sans modèle d'apprentissage, on ne fait pas mieux honnêtement.
 // Sans DOM : testé dans Node.
-import { fft } from "../science/analyse.js?v=069e00adf6";
+import { fft } from "../science/analyse.js?v=5a280b16f8";
 
 const N = 2048, H = 512, NB = N / 2 + 1, W_TEMPS = 17, W_FREQ = 17;
 const FEN = Float64Array.from({ length: N }, (_, i) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / N));   // Hann périodique : à 75 % de recouvrement, la somme des carrés fait 1,5

@@ -1,6 +1,6 @@
 // SONORA Orchestre, espace 03 « Reconnaître les timbres » : la logique des questions et de la comparaison (sans DOM, testée dans Node).
 // Seuls les instruments enregistrés dans la banque du site sont interrogés : on ne fait jamais deviner un son qui n'existe pas. Les seconds violons ont le même son que les premiers : une seule entrée, « Violons ».
-import { INSTRUMENTS, FAMILLES, ORDRE_FAMILLES, jouables } from "./donnees.js?v=069e00adf6";
+import { INSTRUMENTS, FAMILLES, ORDRE_FAMILLES, jouables } from "./donnees.js?v=5a280b16f8";
 
 export const POOL = INSTRUMENTS.filter(i => i.banque && i.id !== "violons2");
 export const etiquette = i => (i.id === "violons1" ? "Violons" : i.nom);

@@ -3,8 +3,8 @@
 // Aucune mélodie connue n'est écrite de mémoire. Les motifs avec hauteur sont écrits en do ; la tonalité choisie les transpose (la batterie n'est pas transposée).
 // Un motif dure une mesure : `temps` dit à combien de temps par mesure il est écrit (4 ou 3). Les notes sont en temps (1 = une noire), comme partout dans Pistes.
 // Sans DOM : testé dans Node (tests/motifs.test.js).
-import * as B from "./blocs.js?v=069e00adf6";
-import * as P from "./projet.js?v=069e00adf6";
+import * as B from "./blocs.js?v=5a280b16f8";
+import * as P from "./projet.js?v=5a280b16f8";
 
 // Les notes de batterie (numéros généraux) : grosse caisse, caisse claire, baguette sur le cadre, charleston fermé et ouvert, claquement, tom, cloche à vache, cymbale
 const K = 36, S = 38, RIM = 37, HF = 42, HO = 46, CLAP = 39, TOM = 41, CRASH = 49;
@@ -126,27 +126,27 @@ export function poserMotif(p, pisteId, mesure, motifOuId, tonique = 0) {
 }
 
 // ---------------------------------------------------------------- des morceaux de départ : quatre mesures sur plusieurs lignes
-// Chaque ligne : { nom, instrument, motifs: [quatre identifiants, un par mesure] }.
+// Chaque ligne : { nom, instrument, volume (le niveau de la ligne dans le mixage : une basse de synthèse écrase tout si on la laisse à fond), motifs: [quatre identifiants, un par mesure] }.
 export const MODELES = [
   { id: "mod-pop", nom: "Pop en quatre accords", temps: 4, aide: "La suite I, vi, IV, V, souvent utilisée dans la chanson, avec une basse, une batterie et une petite phrase qui pose une question et y répond.",
     lignes: [
-      { nom: "Batterie", instrument: "batt:reel", motifs: ["r-pop", "r-pop", "r-pop", "r-pop"] },
-      { nom: "Basse", instrument: "ech:basse", motifs: ["b-quinte", "b-quinte", "b-quinte", "b-quinte"] },
-      { nom: "Accords", instrument: "ech:clavier", motifs: ["a-I-plaque", "a-vi-plaque", "a-IV-plaque", "a-V-plaque"] },
-      { nom: "Mélodie", instrument: "ech:souffle", motifs: ["m-question", "m-reponse", "m-question", "m-reponse"] },
+      { nom: "Batterie", instrument: "batt:reel", volume: 0.85, motifs: ["r-pop", "r-pop", "r-pop", "r-pop"] },
+      { nom: "Basse", instrument: "ech:basse", volume: 0.75, motifs: ["b-quinte", "b-quinte", "b-quinte", "b-quinte"] },
+      { nom: "Accords", instrument: "ech:clavier", volume: 0.6, motifs: ["a-I-plaque", "a-vi-plaque", "a-IV-plaque", "a-V-plaque"] },
+      { nom: "Mélodie", instrument: "ech:souffle", volume: 0.8, motifs: ["m-question", "m-reponse", "m-question", "m-reponse"] },
     ] },
   { id: "mod-danse", nom: "Musique de danse", temps: 4, aide: "Quatre sur le sol, une basse qui rebondit, un ostinato qui tourne et des accords arpégés.",
     lignes: [
-      { nom: "Batterie", instrument: "batt:909", motifs: ["r-quatre", "r-quatre", "r-quatre", "r-quatre"] },
-      { nom: "Basse", instrument: "syn:basse808", motifs: ["b-octave", "b-octave", "b-octave", "b-octave"] },
-      { nom: "Accords", instrument: "ech:clavier", motifs: ["a-vi-arpege", "a-IV-arpege", "a-I-arpege", "a-V-arpege"] },
-      { nom: "Mélodie", instrument: "ech:violon", motifs: ["m-ostinato", "m-ostinato", "m-ostinato", "m-synco"] },
+      { nom: "Batterie", instrument: "batt:909", volume: 0.85, motifs: ["r-quatre", "r-quatre", "r-quatre", "r-quatre"] },
+      { nom: "Basse", instrument: "syn:basse808", volume: 0.4, motifs: ["b-octave", "b-octave", "b-octave", "b-octave"] },
+      { nom: "Accords", instrument: "ech:clavier", volume: 0.55, motifs: ["a-vi-arpege", "a-IV-arpege", "a-I-arpege", "a-V-arpege"] },
+      { nom: "Mélodie", instrument: "ech:violon", volume: 0.75, motifs: ["m-ostinato", "m-ostinato", "m-ostinato", "m-synco"] },
     ] },
   { id: "mod-lent", nom: "Groove lent", temps: 4, aide: "Un hip-hop lent, une basse syncopée, des accords tenus : le silence et le balancement font le travail.",
     lignes: [
-      { nom: "Batterie", instrument: "batt:808", motifs: ["r-lent", "r-lent", "r-lent", "r-lent"] },
-      { nom: "Basse", instrument: "ech:basse", motifs: ["b-synco", "b-synco", "b-synco", "b-synco"] },
-      { nom: "Accords", instrument: "ech:clavier", motifs: ["a-I-plaque", "a-I-plaque", "a-IV-plaque", "a-V-plaque"] },
+      { nom: "Batterie", instrument: "batt:808", volume: 0.85, motifs: ["r-lent", "r-lent", "r-lent", "r-lent"] },
+      { nom: "Basse", instrument: "ech:basse", volume: 0.6, motifs: ["b-synco", "b-synco", "b-synco", "b-synco"] },
+      { nom: "Accords", instrument: "ech:clavier", volume: 0.6, motifs: ["a-I-plaque", "a-I-plaque", "a-IV-plaque", "a-V-plaque"] },
     ] },
 ];
 export const modeleDe = id => MODELES.find(m => m.id === id) || null;
@@ -169,6 +169,7 @@ export function poserModele(p, modeleOuId, groupe, tonique = 0) {
   mod.lignes.forEach((l, i) => {
     let pi = choix[i]; if (!pi) pi = B.ajouterPiste(p, l.instrument, l.nom);
     else { pi.instrument = l.instrument; pi.nom = pi.nom.startsWith("Piste ") ? l.nom : pi.nom; }
+    if (l.volume != null) pi.volume = l.volume;
     l.motifs.forEach((id, k) => { const r = poserMotif(p, pi.id, m0 + k, id, tonique); if (r) refaire.add(r.son); });
   });
   return [...refaire];
