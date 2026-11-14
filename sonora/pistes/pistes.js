@@ -1,33 +1,33 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=1213718447";
-import * as Ed from "./editions.js?v=1213718447";
-import * as P from "./projet.js?v=1213718447";
-import { Stockage } from "./stockage.js?v=1213718447";
-import { creerBouton } from "./bouton.js?v=1213718447";
-import * as MI from "./midi.js?v=1213718447";
-import * as N from "./notes.js?v=1213718447";
-import { Rouleau } from "./rouleau.js?v=1213718447";
-import { PanneauPartition } from "./partition/panneau.js?v=1213718447";
-import { separer, NOMS_PARTIES } from "./separation.js?v=1213718447";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=1213718447";
-import * as BM from "./batterie_midi.js?v=1213718447";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=1213718447";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=1213718447";
-import * as INS from "./instruments.js?v=1213718447";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=1213718447";
-import * as OMR from "./omr.js?v=1213718447";
-import { creerVueBlocs } from "./blocs-ui.js?v=1213718447";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=1213718447";
-import * as MO from "./moteurs.js?v=1213718447";
-import { monterPanneaux } from "./panneaux.js?v=1213718447";
-import { monterNotions } from "./notions.js?v=1213718447";
-import { DEMOS } from "./demos.js?v=1213718447";
-import * as B from "./bibliotheque.js?v=1213718447";
-import { encoderWAV } from "../studio/wav.js?v=1213718447";
-import { ENTREES } from "../library/catalogue.js?v=1213718447";
-import { compiler } from "../src/index.js?v=1213718447";
-import { rendre } from "../src/rendu.js?v=1213718447";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=4d8a66197a";
+import * as Ed from "./editions.js?v=4d8a66197a";
+import * as P from "./projet.js?v=4d8a66197a";
+import { Stockage } from "./stockage.js?v=4d8a66197a";
+import { creerBouton } from "./bouton.js?v=4d8a66197a";
+import * as MI from "./midi.js?v=4d8a66197a";
+import * as N from "./notes.js?v=4d8a66197a";
+import { Rouleau } from "./rouleau.js?v=4d8a66197a";
+import { PanneauPartition } from "./partition/panneau.js?v=4d8a66197a";
+import { separer, NOMS_PARTIES } from "./separation.js?v=4d8a66197a";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=4d8a66197a";
+import * as BM from "./batterie_midi.js?v=4d8a66197a";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=4d8a66197a";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=4d8a66197a";
+import * as INS from "./instruments.js?v=4d8a66197a";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=4d8a66197a";
+import * as OMR from "./omr.js?v=4d8a66197a";
+import { creerVueBlocs } from "./blocs-ui.js?v=4d8a66197a";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=4d8a66197a";
+import * as MO from "./moteurs.js?v=4d8a66197a";
+import { monterPanneaux } from "./panneaux.js?v=4d8a66197a";
+import { monterNotions } from "./notions.js?v=4d8a66197a";
+import { DEMOS } from "./demos.js?v=4d8a66197a";
+import * as B from "./bibliotheque.js?v=4d8a66197a";
+import { encoderWAV } from "../studio/wav.js?v=4d8a66197a";
+import { ENTREES } from "../library/catalogue.js?v=4d8a66197a";
+import { compiler } from "../src/index.js?v=4d8a66197a";
+import { rendre } from "../src/rendu.js?v=4d8a66197a";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -64,7 +64,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=1213718447"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=4d8a66197a"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -529,7 +529,17 @@ $("rl-octave-plus").onclick = () => rouleau.transposer(12); $("rl-octave-moins")
 $("rl-tout").onclick = () => rouleau.toutChoisir(); $("rl-copier").onclick = () => rouleau.copier(); $("rl-coller").onclick = () => { if (!rouleau.coller()) message("Rien à coller : choisis des notes puis copie-les."); }; $("rl-dupliquer").onclick = () => rouleau.dupliquer();
 $("rl-tonique").onchange = $("rl-mode").onchange = () => rouleau.reglerGamme($("rl-tonique").value, $("rl-mode").value);
 // Un clip de notes vide, posé au curseur sur la piste choisie, avec l'instrument du clavier : on écrit les notes dans le piano roll au lieu de les jouer.
-vueBlocs = creerVueBlocs({ $, P, INS, etat, esc, message, changer, afficherPistes: afficher, ouvrirRouleau, fermerRouleau, remettreAJourMidi, rouleauOuvert: () => !$("rouleau").hidden });
+// L'écoute d'un motif avant de le poser : ses notes rendues par l'instrument de la ligne, jouées une fois, sans rien changer au projet.
+let motifEnCours = null;
+function arreterMotif() { if (motifEnCours) { const l = motifEnCours; motifEnCours = null; try { l.onended = null; l.stop(); } catch (_) { /* déjà arrêté */ } } }
+async function ecouterMotif(notes, temps, instrumentId) {
+  arreterMotif(); if (etat.lecture && !etat.enreg) arreter();
+  const cat = INS.catalogue(), e = cat.find(x => x.id === instrumentId) || cat.find(x => x.id === "ech:clavier"), ctx = contexte();
+  const inst = await INS.charger(e, ctx), canaux = audioDeNotes({ midi: { notes, temps } }, inst, etat.projet.tempo);
+  const b = ctx.createBuffer(canaux.length, canaux[0].length, SR_MIDI); canaux.forEach((c, i) => b.copyToChannel(c, i));
+  const src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination); src.onended = () => { if (motifEnCours === src) motifEnCours = null; }; motifEnCours = src; src.start();
+}
+vueBlocs = creerVueBlocs({ $, P, INS, etat, esc, message, changer, afficherPistes: afficher, ouvrirRouleau, fermerRouleau, remettreAJourMidi, rouleauOuvert: () => !$("rouleau").hidden, ecouterMotif, arreterMotif });
 document.addEventListener("click", e => { if (e.target.closest("#b-blocs")) vueBlocs.montrer(true); else if (e.target.closest("#bl-retour")) vueBlocs.montrer(false); });
 try { if (localStorage.getItem("sonora:pistes:blocs") === "1") vueBlocs.montrer(true); } catch (_) { /* pas de stockage : on reste en vue pistes */ }
 $("b-clip-notes").onclick = async () => {

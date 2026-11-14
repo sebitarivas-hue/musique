@@ -1,7 +1,7 @@
 // MIDI dans SONORA Pistes : jouer un instrument de la Library au clavier MIDI ou au clavier de l'ordinateur, enregistrer les notes, les rendre en clip audio sur une piste.
 // Sans DOM : testé dans Node. Le rendu est celui du noyau SONORA (le même que l'export de Pistes et du Studio) : ce qu'on entend à l'écran est ce qui est mis sur la piste.
-import { frequenceMidi } from "../studio/midi.js?v=1213718447";
-import { rendre } from "../src/rendu.js?v=1213718447";
+import { frequenceMidi } from "../studio/midi.js?v=4d8a66197a";
+import { rendre } from "../src/rendu.js?v=4d8a66197a";
 
 // Le clavier de l'ordinateur comme un petit clavier de piano : la rangée du milieu (Q S D F G H J K L M) pour les touches blanches, celle du dessus pour les noires.
 // Z et X descendent ou montent d'une octave. La touche donne un écart en demi-tons depuis le do de l'octave courante.
