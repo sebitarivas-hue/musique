@@ -1,15 +1,15 @@
 // SONORA Studio : l'interface de programmation. Elle ne calcule aucun son : elle compile (Worker), envoie au moteur (AudioWorklet),
 // et affiche ce que le moteur renvoie.
-import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=c323f415b8";
-import { compiler, MODULES, MATHS } from "../src/index.js?v=c323f415b8";
-import { MOTS } from "../src/lexeur.js?v=c323f415b8";
-import { Editeur, inserer } from "./editeur.js?v=c323f415b8";
-import { formater, vers, depuis } from "./reglages-commun.js?v=c323f415b8";
-import { EXEMPLES } from "./exemples.js?v=c323f415b8";
-import { Projets } from "./projets.js?v=c323f415b8";
-import { installerCreation } from "./creation.js?v=c323f415b8";
-import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=c323f415b8";
-import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=c323f415b8";
+import { Moteur, ErreurMoteur, compilerDansWorker } from "../src/moteur.js?v=b0bba24802";
+import { compiler, MODULES, MATHS } from "../src/index.js?v=b0bba24802";
+import { MOTS } from "../src/lexeur.js?v=b0bba24802";
+import { Editeur, inserer } from "./editeur.js?v=b0bba24802";
+import { formater, vers, depuis } from "./reglages-commun.js?v=b0bba24802";
+import { EXEMPLES } from "./exemples.js?v=b0bba24802";
+import { Projets } from "./projets.js?v=b0bba24802";
+import { installerCreation } from "./creation.js?v=b0bba24802";
+import { dessinerOscillo, dessinerSpectre, picHz } from "./visuels.js?v=b0bba24802";
+import { construireGraphe, dessinerGraphe } from "./graphe-visuel.js?v=b0bba24802";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
