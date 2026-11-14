@@ -1,9 +1,9 @@
 // TIMBRE : la salle de jeux de l'oreille. Six jeux, de vrais enregistrements de la banque du site, des questions tirées au hasard à chaque partie
 // (deux élèves côte à côte n'ont jamais la même série). La logique pure est dans jeu_logique.js, testée dans Node.
-import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=508eaef1fd";
-import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=508eaef1fd";
-import { preparer, mixer } from "../harmonie/echantillons.js?v=508eaef1fd";
-import { monter } from "./scene.js?v=508eaef1fd";
+import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=3c9c8dbe0a";
+import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=3c9c8dbe0a";
+import { preparer, mixer } from "../harmonie/echantillons.js?v=3c9c8dbe0a";
+import { monter } from "./scene.js?v=3c9c8dbe0a";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -66,7 +66,7 @@ const FX = (() => {
   function boucle() { g.clearRect(0, 0, innerWidth, innerHeight);
     for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; p.vy += .22; p.x += p.vx; p.y += p.vy; p.v -= p.u; if (p.v <= 0) { P.splice(i, 1); continue; } g.globalAlpha = Math.min(1, p.v * 1.6); g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, p.r * p.v + 1, 0, 6.3); g.fill(); }
     g.globalAlpha = 1; if (P.length) requestAnimationFrame(boucle); else actif = false; }
-  return { eclat(x, y, couleurs, n = 26, force = 7) { if (reduit) return; for (let i = 0; i < n; i++) { const a = rnd() * 6.3, f = force * (.4 + rnd()); P.push({ x, y, vx: Math.cos(a) * f, vy: Math.sin(a) * f - 3, r: 3 + rnd() * 5, v: 1, u: .014 + rnd() * .02, c: pioche(couleurs) }); } if (!actif) { actif = true; requestAnimationFrame(boucle); } },
+  return { eclat(x, y, couleurs, n = 26, force = 7) { if (reduit || TROISD && App.ecran === "partie") return; for (let i = 0; i < n; i++) { const a = rnd() * 6.3, f = force * (.4 + rnd()); P.push({ x, y, vx: Math.cos(a) * f, vy: Math.sin(a) * f - 3, r: 3 + rnd() * 5, v: 1, u: .014 + rnd() * .02, c: pioche(couleurs) }); } if (!actif) { actif = true; requestAnimationFrame(boucle); } },
     pluie(couleurs) { for (let i = 0; i < 6; i++) setTimeout(() => this.eclat(innerWidth * (.15 + rnd() * .7), innerHeight * (.2 + rnd() * .3), couleurs, 22, 9), i * 160); } };
 })();
 const centre = el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
@@ -78,6 +78,30 @@ const COULEURS_FETE = ["#ffc400", "#ff3d7f", "#22d3ee", "#b8f400", "#fff"];
 /* ---------- Le monde en 3D, derrière tout (sans WebGL, le fond reste un dégradé de nuit) ---------- */
 const Monde = monter($("monde"), { couleurs: MODES.map(m => m.k) }) || { choisir() {}, son() {}, fete() {}, redessiner() {} };
 if (!Monde.arreter) document.body.classList.add("sans-3d");
+const TROISD = !!Monde.ancres; if (TROISD) document.body.classList.add("trois-d");
+/* Le jeu en 3D : chaque bouton de la partie porte data-ancre, l'identifiant de son objet sur la place. Les boutons restent de vrais boutons (clavier, lecteurs d'écran),
+   transparents et posés exactement sur leur objet ; un observateur recopie leurs états (joue, juste, faux, retourné, trouvé) sur l'objet 3D. Sans WebGL, le jeu reste à plat. */
+const ETATS = [["ok", "ok"], ["ko", "ko"], ["trouvee", "trouve"], ["joue", "joue"], ["vue", "vue"], ["fondu", "fondu"], ["attente", "attente"]];
+let OBS = null;
+function troisD(defs, avecSource = false) {
+  if (!TROISD) return; Monde.pieces(defs, avecSource); const info = Object.fromEntries(defs.map(d => [d.id, d])); if (OBS) OBS.disconnect();
+  const maj = el => { const id = el.dataset.ancre, d = info[id]; if (!d) return; const e = (ETATS.find(([c]) => el.classList.contains(c)) || [0, "normal"])[1];
+    if (el._e !== e) { if ((e === "ok" || e === "trouve") && el._e !== "ok" && el._e !== "trouve") Monde.eclat(id, e === "ok" ? "#2bd47d" : "#ffd23f"); if (e === "trouve" && d.revele) Monde.image(id, d.revele.url, d.revele.lettre); el._e = e; Monde.piece(id, e); }
+    if (d.forme === "note") { const m = /translateY\((-?[\d.]+)px\)/.exec(el.style.transform || ""); Monde.hauteur(id, m ? -parseFloat(m[1]) / 9 : 0); } };
+  OBS = new MutationObserver(ms => ms.forEach(m => m.target.dataset && m.target.dataset.ancre && maj(m.target)));
+  document.querySelectorAll("#zone [data-ancre]").forEach(el => { el._e = null; maj(el); OBS.observe(el, { attributes: true, attributeFilter: ["class", "style"] }); });
+  ancrer();
+}
+// Pose chaque bouton sur son objet, à chaque image. Les objets ne bougent plus une fois la caméra arrivée : les boutons restent immobiles.
+function ancrer() {
+  cancelAnimationFrame(App.raf3d); if (!TROISD) return;
+  const tic = () => { if (App.ecran !== "partie") return; const A = Monde.ancres();
+    document.querySelectorAll("[data-ancre]").forEach(el => { const a = A[el.dataset.ancre]; if (!a) { el.style.visibility = "hidden"; return; } const t = Math.round(Math.max(64, Math.min(220, a.s))), x = Math.round(a.x - t / 2), y = Math.round(a.y - t / 2);
+      if (el._x !== x || el._y !== y || el._t !== t) { el._x = x; el._y = y; el._t = t; el.style.left = x + "px"; el.style.top = y + "px"; el.style.width = el.style.height = t + "px"; } el.style.visibility = ""; });
+    App.raf3d = requestAnimationFrame(tic); };
+  tic();
+}
+const couleurDe = id => parUnivers(TOUS.find(t => t.id === id).univers).couleurs[0], photoUrl = i => i.photo ? "../orchestre/photos/" + i.photo : null;
 
 /* ---------- L'application ---------- */
 const App = { ecran: "accueil", id: 0, mode: null, etat: "", q: null, score: 0, relance: null, st: null };
@@ -118,14 +142,14 @@ function selectionner(id, lancer) {
   $("lancer").onclick = () => { contexte(); LANCER[m.id](); };
 }
 function accueil(vers) {
-  arreter(); App.id++; document.body.classList.remove("en-jeu");
+  arreter(); App.id++; Monde.jeu && Monde.jeu(false); document.body.classList.remove("en-jeu");
   $("affiches").innerHTML = MODES.map(m => `<button type="button" class="affiche" role="listitem" data-mode="${m.id}" aria-pressed="false" style="--k:${m.k};--ktx:${m.tx || "#fff"}">${m.g}<b>${esc(m.nom)}</b></button>`).join("");
   majJoueur(); montrer("accueil"); App.choisi = null; selectionner(mode(vers) ? vers : (App.mode && App.mode.id) || "quiz");
 }
 
 /* ---------- Qui joue ? : les univers et leurs niveaux ---------- */
 function ecranNiveaux(uid) {
-  document.body.classList.add("en-jeu"); Monde.choisir(0);
+  document.body.classList.add("en-jeu"); Monde.choisir(0); Monde.jeu && Monde.jeu(false);
   const j = lire(), u = parUnivers(uid || App.univers || "orchestre"); App.univers = u.id; teinte(mode("quiz").k);
   $("onglets").innerHTML = UNIVERS.map(x => `<button type="button" role="tab" aria-selected="${x.id === u.id}" data-u="${x.id}">${esc(x.nom)}</button>`).join("");
   $("niveaux").innerHTML = NIVEAUX.map(n => { const ouv = niveauOuvert(j.etoiles, u.id, n.n), e = j.etoiles[`${u.id}:${n.n}`] || 0, m = j.meilleur[`quiz:${u.id}:${n.n}`];
@@ -135,7 +159,7 @@ function ecranNiveaux(uid) {
 
 /* ---------- La coque d'une partie : en-tête, chrono, zone ---------- */
 function ouvrirPartie(m, info) {
-  arreter(); contexte(); App.id++; App.mode = m; App.etat = "prepare"; App.score = 0; App.q = null; teinte(m.k); Monde.choisir(MODES.indexOf(m)); document.body.classList.add("en-jeu");
+  arreter(); contexte(); App.id++; App.mode = m; App.etat = "prepare"; App.score = 0; App.q = null; teinte(m.k); Monde.choisir(MODES.indexOf(m)); Monde.jeu && Monde.jeu(true, m.k); document.body.classList.add("en-jeu");
   $("hud-score").textContent = "0"; $("hud-info").textContent = info || m.nom; $("hud-vies").innerHTML = ""; $("chrono").className = "chrono"; $("chrono-barre").style.transform = "scaleX(1)";
   $("ecran-partie").classList.remove("repondu"); $("zone").innerHTML = `<p class="consigne">Les instruments se préparent…</p>`; montrer("partie"); return App.id;
 }
@@ -164,8 +188,9 @@ function jeuQuiz({ survie, univers, niveau }) {
     if (survie) { do { q = creerQuestions(pool, prm, rnd, 1)[0]; } while (q.id === st.dernier); } else q = st.qs[st.n];
     st.dernier = q.id; App.q = q; App.etat = "ecoute"; const i = inst(q.id);
     $("hud-info").textContent = survie ? `Son ${st.n + 1}` : `Son ${st.n + 1} sur ${st.qs.length}`;
-    $("zone").innerHTML = `<p class="consigne">Qui joue ?</p><button type="button" class="orbe" id="orbe" disabled aria-label="Réécouter le son"><canvas id="orbe-cv" width="460" height="460"></canvas><span class="ico">${HP}</span></button>
-      <div class="reponses" id="reponses" role="group" aria-label="Réponses">${q.choix.map((id, k) => { const c = inst(id); return `<button type="button" class="rep attente" data-id="${id}" disabled aria-keyshortcuts="${k + 1}">${photoDe(c)}<span>${esc(c.nom)}</span></button>`; }).join("")}</div>`;
+    $("zone").innerHTML = `<p class="consigne">Qui joue ?</p><button type="button" class="orbe" id="orbe" data-ancre="source" disabled aria-label="Réécouter le son"><canvas id="orbe-cv" width="460" height="460"></canvas><span class="ico">${HP}</span></button>
+      <div class="reponses" id="reponses" role="group" aria-label="Réponses">${q.choix.map((id, k) => { const c = inst(id); return `<button type="button" class="rep attente" data-id="${id}" data-ancre="${id}" disabled aria-keyshortcuts="${k + 1}">${photoDe(c)}<span>${esc(c.nom)}</span></button>`; }).join("")}</div>`;
+    troisD(q.choix.map(id => { const c = inst(id); return { id, forme: "totem", couleur: couleurDe(id), image: photoUrl(c) }; }), true);
     $("orbe").onclick = async () => { if (App.etat !== "attente") return; $("orbe").disabled = true; await jouer(await tampon(i.banque, q.note)); if (vivant(moi) && App.etat === "attente") $("orbe").disabled = false; };
     $("reponses").onclick = e => { const b = e.target.closest(".rep"); if (b && !b.disabled) repondre(b.dataset.id, b); };
     const buf = await tampon(i.banque, q.note); if (!vivant(moi) || App.q !== q) return;
@@ -202,8 +227,9 @@ function jeuIntrus() {
     if (!vivant(moi) || App.etat !== "ecoute") return false; App.etat = "attente"; pads.forEach(p => p.disabled = false); $("rejouer-trio").disabled = false; return true; }
   async function manche() {
     if (!vivant(moi)) return; r = creerIntrus(TOUS, st.n / MANCHES, rnd); App.q = r; $("hud-info").textContent = `Manche ${st.n + 1} sur ${MANCHES}`;
-    $("zone").innerHTML = `<p class="consigne">Lequel n'est pas comme les deux autres ?</p><p class="aide">Les trois jouent la même note.</p><div class="trio">${[1, 2, 3].map(k => `<button type="button" class="pad" data-k="${k - 1}" disabled aria-label="Son ${k}">${k}<small></small></button>`).join("")}</div><button type="button" class="btn sombre" id="rejouer-trio" disabled>Réécouter les trois</button>`;
+    $("zone").innerHTML = `<p class="consigne">Lequel n'est pas comme les deux autres ?</p><p class="aide">Les trois jouent la même note.</p><div class="trio">${[1, 2, 3].map(k => `<button type="button" class="pad" data-k="${k - 1}" data-ancre="p${k - 1}" disabled aria-label="Son ${k}">${k}<small></small></button>`).join("")}</div><button type="button" class="btn sombre" id="rejouer-trio" disabled>Réécouter les trois</button>`;
     const a = inst(r.majorite), b = inst(r.intrus); bufs = await Promise.all([tampon(a.banque, r.note, 1.1), tampon(b.banque, r.note, 1.1)]); if (!vivant(moi) || App.q !== r) return;
+    troisD([0, 1, 2].map(k => ({ id: "p" + k, forme: "tambour", couleur: m.k })));
     $("zone").querySelector(".trio").onclick = e => { const p = e.target.closest(".pad"); if (p && !p.disabled) repondre(+p.dataset.k, p); };
     $("rejouer-trio").onclick = () => { if (App.etat === "attente") sequence(); };
     if (await sequence()) Chrono.lancer(14, () => repondre(-1, null));
@@ -224,9 +250,10 @@ function jeuIntrus() {
 function jeuHautBas() {
   const m = mode("hautbas"), moi = ouvrirPartie(m, "45 secondes"), st = App.st = { serie: 0, bonnes: 0, total: 0, serieMax: 0, lance: false }; App.relance = jeuHautBas;
   const i = inst(pioche(["piano", "marimba", "vibraphone", "harpe", "guitare-folk", "flutes", "violons1"])); let r;
-  $("zone").innerHTML = `<p class="consigne">La deuxième note est…</p><p class="aide">${esc(i.nom)}. Flèches du clavier ou glisse vers le haut ou le bas.</p><div class="duo-notes" aria-hidden="true"><i id="n1"></i><i id="n2" class="mystere"></i></div><p class="serie" id="serie-hb" aria-live="polite"></p>
+  $("zone").innerHTML = `<p class="consigne">La deuxième note est…</p><p class="aide">${esc(i.nom)}. Flèches du clavier ou glisse vers le haut ou le bas.</p><div class="duo-notes" aria-hidden="true"><i id="n1" data-ancre="n1"></i><i id="n2" data-ancre="n2" class="mystere"></i></div><p class="serie" id="serie-hb" aria-live="polite"></p>
     <div class="haut-bas"><button type="button" id="b-haut" disabled>${FL_HAUT}Plus haute</button><button type="button" id="b-bas" disabled>${FL_BAS}Plus basse</button></div>`;
   const B = { true: $("b-haut"), false: $("b-bas") }, actif = on => { B.true.disabled = B.false.disabled = !on; };
+  troisD([{ id: "n1", forme: "note", couleur: "#35e0ff" }, { id: "n2", forme: "note", couleur: m.k }]);
   async function tour() {
     if (!vivant(moi)) return; App.etat = "ecoute"; actif(false); B.true.className = B.false.className = ""; r = creerHautBas(i, st.serie, rnd); App.q = r;
     const [a, b] = await Promise.all([tampon(i.banque, r.a, .42), tampon(i.banque, r.b, .42)]); if (!vivant(moi) || App.q !== r) return;
@@ -252,8 +279,8 @@ function jeuHautBas() {
 function jeuMemoire() {
   const m = mode("memoire"), moi = ouvrirPartie(m), st = App.st = { seq: [], pos: 0, tours: 0 }; App.relance = jeuMemoire; $("chrono").classList.add("sans");
   const i = inst(pioche(["marimba", "piano", "vibraphone", "kalimba", "harpe", "glockenspiel"])), NOTES = [60, 64, 67, 72], P = ["#22d3ee", "#ff3d7f", "#b8f400", "#ff8a00"]; let bufs;
-  $("zone").innerHTML = `<div class="tour"><b id="tour-n">1</b><span id="tour-t">Écoute…</span></div><div class="simon" id="simon">${P.map((c, k) => `<button type="button" data-k="${k}" style="--p:${c}" disabled aria-label="Touche ${k + 1}"></button>`).join("")}</div><p class="aide">${esc(i.nom)}. La suite gagne une note à chaque tour.</p>`;
-  const pads = [...$("simon").children], actif = on => pads.forEach(p => p.disabled = !on);
+  $("zone").innerHTML = `<div class="tour"><b id="tour-n">1</b><span id="tour-t">Écoute…</span></div><div class="simon" id="simon">${P.map((c, k) => `<button type="button" data-k="${k}" data-ancre="s${k}" style="--p:${c}" disabled aria-label="Touche ${k + 1}"></button>`).join("")}</div><p class="aide">${esc(i.nom)}. La suite gagne une note à chaque tour.</p>`;
+  const pads = [...$("simon").children], actif = on => pads.forEach(p => p.disabled = !on); troisD(P.map((c, k) => ({ id: "s" + k, forme: "cristal", couleur: c })));
   const allumer = (k, ms) => { pads[k].classList.add("joue"); jouer(bufs[k], { seul: false }); setTimeout(() => pads[k].classList.remove("joue"), ms); };
   async function tour() {
     if (!vivant(moi)) return; App.etat = "ecoute"; actif(false); st.seq = ajouterMemoire(st.seq, rnd); st.pos = 0; App.q = st.seq; $("tour-n").textContent = st.seq.length; $("tour-t").textContent = "Écoute…";
@@ -275,13 +302,14 @@ function jeuMemoire() {
 /* ---------- Jeu 6 : Paires ---------- */
 function jeuPaires() {
   const m = mode("paires"), moi = ouvrirPartie(m, "Coups : 0"), deck = creerPaires(TOUS, 6, rnd), st = App.st = { deck, ouvertes: [], trouvees: 0, coups: 0, t0: 0, verrou: true }; App.relance = jeuPaires; $("chrono").classList.add("sans"); App.q = deck;
-  $("zone").innerHTML = `<p class="consigne">Retrouve les paires à l'oreille</p><div class="paires" id="paires">${deck.map((id, k) => `<button type="button" class="carte-p" data-k="${k}" aria-label="Carte ${k + 1}"><span class="dos">${HP}</span><span class="face">${HP}</span></button>`).join("")}</div>`;
+  $("zone").innerHTML = `<p class="consigne">Retrouve les paires à l'oreille</p><div class="paires" id="paires">${deck.map((id, k) => `<button type="button" class="carte-p" data-k="${k}" data-ancre="c${k}" aria-label="Carte ${k + 1}"><span class="dos">${HP}</span><span class="face">${HP}</span></button>`).join("")}</div>`;
   const cartes = [...$("paires").children], bufs = {};
+  troisD(deck.map((id, k) => { const i = inst(id); return { id: "c" + k, forme: "carte", couleur: m.k, revele: { url: photoUrl(i), lettre: i.nom[0] } }; }));
   async function toucher(k) {
     if (!vivant(moi) || st.verrou || st.ouvertes.includes(k) || cartes[k].classList.contains("trouvee")) return; if (!st.t0) st.t0 = performance.now();
     cartes[k].classList.add("vue", "joue"); jouer(bufs[deck[k]]); setTimeout(() => cartes[k].classList.remove("joue"), 600); st.ouvertes.push(k); if (st.ouvertes.length < 2) return;
     st.verrou = true; st.coups++; $("hud-info").textContent = "Coups : " + st.coups; const [a, b] = st.ouvertes; await pause(700); if (!vivant(moi)) return;
-    if (deck[a] === deck[b]) { const i = inst(deck[a]); for (const x of [a, b]) { cartes[x].classList.add("trouvee"); cartes[x].classList.remove("vue"); cartes[x].querySelector(".face").innerHTML = `${photoDe(i)}<span>${esc(i.nom)}</span>`; cartes[x].setAttribute("aria-label", i.nom + ", paire trouvée"); }
+    if (deck[a] === deck[b]) { const i = inst(deck[a]); for (const x of [a, b]) { cartes[x].classList.add("trouvee"); cartes[x].classList.remove("vue"); cartes[x].querySelector(".face").innerHTML = `${photoDe(i)}<span>${esc(i.nom)}</span>`; cartes[x].setAttribute("aria-label", i.nom + ", paire trouvée"); cartes[x].dataset.nom = i.nom; }
       st.trouvees++; noterVu(i.id); sonJuste(st.trouvees); vibrer(18); marquer(150, cartes[b]); FX.eclat(...centre(cartes[b]), [m.k, "#fff", "#ffc400"]);
       if (st.trouvees === 6) { const s = Math.round((performance.now() - st.t0) / 1000), bonus = Math.max(0, 700 - st.coups * 30 - s * 3); marquer(bonus, null); setTimeout(() => { if (vivant(moi)) terminer({ cle: "paires", detail: `Six paires en <b>${st.coups}</b> coups et ${s} secondes.` }); }, 900); return; } }
     else { await pause(350); if (!vivant(moi)) return; cartes[a].classList.remove("vue"); cartes[b].classList.remove("vue"); }
@@ -294,7 +322,7 @@ const LANCER = { quiz: () => ecranNiveaux(), survie: () => jeuQuiz({ survie: tru
 
 /* ---------- La fin : score, record, étoiles, niveau du joueur ---------- */
 function terminer({ cle, etoiles = null, cleEtoiles = null, detail, retenir = [], suivant = null, univers = null, niveau = null }) {
-  Chrono.stop(); arreter(); clearTimeout(App.auto); const m = App.mode, score = App.score, j = lire(), avant = niveauJoueur(j.xp); App.id++;
+  Chrono.stop(); arreter(); clearTimeout(App.auto); if (OBS) OBS.disconnect(); Monde.jeu && Monde.jeu(false); const m = App.mode, score = App.score, j = lire(), avant = niveauJoueur(j.xp); App.id++;
   const record = score > (j.meilleur[cle] || 0) && score > 0; if (record) j.meilleur[cle] = score; if (m.id !== "quiz" && score > (j.meilleur[m.id] || 0)) j.meilleur[m.id] = score;
   if (cleEtoiles && etoiles > (j.etoiles[cleEtoiles] || 0)) j.etoiles[cleEtoiles] = etoiles;
   const gain = Math.max(5, Math.round(score / 10)); j.xp += gain; j.parties++; ecrire(j); const apres = niveauJoueur(j.xp), monte = apres.n > avant.n;

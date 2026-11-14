@@ -1,7 +1,7 @@
 // Le monde de TIMBRE : un petit décor en 3D, la nuit. Une île avec une place de pierre, des falaises, des montagnes au loin, de l'eau, des maisons éclairées,
 // et six grandes lanternes qui flottent : une par jeu. Le décor vit (lanternes qui montent, lucioles, étoiles), suit le doigt ou la souris, et réagit au son.
 // Tout est fabriqué ici en formes simples (aucune image, aucun modèle à télécharger). Three.js (licence MIT) est dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=508eaef1fd";
+import * as T from "./vendor/three.module.min.js?v=3c9c8dbe0a";
 
 const alea = g => () => { g |= 0; g = g + 0x6D2B79F5 | 0; let t = Math.imul(g ^ g >>> 15, 1 | g); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 
@@ -81,24 +81,127 @@ export function monter(canvas, { couleurs = ["#7c5cff", "#ff3d7f", "#0ea5e9", "#
   addEventListener("pointermove", e => bouge(e.clientX, e.clientY), { passive: true });
   addEventListener("deviceorientation", e => { if (e.gamma == null) return; etat.cx = Math.max(-1, Math.min(1, e.gamma / 30)); etat.cy = Math.max(-1, Math.min(1, (e.beta - 45) / 40)); }, { passive: true });
 
+
+  /* ---------- Le plateau : pendant une partie, la caméra descend sur la place et le jeu se joue en objets 3D ----------
+     timbre.js garde de vrais boutons (clavier, lecteurs d'écran, tests) et les pose sur les objets grâce à ancres() : on touche l'objet, c'est le bouton qui répond. */
+  const plateau = new T.Group(); scene.add(plateau);
+  const J = { on: false, k: 0, source: true, pieces: new Map(), eclats: [], couleur: new T.Color("#7c5cff") };
+  const matPierre = new T.MeshPhongMaterial({ color: 0x8f93ad, emissive: 0x15182e, flatShading: true });
+  const toile = (w, h, f) => { const c = document.createElement("canvas"); c.width = w; c.height = h; f(c.getContext("2d"), w, h); const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4; return t; };
+  const arrondi = (g, x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+  // Une carte blanche aux coins arrondis, avec la photo de l'instrument (chargée ensuite) ou son initiale.
+  function texturePhoto(url, lettre, couleur) {
+    const t = toile(256, 256, (g, w, h) => { g.fillStyle = "#fff"; arrondi(g, 6, 6, w - 12, h - 12, 34); g.fill(); g.lineWidth = 12; g.strokeStyle = couleur; g.stroke(); if (!url) { g.fillStyle = couleur; g.font = "900 150px Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(lettre || "?", w / 2, h / 2 + 8); } });
+    if (url) { const im = new Image(); im.onload = () => { const g = t.image.getContext("2d"), m = 34, k = Math.min((256 - 2 * m) / im.width, (256 - 2 * m) / im.height), w = im.width * k, h = im.height * k; g.drawImage(im, (256 - w) / 2, (256 - h) / 2, w, h); t.needsUpdate = true; relance(); }; im.src = url; }
+    return t;
+  }
+  const textureHP = couleur => toile(256, 320, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#1b2470"); gr.addColorStop(1, "#0a0f45"); g.fillStyle = gr; arrondi(g, 6, 6, w - 12, h - 12, 30); g.fill(); g.lineWidth = 10; g.strokeStyle = couleur; g.stroke();
+    g.fillStyle = "#fff"; g.beginPath(); g.moveTo(80, 130); g.lineTo(110, 130); g.lineTo(150, 95); g.lineTo(150, 225); g.lineTo(110, 190); g.lineTo(80, 190); g.closePath(); g.fill(); g.strokeStyle = "#fff"; g.lineWidth = 10; g.lineCap = "round"; g.beginPath(); g.arc(150, 160, 38, -.9, .9); g.stroke(); g.beginPath(); g.arc(150, 160, 62, -.8, .8); g.stroke(); });
+  const textureDos = couleur => toile(256, 320, (g, w, h) => { const gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, "#ffffff"); gr.addColorStop(.12, couleur); gr.addColorStop(1, "#140c3a"); g.fillStyle = gr; arrondi(g, 6, 6, w - 12, h - 12, 30); g.fill();
+    g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 8; arrondi(g, 26, 26, w - 52, h - 52, 20); g.stroke(); g.fillStyle = "rgba(255,255,255,.92)"; g.font = "900 120px Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("?", w / 2, h / 2 + 6); });
+
+  // La source du son : un cœur lumineux et trois anneaux, au fond de la place. Il enfle avec le son réellement joué.
+  const source = new T.Group(), coeurMat = new T.MeshPhongMaterial({ color: 0xffffff, emissive: 0x7c5cff, emissiveIntensity: 1.1, flatShading: true, shininess: 80 });
+  const coeur = new T.Mesh(new T.IcosahedronGeometry(1.25, 1), coeurMat); source.add(coeur); const aura = lueur(0x7c5cff, 8, .9); source.add(aura);
+  const anneaux = [0, 1, 2].map(i => { const a = new T.Mesh(new T.TorusGeometry(2 + i * .65, .07, 6, 56), new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .55, fog: false })); a.rotation.set(Math.PI / 2 + i * .55, i * .9, 0); source.add(a); return a; });
+  source.visible = false; plateau.add(source);
+
+  // Où poser n objets sur la place : une grille qui suit la forme de l'écran.
+  function disposer(n, forme) {
+    const portrait = etat.large < .8, carte = forme === "carte", note = forme === "note";
+    if (note) return [new T.Vector3(-3, 3, 1.5), new T.Vector3(3, 3, 1.5)];
+    const cols = carte ? (portrait ? 3 : 6) : portrait ? (n <= 2 ? n : n === 3 ? 3 : 2) : (n <= 4 ? n : 3), rows = Math.ceil(n / cols);
+    const sx = carte ? (portrait ? 3.4 : 3.5) : portrait ? (n === 3 ? 3.9 : 5.6) : (n >= 4 ? 4.4 : 5), sz = carte ? (portrait ? 3.9 : 4.4) : portrait ? 5.2 : 4.6;
+    return Array.from({ length: n }, (_, i) => { const r = Math.floor(i / cols), c = i % cols, nc = Math.min(cols, n - r * cols); return new T.Vector3((c - (nc - 1) / 2) * sx, .7, (r - (rows - 1) / 2) * sz + (carte ? 1.2 : 2.2)); });
+  }
+  // Les objets : socle et carte photo (réponses), tambour (l'intrus), cristal (mémoire), carte à retourner (paires), boule (plus haut, plus bas).
+  function fabriquer(d, pos) {
+    const g = new T.Group(), col = new T.Color(d.couleur || "#7c5cff"), u = { id: d.id, forme: d.forme, base: pos.clone(), etat: "normal", t: 0, mats: [], haut: 2, flip: 0, lueur: null, vis: null, y: 0 };
+    const mat = (o = {}) => { const m = new T.MeshPhongMaterial(Object.assign({ color: col, emissive: col.clone().multiplyScalar(.35), flatShading: true, shininess: 40 }, o)); m.userData.e0 = m.emissive.clone(); u.mats.push(m); return m; };
+    if (d.forme === "totem") {
+      const socle = new T.Mesh(new T.CylinderGeometry(1.25, 1.5, .8, 10), matPierre); socle.position.y = .4; g.add(socle);
+      const bague = new T.Mesh(new T.TorusGeometry(1.32, .1, 6, 28), new T.MeshBasicMaterial({ color: col })); bague.rotation.x = Math.PI / 2; bague.position.y = .82; g.add(bague);
+      const vis = new T.Group(); vis.position.y = 2.5; g.add(vis); u.vis = vis;
+      if (d.image) { const cadre = new T.Mesh(new T.BoxGeometry(3.2, 3.2, .3), mat()); vis.add(cadre); const face = new T.Mesh(new T.PlaneGeometry(2.9, 2.9), new T.MeshBasicMaterial({ map: texturePhoto(d.image, "", "#" + col.getHexString()) })); face.position.z = .17; vis.add(face); u.billboard = true; }
+      else { const c = new T.Mesh(new T.OctahedronGeometry(1.4, 0), mat({ shininess: 90 })); c.scale.set(1, 1.35, 1); vis.add(c); u.tourne = true; }
+      u.haut = 2.5;
+    } else if (d.forme === "tambour") {
+      const fut = new T.Mesh(new T.CylinderGeometry(1.6, 1.45, 1.5, 16), mat()); fut.position.y = .75; g.add(fut);
+      const peau = new T.Mesh(new T.CylinderGeometry(1.62, 1.62, .1, 24), new T.MeshPhongMaterial({ color: 0xf3e3c0, emissive: 0x3a2c10 })); peau.position.y = 1.52; g.add(peau);
+      for (let k = 0; k < 2; k++) { const c = new T.Mesh(new T.TorusGeometry(1.58 - k * .1, .07, 6, 30), new T.MeshBasicMaterial({ color: 0xffd23f })); c.rotation.x = Math.PI / 2; c.position.y = k ? .15 : 1.45; g.add(c); }
+      u.haut = 1.1;
+    } else if (d.forme === "cristal") {
+      const socle = new T.Mesh(new T.CylinderGeometry(1.4, 1.7, .6, 8), matPierre); socle.position.y = .3; g.add(socle);
+      const c = new T.Mesh(new T.OctahedronGeometry(1.35, 0), mat({ shininess: 100, emissive: col.clone().multiplyScalar(.18) })); c.scale.set(1, 1.5, 1); c.position.y = 2.4; g.add(c); u.vis = c; u.tourne = true; u.haut = 2.2;
+    } else if (d.forme === "carte") {
+      const dos = new T.MeshBasicMaterial({ map: textureDos("#" + col.getHexString()) }), face = new T.MeshBasicMaterial({ map: textureHP("#" + col.getHexString()) }), bord = new T.MeshPhongMaterial({ color: 0xffffff, emissive: 0x333355 });
+      const c = new T.Mesh(new T.BoxGeometry(2.6, .16, 3.2), [bord, bord, dos, face, bord, bord]); c.rotation.y = 0; const pivot = new T.Group(); pivot.position.y = .2; pivot.add(c); g.add(pivot); u.vis = pivot; u.matFace = face; u.couleur = "#" + col.getHexString(); u.haut = .3;
+    } else if (d.forme === "note") {
+      const b = new T.Mesh(new T.IcosahedronGeometry(1.1, 2), mat({ shininess: 90 })); g.add(b); u.vis = b; u.haut = 0;
+    }
+    const l = lueur(col, d.forme === "carte" ? 6 : 7, .0); l.position.y = u.haut; g.add(l); u.lueur = l;
+    g.position.copy(pos); g.userData = u; plateau.add(g); return g;
+  }
+  function vider() { for (const g of J.pieces.values()) { plateau.remove(g); g.traverse(o => { if (o.geometry) o.geometry.dispose(); }); } J.pieces.clear(); }
+  // Un éclat de particules en 3D : la bonne réponse explose de lumière.
+  function eclat(pos, couleur, n = 70) {
+    const p = new Float32Array(n * 3), v = []; for (let i = 0; i < n; i++) { p[i * 3] = pos.x; p[i * 3 + 1] = pos.y; p[i * 3 + 2] = pos.z; const a = Math.random() * 6.28, b = Math.random() * 1.4 + .2, f = 6 + Math.random() * 9; v.push([Math.cos(a) * Math.cos(b) * f, Math.sin(b) * f + 3, Math.sin(a) * Math.cos(b) * f]); }
+    const g = new T.BufferGeometry(); g.setAttribute("position", new T.BufferAttribute(p, 3));
+    const pts = new T.Points(g, new T.PointsMaterial({ map: H, color: new T.Color(couleur), size: 1.1, transparent: true, blending: T.AdditiveBlending, depthWrite: false })); scene.add(pts); J.eclats.push({ pts, v, vie: 1 }); relance();
+  }
+  const VERT = new T.Color(0x2bd47d), ROUGE = new T.Color(0xff4d5e), BLANC = new T.Color(0xffffff);
+  const camMonde = new T.Vector3(), viseMonde = new T.Vector3(), camJeu = new T.Vector3(), viseJeu = new T.Vector3(), vise = new T.Vector3(), proj = new T.Vector3();
+  function poserCameraJeu() { const portrait = etat.large < .8; if (portrait) { camJeu.set(0, 21, 12.5); viseJeu.set(0, 0, .2); } else { camJeu.set(0, 14.5, 17); viseJeu.set(0, 1.2, .6); } }
+  function animerPlateau(s, dt) {
+    place.material.emissive.setHex(0x4a3a18).multiplyScalar(1 - .75 * J.k); place.material.color.setHex(0xe9d9b0).multiplyScalar(1 - .45 * J.k);
+    J.k = reduit ? (J.on ? 1 : 0) : Math.max(0, Math.min(1, J.k + (J.on ? 1 : -1) * dt / .9));   // 0,9 s pour descendre sur la place, quelle que soit la vitesse de l'appareil
+    source.visible = J.k > .05 && J.source; const lv = etat.niveau; if (etat.large < .8) source.position.set(0, 4.6 + Math.sin(s * 1.2) * .25, -6.5); else source.position.set(0, 3.6 + Math.sin(s * 1.2) * .25, -3.6); coeur.scale.setScalar(1 + lv * .7); coeur.rotation.y = s * .6; coeur.rotation.x = s * .3;
+    coeurMat.emissive.copy(J.couleur); coeurMat.emissiveIntensity = .9 + lv * 1.6; aura.material.color.copy(J.couleur); aura.scale.setScalar(8 + lv * 10); anneaux.forEach((a, i) => { a.rotation.z = s * (.3 + i * .2); a.scale.setScalar(1 + lv * (.25 + i * .12)); a.material.opacity = .25 + lv * .6; });
+    for (const g of J.pieces.values()) { const u = g.userData, age = s - u.t; let y = 0, sx = 0, k = 1, glow = 0, e = null;
+      if (u.etat === "joue") { k = 1.22 + Math.sin(s * 14) * .04; glow = 1; e = BLANC; } else if (u.etat === "ok") { y = Math.min(1.4, age * 4); k = 1.15; glow = 1; e = VERT; } else if (u.etat === "ko") { sx = Math.sin(age * 40) * Math.max(0, .5 - age) * .9; glow = .8; e = ROUGE; }
+      else if (u.etat === "fondu" || u.etat === "attente") { k = u.etat === "fondu" ? .82 : .92; } else if (u.etat === "trouve") { glow = .6; e = VERT; }
+      if (u.forme === "carte") { const vise = u.etat === "vue" || u.etat === "trouve" || u.etat === "joue" ? Math.PI : 0; u.flip += (vise - u.flip) * (reduit ? 1 : .18); u.vis.rotation.z = u.flip; y += Math.sin(u.flip) * 1.4; if (u.etat === "joue") k = 1.06; }
+      if (u.forme === "note") { y += u.y; }
+      g.position.set(u.base.x + sx, u.base.y + y + (u.forme === "carte" || u.forme === "note" ? 0 : Math.sin(s * 1.6 + u.base.x) * .08), u.base.z); g.scale.setScalar(k);
+      if (u.vis && u.tourne) u.vis.rotation.y = s * .8; if (u.billboard) u.vis.quaternion.copy(cam.quaternion);
+      for (const m of u.mats) { m.emissive.copy(e ? m.userData.e0.clone().lerp(e, .85) : m.userData.e0); if (u.etat === "fondu" || u.etat === "attente") m.emissive.multiplyScalar(.35); }
+      u.lueur.material.opacity += ((glow ? .55 + .35 * glow : 0) - u.lueur.material.opacity) * .2; if (e) u.lueur.material.color.copy(e); }
+    for (let i = J.eclats.length - 1; i >= 0; i--) { const E = J.eclats[i], P = E.pts.geometry.attributes.position; E.vie -= dt * .9; E.v.forEach((v, k) => { v[1] -= 14 * dt; P.array[k * 3] += v[0] * dt; P.array[k * 3 + 1] += v[1] * dt; P.array[k * 3 + 2] += v[2] * dt; }); P.needsUpdate = true; E.pts.material.opacity = Math.max(0, E.vie);
+      if (E.vie <= 0) { scene.remove(E.pts); E.pts.geometry.dispose(); E.pts.material.dispose(); J.eclats.splice(i, 1); } }
+  }
+
   let t0 = performance.now(), actif = true, raf = 0, dernier = 0;
   function image(t) {
     const s = (t - t0) / 1000, dt = Math.min(.05, (t - dernier) / 1000 || .016); dernier = t;
     etat.vx += (etat.cx - etat.vx) * .05; etat.vy += (etat.cy - etat.vy) * .05; etat.lacet += (etat.cibleLacet - etat.lacet) * .06; etat.niveau *= .9; etat.fete *= .96;
     const portrait = etat.large < .8, d = portrait ? 44 : 38, a = etat.lacet + etat.vx * .16 + Math.sin(s * .12) * .05;
-    cam.position.set(Math.sin(a) * d, (portrait ? 13 : 10) - etat.vy * 2.4 + Math.sin(s * .3) * .5, Math.cos(a) * d); cam.lookAt(Math.sin(etat.lacet) * -6, portrait ? 9 : 7, -8);
-    lanternes.forEach((g, i) => { const u = g.userData; u.k += (u.cible - u.k) * .08; g.position.set(u.x + Math.sin(s * .4 + u.ph) * .8, u.y + Math.sin(s * .7 + u.ph) * .9 + etat.fete * (3 + i % 3), u.z); g.rotation.y = Math.sin(s * .5 + u.ph) * .3; g.scale.setScalar(u.k * (1 + etat.niveau * .25)); u.l.material.opacity = .45 + .4 * (u.k - .7) + etat.niveau * .5; });
+    camMonde.set(Math.sin(a) * d, (portrait ? 13 : 10) - etat.vy * 2.4 + Math.sin(s * .3) * .5, Math.cos(a) * d); viseMonde.set(Math.sin(etat.lacet) * -6, portrait ? 9 : 7, -8);
+    animerPlateau(s, dt); poserCameraJeu(); const m = J.k * J.k * (3 - 2 * J.k);
+    cam.position.copy(camMonde).lerp(camJeu, m); vise.copy(viseMonde).lerp(viseJeu, m); cam.lookAt(vise);
+    lanternes.forEach((g, i) => { const u = g.userData; u.k += (u.cible - u.k) * .08; g.position.set(u.x + Math.sin(s * .4 + u.ph) * .8, u.y + Math.sin(s * .7 + u.ph) * .9 + etat.fete * (3 + i % 3) + J.k * 9, u.z); g.rotation.y = Math.sin(s * .5 + u.ph) * .3; g.scale.setScalar(u.k * (1 + etat.niveau * .25)); u.l.material.opacity = .45 + .4 * (u.k - .7) + etat.niveau * .5; });
     petites.forEach(p => { p.position.y += p.userData.v * dt * (1 + etat.fete * 4); p.position.x = p.userData.x + Math.sin(s * .2 + p.userData.ph) * 6; if (p.position.y > 130) p.position.y = 4; });
     const P = lg.attributes.position; for (let i = 0; i < NL; i++) { P.array[i * 3 + 1] += Math.sin(s * 1.3 + lph[i]) * .012; P.array[i * 3] += Math.cos(s * .7 + lph[i]) * .01; } P.needsUpdate = true; lucioles.material.opacity = .65 + Math.sin(s * 2) * .25;
-    feu.intensity = 240 + Math.sin(s * 7) * 16 + etat.niveau * 500; cristaux.forEach((c, i) => c.material.opacity = .4 + Math.sin(s * 1.5 + i) * .15 + etat.niveau * .4); anneau.rotation.z = s * .05;
+    feu.intensity = (240 + Math.sin(s * 7) * 16) * (1 - .65 * J.k) + etat.niveau * 500; cristaux.forEach((c, i) => c.material.opacity = .4 + Math.sin(s * 1.5 + i) * .15 + etat.niveau * .4); anneau.rotation.z = s * .05;
     rendu.render(scene, cam);
   }
-  function boucle(t) { raf = 0; if (!actif || document.hidden) return; image(t); if (!reduit && !calme) raf = requestAnimationFrame(boucle); }
+  function boucle(t) { raf = 0; if (!actif || document.hidden) return; image(t); if ((!reduit && !calme) || J.eclats.length || (J.k > 0 && J.k < 1)) raf = requestAnimationFrame(boucle); }
   const relance = () => { if (!raf) raf = requestAnimationFrame(boucle); }; document.addEventListener("visibilitychange", relance); relance();
   return {
     choisir(i) { lanternes.forEach((g, k) => g.userData.cible = i == null ? 1 : k === i ? 1.45 : .78); etat.cibleLacet = i == null ? 0 : -(i - 2.5) * .11; relance(); },
     son(n) { etat.niveau = Math.max(etat.niveau, Math.min(1, n)); }, fete() { etat.fete = 1; relance(); }, redessiner: relance,
     pause(v) { actif = !v; if (actif) relance(); },
+    /* Le plateau de jeu */
+    jeu(on, couleur) { J.on = !!on; if (couleur) J.couleur.set(couleur); if (!on) vider(); relance(); },
+    pieces(defs, avecSource = true) { J.source = !!avecSource; vider(); const P = disposer(defs.length, defs[0] && defs[0].forme); defs.forEach((d, i) => J.pieces.set(d.id, fabriquer(d, P[i]))); relance(); },
+    piece(id, e) { const g = J.pieces.get(id); if (!g) return; if (g.userData.etat !== e) { g.userData.etat = e; g.userData.t = (performance.now() - t0) / 1000; } relance(); },
+    toutes(e) { for (const id of J.pieces.keys()) this.piece(id, e); },
+    image(id, url, lettre) { const g = J.pieces.get(id); if (!g || !g.userData.matFace) return; g.userData.matFace.map = texturePhoto(url, lettre, g.userData.couleur); g.userData.matFace.needsUpdate = true; relance(); },
+    hauteur(id, y) { const g = J.pieces.get(id); if (g) { g.userData.y = y; relance(); } },
+    eclat(id, couleur) { const g = J.pieces.get(id); if (g) { eclat(new T.Vector3(g.userData.base.x, g.userData.base.y + g.userData.haut, g.userData.base.z), couleur || "#2bd47d"); } },
+    /* Où sont les objets à l'écran (pour y poser les boutons) : centre et taille, à partir de leur position de repos. Vide tant que la caméra n'est pas arrivée. */
+    ancres() { const o = {}; if (J.k < 1) return o; cam.updateMatrixWorld(); const r = canvas.getBoundingClientRect(), dans = v => { v.project(cam); return [(v.x + 1) / 2 * r.width + r.left, (1 - v.y) / 2 * r.height + r.top]; };
+      for (const [id, g] of J.pieces) { const u = g.userData, c = u.base.clone(); c.y += u.forme === "note" ? 0 : u.haut * .62; const [x, y] = dans(proj.copy(c)); const [x2] = dans(proj.copy(c).add(new T.Vector3(u.forme === "carte" ? 1.3 : 1.5, 0, 0))); o[id] = { x, y, s: Math.abs(x2 - x) * 2 }; }
+      if (J.source) { const [sx, sy] = dans(proj.copy(source.position)), [sx2] = dans(proj.copy(source.position).add(new T.Vector3(2, 0, 0))); o.source = { x: sx, y: sy, s: Math.abs(sx2 - sx) * 2 }; } return o; },
     arreter() { actif = false; cancelAnimationFrame(raf); removeEventListener("resize", taille); rendu.dispose(); },
   };
 }

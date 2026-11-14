@@ -19,7 +19,7 @@ button { font: inherit; color: inherit; } a { color: inherit; } :focus-visible {
 .haut { display: flex; align-items: center; gap: 12px; padding: 10px 16px; } .haut .retour, .rond { display: grid; place-items: center; width: 46px; height: 46px; flex: none; border-radius: 16px; text-decoration: none; font-size: 1.5rem; line-height: 1; cursor: pointer; }
 .barre-cours { display: none !important; }   /* TIMBRE a son propre retour (vers l'accueil Jouer) et ses points en haut : la barre commune de SONORA ferait double emploi */
 .vers-jouer { display: inline-flex; align-items: center; min-height: 46px; padding: 0 16px; border-radius: 16px; text-decoration: none; font: 900 italic 1rem var(--f-titre); text-transform: uppercase; letter-spacing: .02em; background: linear-gradient(180deg, #2c3a9c, #1b2470); box-shadow: inset 0 2px 0 rgba(255,255,255,.22), 0 4px 0 #0c1242; } .vers-jouer:active { transform: translateY(3px); box-shadow: 0 1px 0 #0c1242; }
-.pts-cours { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 12px; border-radius: 999px; text-decoration: none; background: var(--verre); border: 2px solid var(--neon); } .pts-cours + .joueur { margin-left: 0; }
+.pts-cours { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 12px; border-radius: 999px; text-decoration: none; background: var(--verre); border: 2px solid var(--neon); } .pts-cours:not([hidden]) + .joueur { margin-left: 0; } .joueur .anneau { flex: none; }
 .pts-cours b { font: 900 1rem var(--f-titre); } .pts-cours .f { display: inline-flex; align-items: center; gap: 3px; color: #6d74a8; } .pts-cours .f svg { width: 20px; height: 20px; fill: currentColor; } .pts-cours .f.on { color: #ff7a1a; } .pts-cours .f b { color: #fff; } .pts-cours .x { font-size: .8rem; color: var(--txt2); } .pts-cours .x b { color: var(--or); }
 .joueur { margin-left: auto; }
 @media (max-width: 400px) { .joueur span { display: none; } .joueur { padding-right: 4px; } }
@@ -107,3 +107,24 @@ main { width: min(1080px, 100%); margin: 0 auto; padding: 0 16px 28px; } main:fo
 @media (min-width: 860px) { .quai { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: end; } .affiche { min-height: 124px; } .affiche .glyphe { width: 54px; height: 54px; } .affiche b { font-size: .95rem; } .reponses { grid-template-columns: repeat(3, 1fr); } .zone, .hud, .chrono { max-width: 720px; margin-left: auto; margin-right: auto; } }
 @media (max-height: 900px) and (max-width: 859px) { .casque { width: 76px; } .mot { font-size: clamp(3rem, 16vw, 4.6rem); } .affiche { min-height: 88px; } .affiche .glyphe { width: 36px; height: 36px; } .selection { padding: 12px 16px; gap: 8px; } }
 @media (prefers-reduced-motion: reduce) { .barres rect, .ecran, .rep.ok, .rep.ko, .zone.secoue, .verdict, .flottant, .etoiles-fin svg.on, .hud-score.bosse { animation: none !important; } .carte-p { transition: none; } }
+
+/* ---------- Le jeu en 3D : les objets sont sur la place, les boutons sont posés dessus (transparents), avec leur nom en dessous ---------- */
+.trois-d.en-jeu .voile { background: radial-gradient(130% 70% at 50% 52%, rgba(4,5,26,0) 35%, rgba(4,5,26,.55) 75%), linear-gradient(180deg, rgba(4,5,26,.72), rgba(4,5,26,0) 26%, rgba(4,5,26,0) 70%, rgba(4,5,26,.6)); }
+.trois-d #ecran-partie :is(.reponses, .trio, .simon, .paires, .duo-notes) { display: block; height: 0; min-height: 0; margin: 0; padding: 0; perspective: none; }
+.trois-d #ecran-partie [data-ancre] { position: fixed; z-index: 5; margin: 0; padding: 0; min-height: 0; aspect-ratio: auto; background: transparent !important; border: 0 !important; box-shadow: none !important; border-radius: 50%; color: #fff; transform: none !important; animation: none !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.trois-d #ecran-partie [data-ancre]:focus-visible { outline: 3px solid var(--jaune); outline-offset: 4px; }
+.trois-d #ecran-partie .orbe { width: auto; } .trois-d .orbe canvas { display: none; } .trois-d .orbe .ico svg { width: 34%; height: 34%; opacity: .9; }
+.trois-d .zone.secoue { animation: none; } .trois-d .rep img { display: none; }
+/* l'étiquette sous l'objet */
+.trois-d #ecran-partie .rep > span, .trois-d #ecran-partie .pad small, .trois-d #ecran-partie .carte-p.trouvee::after { position: absolute; left: 50%; top: calc(100% + 2px); transform: translateX(-50%); width: max-content; max-width: 46vw; padding: 5px 11px; border-radius: 999px; background: rgba(7,10,42,.9); border: 2px solid var(--neon); font: 800 .82rem/1.1 var(--f-txt); color: #fff; text-align: center; white-space: normal; box-shadow: 0 0 14px rgba(59,123,255,.4); pointer-events: none; }
+.trois-d #ecran-partie .rep.ok > span, .trois-d #ecran-partie .pad.ok small { background: #17a85c; border-color: #9dffc6; color: #fff; } .trois-d #ecran-partie .rep.ko > span, .trois-d #ecran-partie .pad.ko small { background: #d92840; border-color: #ffb0b9; }
+.trois-d #ecran-partie .rep.attente > span { opacity: .55; } .trois-d #ecran-partie .rep.fondu > span { opacity: .4; }
+.trois-d #ecran-partie .pad { font-size: 0; } .trois-d #ecran-partie .pad small:empty { display: none; }
+.trois-d #ecran-partie .carte-p > span { display: none; } .trois-d #ecran-partie .carte-p.trouvee::after { content: attr(data-nom); top: calc(100% - 4px); font-size: .72rem; border-color: var(--vert); }
+.trois-d #ecran-partie .duo-notes i { pointer-events: none; }
+/* dans les jeux sans orbe, les commandes et compteurs passent en bas de l'écran : les objets 3D restent dégagés au milieu */
+.trois-d #ecran-partie .haut-bas { position: fixed; z-index: 6; left: 16px; right: 16px; bottom: calc(18px + env(safe-area-inset-bottom)); width: auto; max-width: 720px; margin: 0 auto; grid-template-columns: 1fr 1fr; } .trois-d #ecran-partie .haut-bas button { min-height: 84px; font-size: 1.2rem; }
+.trois-d #ecran-partie .serie { position: fixed; z-index: 6; left: 0; right: 0; bottom: calc(118px + env(safe-area-inset-bottom)); }
+.trois-d #ecran-partie #rejouer-trio { position: fixed; z-index: 6; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom)); transform: translateX(-50%); }
+.trois-d #ecran-partie .tour { position: fixed; z-index: 6; left: 0; right: 0; bottom: calc(26px + env(safe-area-inset-bottom)); }
+.trois-d #ecran-partie .aide { display: none; }
