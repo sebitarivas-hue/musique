@@ -1,12 +1,47 @@
 // L'écran du mode blocs de SONORA Pistes (le modèle est dans blocs.js, sans DOM et testé dans Node).
 // Une grille : une ligne par instrument (une pastille de couleur que l'on touche pour changer d'instrument), une colonne par mesure, quatre mesures à la fois.
 // Toucher une case vide pose un bloc et ouvre ses notes ; toucher un bloc l'ouvre. Le piano roll et la partition existants servent d'éditeur : rien n'est doublé.
-import * as B from "./blocs.js?v=4d8a66197a";
-import * as M from "./motifs.js?v=4d8a66197a";
+import * as B from "./blocs.js?v=508eaef1fd";
+import * as M from "./motifs.js?v=508eaef1fd";
 
 // Les instruments qu'on propose en gros boutons quand on touche une pastille : les plus connus d'abord, les autres dans la liste.
 const PRINCIPAUX = [["ech:clavier", "Piano"], ["ech:guitare", "Guitare"], ["ech:basse", "Basse"], ["ech:violon", "Violon"], ["ech:souffle", "Flûte"], ["ech:trompette", "Trompette"], ["batt:reel", "Batterie"], ["ech:voix", "Voix"]];
-const COULEURS = { Claviers: "#4C9BF5", Cordes: "#FF6B57", Orchestre: "#FF6B57", Batteries: "#FF8A3D", Vents: "#3FC79A", Voix: "#F26BA3", "Percussions à hauteurs": "#FFC53D", "Percussions du monde": "#FF8A3D", "Synthés et basses": "#A86CF0", "Effets sonores": "#8E8D86" };
+
+// Les pictogrammes des instruments (traits simples, 32 x 32) : ils remplacent les mots dans les pastilles et sur les tuiles de choix.
+const SVG = d => `<svg viewBox="0 0 32 32" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
+const PICTOS = {
+  piano: SVG('<rect x="3.5" y="7" width="25" height="18" rx="2.5"/><path d="M9.7 25v-7M15.8 25v-7M21.9 25v-7"/><path d="M9 7v10M15 7v10M21 7v10" stroke-width="3.4"/>'),
+  guitare: SVG('<path d="M16 15c-3.200 0-5.500 2-5.500 4.500 0 1.600.9 2.600 2.100 3.200-1.600.600-2.600 2.100-2.600 3.800C10 28 12.700 30 16 30s6-2 6-3.500c0-1.700-1-3.200-2.600-3.800 1.200-.600 2.100-1.600 2.100-3.200C21.500 17 19.200 15 16 15z"/><circle cx="16" cy="23" r="2"/><path d="M16 15V5"/><path d="M14 1.500h4V6h-4z"/>'),
+  basse: SVG('<ellipse cx="10.5" cy="22.5" rx="5.5" ry="6"/><path d="M14.5 18 28 4M25.5 2l4.5 4.5"/><path d="M8 22.5h5"/>'),
+  violon: SVG('<path d="M16 11c-2.800 0-4.800 1.700-4.800 3.800 0 1.400.8 2.300 1.800 2.800-1.400.700-2.300 1.900-2.300 3.300C10.700 24.800 13 27 16 27s5.300-2.200 5.300-6.100c0-1.400-.9-2.600-2.300-3.300 1-.500 1.800-1.400 1.800-2.800C20.800 12.700 18.800 11 16 11z"/><path d="M16 11V6"/><circle cx="16" cy="4" r="2"/><path d="M13.300 17.500v4.500M18.700 17.500v4.500"/><path d="M13 27.500h6"/>'),
+  flute: SVG('<rect x="2" y="13.500" width="28" height="5.500" rx="2.750" transform="rotate(-14 16 16)"/><circle cx="10" cy="17.800" r=".9" fill="currentColor"/><circle cx="15" cy="16.600" r=".9" fill="currentColor"/><circle cx="20" cy="15.400" r=".9" fill="currentColor"/>'),
+  trompette: SVG('<path d="M3 13h14l11-6v18l-11-6H3z"/><path d="M8 13v7M12.500 13v7"/>'),
+  batterie: SVG('<ellipse cx="16" cy="19" rx="10" ry="4"/><path d="M6 19v5.500c0 2 4.500 3.500 10 3.500s10-1.500 10-3.500V19"/><path d="M7 4l8 11M25 4l-8 11"/>'),
+  voix: SVG('<rect x="12" y="3" width="8" height="14" rx="4"/><path d="M8 14a8 8 0 0 0 16 0M16 22v6M11 28h10"/>'),
+  onde: SVG('<path d="M2 16c3-9 5-9 7 0s4 9 7 0 4-9 7 0 3 9 7 0"/>'),
+  note: SVG('<path d="M12 24V7l13-3v16"/><circle cx="8.500" cy="24" r="3.500"/><circle cx="21.500" cy="20" r="3.500"/>'),
+};
+const HP_ON = SVG('<path d="M4 12h5l7-6v20l-7-6H4z"/><path d="M21 11c2.500 3 2.500 7 0 10M25 7.500c4.500 5 4.500 12 0 17"/>');
+const HP_OFF = SVG('<path d="M4 12h5l7-6v20l-7-6H4z"/><path d="M21 12l7 8M28 12l-7 8"/>');
+const PLAY = SVG('<path d="M9 5l17 11L9 27z" fill="currentColor"/>');
+const PLUS = SVG('<path d="M16 6v20M6 16h20"/>');
+// La sorte d'un instrument d'après son identifiant : elle donne le pictogramme et la couleur de sa ligne (une couleur par sorte, pour qu'on distingue les lignes d'un coup d'œil).
+export function sorteDe(id) {
+  const i = String(id || "");
+  if (i.startsWith("batt:")) return "batterie";
+  if (/^ech:(contrebasse|basse)|^syn:basse|^lib:basse|^ech:basses/.test(i)) return "basse";
+  if (/^ech:guitare|^ech:harpe/.test(i)) return "guitare";
+  if (/^ech:(violon|cordes|violons|altos|violoncelle|violoncelles)/.test(i)) return "violon";
+  if (/^ech:(souffle|hautbois|anche|basson)|^lib:flute/.test(i)) return "flute";
+  if (/^ech:(trompette|trombone|cor|tuba|trompettes)/.test(i)) return "trompette";
+  if (/^ech:(voix)|^lib:(voyelles|diphonique)/.test(i)) return "voix";
+  if (/^ech:(clavier|orgue|clavecin)|^syn:pianoElec|^syn:orgue/.test(i)) return "piano";
+  if (/^syn:|^lib:/.test(i)) return "onde";
+  return "note";
+}
+export const pictoDe = id => PICTOS[sorteDe(id)];
+const COULEUR_SORTE = { piano: "#4C9BF5", guitare: "#FFC53D", basse: "#A86CF0", violon: "#FF6B57", flute: "#3FC79A", trompette: "#F26BA3", batterie: "#FF8A3D", voix: "#4FC3E0", onde: "#8E9BFF", note: "#B7B6AC" };
+const FAM_COULEUR = { rythme: "#FF8A3D", basse: "#A86CF0", accords: "#4C9BF5", melodie: "#3FC79A" };
 
 export function creerVueBlocs(d) {
   const { $, P, INS, etat, esc, message, changer, afficherPistes, ouvrirRouleau, fermerRouleau, remettreAJourMidi, rouleauOuvert, ecouterMotif, arreterMotif } = d;
@@ -14,81 +49,91 @@ export function creerVueBlocs(d) {
   try { const t = +localStorage.getItem("sonora:pistes:tonique"); if (M.TONALITES.some(x => x[1] === t)) v.tonique = t; } catch (_) { /* la tonalité n'est pas gardée : do */ }
   const racine = $("blocs");
   const catalogue = () => INS.catalogue(), nomInstrument = id => (catalogue().find(x => x.id === id) || { nom: id }).nom;
-  const couleur = id => { const e = catalogue().find(x => x.id === id); return (e && COULEURS[e.groupe]) || "#4C9BF5"; };
+  const couleur = id => COULEUR_SORTE[sorteDe(id)];
 
-  function apercuHtml(notes, temps) { return B.apercu(notes, temps).map(n => `<i style="left:${(n.x * 100).toFixed(1)}%;width:${(n.w * 100).toFixed(1)}%;top:${(n.y * 84 + 4).toFixed(1)}%"></i>`).join(""); }
+  function apercuHtml(notes, temps) { return B.apercu(notes, temps).map(n => `<i style="left:${(n.x * 100).toFixed(1)}%;width:${(n.w * 100).toFixed(1)}%;top:${(n.y * 80 + 6).toFixed(1)}%"></i>`).join(""); }
 
   function dessiner() {
     if (!v.actif || !etat.projet) return;
     const p = etat.projet, ng = B.nombreDeGroupes(p); v.groupe = Math.max(0, Math.min(v.groupe, ng - 1));
-    // les groupes de quatre mesures
-    $("bl-groupes").innerHTML = Array.from({ length: ng }, (_, g) => `<button type="button" data-g="${g}" aria-pressed="${g === v.groupe}">${B.etiquetteGroupe(g).replace(" à ", "&ndash;")}</button>`).join("");
-    // la rangée des règles : mesure et tempo
-    $("bl-regles").innerHTML = `<span class="bl-chip" title="Nombre de temps par mesure">${p.temps} temps</span><button type="button" class="bl-chip" id="bl-tempo" title="Changer le tempo">${p.tempo} par minute</button>
-      <label class="bl-chip bl-tonalite" title="La tonalité des motifs prêts : les accords et les mélodies sont transposés">Tonalité <select id="bl-tonalite" aria-label="Tonalité des motifs prêts">${M.TONALITES.map(([nom, t]) => `<option value="${t}"${t === v.tonique ? " selected" : ""}>${esc(nom)}</option>`).join("")}</select></label>
-      <button type="button" class="bl-chip" id="bl-modeles" aria-expanded="${v.modeles}" title="Poser quatre mesures sur plusieurs lignes d'un coup">Morceau tout prêt</button>`;
-    // la grille
+    // la barre du haut : les groupes de quatre mesures, puis les réglages
+    $("bl-groupes").innerHTML = Array.from({ length: ng }, (_, g) => `<button type="button" data-g="${g}" aria-pressed="${g === v.groupe}" aria-label="Mesures ${B.etiquetteGroupe(g)}">${B.etiquetteGroupe(g).replace(" à ", "&ndash;")}</button>`).join("");
+    $("bl-regles").innerHTML = `<span class="bl-chip" title="Nombre de temps par mesure">${p.temps} temps</span>
+      <button type="button" class="bl-chip" id="bl-tempo" title="Changer le tempo">${p.tempo} par minute</button>
+      <label class="bl-chip bl-tonalite" title="La tonalité des motifs prêts : les accords et les mélodies sont transposés"><span>Tonalité</span><select id="bl-tonalite" aria-label="Tonalité des motifs prêts">${M.TONALITES.map(([nom, t]) => `<option value="${t}"${t === v.tonique ? " selected" : ""}>${esc(nom)}</option>`).join("")}</select></label>
+      <button type="button" class="bl-chip bl-chip-fort" id="bl-modeles" aria-expanded="${v.modeles}" title="Poser quatre mesures sur plusieurs lignes d'un coup">Morceau tout prêt</button>`;
+    // la grille : les numéros de mesure, puis une ligne par instrument
     const g0 = v.groupe * B.MESURES_PAR_GROUPE;
-    let html = `<div class="bl-ligne bl-nums" aria-hidden="true"><span class="bl-pastille-vide"></span>${[0, 1, 2, 3].map(k => `<span class="bl-num">${g0 + k + 1}</span>`).join("")}</div>`;
+    let html = `<div class="bl-ligne bl-nums" aria-hidden="true"><span></span>${[0, 1, 2, 3].map(k => `<span class="bl-num">${g0 + k + 1}</span>`).join("")}</div>`;
     for (const pi of p.pistes) {
       const inst = B.instrumentDePiste(p, pi), col = couleur(inst);
-      html += `<div class="bl-ligne" data-piste="${pi.id}" role="row"><div class="bl-pastille-cadre"><button type="button" class="bl-pastille" data-piste="${pi.id}" style="--col:${col}" aria-label="Instrument de ${esc(pi.nom)} : ${esc(nomInstrument(inst))}. Changer." aria-expanded="${v.palette === pi.id}"><b>${esc(nomInstrument(inst))}</b><small>${esc(pi.nom)}</small></button><button type="button" class="bl-muet" data-muet="${pi.id}" aria-pressed="${pi.muet}" aria-label="Couper le son de ${esc(pi.nom)}" title="Couper le son de cette ligne">Muet</button></div>`;
+      html += `<div class="bl-ligne" data-piste="${pi.id}" role="row">
+        <div class="bl-pastille-cadre${pi.muet ? " bl-coupee" : ""}" style="--col:${col}">
+          <button type="button" class="bl-pastille" data-piste="${pi.id}" aria-label="Instrument de ${esc(pi.nom)} : ${esc(nomInstrument(inst))}. Changer." aria-expanded="${v.palette === pi.id}"><span class="bl-ico">${pictoDe(inst)}</span><b>${esc(nomInstrument(inst))}</b><small>${esc(pi.nom)}</small></button>
+          <button type="button" class="bl-muet" data-muet="${pi.id}" aria-pressed="${pi.muet}" aria-label="Muet : ${esc(pi.nom)}" title="${pi.muet ? "Remettre le son de cette ligne" : "Couper le son de cette ligne"}"><span class="bl-ico-s">${pi.muet ? HP_OFF : HP_ON}</span></button>
+        </div>`;
       for (let k = 0; k < B.MESURES_PAR_GROUPE; k++) {
         const m = g0 + k, c = B.caseDe(p, pi, m), sel = v.choix && v.choix.piste === pi.id && v.choix.mesure === m;
-        const classe = `bl-case bl-${c.type}${sel ? " bl-choisie" : ""}`, texte = B.dire(p, pi, m);
+        const classe = `bl-case bl-${c.type}${sel ? " bl-choisie" : ""}${pi.muet ? " bl-coupee" : ""}`, texte = B.dire(p, pi, m);
         let dedans = "";
-        if (c.type === "bloc") dedans = `<span class="bl-apercu" aria-hidden="true" style="--col:${col}">${apercuHtml(c.son.midi.notes, c.son.midi.temps)}</span>`;
+        if (c.type === "bloc") dedans = `<span class="bl-apercu" aria-hidden="true">${apercuHtml(c.son.midi.notes, c.son.midi.temps)}</span>`;
         else if (c.type === "long") dedans = `<span class="bl-long" aria-hidden="true">${c.audio ? "son" : "clip"}</span>`;
-        else dedans = `<span class="bl-plus" aria-hidden="true">+</span>`;
+        else dedans = `<span class="bl-plus" aria-hidden="true">${PLUS}</span>`;
         html += `<button type="button" role="gridcell" class="${classe}" data-piste="${pi.id}" data-mesure="${m}" style="--col:${col}" aria-label="${esc(texte)}" aria-pressed="${sel ? "true" : "false"}">${dedans}</button>`;
       }
       html += `</div>`;
     }
     $("bl-grille").innerHTML = html;
-    // la palette d'instruments, sous la grille, pour la piste dont on a touché la pastille
+    // le choix de l'instrument d'une ligne : de grosses tuiles
     const pal = $("bl-palette");
     if (v.palette && p.pistes.some(x => x.id === v.palette)) {
       const cur = B.instrumentDePiste(p, v.palette);
       pal.hidden = false;
-      pal.innerHTML = `<p class="bl-q">Quel instrument pour « ${esc(P.trouverPiste(p, v.palette).nom)} » ?</p><div class="bl-inst">${PRINCIPAUX.map(([id, nom]) => `<button type="button" data-inst="${id}" aria-pressed="${id === cur}" style="--col:${couleur(id)}">${esc(nom)}</button>`).join("")}</div>
-        <label class="mini">Tous les instruments<select id="bl-tous" aria-label="Tous les instruments">${INS.GROUPES.map(gr => `<optgroup label="${esc(gr)}">${catalogue().filter(x => x.groupe === gr).map(x => `<option value="${esc(x.id)}"${x.id === cur ? " selected" : ""}>${esc(x.nom)}</option>`).join("")}</optgroup>`).join("")}</select></label>
-        <button type="button" id="bl-fermer-palette">Fermer</button>`;
+      pal.innerHTML = `<div class="bl-panneau-haut"><p class="bl-q">Quel instrument pour « ${esc(P.trouverPiste(p, v.palette).nom)} » ?</p><button type="button" id="bl-fermer-palette" class="bl-fermer" aria-label="Fermer le choix d'instrument">Fermer</button></div>
+        <div class="bl-inst">${PRINCIPAUX.map(([id, nom]) => `<button type="button" data-inst="${id}" aria-pressed="${id === cur}" style="--col:${couleur(id)}"><span class="bl-ico-g">${pictoDe(id)}</span><b>${esc(nom)}</b></button>`).join("")}</div>
+        <label class="bl-tous"><span>Tous les instruments</span><select id="bl-tous" aria-label="Tous les instruments">${INS.GROUPES.map(gr => `<optgroup label="${esc(gr)}">${catalogue().filter(x => x.groupe === gr).map(x => `<option value="${esc(x.id)}"${x.id === cur ? " selected" : ""}>${esc(x.nom)}</option>`).join("")}</optgroup>`).join("")}</select></label>`;
     } else { pal.hidden = true; pal.innerHTML = ""; }
     dessinerMotifs();
     dessinerActions();
   }
 
-  // Le panneau des motifs prêts (pour la case choisie) et celui des morceaux de départ.
+  // Les motifs prêts pour la case choisie, et les morceaux de départ : des cartes avec une bande de couleur, un bouton rond pour écouter, un bouton pour poser.
+  function carte(m, nom, aide, couleurBande, boutons) {
+    return `<div class="bl-motif" style="--fam:${couleurBande}"><div class="bl-motif-t"><b>${esc(nom)}</b><small>${esc(aide)}</small></div><div class="bl-motif-b">${boutons}</div></div>`;
+  }
   function dessinerMotifs() {
     const z = $("bl-motifs"), p = etat.projet, c = v.choix, pi = c && P.trouverPiste(p, c.piste);
     if (v.modeles) {
       z.hidden = false;
       const dispo = M.MODELES.filter(m => m.temps === p.temps);
-      z.innerHTML = `<p class="bl-q">Un morceau tout prêt, sur les mesures ${B.etiquetteGroupe(v.groupe).replace(" à ", " à ")} :</p>` + (dispo.length ? `<div class="bl-liste">${dispo.map(m => `<div class="bl-motif"><div><b>${esc(m.nom)}</b><small>${esc(m.aide)}</small></div><div class="bl-motif-b"><button type="button" data-modele="${m.id}" class="principal">Poser</button></div></div>`).join("")}</div>` : `<p class="bl-aide">Les morceaux tout prêts existent à quatre temps par mesure. Ce projet est à ${p.temps} temps.</p>`) + `<button type="button" id="bl-ferme-motifs">Fermer</button>`;
+      z.innerHTML = `<div class="bl-panneau-haut"><p class="bl-q">Un morceau tout prêt sur les mesures ${B.etiquetteGroupe(v.groupe)}</p><button type="button" id="bl-ferme-motifs" class="bl-fermer">Fermer</button></div>`
+        + (dispo.length ? `<div class="bl-liste">${dispo.map(m => carte(m, m.nom, m.aide, "#F26BA3", `<button type="button" data-modele="${m.id}" class="bl-poser">${PLUS}<span>Poser</span></button>`)).join("")}</div>` : `<p class="bl-aide">Les morceaux tout prêts existent à quatre temps par mesure. Ce projet est à ${p.temps} temps.</p>`);
       return;
     }
     if (!v.motifs || !pi) { z.hidden = true; z.innerHTML = ""; return; }
     const inst = B.instrumentDePiste(p, pi), onglets = M.ongletsPour(inst); if (!onglets.includes(v.onglet)) v.onglet = onglets.includes(M.genreDe(inst)) ? M.genreDe(inst) : onglets[0];
-    const liste = M.motifsPour(v.onglet, p.temps), col = couleur(inst);
+    const liste = M.motifsPour(v.onglet, p.temps);
     z.hidden = false;
-    z.innerHTML = `<p class="bl-q">Un motif pour « ${esc(pi.nom)} », mesure ${c.mesure + 1} (${esc(nomInstrument(inst))}) :</p>
-      <div class="bl-onglets" role="tablist" aria-label="Sortes de motifs">${M.FAMILLES.filter(([f]) => onglets.includes(f)).map(([f, nom]) => `<button type="button" role="tab" data-onglet="${f}" aria-selected="${f === v.onglet}" style="--col:${col}">${esc(nom)}</button>`).join("")}</div>
-      ${liste.length ? `<div class="bl-liste">${liste.map(m => `<div class="bl-motif"><div><b>${esc(M.nomDuMotif(m, v.tonique))}</b><small>${esc(m.aide)}</small></div><div class="bl-motif-b"><button type="button" data-ecouter="${m.id}" aria-label="Écouter : ${esc(M.nomDuMotif(m, v.tonique))}">Écouter</button><button type="button" data-poser="${m.id}" class="principal" aria-label="Poser : ${esc(M.nomDuMotif(m, v.tonique))}">Poser</button></div></div>`).join("")}</div>` : `<p class="bl-aide">Pas encore de motif de cette sorte à ${p.temps} temps par mesure.</p>`}
-      <div class="bl-motif-pied"><button type="button" id="bl-ecrire">Écrire mes notes</button><button type="button" id="bl-ferme-motifs">Fermer</button></div>`;
+    z.innerHTML = `<div class="bl-panneau-haut"><p class="bl-q">Un motif pour « ${esc(pi.nom)} », mesure ${c.mesure + 1}</p><button type="button" id="bl-ferme-motifs" class="bl-fermer">Fermer</button></div>
+      <div class="bl-onglets" role="tablist" aria-label="Sortes de motifs">${M.FAMILLES.filter(([f]) => onglets.includes(f)).map(([f, nom]) => `<button type="button" role="tab" data-onglet="${f}" aria-selected="${f === v.onglet}">${esc(nom)}</button>`).join("")}</div>
+      ${liste.length ? `<div class="bl-liste">${liste.map(m => { const nom = M.nomDuMotif(m, v.tonique); return carte(m, nom, m.aide, FAM_COULEUR[m.famille], `<button type="button" class="bl-ecouter" data-ecouter="${m.id}" aria-label="Écouter : ${esc(nom)}" title="Écouter">${PLAY}</button><button type="button" class="bl-poser" data-poser="${m.id}" aria-label="Poser : ${esc(nom)}">${PLUS}<span>Poser</span></button>`); }).join("")}</div>` : `<p class="bl-aide">Pas encore de motif de cette sorte à ${p.temps} temps par mesure.</p>`}
+      <div class="bl-motif-pied"><button type="button" id="bl-ecrire" class="bl-lien">Ou écrire mes propres notes</button></div>`;
   }
 
+  // Le pied de la grille : ce qu'on peut faire de la case choisie.
   function dessinerActions() {
     const p = etat.projet, z = $("bl-actions"), c = v.choix, cas = c && P.trouverPiste(p, c.piste) ? B.caseDe(p, c.piste, c.mesure) : null;
-    if (!cas) { z.innerHTML = `<p class="bl-aide">Touche une case pour poser un bloc de notes. Un bloc dure une mesure.</p>`; return; }
+    if (!cas) { z.innerHTML = `<p class="bl-aide">Touche une case pour poser un bloc. Un bloc dure une mesure.</p>`; return; }
     const bloc = cas.type === "bloc", pi = P.trouverPiste(p, c.piste), peutColler = !!v.presse && cas.type !== "long", suivante = c.mesure + 1;
     const cibleLibre = B.caseDe(p, c.piste, suivante).type === "vide" || B.caseDe(p, c.piste, suivante).type === "bloc";
-    z.innerHTML = `<p class="bl-quoi" role="status">${esc(pi.nom)}, mesure ${c.mesure + 1}</p>
-      ${cas.type === "vide" ? `<button type="button" data-a="ecrire">Écrire mes notes</button>` : `<button type="button" data-a="editer">Modifier les notes</button>`}
+    z.innerHTML = `<p class="bl-quoi" role="status">${esc(pi.nom)}<span>mesure ${c.mesure + 1}</span></p>
+      <div class="bl-boutons">
+      ${cas.type === "vide" ? `<button type="button" data-a="ecrire" class="bl-fort">Écrire mes notes</button>` : `<button type="button" data-a="editer" class="bl-fort">Modifier les notes</button>`}
       <button type="button" data-a="motifs"${cas.type === "long" ? " disabled" : ""} aria-expanded="${v.motifs}">Motifs prêts</button>
       <button type="button" data-a="copier"${bloc ? "" : " disabled"}>Copier</button>
       <button type="button" data-a="coller"${peutColler ? "" : " disabled"}>Coller</button>
       <button type="button" data-a="dupliquer"${bloc && cibleLibre ? "" : " disabled"} title="Copie ce bloc dans la mesure suivante">Dupliquer à droite</button>
-      <button type="button" data-a="vider" class="bl-danger"${bloc ? "" : " disabled"}>Vider</button>`;
+      <button type="button" data-a="vider" class="bl-danger"${bloc ? "" : " disabled"}>Vider</button></div>`;
   }
 
   // ---------------------------------------------------------------- les gestes
@@ -173,7 +218,7 @@ export function creerVueBlocs(d) {
     const pos = B.positionDansGrille(etat.projet, tete);
     if (!etat.lecture || !pos) { trait.hidden = true; return; }
     if (pos.groupe !== v.groupe && etat.lecture) { v.groupe = Math.min(pos.groupe, B.nombreDeGroupes(etat.projet) - 1); dessiner(); }
-    trait.hidden = false; trait.style.left = `calc(var(--bl-pastille) + (100% - var(--bl-pastille)) * ${pos.x.toFixed(4)})`;
+    trait.hidden = false; trait.style.left = `calc(var(--bl-pastille) + var(--bl-gap) + (100% - var(--bl-pastille) - var(--bl-gap)) * ${pos.x.toFixed(4)})`;
   }
   return { montrer, basculer: () => montrer(!v.actif), afficher: dessiner, suivre, get actif() { return v.actif; }, etat: v };
 }

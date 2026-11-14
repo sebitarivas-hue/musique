@@ -1,0 +1,123 @@
+/* Le mode blocs de SONORA Pistes : composer par mesures (blocs-ui.js).
+   Direction : la grille d'un jeu de composition. Cases pleines et colorées, pastilles d'instruments avec un pictogramme, barre noire en haut et en bas,
+   vert acide pour ce qui est choisi ou à faire. Les couleurs de lignes viennent des familles d'instruments. */
+.mode-blocs #ligne, .mode-blocs #b-piste-m, .mode-blocs #selection { display: none !important; }
+.ent-blocs { width: 100%; height: 100%; min-height: 0; padding: 0 8px; border: 0; border-radius: 0; box-shadow: none; background: var(--acide); color: var(--noir); font: 700 .72rem var(--f-mono); text-transform: uppercase; letter-spacing: .04em; text-align: left; }
+.ent-blocs:hover { filter: brightness(.95); }
+
+.blocs[hidden] { display: none; }
+.blocs { --bl-pastille: 150px; --bl-gap: 10px; margin: 10px 0 16px; border-radius: 26px; overflow: hidden; background: #E3E2D9; color: #11110F; font-family: var(--f-body); }
+.blocs button { min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; box-shadow: none; font: inherit; font-weight: 700; line-height: 1.1; cursor: pointer; transition: transform .08s, filter .12s, background .12s; }
+.blocs button:active:not(:disabled) { transform: translateY(1px) scale(.985); box-shadow: none; }
+.blocs button:disabled { opacity: .35; cursor: not-allowed; }
+.blocs button:focus-visible, .blocs select:focus-visible { outline: 3px solid #4658FF; outline-offset: 2px; }
+.blocs svg { display: block; }
+
+/* la barre du haut */
+.bl-haut { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 14px 18px; background: #11110F; color: #F0EFE8; }
+.blocs h2.bl-titre { margin: 0; display: block; font: 900 1.05rem/1 var(--f-display, "Archivo Black", "Arial Black", Arial, sans-serif); letter-spacing: .03em; text-transform: uppercase; color: #F0EFE8; }
+.blocs h2.bl-titre::before { display: none; }
+.bl-groupes { display: flex; flex-wrap: wrap; gap: 6px; }
+.blocs .bl-groupes button { background: transparent; color: #F0EFE8; box-shadow: inset 0 0 0 2px rgba(240, 239, 232, .38); font: 700 .95rem var(--f-mono); }
+.blocs .bl-groupes button[aria-pressed="true"] { background: #D6FF00; color: #11110F; box-shadow: none; }
+.bl-regles { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.blocs .bl-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 999px; background: rgba(240, 239, 232, .13); color: #F0EFE8; font-size: .85rem; font-weight: 600; }
+.blocs .bl-chip:hover:not(span) { background: rgba(240, 239, 232, .22); }
+.blocs .bl-chip-fort { background: #D6FF00; color: #11110F; font-weight: 800; } .blocs .bl-chip-fort:hover { background: #E4FF4D; }
+.bl-tonalite select { min-height: 36px; padding: 0 6px; border: 0; border-radius: 8px; background: transparent; color: inherit; font: 800 .95rem var(--f-body); }
+.bl-tonalite select option { color: #11110F; background: #fff; }
+.blocs #bl-retour { background: transparent; color: #F0EFE8; box-shadow: inset 0 0 0 2px rgba(240, 239, 232, .55); }
+.blocs #bl-retour:hover { background: rgba(240, 239, 232, .14); }
+
+/* la grille */
+.bl-corps { padding: 18px; }
+.bl-cadre { position: relative; }
+.bl-grille { display: flex; flex-direction: column; gap: var(--bl-gap); }
+.bl-ligne { display: grid; grid-template-columns: var(--bl-pastille) repeat(4, minmax(0, 1fr)); gap: var(--bl-gap); align-items: stretch; }
+.bl-nums { margin-bottom: -2px; }
+.bl-num { height: 26px; border-radius: 10px; background: #11110F; color: #F0EFE8; text-align: center; font: 700 .85rem/26px var(--f-mono); }
+
+/* la pastille d'un instrument */
+.bl-pastille-cadre { position: relative; display: flex; flex-direction: column; min-height: 120px; padding: 6px; border-radius: 22px; background: var(--col); box-shadow: 0 4px 0 rgba(17, 17, 15, .2); }
+.blocs .bl-pastille { flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 2px; padding: 8px 10px; border-radius: 16px; background: transparent; color: #11110F; text-align: left; }
+.blocs .bl-pastille:hover { background: rgba(255, 255, 255, .22); }
+.bl-ico { width: 42px; height: 42px; margin-bottom: auto; color: #11110F; }
+.bl-pastille b { font-size: 1.02rem; font-weight: 800; line-height: 1.1; } .bl-pastille small { font-size: .72rem; font-weight: 600; opacity: .68; }
+.blocs .bl-muet { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(17, 17, 15, .14); color: #11110F; }
+.blocs .bl-muet:hover { background: rgba(17, 17, 15, .26); }
+.blocs .bl-muet[aria-pressed="true"] { background: #11110F; color: var(--col); }
+.bl-ico-s { width: 22px; height: 22px; display: block; }
+.bl-coupee { opacity: .5; filter: grayscale(.55); }
+
+/* les cases */
+.blocs .bl-case { position: relative; min-height: 120px; padding: 0; display: grid; place-items: center; overflow: hidden; border-radius: 22px; background: #fff; color: #11110F; box-shadow: 0 4px 0 rgba(17, 17, 15, .15); }
+.blocs .bl-vide:hover { background: color-mix(in srgb, var(--col) 16%, #fff); transform: translateY(-1px); }
+.bl-plus { width: 42px; height: 42px; padding: 11px; border-radius: 50%; background: #EFEEE7; color: #8B8A80; display: block; transition: background .12s, color .12s; }
+.bl-vide:hover .bl-plus { background: var(--col); color: #11110F; }
+.blocs .bl-bloc { background: var(--col); }
+.blocs .bl-bloc:hover { background: var(--col); filter: brightness(1.07); transform: translateY(-1px); }
+.bl-apercu { position: absolute; inset: 14px 12px; display: block; }
+.bl-apercu i { position: absolute; height: 11%; min-height: 7px; border-radius: 4px; background: rgba(17, 17, 15, .86); }
+.blocs .bl-long { background: repeating-linear-gradient(135deg, #EFEEE7 0 10px, #E0DFD6 10px 20px); }
+.bl-long > span, span.bl-long { display: block; padding: 6px 12px; border-radius: 999px; background: #11110F; color: #F0EFE8; font: 700 .72rem var(--f-mono); text-transform: uppercase; letter-spacing: .06em; }
+.blocs .bl-case[aria-pressed="true"] { outline: 4px solid #4658FF; outline-offset: 3px; }
+.bl-trait { position: absolute; top: 0; bottom: 0; width: 6px; margin-left: -3px; border-radius: 3px; background: #D6FF00; box-shadow: 0 0 0 2px #11110F; pointer-events: none; z-index: 3; }
+.bl-trait[hidden] { display: none; }
+
+/* les panneaux : choix d'instrument, motifs, morceaux */
+.bl-palette { margin-top: 18px; padding: 18px; border-radius: 24px; background: #F7F6F0; box-shadow: 0 4px 0 rgba(17, 17, 15, .15); }
+.bl-palette[hidden] { display: none; }
+.bl-panneau-haut { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.bl-q { margin: 0; font-size: 1.1rem; font-weight: 800; line-height: 1.2; }
+.blocs .bl-fermer { background: #11110F; color: #F0EFE8; }
+.bl-inst { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.blocs .bl-inst button { min-height: 116px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border-radius: 22px; background: var(--col); color: #11110F; font-size: 1rem; box-shadow: 0 4px 0 rgba(17, 17, 15, .2); }
+.blocs .bl-inst button:hover { filter: brightness(1.07); }
+.blocs .bl-inst button[aria-pressed="true"] { outline: 4px solid #4658FF; outline-offset: 3px; }
+.bl-ico-g { width: 46px; height: 46px; display: block; }
+.bl-tous { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; font-weight: 600; }
+.bl-tous select, .bl-palette select { min-height: 44px; padding: 0 12px; border: 2px solid #11110F; border-radius: 12px; background: #fff; color: #11110F; font: 600 .95rem var(--f-body); }
+
+.bl-onglets { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 14px; border-radius: 999px; background: #E3E2D9; }
+.blocs .bl-onglets button { background: transparent; color: #11110F; padding: 0 20px; }
+.blocs .bl-onglets button[aria-selected="true"] { background: #11110F; color: #F0EFE8; }
+.bl-liste { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-height: 440px; overflow-y: auto; padding: 2px 4px 8px 2px; }
+.bl-motif { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 20px; overflow: hidden; border-radius: 18px; background: #fff; box-shadow: 0 3px 0 rgba(17, 17, 15, .12); }
+.bl-motif::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 9px; background: var(--fam); }
+.bl-motif-t { flex: 1; min-width: 0; }
+.bl-motif-t b { display: block; font-size: 1rem; font-weight: 800; line-height: 1.2; }
+.bl-motif-t small { display: block; margin-top: 3px; font-size: .78rem; line-height: 1.35; font-weight: 500; color: #55544D; }
+.bl-motif-b { display: flex; flex: none; align-items: center; gap: 8px; }
+.blocs .bl-ecouter { width: 48px; height: 48px; padding: 0; display: grid; place-items: center; border-radius: 50%; background: #11110F; color: #F0EFE8; }
+.bl-ecouter svg { width: 18px; height: 18px; margin-left: 2px; }
+.blocs .bl-poser { display: inline-flex; align-items: center; gap: 7px; padding: 0 18px; background: #D6FF00; color: #11110F; font-weight: 800; }
+.blocs .bl-poser:hover { background: #E4FF4D; }
+.bl-poser svg { width: 15px; height: 15px; stroke-width: 3.2; }
+.bl-motif-pied { margin-top: 12px; }
+.blocs .bl-lien { min-height: 44px; padding: 0 4px; background: transparent; color: #11110F; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* le pied : que faire de la case choisie */
+.bl-pied { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 14px 18px; background: #11110F; color: #F0EFE8; }
+.bl-actions { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.bl-quoi { margin: 0; display: flex; flex-direction: column; font-weight: 800; line-height: 1.15; }
+.bl-quoi span { font: 600 .72rem var(--f-mono); text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
+.bl-boutons { display: flex; flex-wrap: wrap; gap: 8px; }
+.blocs .bl-pied button { background: #F0EFE8; color: #11110F; }
+.blocs .bl-pied button:hover:not(:disabled) { background: #fff; }
+.blocs .bl-pied .bl-fort { background: #D6FF00; } .blocs .bl-pied .bl-fort:hover { background: #E4FF4D; }
+.blocs .bl-pied .bl-danger { background: transparent; color: #FF8A78; box-shadow: inset 0 0 0 2px #FF8A78; }
+.blocs .bl-pied .bl-ajout { margin-left: auto; background: transparent; color: #F0EFE8; box-shadow: inset 0 0 0 2px rgba(240, 239, 232, .55); }
+.bl-aide { margin: 0; opacity: .85; }
+.bl-palette .bl-aide { color: #55544D; opacity: 1; }
+
+@media (max-width: 900px) { .bl-inst { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bl-liste { grid-template-columns: 1fr; } }
+@media (max-width: 700px) {
+  .blocs { --bl-pastille: 94px; --bl-gap: 6px; margin: 8px 0 12px; border-radius: 20px; }
+  .bl-haut { padding: 12px; gap: 8px 12px; } .bl-regles { margin-left: 0; width: 100%; order: 4; } .bl-titre { order: 1; } .blocs #bl-retour { order: 2; margin-left: auto; } .bl-groupes { order: 3; width: 100%; }
+  .bl-corps { padding: 10px; }
+  .bl-pastille-cadre { min-height: 112px; padding: 4px; border-radius: 18px; } .bl-ico { width: 34px; height: 34px; } .bl-pastille b { font-size: .88rem; }
+  .blocs .bl-case { min-height: 112px; border-radius: 16px; } .bl-plus { width: 34px; height: 34px; padding: 8px; }
+  .bl-palette { padding: 12px; border-radius: 18px; margin-top: 12px; } .bl-liste { max-height: 360px; }
+  .bl-motif { flex-direction: column; align-items: stretch; gap: 8px; } .bl-motif-b { justify-content: flex-end; }
+  .bl-pied { padding: 12px; } .blocs .bl-pied .bl-ajout { margin-left: 0; }
+}
