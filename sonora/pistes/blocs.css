@@ -170,7 +170,7 @@
 .bl-palette { border-radius: 0; background: var(--enc2); border: 2px solid var(--ac); box-shadow: 6px 6px 0 var(--filet); }
 .bl-q { font: 900 1.25rem "Archivo Variable", var(--f-display); font-stretch: 75%; text-transform: uppercase; color: var(--ac); letter-spacing: .01em; }
 .blocs .bl-fermer { background: transparent; color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); font-family: var(--f-mono); text-transform: uppercase; font-weight: 500; font-size: .8rem; letter-spacing: .05em; } .blocs .bl-fermer:hover { box-shadow: inset 0 0 0 2px var(--ac); }
-.blocs .bl-familles button, .blocs .bl-onglets button { border-radius: 0; background: transparent; color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); font: 500 .78rem var(--f-mono); text-transform: uppercase; letter-spacing: .05em; }
+.blocs .bl-familles button, .blocs .bl-onglets button { border-radius: 0; background: transparent; color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); font: 500 .8rem var(--f-mono); letter-spacing: .03em; }
 .blocs .bl-familles button:hover, .blocs .bl-onglets button:hover { box-shadow: inset 0 0 0 2px var(--ac); }
 .blocs .bl-familles button[aria-selected="true"], .blocs .bl-onglets button[aria-selected="true"] { background: var(--ac); color: var(--enc); box-shadow: none; font-weight: 700; }
 .bl-onglets { border-radius: 0; background: transparent; padding: 0; gap: 6px; }
