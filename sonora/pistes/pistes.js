@@ -1,35 +1,35 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=87c8d4b018";
-import * as Ed from "./editions.js?v=87c8d4b018";
-import * as P from "./projet.js?v=87c8d4b018";
-import { Stockage } from "./stockage.js?v=87c8d4b018";
-import { creerBouton } from "./bouton.js?v=87c8d4b018";
-import * as MI from "./midi.js?v=87c8d4b018";
-import * as N from "./notes.js?v=87c8d4b018";
-import { Rouleau } from "./rouleau.js?v=87c8d4b018";
-import { PanneauPartition } from "./partition/panneau.js?v=87c8d4b018";
-import { separer, NOMS_PARTIES } from "./separation.js?v=87c8d4b018";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=87c8d4b018";
-import * as BM from "./batterie_midi.js?v=87c8d4b018";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=87c8d4b018";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=87c8d4b018";
-import * as INS from "./instruments.js?v=87c8d4b018";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=87c8d4b018";
-import * as OMR from "./omr.js?v=87c8d4b018";
-import { creerConsole } from "./console.js?v=87c8d4b018";
-import { creerVueBlocs } from "./blocs-ui.js?v=87c8d4b018";
-import { creerMaster } from "./master.js?v=87c8d4b018";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=87c8d4b018";
-import * as MO from "./moteurs.js?v=87c8d4b018";
-import { monterPanneaux } from "./panneaux.js?v=87c8d4b018";
-import { monterNotions } from "./notions.js?v=87c8d4b018";
-import { DEMOS } from "./demos.js?v=87c8d4b018";
-import * as B from "./bibliotheque.js?v=87c8d4b018";
-import { encoderWAV } from "../studio/wav.js?v=87c8d4b018";
-import { ENTREES } from "../library/catalogue.js?v=87c8d4b018";
-import { compiler } from "../src/index.js?v=87c8d4b018";
-import { rendre } from "../src/rendu.js?v=87c8d4b018";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=e50346137a";
+import * as Ed from "./editions.js?v=e50346137a";
+import * as P from "./projet.js?v=e50346137a";
+import { Stockage } from "./stockage.js?v=e50346137a";
+import { creerBouton } from "./bouton.js?v=e50346137a";
+import * as MI from "./midi.js?v=e50346137a";
+import * as N from "./notes.js?v=e50346137a";
+import { Rouleau } from "./rouleau.js?v=e50346137a";
+import { PanneauPartition } from "./partition/panneau.js?v=e50346137a";
+import { separer, NOMS_PARTIES } from "./separation.js?v=e50346137a";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=e50346137a";
+import * as BM from "./batterie_midi.js?v=e50346137a";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=e50346137a";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=e50346137a";
+import * as INS from "./instruments.js?v=e50346137a";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=e50346137a";
+import * as OMR from "./omr.js?v=e50346137a";
+import { creerConsole } from "./console.js?v=e50346137a";
+import { creerVueBlocs } from "./blocs-ui.js?v=e50346137a";
+import { creerMaster } from "./master.js?v=e50346137a";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=e50346137a";
+import * as MO from "./moteurs.js?v=e50346137a";
+import { monterPanneaux } from "./panneaux.js?v=e50346137a";
+import { monterNotions } from "./notions.js?v=e50346137a";
+import { DEMOS } from "./demos.js?v=e50346137a";
+import * as B from "./bibliotheque.js?v=e50346137a";
+import { encoderWAV } from "../studio/wav.js?v=e50346137a";
+import { ENTREES } from "../library/catalogue.js?v=e50346137a";
+import { compiler } from "../src/index.js?v=e50346137a";
+import { rendre } from "../src/rendu.js?v=e50346137a";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -66,7 +66,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=87c8d4b018"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=e50346137a"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -227,7 +227,7 @@ async function listerEntrees() {
   let L = []; try { L = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === "audioinput"); } catch (_) {}
   let choisie = ""; try { choisie = localStorage.getItem("pistes:entree") || ""; } catch (_) {}
   const sans = L.length && L.every(d => !d.label);
-  sel.innerHTML = `<option value="">Entrée par défaut${sans ? " (les noms apparaissent après la première autorisation)" : ""}</option>` + L.filter(d => d.deviceId && d.deviceId !== "default").map((d, i) => `<option value="${esc(d.deviceId)}">${esc(d.label || "Entrée " + (i + 1))}</option>`).join("");
+  sel.innerHTML = `<option value=""${sans ? ' title="Les noms des entrées apparaissent après la première autorisation du micro"' : ""}>Entrée par défaut</option>` + L.filter(d => d.deviceId && d.deviceId !== "default").map((d, i) => `<option value="${esc(d.deviceId)}">${esc(d.label || "Entrée " + (i + 1))}</option>`).join("");
   sel.value = [...sel.options].some(o => o.value === choisie) ? choisie : "";
 }
 async function enregistrer() {
