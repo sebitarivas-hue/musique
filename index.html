@@ -1651,6 +1651,22 @@ html.signal body.jeu-nuit .hub2 h2.hub-rub { font: 600 1.3rem "Fredoka", sans-se
 .hub2 .hub-ligne { background: linear-gradient(180deg, #1a1f16, var(--carte)); border-color: var(--bord); border-radius: 24px; } .hub2 .hub-ligne .hub-t b { font: 600 1.08rem "Fredoka", sans-serif; } .hub2 .hub-ligne .hub-badge { background: rgba(184,245,74,.14); color: var(--v); }
 @media (min-width: 760px) { .h2-actions { grid-template-columns: 1.4fr 1fr; } .h2-stats { grid-template-columns: repeat(4, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .h2-barre i { transition: none; } }
+/* Le relief : icônes 3D, cartes qui s'inclinent (souris, doigt, téléphone penché), reflet qui suit, entrée en cascade, flamme qui recule au défilement */
+.hub2 { --gx: 0; --gy: 0; --defile: 0; }
+.hub2 :is(.h2-carte, .h2-stat, .hub-affiche, .hub-ligne) { position: relative; transform: perspective(900px) rotateX(calc(var(--rx, 0deg) + var(--gy) * 4deg)) rotateY(calc(var(--ry, 0deg) + var(--gx) * -5deg)); transform-style: preserve-3d; transition: transform .25s cubic-bezier(.2,.8,.2,1), border-color .2s; will-change: transform; }
+.hub2 :is(.h2-carte, .h2-stat, .hub-affiche, .hub-ligne)::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(circle at var(--mx, 30%) var(--my, 0%), rgba(255,255,255,.14), transparent 45%); opacity: .7; transition: opacity .2s; } .hub2 .survol::after { opacity: 1; }
+.hub2 .survol { transition: transform .06s linear; }
+.hub2 .h2-heros { transform: translateY(calc(var(--defile) * 40px)) scale(calc(1 - var(--defile) * .12)); opacity: calc(1 - var(--defile) * .55); transform-origin: 50% 0; }
+.hub2 .h2-flamme { transform: perspective(700px) rotateY(calc(var(--gx) * 14deg)) rotateX(calc(var(--gy) * -8deg)); transition: transform .3s; }
+.ico3d { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+.hub2 .h2-stat .ic.en-3d { width: 52px; height: 52px; border: 0; border-radius: 0; margin: -10px -4px -6px -8px; filter: drop-shadow(0 8px 10px rgba(0,0,0,.45)); transform: translateZ(26px); }
+.hub2 .hub-ligne .hub-ico.en-3d { background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--k) 38%, transparent), transparent 70%); width: 60px; height: 60px; margin: -6px -4px; filter: drop-shadow(0 8px 10px rgba(0,0,0,.45)); transform: translateZ(22px); } .hub2 .hub-ligne { grid-template-columns: 60px minmax(0, 1fr) auto auto; }
+.hub2 .hub-rail { padding-top: 40px; margin-top: -24px; } .hub2 .hub-affiche { overflow: visible; padding-top: 86px; min-height: 270px; }
+.hub2 .hub-3d { position: absolute; top: -34px; left: 8px; width: 132px; height: 132px; transform: translateZ(60px); filter: drop-shadow(0 16px 18px rgba(0,0,0,.55)); animation: ico-flotte 4.2s ease-in-out infinite; } .hub2 .hub-affiche:nth-child(even) .hub-3d { animation-delay: -2.1s; }
+@keyframes ico-flotte { 50% { translate: 0 -8px; rotate: 4deg; } }
+.hub2 > :is(.h2-heros, .h2-actions, .h2-carte, .h2-stats, .hub-rub, .hub-rail, .hub-liste) { animation: monte-carte .55s cubic-bezier(.2,.8,.2,1) backwards; } .hub2 > .h2-actions { animation-delay: .08s; } .hub2 > .h2-carte { animation-delay: .14s; } .hub2 > .h2-stats { animation-delay: .2s; } .hub2 > .hub-rail { animation-delay: .26s; } .hub2 > .hub-liste { animation-delay: .32s; }
+@keyframes monte-carte { from { opacity: 0; translate: 0 26px; } }
+@media (prefers-reduced-motion: reduce) { .hub2 :is(.h2-carte, .h2-stat, .hub-affiche, .hub-ligne, .h2-heros, .h2-flamme) { transform: none !important; } .hub2 .hub-3d, .hub2 > * { animation: none !important; } }
 /* La barre de jeu (mode Jouer, partout) */
 .hud-jeu { position: sticky; top: 0; z-index: 7; display: flex; align-items: center; gap: 10px; min-height: 52px; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 6px max(16px, env(safe-area-inset-left, 0px)); background: rgba(7,10,42,.94); border-bottom: 2px solid #3b7bff; box-shadow: 0 6px 22px rgba(4,5,26,.45); color: #fff; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .hud-jeu[hidden] { display: none; } html.signal .hud-jeu a { color: #fff; text-decoration: none; }
@@ -5077,6 +5093,8 @@ const HUB_SVG = {
   record: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 22c-4.2 0-7-2.8-7-6.6 0-3.6 2.8-5.6 3.9-9.4 2.8 1.7 3.7 4.3 3.7 6 1-.9 1.6-2.2 1.7-3.6 2.4 1.9 4.7 4.7 4.7 7.5 0 3.7-2.8 6.1-7 6.1z"/></svg>',
   coffre: '<svg viewBox="0 0 48 44" aria-hidden="true"><path d="M6 20V14a8 8 0 0 1 8-8h20a8 8 0 0 1 8 8v6z" fill="currentColor" opacity=".75"/><rect x="6" y="20" width="36" height="20" rx="3" fill="currentColor"/><rect x="21" y="16" width="6" height="10" rx="2" fill="#0b0d0a"/></svg>' };
 // La plus longue série de jours joués, gardée dans les parties du jour (jeu.dj).
+const ICO3D_TIMBRE = { quiz: "casque", survie: "coeur", intrus: "intrus", hautbas: "hautbas", memoire: "memoire", paires: "paires" };
+const ICO3D_COURS = { chemin: "chemin", jour: "eclair", ludo: "de", harmonie: "harmonie", orchestre: "orchestre", son: "son" };
 function meilleureSerie() { const jours = Object.keys(jeu().dj || {}).filter(d => (jeu().dj[d] || {}).p).sort(); let best = 0, cur = 0, prev = null;
   for (const d of jours) { const t = new Date(d + "T12:00:00"); cur = prev && Math.round((t - prev) / 864e5) === 1 ? cur + 1 : 1; best = Math.max(best, cur); prev = t; } return best; }
 const barreH2 = (n, max, txt) => { const p = Math.round(Math.min(1, n / max) * 100); return `<span class="h2-barre" role="img" aria-label="${n} sur ${max}"><i style="width:${Math.max(p, n ? 14 : 0)}%"></i><b class="${p >= 55 ? "sur" : ""}">${txt || `${n}/${max}`}</b></span>`; };
@@ -5098,10 +5116,10 @@ function vueJouer() {
       <ul>${D_.slice(1).map(x => `<li class="${x.n >= x.max ? "fait" : ""}"><span class="duo-dt">${esc(x.t)}</span>${barreH2(x.n, x.max)}</li>`).join("")}</ul>
       <div class="h2-coffre${tous ? " ouvert" : ""}">${HUB_SVG.coffre}<p>${tous ? "Coffre ouvert : une musique du monde t'attend." : "Fais les trois défis pour ouvrir le coffre du jour."}</p>${tous && D.atlas ? `<a class="h2-btn mini" href="${esc(D.atlas)}#hasard">Ouvrir</a>` : ""}</div>
       <details class="duo-reglage"><summary>Changer mon objectif du jour</summary><div class="duo-obj" role="group" aria-label="Objectif du jour, en parties">${[[2, "Tranquille"], [3, "Normal"], [5, "Intense"]].map(([kk, t]) => `<button type="button" data-obj="${kk}" aria-pressed="${kk === o}">${t} <i>${kk}</i></button>`).join("")}</div></details></section>`;
-    h += `<div class="h2-stats">${[[HUB_SVG.xp, j.xp, "XP au total"], [HUB_SVG.niveau, n + 1, esc(NIVEAUX_JEU[n][1])], [HUB_SVG.etoile, etoiles, "étoiles"], [HUB_SVG.record, meilleureSerie(), "meilleure série"]].map(([ic, v, l]) => `<a class="h2-stat" href="#parcours"><span class="ic">${ic}</span><b>${v}</b><span>${l}</span></a>`).join("")}</div>`;
+    h += `<div class="h2-stats">${[[HUB_SVG.xp, j.xp, "XP au total", "eclair:#ffd23f"], [HUB_SVG.niveau, n + 1, esc(NIVEAUX_JEU[n][1]), "barres:#b8f54a"], [HUB_SVG.etoile, etoiles, "étoiles", "etoile:#ffc400"], [HUB_SVG.record, meilleureSerie(), "meilleure série", "flamme:#ff8a00"]].map(([ic, v, l, i3]) => `<a class="h2-stat" href="#parcours"><span class="ic" data-ico3d="${i3}">${ic}</span><b>${v}</b><span>${l}</span></a>`).join("")}</div>`;
   } else if (role() === "eleve") h += `<section class="h2-heros"><div class="h2-flamme">${FLAMME_SVG.replace("<svg", '<svg class="h2-flamme-plate"')}</div><p class="h2-sous">En mode Réviser, on joue sans points.</p><p class="h2-texte">Passe en mode Jouer pour la flamme, les défis du jour et ton chemin d'étoiles.</p><button type="button" class="h2-btn plein" data-passer-jouer>Passer en mode Jouer</button></section>`;
-  const ligne = o => `<a class="hub-tuile hub-ligne" href="${esc(o.href)}" style="--k:${o.k}"><span class="hub-ico">${HUB_ICO[o.ico]}</span><span class="hub-t"><b>${o.titre}</b><span>${o.texte}</span></span>${o.badge ? `<i class="hub-badge">${o.badge}</i>` : ""}<span class="hub-fl" aria-hidden="true">&#8250;</span></a>`;
-  if (D.sonora_timbre) h += `<h2 class="hub-rub">Jeux d'oreille${et ? `<span>${et} / 27 étoiles</span>` : ""}</h2><div class="hub-rail">${HUB_TIMBRE.map(([id, nom, pitch, kk, tx]) => `<a class="hub-affiche" href="${esc(D.sonora_timbre)}#${id}" style="--k:${kk};--ktx:${tx || "#fff"}"><b>${nom}</b><span>${pitch}</span><i>Jouer</i></a>`).join("")}</div>`;
+  const ligne = o => `<a class="hub-tuile hub-ligne" href="${esc(o.href)}" style="--k:${o.k}"><span class="hub-ico" data-ico3d="${ICO3D_COURS[o.ico]}:${o.k}">${HUB_ICO[o.ico]}</span><span class="hub-t"><b>${o.titre}</b><span>${o.texte}</span></span>${o.badge ? `<i class="hub-badge">${o.badge}</i>` : ""}<span class="hub-fl" aria-hidden="true">&#8250;</span></a>`;
+  if (D.sonora_timbre) h += `<h2 class="hub-rub">Jeux d'oreille${et ? `<span>${et} / 27 étoiles</span>` : ""}</h2><div class="hub-rail">${HUB_TIMBRE.map(([id, nom, pitch, kk, tx]) => `<a class="hub-affiche" href="${esc(D.sonora_timbre)}#${id}" style="--k:${kk};--ktx:${tx || "#fff"}"><span class="hub-3d" data-ico3d="${ICO3D_TIMBRE[id]}:${kk}" aria-hidden="true"></span><b>${nom}</b><span>${pitch}</span><i>Jouer</i></a>`).join("")}</div>`;
   h += `<h2 class="hub-rub">Jeux du cours</h2><div class="hub-liste">`
     + ligne({ href: "#chemin", titre: `Mon chemin en ${esc(k)}`, texte: "Les jeux du cours, séquence par séquence.", k: "#7c5cff", ico: "chemin", badge: duo ? `${valides} / ${total}` : "" })
     + (jj ? ligne({ href: "#ludo-" + jj.id, titre: "Jeu du jour", texte: esc(jj.titre), k: "#ff8a00", ico: "jour" }) : "")
@@ -5112,8 +5130,25 @@ function vueJouer() {
   h += `<p class="hub-pied">${role() === "prof" || !modeJeu() ? "" : `<a href="#parcours">Mon parcours : badges et quêtes de la semaine</a>`}<a href="#ludo">Les ${D.ludo.jeux.length} jeux de toutes les classes</a></p></div>`;
   return h;
 }
+/* Les icônes 3D (sonora/timbre/icones3d.js) remplacent les icônes dessinées dès qu'elles sont prêtes ; l'inclinaison des cartes, le reflet, le recul de la flamme au défilement. */
+function brancherIcones() {
+  const els = [...document.querySelectorAll("#app [data-ico3d]")]; if (!els.length || !D.sonora_timbre) return;
+  const liste = [...new Set(els.map(e => e.dataset.ico3d))].map(k => { const i = k.indexOf(":"); return [k.slice(0, i), k.slice(i + 1)]; });
+  import(new URL(D.sonora_timbre.replace(/index\.html$/, "icones3d.js"), location.href).href).then(m => m.icones3d(liste, (cle, url) => {
+    document.querySelectorAll(`#app [data-ico3d="${cle}"]`).forEach(e => { if (!e.querySelector("img.ico3d")) { e.innerHTML = `<img class="ico3d" src="${url}" alt="" draggable="false">`; e.classList.add("en-3d"); } }); })).catch(() => {});
+}
+function brancherRelief() {
+  const hub = document.querySelector(".hub2"); if (!hub || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const CARTES = ".h2-carte, .h2-stat, .hub-affiche, .hub-ligne, .h2-heros";
+  hub.addEventListener("pointermove", e => { if (e.pointerType === "touch") return; const c = e.target.closest(CARTES); if (!c) return; const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    c.style.setProperty("--ry", ((x - .5) * 10).toFixed(2) + "deg"); c.style.setProperty("--rx", ((.5 - y) * 8).toFixed(2) + "deg"); c.style.setProperty("--mx", (x * 100).toFixed(1) + "%"); c.style.setProperty("--my", (y * 100).toFixed(1) + "%"); c.classList.add("survol"); });
+  hub.addEventListener("pointerout", e => { const c = e.target.closest(CARTES); if (c && !c.contains(e.relatedTarget)) { c.style.removeProperty("--rx"); c.style.removeProperty("--ry"); c.classList.remove("survol"); } });
+  if (!window.__reliefGyro) { window.__reliefGyro = true; addEventListener("deviceorientation", e => { const h = document.querySelector(".hub2"); if (!h || e.gamma == null) return; h.style.setProperty("--gx", Math.max(-1, Math.min(1, e.gamma / 25)).toFixed(3)); h.style.setProperty("--gy", Math.max(-1, Math.min(1, (e.beta - 40) / 30)).toFixed(3)); }, { passive: true });
+    addEventListener("scroll", () => { const h = document.querySelector(".hub2"); if (h) h.style.setProperty("--defile", Math.min(1, scrollY / 420).toFixed(3)); }, { passive: true }); }
+}
 // La flamme en 3D (sonora/timbre/flamme.js), montée après l'affichage. Sans WebGL, la flamme dessinée reste.
 function brancherHeros() {
+  brancherIcones(); brancherRelief();
   const cv = document.getElementById("flamme3d"); if (!cv || !D.sonora_timbre) return;
   import(new URL(D.sonora_timbre.replace(/index\.html$/, "flamme.js"), location.href).href).then(m => { if (!document.body.contains(cv)) return; const f = m.monterFlamme(cv, { allumee: duoJour().p > 0 }); if (f) cv.closest(".h2-flamme").classList.add("trois-d"); }).catch(() => {});
 }
