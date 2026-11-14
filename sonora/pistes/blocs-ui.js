@@ -1,9 +1,9 @@
 // L'écran du mode blocs de SONORA Pistes (le modèle est dans blocs.js, sans DOM et testé dans Node).
 // Une grille : une ligne par instrument (une pastille de couleur que l'on touche pour changer d'instrument), une colonne par mesure, quatre mesures à la fois.
 // Toucher une case vide pose un bloc et ouvre ses notes ; toucher un bloc l'ouvre. Le piano roll et la partition existants servent d'éditeur : rien n'est doublé.
-import * as B from "./blocs.js?v=67293a0507";
-import * as M from "./motifs.js?v=67293a0507";
-import { PICTOS } from "./pictos.js?v=67293a0507";
+import * as B from "./blocs.js?v=69267e0c19";
+import * as M from "./motifs.js?v=69267e0c19";
+import { PICTOS } from "./pictos.js?v=69267e0c19";
 
 // Les instruments qu'on propose en gros boutons quand on touche une pastille : les plus connus d'abord, les autres dans la liste.
 const PRINCIPAUX = [["ech:clavier", "Piano"], ["ech:rhodes", "Piano électrique"], ["ech:guitare-folk", "Guitare"], ["ech:basse-moderne", "Basse"], ["ech:sax-alto", "Saxophone"], ["ech:synthe", "Synthé"], ["ech:violoncelle-solo", "Violoncelle"], ["batt:reel", "Batterie"]];
@@ -35,7 +35,7 @@ const FAM_COULEUR = { rythme: "#FF8A3D", basse: "#A86CF0", accords: "#4C9BF5", m
 
 export function creerVueBlocs(d) {
   const { $, P, INS, etat, esc, message, changer, afficherPistes, ouvrirRouleau, fermerRouleau, remettreAJourMidi, rouleauOuvert, ecouterMotif, arreterMotif } = d;
-  const v = { actif: false, groupe: 0, choix: null, presse: null, palette: null, motifs: false, modeles: false, onglet: null, tonique: 0 };
+  const v = { actif: false, groupe: 0, choix: null, presse: null, palette: null, motifs: false, modeles: false, onglet: null, famille: "Favoris", tonique: 0 };
   try { const t = +localStorage.getItem("sonora:pistes:tonique"); if (M.TONALITES.some(x => x[1] === t)) v.tonique = t; } catch (_) { /* la tonalité n'est pas gardée : do */ }
   const racine = $("blocs");
   const catalogue = () => INS.catalogue(), nomInstrument = id => (catalogue().find(x => x.id === id) || { nom: id }).nom;
@@ -80,9 +80,13 @@ export function creerVueBlocs(d) {
     if (v.palette && p.pistes.some(x => x.id === v.palette)) {
       const cur = B.instrumentDePiste(p, v.palette);
       pal.hidden = false;
+      // comme un sélecteur de studio : des onglets par famille, puis de grandes tuiles numérotées (silhouette noire sur fond blanc, la tuile choisie en bleu)
+      const onglets = ["Favoris", ...INS.GROUPES.filter(gr => catalogue().some(x => x.groupe === gr))];
+      if (!onglets.includes(v.famille)) v.famille = "Favoris";
+      const liste = v.famille === "Favoris" ? PRINCIPAUX.map(([id, nom]) => ({ id, nom })) : catalogue().filter(x => x.groupe === v.famille);
       pal.innerHTML = `<div class="bl-panneau-haut"><p class="bl-q">Quel instrument pour « ${esc(P.trouverPiste(p, v.palette).nom)} » ?</p><button type="button" id="bl-fermer-palette" class="bl-fermer" aria-label="Fermer le choix d'instrument">Fermer</button></div>
-        <div class="bl-inst">${PRINCIPAUX.map(([id, nom]) => `<button type="button" data-inst="${id}" aria-pressed="${id === cur}" style="--col:${couleur(id)}"><span class="bl-ico-g">${pictoDe(id)}</span><b>${esc(nom)}</b></button>`).join("")}</div>
-        <label class="bl-tous"><span>Tous les instruments</span><select id="bl-tous" aria-label="Tous les instruments">${INS.GROUPES.map(gr => `<optgroup label="${esc(gr)}">${catalogue().filter(x => x.groupe === gr).map(x => `<option value="${esc(x.id)}"${x.id === cur ? " selected" : ""}>${esc(x.nom)}</option>`).join("")}</optgroup>`).join("")}</select></label>`;
+        <div class="bl-familles" role="tablist" aria-label="Familles d'instruments">${onglets.map(o => `<button type="button" role="tab" data-famille="${esc(o)}" aria-selected="${o === v.famille}">${esc(o)}</button>`).join("")}</div>
+        <div class="bl-inst">${liste.map((x, k) => `<button type="button" data-inst="${esc(x.id)}" aria-pressed="${x.id === cur}"><i class="bl-num">${k + 1}</i><span class="bl-ico-g">${pictoDe(x.id)}</span><b>${esc(x.nom)}</b></button>`).join("")}</div>`;
     } else { pal.hidden = true; pal.innerHTML = ""; }
     dessinerMotifs();
     dessinerActions();
@@ -163,6 +167,7 @@ export function creerVueBlocs(d) {
     if (e.target.closest("#bl-master")) { etat.projet.master = etat.projet.master === "pro" ? "aucun" : "pro"; changer(); message(etat.projet.master === "pro" ? "Son pro activé : niveau, tonalité, salle, largeur stéréo et compression d'un morceau actuel. L'export WAV a le même son." : "Son pro coupé : le son brut des instruments, plus faible et plus étroit."); return; }
     const mu = e.target.closest("[data-muet]"); if (mu) { const pi = P.trouverPiste(etat.projet, mu.dataset.muet); if (pi) { pi.muet = !pi.muet; changer(); } return; }
     const pa = e.target.closest(".bl-pastille"); if (pa) { v.motifs = false; v.modeles = false; v.palette = v.palette === pa.dataset.piste ? null : pa.dataset.piste; choisir(pa.dataset.piste, v.choix ? v.choix.mesure : v.groupe * B.MESURES_PAR_GROUPE); dessiner(); return; }
+    const fa = e.target.closest("[data-famille]"); if (fa && v.palette) { v.famille = fa.dataset.famille; dessiner(); return; }
     const ins = e.target.closest("[data-inst]"); if (ins && v.palette) { await regler(v.palette, ins.dataset.inst); return; }
     if (e.target.closest("#bl-fermer-palette")) { v.palette = null; dessiner(); return; }
     const on = e.target.closest("[data-onglet]"); if (on) { v.onglet = on.dataset.onglet; arreterMotif(); dessiner(); return; }

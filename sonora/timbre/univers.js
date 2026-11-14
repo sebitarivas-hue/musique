@@ -1,8 +1,8 @@
 // TIMBRE : les instruments du jeu, rangés en trois univers. Tout est de vrais enregistrements de la banque du site (domaine public, voir outils/banque_*.py) :
 // on ne fait jamais deviner un son qui n'existe pas. Hauteurs en numéros MIDI (60 = do4). `echant` : la zone enregistrée dans la banque (catalogue.json).
 // Le nom du jeu est ici et nulle part ailleurs : un seul endroit à changer.
-import { INSTRUMENTS, FAMILLES } from "../orchestre/donnees.js?v=67293a0507";
-import { PHOTOS } from "../orchestre/photos.js?v=67293a0507";
+import { INSTRUMENTS, FAMILLES } from "../orchestre/donnees.js?v=69267e0c19";
+import { PHOTOS } from "../orchestre/photos.js?v=69267e0c19";
 
 export const NOM_JEU = "TIMBRE";
 export const DEVISE = "Écoute. Devine. Monte de niveau.";
