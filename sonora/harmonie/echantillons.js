@@ -6,15 +6,20 @@
 // Instruments de l'harmonie -> instrument de la banque. Les clés sont celles déjà gardées dans le navigateur (piano, orgue, cordes).
 export const BANQUE = { piano: "clavier", orgue: "orgue", cordes: "cordes", harpe: "harpe", guitare: "guitare", clavecin: "clavecin", violoncelle: "violoncelle", flute: "souffle", guitareElec: "guitare-elec", guitareJazz: "guitare-jazz", guitareFolk: "guitare-folk", violonsOrch: "violons-ens", corsOrch: "cors-ens", clarinettesOrch: "clarinettes-ens", choeur: "choeur-f", celesta: "celesta" };
 // Niveau relatif et durée de relâchement (secondes) de chaque instrument de la banque : les mêmes valeurs que celles du site (outils/site_gabarit.html, tables NIVEAU et RELACHE).
-export const NIVEAU = { "guitare-elec": 1.2, "guitare-jazz": 1.2, "guitare-folk": 1.2, "clarinettes-ens": 1, "choeur-f": 1, "cors-ens": 1, "trompettes-ens": 1, "trombones-ens": 1, "flutes-ens": 1, "hautbois-ens": 1, "bassons-ens": 1, "choeur-h": 1, "altos-ens": 1, "celli-ens": 1, basse: 1.4, "violons-ens": 0.9, "violons-stacc": 1, "violons-piz": 1.2, "violons-trem": 0.9, "celli-piz": 1.2, "basses-piz": 1.3, "basses-ens": 1.1, celesta: 1.1, souffle: 1, cordes: 1, clavier: 1, orgue: 0.9, guitare: 1.2, clavecin: 1.1, violoncelle: 1, harpe: 1 };
-export const RELACHE = { "guitare-elec": 0.5, "guitare-jazz": 0.5, "guitare-folk": 0.6, basse: 0.16, "violons-ens": 0.6, "violons-stacc": 0.3, "violons-piz": 0.4, "violons-trem": 0.5, "altos-ens": 0.6, "celli-ens": 0.6, "celli-piz": 0.4, "basses-ens": 0.6, "basses-piz": 0.4, "cors-ens": 0.5, "trompettes-ens": 0.35, "trombones-ens": 0.4, "flutes-ens": 0.35, "hautbois-ens": 0.35, "clarinettes-ens": 0.35, "bassons-ens": 0.4, "choeur-h": 0.7, "choeur-f": 0.7, celesta: 0.8, souffle: 0.3, cordes: 0.5, clavier: 0.6, orgue: 0.25, guitare: 0.6, clavecin: 0.5, violoncelle: 0.5, harpe: 1.2 };
+export const NIVEAU = { "guitare-elec": 1.2, "guitare-jazz": 1.2, "guitare-folk": 1.2, "clarinettes-ens": 1, "choeur-f": 1, "cors-ens": 1, "trompettes-ens": 1, "trombones-ens": 1, "flutes-ens": 1, "hautbois-ens": 1, "bassons-ens": 1, "choeur-h": 1, "altos-ens": 1, "celli-ens": 1, basse: 1.4, "violons-ens": 0.9, "violons-stacc": 1, "violons-piz": 1.2, "violons-trem": 0.9, "celli-piz": 1.2, "basses-piz": 1.3, "basses-ens": 1.1, celesta: 1.1, souffle: 1, cordes: 1, clavier: 1, "piano-droit": 1, orgue: 0.9, guitare: 1.2, clavecin: 1.1, violoncelle: 1, harpe: 1 };
+export const RELACHE = { "guitare-elec": 0.5, "guitare-jazz": 0.5, "guitare-folk": 0.6, basse: 0.16, "violons-ens": 0.6, "violons-stacc": 0.3, "violons-piz": 0.4, "violons-trem": 0.5, "altos-ens": 0.6, "celli-ens": 0.6, "celli-piz": 0.4, "basses-ens": 0.6, "basses-piz": 0.4, "cors-ens": 0.5, "trompettes-ens": 0.35, "trombones-ens": 0.4, "flutes-ens": 0.35, "hautbois-ens": 0.35, "clarinettes-ens": 0.35, "bassons-ens": 0.4, "choeur-h": 0.7, "choeur-f": 0.7, celesta: 0.8, souffle: 0.3, cordes: 0.5, clavier: 0.6, "piano-droit": 0.6, orgue: 0.25, guitare: 0.6, clavecin: 0.5, violoncelle: 0.5, harpe: 1.2 };
 
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 
 // Le tampon dont la hauteur d'origine est la plus proche (en octaves) de la hauteur demandée. tampons : [{ f, canal, sr, off, a, b }]
-export function choisir(tampons, h) {
+// Un instrument peut avoir plusieurs couches d'intensité (champ `c` : 1 douce, 2 forte, ...) : on joue la couche qui correspond à la vitesse de la note (une note douce n'est pas une note forte
+// baissée : le timbre change), puis, dans cette couche, l'enregistrement le plus proche en hauteur. Sans couches, ou sans vitesse, tous les tampons sont candidats.
+export const seuilCouche = (couches, vitesse) => { const n = couches.length; if (n <= 1 || vitesse == null) return couches[n - 1]; const i = Math.min(n - 1, Math.max(0, Math.floor(vitesse * n / 1.02))); return couches[i]; };
+export function choisir(tampons, h, vitesse) {
+  let liste = tampons;
+  if (vitesse != null && tampons.some(t => t.c)) { const couches = [...new Set(tampons.map(t => t.c).filter(Boolean))].sort((a, b) => a - b), voulue = seuilCouche(couches, vitesse), dans = tampons.filter(t => t.c === voulue); if (dans.length) liste = dans; }
   let meilleur = null, d = Infinity;
-  for (const t of tampons) { const x = Math.abs(Math.log2(h / t.f)); if (x < d) { d = x; meilleur = t; } }
+  for (const t of liste) { const x = Math.abs(Math.log2(h / t.f)); if (x < d) { d = x; meilleur = t; } }
   return meilleur;
 }
 
@@ -28,7 +33,7 @@ export function mixer(evenements, tampons, { sr = 44100, duree, instrument = "cl
   const niveau = niveauImpose ?? NIVEAU[instrument] ?? 1, rel = relache ?? RELACHE[instrument] ?? 0.4, tau = rel / 4;   // relache, niveau et variation : pour les instruments de synthèse de Pistes, et un clip joué à la main (sans variation de vitesse)
   const fin = duree ?? Math.max(...evenements.map(e => e.t + e.duree)) + rel * 1.5 + 0.2, n = Math.round(fin * sr), L = new Float32Array(n), R = new Float32Array(n), att = Math.max(1, Math.round(0.004 * sr));
   for (const e of evenements) { const tries = [...e.notes].sort((a, b) => a - b); for (const [k, m] of e.notes.entries()) {
-    const h = e.hz && e.hz[k] ? e.hz[k] : hz(m), tp = choisir(tampons, h); if (!tp) continue;   // e.hz : hauteurs exactes (gammes non tempérées)
+    const h = e.hz && e.hz[k] ? e.hz[k] : hz(m), tp = choisir(tampons, h, e.vitesse ?? 0.8); if (!tp) continue;   // e.hz : hauteurs exactes (gammes non tempérées)
     const rang = tries.indexOf(m), decal = tries.length > 1 ? rang * strum : 0, taux = (h / tp.f) * (tp.sr / sr), d0 = Math.round((e.t + decal) * sr), dNote = Math.max(1, Math.round((e.duree - decal) * sr)), queue = Math.round(rel * 1.5 * sr), vit = (e.vitesse ?? 0.8) * (variation ? 1 + VARIATION[(m + rang) % VARIATION.length] : 1) * niveau * gain;
     const x = tp.canal, debut = tp.off * tp.sr, dN = tp.ponctuel ? Math.max(dNote, Math.ceil((x.length - debut) / taux)) : dNote, bouclable = tp.a && tp.b && e.duree + 0.3 > tp.b, d1 = (tp.off + (tp.a || 0)) * tp.sr, d2 = (tp.off + (tp.b || 0)) * tp.sr;
     const p = Math.max(-1, Math.min(1, (m - 60) / 36)) * etale, ang = (p + 1) * Math.PI / 4, gl = Math.cos(ang), gr = Math.sin(ang);
@@ -85,7 +90,7 @@ export function chargerInstrument(nomBanque, ctx, base = racineBanque()) {
     .then(b => new Promise((ok, ko) => { const p = ctx.decodeAudioData(b, ok, ko); if (p && p.catch) p.catch(ko); })).then(buf => {
       const canal = buf.getChannelData(0); let m = 0; for (let i = 0; i < canal.length; i++) m = Math.max(m, Math.abs(canal[i]));
       let o = 0; while (o < canal.length && Math.abs(canal[o]) < m * 0.003) o++; // le silence du début (retard du codeur MP3) est sauté
-      return { id: e.id, f: e.f, canal, sr: buf.sampleRate, off: o / buf.sampleRate, a: e.a, b: e.b };
+      return { id: e.id, f: e.f, canal, sr: buf.sampleRate, off: o / buf.sampleRate, a: e.a, b: e.b, c: e.c };
     }).catch(() => null)))).then(L => L.filter(Boolean).sort((x, y) => x.f - y.f));
   return CACHE.instruments[nomBanque];
 }

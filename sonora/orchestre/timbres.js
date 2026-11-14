@@ -1,8 +1,8 @@
 // SONORA Orchestre, espace 03 : reconnaître les timbres. Un test à l'aveugle (famille ou instrument, éventuellement tous sur la même note) et une comparaison de deux timbres sur la même note.
-import { FAMILLES, INSTRUMENTS, parId, nomNote } from "./donnees.js?v=5a280b16f8";
-import { POOL, POOL_IMAGE, MOTS_TIMBRE, etiquette, NOTE_COMMUNE, alea, creerQuestions, noteCommune, libelleChoix } from "./timbres_logique.js?v=5a280b16f8";
-import { registresDe_ } from "./audio_aide.js?v=5a280b16f8";
-import { rendre, lire, arreter, message, jouer } from "./audio.js?v=5a280b16f8";
+import { FAMILLES, INSTRUMENTS, parId, nomNote } from "./donnees.js?v=a384b25981";
+import { POOL, POOL_IMAGE, MOTS_TIMBRE, etiquette, NOTE_COMMUNE, alea, creerQuestions, noteCommune, libelleChoix } from "./timbres_logique.js?v=a384b25981";
+import { registresDe_ } from "./audio_aide.js?v=a384b25981";
+import { rendre, lire, arreter, message, jouer } from "./audio.js?v=a384b25981";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

@@ -3,14 +3,14 @@
 // Maintenant : un seul mécanisme pour tout. Chaque instrument est un jeu de notes (des « tampons ») : des enregistrements réels de la banque du site, ou des notes rendues
 // une fois par SONORA (synthèse) à plusieurs hauteurs. Le clavier les joue en direct par transposition (Sampleur) et le clip est mixé avec les mêmes tampons (mixer) :
 // ce qu'on entend est ce qui est mis sur la piste. Plus de dépendance au moteur temps réel : si le son sort ailleurs sur la page, il sort ici.
-import { compiler } from "../src/index.js?v=5a280b16f8";
-import { rendre } from "../src/rendu.js?v=5a280b16f8";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=5a280b16f8";
-import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=5a280b16f8";
-import { ENTREES } from "../library/catalogue.js?v=5a280b16f8";
-import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=5a280b16f8";
-import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=5a280b16f8";
-import { INSTRUMENTS_BATTERIE, tamponsBatterieAsync, kitDe } from "./batterie_midi.js?v=5a280b16f8";
+import { compiler } from "../src/index.js?v=a384b25981";
+import { rendre } from "../src/rendu.js?v=a384b25981";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=a384b25981";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=a384b25981";
+import { ENTREES } from "../library/catalogue.js?v=a384b25981";
+import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=a384b25981";
+import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=a384b25981";
+import { INSTRUMENTS_BATTERIE, tamponsBatterieAsync, kitDe } from "./batterie_midi.js?v=a384b25981";
 
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 export const GROUPES = ["Claviers", "Cordes", "Orchestre", "Batteries", "Vents", "Voix", "Percussions à hauteurs", "Percussions du monde", "Synthés et basses", "Effets sonores"];
@@ -90,7 +90,7 @@ export class Sampleur {
   _buffer(tp) { let b = this.buffers.get(tp); if (!b) { b = this.ctx.createBuffer(1, tp.canal.length, tp.sr); b.copyToChannel(tp.canal, 0); this.buffers.set(tp, b); } return b; }
   noteOn(note, hauteur, vitesse = 0.8) {
     if (!this.inst) return false; if (this.voix.has(note)) this.noteOff(note, true);
-    const I = this.inst, h = hauteur || hz(note), tp = choisir(I.tampons, h); if (!tp) return false;
+    const I = this.inst, h = hauteur || hz(note), tp = choisir(I.tampons, h, vitesse); if (!tp) return false;
     const ctx = this.ctx, t = ctx.currentTime, src = ctx.createBufferSource(), g = ctx.createGain(), pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
     src.buffer = this._buffer(tp); src.playbackRate.value = h / tp.f; if (tp.a && tp.b) { src.loop = true; src.loopStart = tp.off + tp.a; src.loopEnd = tp.off + tp.b; }
     const niveau = vitesse * I.niveau * 0.5; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(niveau, t + 0.004);

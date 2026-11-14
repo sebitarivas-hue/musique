@@ -1,86 +1,128 @@
 {
  "kick": {
-  "x": [
-   "kick_x1",
-   "kick_x2",
-   "kick_x3"
-  ],
   "o": [
-   "kick_o1",
-   "kick_o2"
+   "drs_kick_o1",
+   "drs_kick_o2",
+   "drs_kick_o3"
+  ],
+  "m": [
+   "drs_kick_m1",
+   "drs_kick_m2",
+   "drs_kick_m3"
+  ],
+  "x": [
+   "drs_kick_x1",
+   "drs_kick_x2",
+   "drs_kick_x3"
   ]
  },
  "snare": {
-  "x": [
-   "snare_x1",
-   "snare_x2",
-   "snare_x3"
-  ],
   "o": [
-   "snare_o1",
-   "snare_o2"
+   "drs_snare_o1",
+   "drs_snare_o2",
+   "drs_snare_o3"
+  ],
+  "m": [
+   "drs_snare_m1",
+   "drs_snare_m2",
+   "drs_snare_m3"
+  ],
+  "x": [
+   "drs_snare_x1",
+   "drs_snare_x2",
+   "drs_snare_x3"
   ]
  },
  "rim": {
-  "x": [
-   "rim_x1",
-   "rim_x2"
-  ],
   "o": [
-   "rim_o1",
-   "rim_o2"
+   "drs_rim_o1",
+   "drs_rim_o2"
+  ],
+  "m": [
+   "drs_rim_m1",
+   "drs_rim_m2"
+  ],
+  "x": [
+   "drs_rim_x1",
+   "drs_rim_x2"
   ]
  },
  "hatc": {
-  "x": [
-   "hatc_x1",
-   "hatc_x2",
-   "hatc_x3"
+  "o": [
+   "drs_hatc_o1",
+   "drs_hatc_o2",
+   "drs_hatc_o3"
   ],
   "m": [
-   "hatc_m1",
-   "hatc_m2",
-   "hatc_m3"
+   "drs_hatc_m1",
+   "drs_hatc_m2",
+   "drs_hatc_m3"
   ],
-  "o": [
-   "hatc_o1",
-   "hatc_o2"
+  "x": [
+   "drs_hatc_x1",
+   "drs_hatc_x2",
+   "drs_hatc_x3"
   ]
  },
  "hato": {
-  "x": [
-   "hato_x1",
-   "hato_x2"
-  ],
   "o": [
-   "hato_o1",
-   "hato_o2"
+   "drs_hato_o1",
+   "drs_hato_o2"
+  ],
+  "m": [
+   "drs_hato_m1",
+   "drs_hato_m2",
+   "drs_hato_m3"
+  ],
+  "x": [
+   "drs_hato_x1",
+   "drs_hato_x2",
+   "drs_hato_x3"
   ]
  },
  "ride": {
-  "x": [
-   "ride_x1",
-   "ride_x2"
-  ],
   "o": [
-   "ride_o1",
-   "ride_o2"
+   "drs_ride_o1"
+  ],
+  "m": [
+   "drs_ride_m1",
+   "drs_ride_m2"
+  ],
+  "x": [
+   "drs_ride_x1",
+   "drs_ride_x2",
+   "drs_ride_x3"
   ]
  },
  "crash": {
+  "o": [
+   "drs_crash_o1",
+   "drs_crash_o2"
+  ],
+  "m": [
+   "drs_crash_m1",
+   "drs_crash_m2"
+  ],
   "x": [
-   "crash_x1",
-   "crash_x2"
+   "drs_crash_x1",
+   "drs_crash_x2"
   ]
  },
  "tom": {
-  "x": [
-   "tom_x1",
-   "tom_x2"
-  ],
   "o": [
-   "tom_o1",
-   "tom_o2"
+   "drs_tom_o1",
+   "drs_tom_o2",
+   "drs_tom_o3"
+  ],
+  "m": [
+   "drs_tom_m1",
+   "drs_tom_m2",
+   "drs_tom_m3"
+  ],
+  "x": [
+   "drs_tom_x1",
+   "drs_tom_x2",
+   "drs_tom_x3"
   ]
  }
 }
