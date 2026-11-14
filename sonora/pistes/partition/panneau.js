@@ -1,10 +1,10 @@
 // Le panneau « Partition » de SONORA Pistes : la partition gravée d'un clip de notes, et à côté son texte façon LilyPond. On écrit le texte, la partition se dessine et les notes du clip suivent ;
 // on change les notes dans le piano roll, la partition suit. Le panneau ne connaît ni le projet ni l'audio : tout passe par des rappels (comme le piano roll).
 // rappels : { ecouter(n, v), message(t), appliquer({ notes, temps, partition }) : le texte a changé les notes, memoriser(partition) : seul le texte a changé }
-import { lire, ecrire, ErreurLily } from "./lily.js?v=090ca757ad";
-import { depuisNotes, versNotes, devinerTonalite, longueurMesure, unitesValeur } from "./modele.js?v=090ca757ad";
-import { chargerVexflow, graver } from "./gravure.js?v=090ca757ad";
-import { nomTonalite, alterationsArmure, midiDe, nomFrancais } from "./hauteurs.js?v=090ca757ad";
+import { lire, ecrire, ErreurLily } from "./lily.js?v=1213718447";
+import { depuisNotes, versNotes, devinerTonalite, longueurMesure, unitesValeur } from "./modele.js?v=1213718447";
+import { chargerVexflow, graver } from "./gravure.js?v=1213718447";
+import { nomTonalite, alterationsArmure, midiDe, nomFrancais } from "./hauteurs.js?v=1213718447";
 
 const BASE = new URL("../", import.meta.url);
 const TONALITES = [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7];

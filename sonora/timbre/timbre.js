@@ -1,8 +1,9 @@
 // TIMBRE : la salle de jeux de l'oreille. Six jeux, de vrais enregistrements de la banque du site, des questions tirées au hasard à chaque partie
 // (deux élèves côte à côte n'ont jamais la même série). La logique pure est dans jeu_logique.js, testée dans Node.
-import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=090ca757ad";
-import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=090ca757ad";
-import { preparer, mixer } from "../harmonie/echantillons.js?v=090ca757ad";
+import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=1213718447";
+import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=1213718447";
+import { preparer, mixer } from "../harmonie/echantillons.js?v=1213718447";
+import { monter } from "./scene.js?v=1213718447";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -74,6 +75,10 @@ const vibrer = m => { try { if (navigator.vibrate) navigator.vibrate(m); } catch
 function secouer() { const z = $("zone"); z.classList.remove("secoue"); void z.offsetWidth; z.classList.add("secoue"); vibrer([40, 40, 40]); }
 const COULEURS_FETE = ["#ffc400", "#ff3d7f", "#22d3ee", "#b8f400", "#fff"];
 
+/* ---------- Le monde en 3D, derrière tout (sans WebGL, le fond reste un dégradé de nuit) ---------- */
+const Monde = monter($("monde"), { couleurs: MODES.map(m => m.k) }) || { choisir() {}, son() {}, fete() {}, redessiner() {} };
+if (!Monde.arreter) document.body.classList.add("sans-3d");
+
 /* ---------- L'application ---------- */
 const App = { ecran: "accueil", id: 0, mode: null, etat: "", q: null, score: 0, relance: null, st: null };
 const vivant = moi => moi === App.id && App.ecran === "partie";
@@ -82,29 +87,45 @@ function montrer(nom) {
   $("verdict").hidden = true; window.scrollTo(0, 0); if (nom !== "partie") $("jeu").focus({ preventScroll: true });
 }
 const teinte = k => document.documentElement.style.setProperty("--c", k);
+/* Retour et points du cours : « ‹ Jouer » ramène à l'accueil Jouer du site (pas au hasard dans le cours), et en mode Jouer les points du cours restent affichés. */
+const ESPACE = (() => { try { return localStorage.getItem("cours:espace") || ""; } catch (_) { return ""; } })(), RACINE = location.href.split(/\/sonora\//)[0] + "/";
+const HUB = RACINE + (ESPACE === "prof" ? "index.html" : ESPACE === "eleves" ? "eleves/index.html" : "choix.html") + (ESPACE ? "#jouer" : "");
+const FLAMME = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c-4.2 0-7-2.8-7-6.6 0-3.6 2.8-5.6 3.9-9.4 2.8 1.700 3.7 4.3 3.7 6 1-.9 1.6-2.2 1.7-3.6 2.4 1.9 4.7 4.7 4.7 7.5 0 3.7-2.8 6.1-7 6.1z"/></svg>';
+function ptsCours() {
+  const el = $("pts-cours"); let j = null, mode = ""; try { j = JSON.parse(localStorage.getItem("jeu") || "null"); mode = localStorage.getItem("mode"); } catch (_) {}
+  if (ESPACE !== "eleves" || mode !== "jouer" || !j) { el.hidden = true; return; }
+  const jl = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"), dj = j.dj || {}, d = new Date(); let n = 0; const auj = !!(dj[jl(d)] || {}).p;
+  if (!auj) d.setDate(d.getDate() - 1); while ((dj[jl(d)] || {}).p) { n++; d.setDate(d.getDate() - 1); }
+  el.hidden = false; el.href = HUB.replace("#jouer", "#parcours"); el.setAttribute("aria-label", `Mes points du cours : ${j.xp || 0} XP, ${n} jour${n > 1 ? "s" : ""} de suite`);
+  el.innerHTML = `<span class="f${auj ? " on" : ""}">${FLAMME}<b>${n}</b></span><span class="x"><b>${j.xp || 0}</b> XP</span>`;
+}
 function majJoueur() {
+  ptsCours();
   const j = lire(), n = niveauJoueur(j.xp), C = 2 * Math.PI * 15;
   $("joueur").innerHTML = `<span class="anneau"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="f" cx="18" cy="18" r="15"/><circle class="v" cx="18" cy="18" r="15" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - n.part)).toFixed(1)}"/></svg><b>${n.n}</b></span><span>${esc(titreJoueur(n.n))}</span>`;
   $("joueur").setAttribute("aria-label", `Niveau ${n.n}, ${titreJoueur(n.n)}. Voir ma collection`);
 }
 
-/* ---------- L'accueil : une affiche par jeu ---------- */
+/* ---------- L'accueil : les six jeux d'un coup d'œil. On en touche un : sa lanterne s'approche, son panneau s'ouvre, on joue. ---------- */
+function selectionner(id, lancer) {
+  const m = mode(id) || MODES[0], i = MODES.indexOf(m), j = lire(), etq = Object.values(j.etoiles).reduce((a, b) => a + b, 0);
+  if (lancer && App.choisi === m.id) { contexte(); return LANCER[m.id](); }
+  App.choisi = m.id; teinte(m.k); Monde.choisir(i);
+  [...$("affiches").children].forEach(a => a.setAttribute("aria-pressed", String(a.dataset.mode === m.id)));
+  $("selection").style.setProperty("--k", m.k);
+  $("selection").innerHTML = `<div class="sel-t"><span class="num">Jeu ${i + 1} sur ${MODES.length}</span><h2>${esc(m.nom)}</h2><p>${esc(m.pitch)}</p></div>
+    <div class="sel-b"><span class="rec">${m.id === "quiz" ? `<b>${etq} / ${UNIVERS.length * 9}</b>étoiles` : j.meilleur[m.id] ? `<b>${j.meilleur[m.id]}</b>ton record` : `<b>Nouveau</b>à essayer`}</span><button type="button" class="btn" id="lancer">Jouer</button></div>`;
+  $("lancer").onclick = () => { contexte(); LANCER[m.id](); };
+}
 function accueil(vers) {
-  arreter(); App.id++; teinte("#7c5cff"); const j = lire(), etq = Object.values(j.etoiles).reduce((a, b) => a + b, 0);
-  $("affiches").innerHTML = MODES.map((m, i) => `<button type="button" class="affiche" role="listitem" data-mode="${m.id}" style="--k:${m.k};--ktx:${m.tx || "#fff"}">${m.g}<span class="num">Jeu ${i + 1}</span><h3>${esc(m.nom)}</h3><p>${esc(m.pitch)}</p>
-    <span class="bas"><span class="rec">${m.id === "quiz" ? `<b>${etq} / ${UNIVERS.length * 9}</b>étoiles` : j.meilleur[m.id] ? `<b>${j.meilleur[m.id]}</b>ton record` : `<b>Nouveau</b>à essayer`}</span><span class="jouer">Jouer</span></span></button>`).join("");
-  $("points").innerHTML = MODES.map(() => "<i></i>").join("");
-  const connus = TOUS.filter(i => j.vus[i.id]), six = TOUS.filter(i => i.photo).slice(0, 6);
-  $("vers-collection").innerHTML = `<span class="pastilles" aria-hidden="true">${six.map(i => `<i class="${j.vus[i.id] ? "on" : ""}"${j.vus[i.id] ? ` style="background-image:url(../orchestre/photos/${esc(i.photo)})"` : ""}></i>`).join("")}</span><span><b>Ma collection</b><span>${connus.length} instrument${connus.length > 1 ? "s" : ""} reconnu${connus.length > 1 ? "s" : ""} sur ${TOUS.length}</span></span><span class="fl" aria-hidden="true">&#8250;</span>`;
-  majJoueur(); montrer("accueil");
-  const A = $("affiches"), suivre = () => { if (App.ecran !== "accueil") return; const c = A.getBoundingClientRect(), mil = c.left + c.width / 2; let best = 0, d0 = 1e9; [...A.children].forEach((a, i) => { const r = a.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - mil); a.style.setProperty("--s", (1 - Math.min(1, d / c.width) * .1).toFixed(3)); if (d < d0) { d0 = d; best = i; } });
-    [...$("points").children].forEach((p, i) => p.classList.toggle("on", i === best)); teinte(MODES[best].k); };
-  A.onscroll = () => requestAnimationFrame(suivre); suivre();
-  if (vers && mode(vers)) { const a = A.querySelector(`[data-mode="${vers}"]`); if (a) { a.scrollIntoView({ inline: "center", block: "nearest" }); a.focus({ preventScroll: true }); } }
+  arreter(); App.id++; document.body.classList.remove("en-jeu");
+  $("affiches").innerHTML = MODES.map(m => `<button type="button" class="affiche" role="listitem" data-mode="${m.id}" aria-pressed="false" style="--k:${m.k};--ktx:${m.tx || "#fff"}">${m.g}<b>${esc(m.nom)}</b></button>`).join("");
+  majJoueur(); montrer("accueil"); App.choisi = null; selectionner(mode(vers) ? vers : (App.mode && App.mode.id) || "quiz");
 }
 
 /* ---------- Qui joue ? : les univers et leurs niveaux ---------- */
 function ecranNiveaux(uid) {
+  document.body.classList.add("en-jeu"); Monde.choisir(0);
   const j = lire(), u = parUnivers(uid || App.univers || "orchestre"); App.univers = u.id; teinte(mode("quiz").k);
   $("onglets").innerHTML = UNIVERS.map(x => `<button type="button" role="tab" aria-selected="${x.id === u.id}" data-u="${x.id}">${esc(x.nom)}</button>`).join("");
   $("niveaux").innerHTML = NIVEAUX.map(n => { const ouv = niveauOuvert(j.etoiles, u.id, n.n), e = j.etoiles[`${u.id}:${n.n}`] || 0, m = j.meilleur[`quiz:${u.id}:${n.n}`];
@@ -114,7 +135,7 @@ function ecranNiveaux(uid) {
 
 /* ---------- La coque d'une partie : en-tête, chrono, zone ---------- */
 function ouvrirPartie(m, info) {
-  arreter(); contexte(); App.id++; App.mode = m; App.etat = "prepare"; App.score = 0; App.q = null; teinte(m.k);
+  arreter(); contexte(); App.id++; App.mode = m; App.etat = "prepare"; App.score = 0; App.q = null; teinte(m.k); Monde.choisir(MODES.indexOf(m)); document.body.classList.add("en-jeu");
   $("hud-score").textContent = "0"; $("hud-info").textContent = info || m.nom; $("hud-vies").innerHTML = ""; $("chrono").className = "chrono"; $("chrono-barre").style.transform = "scaleX(1)";
   $("ecran-partie").classList.remove("repondu"); $("zone").innerHTML = `<p class="consigne">Les instruments se préparent…</p>`; montrer("partie"); return App.id;
 }
@@ -293,12 +314,12 @@ function terminer({ cle, etoiles = null, cleEtoiles = null, detail, retenir = []
   // Le score défile, la barre de niveau avance, et un record ou un niveau gagné déclenche la fête.
   const t0 = performance.now(), el = $("fin-score"), compte = t => { const u = Math.min(1, (t - t0) / 900); el.textContent = Math.round(score * (1 - Math.pow(1 - u, 3))); if (u < 1 && App.ecran === "fin") requestAnimationFrame(compte); else el.textContent = score; }; requestAnimationFrame(compte);
   setTimeout(() => { const b = $("fin-niveau").querySelector("i"); if (b) b.style.width = Math.round(apres.part * 100) + "%"; }, 60);
-  if (record || monte || etoiles === 3) { FX.pluie(COULEURS_FETE); vibrer([30, 60, 30]); petitSon("glockenspiel", [72, 76, 79, 84, 88], .5); }
+  if (record || monte || etoiles === 3) { Monde.fete(); FX.pluie(COULEURS_FETE); vibrer([30, 60, 30]); petitSon("glockenspiel", [72, 76, 79, 84, 88], .5); }
 }
 
 /* ---------- La collection : chaque instrument reconnu y entre ; reconnu cinq fois, il est acquis ---------- */
 function collection() {
-  teinte("#ffc400"); const j = lire(), n = TOUS.filter(i => j.vus[i.id]).length, ma = TOUS.filter(i => (j.vus[i.id] || 0) >= MAITRISE).length;
+  teinte("#ffc400"); document.body.classList.add("en-jeu"); const j = lire(), n = TOUS.filter(i => j.vus[i.id]).length, ma = TOUS.filter(i => (j.vus[i.id] || 0) >= MAITRISE).length;
   $("collection-bilan").textContent = `${n} instrument${n > 1 ? "s" : ""} sur ${TOUS.length}, dont ${ma} acquis. Reconnais un instrument dans un jeu pour le faire entrer ici ; cinq fois, et il est acquis.`;
   $("collection").innerHTML = UNIVERS.map(u => u.instruments.map(i => { const v = j.vus[i.id] || 0;
     return v ? `<div class="fiche${v >= MAITRISE ? " maitre" : ""}"><div class="im"${i.photo ? ` style="background-image:url(../orchestre/photos/${esc(i.photo)})"` : ""}>${i.photo ? "" : esc(i.nom[0])}</div><b>${esc(i.nom)}</b><div class="j" role="img" aria-label="Reconnu ${v} fois"><i style="width:${Math.min(100, v / MAITRISE * 100)}%"></i></div><p>${esc(i.fait)}</p></div>`
@@ -314,7 +335,7 @@ function collection() {
     let data = null; if (analyseur && source) { data = new Uint8Array(analyseur.frequencyBinCount); analyseur.getByteFrequencyData(data); }
     const col = getComputedStyle(document.documentElement).getPropertyValue("--c").trim() || "#7c5cff"; let moy = 0;
     for (let i = 0; i < N; i++) { const k = i < N / 2 ? i : N - 1 - i, cible = data ? data[Math.min(data.length - 1, Math.floor(Math.pow(k / (N / 2), 1.4) * data.length * .7))] / 255 : (reduit ? .1 : .1 + .06 * Math.sin(t * 2 + i * .45)); lisse[i] += (cible - lisse[i]) * .3; moy += lisse[i]; }
-    moy /= N; const rc = R * (.86 + moy * .5), gr = g.createRadialGradient(C, C - rc * .3, rc * .1, C, C, rc); gr.addColorStop(0, "#fff"); gr.addColorStop(.25, col); gr.addColorStop(1, "rgba(0,0,0,.55)");
+    moy /= N; if (data) Monde.son(moy * 1.6); const rc = R * (.86 + moy * .5), gr = g.createRadialGradient(C, C - rc * .3, rc * .1, C, C, rc); gr.addColorStop(0, "#fff"); gr.addColorStop(.25, col); gr.addColorStop(1, "rgba(0,0,0,.55)");
     g.shadowColor = col; g.shadowBlur = 40 + moy * 120; g.fillStyle = gr; g.beginPath(); g.arc(C, C, rc, 0, 6.3); g.fill(); g.shadowBlur = 0; g.lineCap = "round"; g.lineWidth = W * .016;
     for (let i = 0; i < N; i++) { const a = i / N * 6.283 - 1.571, r0 = R * 1.22, r1 = r0 + 6 + lisse[i] * W * .2; g.strokeStyle = i % 2 ? col : "#fff"; g.globalAlpha = .35 + lisse[i] * .65; g.beginPath(); g.moveTo(C + Math.cos(a) * r0, C + Math.sin(a) * r0); g.lineTo(C + Math.cos(a) * r1, C + Math.sin(a) * r1); g.stroke(); }
     g.globalAlpha = 1;
@@ -322,11 +343,11 @@ function collection() {
 })();
 
 /* ---------- Les commandes ---------- */
-$("affiches").onclick = e => { const a = e.target.closest("[data-mode]"); if (a) { contexte(); LANCER[a.dataset.mode](); } };
+$("affiches").onclick = e => { const a = e.target.closest("[data-mode]"); if (a) selectionner(a.dataset.mode, true); };
 $("onglets").onclick = e => { const b = e.target.closest("[data-u]"); if (b) ecranNiveaux(b.dataset.u); };
 $("niveaux").onclick = e => { const b = e.target.closest("[data-n]"); if (b && !b.disabled) jeuQuiz({ univers: parUnivers(App.univers), niveau: NIVEAUX[+b.dataset.n - 1] }); };
 document.querySelectorAll("[data-accueil]").forEach(b => b.onclick = () => accueil(App.mode && App.mode.id));
-$("vers-collection").onclick = collection; $("joueur").onclick = collection;
+$("joueur").onclick = collection;
 $("quitter").onclick = () => { Chrono.stop(); clearTimeout(App.auto); arreter(); const m = App.mode; App.id++; if (m && m.id === "quiz") ecranNiveaux(); else accueil(m && m.id); };
 document.addEventListener("keydown", e => {
   if (App.ecran !== "partie" || e.ctrlKey || e.metaKey || e.altKey) return; const m = App.mode.id;
@@ -336,5 +357,6 @@ document.addEventListener("keydown", e => {
   else if (m === "hautbas" && (e.key === "ArrowUp" || e.key === "ArrowDown")) { e.preventDefault(); App.repondre(e.key === "ArrowUp"); }
   else if (m === "memoire" && /^[1-4]$/.test(e.key)) App.repondre(+e.key - 1);
 });
+$("vers-jouer").href = HUB;
 window.TIMBRE = { App, MODES, lire, accueil, Chrono, inst };
 accueil((location.hash || "").slice(1));

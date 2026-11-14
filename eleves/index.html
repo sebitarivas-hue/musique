@@ -1602,6 +1602,51 @@ a.en-ecole { color: inherit; text-decoration: none; } a.en-ecole:hover b, a.en-e
 .jouer-timbre svg { width: 64px; height: 56px; filter: drop-shadow(0 0 8px rgba(53,224,255,.6)); } .jouer-timbre b { display: block; font: 900 italic 1.7rem/1 var(--f-display); letter-spacing: -.01em; text-shadow: 0 3px 0 #2a2f8f; } .jouer-timbre .jt-t span { display: block; margin-top: 4px; font-size: .85rem; line-height: 1.3; color: #cfd3f5; }
 .jouer-timbre .jt-go { padding: 9px 14px; border-radius: 999px; background: #35e0ff; color: #04122f; font-weight: 800; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; } .jouer-timbre:hover, .jouer-timbre:focus-visible { filter: brightness(1.12); } .jouer-timbre:active { transform: translateY(4px); }
 @media (max-width: 460px) { .jouer-timbre { grid-template-columns: 48px 1fr; } .jouer-timbre svg { width: 48px; height: 42px; } .jouer-timbre .jt-go { grid-column: 1 / -1; justify-self: start; } }
+/* La barre de jeu (mode Jouer, partout) */
+.hud-jeu { position: sticky; top: 0; z-index: 7; display: flex; align-items: center; gap: 10px; min-height: 52px; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 6px max(16px, env(safe-area-inset-left, 0px)); background: rgba(7,10,42,.94); border-bottom: 2px solid #3b7bff; box-shadow: 0 6px 22px rgba(4,5,26,.45); color: #fff; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.hud-jeu[hidden] { display: none; } html.signal .hud-jeu a { color: #fff; text-decoration: none; }
+.hj-retour, .hj-titre { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 14px; font: 900 italic 1rem "Archivo Variable", "Archivo Black", Arial, sans-serif; text-transform: uppercase; letter-spacing: .02em; white-space: nowrap; }
+.hj-retour { background: linear-gradient(180deg, #2c3a9c, #1b2470); box-shadow: inset 0 2px 0 rgba(255,255,255,.22), 0 4px 0 #0c1242; } .hj-retour:active { transform: translateY(3px); box-shadow: 0 1px 0 #0c1242; } .hj-aller { background: linear-gradient(180deg, #ffe566, #ffbe0b); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 4px 0 #a86f00; } html.signal .hud-jeu .hj-aller { color: #2a1a00; }
+.hj-titre { padding-left: 0; color: #35e0ff; } .hj-calme { margin-left: auto; color: #c3c9f0; font-size: .85rem; }
+.hj-stats { margin-left: auto; display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 4px 0 12px; border-radius: 999px; } .hj-stats:hover { background: rgba(255,255,255,.08); }
+.hj-stats b { font: 900 1.05rem "Archivo Variable", Arial, sans-serif; font-variant-numeric: tabular-nums; } .hj-f { display: inline-flex; align-items: center; gap: 3px; color: #6d74a8; } .hj-f svg { width: 22px; height: 22px; fill: currentColor; } .hj-f .coeur { fill: rgba(255,255,255,.55); } .hj-f.on { color: #ff7a1a; } .hj-f.on .coeur { fill: #ffd23f; } .hj-f b { color: #fff; }
+.hj-n { position: relative; width: 32px; height: 32px; } .hj-n svg { width: 100%; height: 100%; transform: rotate(-90deg); } .hj-n circle { fill: none; stroke-width: 4; } .hj-n .f { stroke: rgba(255,255,255,.18); } .hj-n .v { stroke: #ffd23f; stroke-linecap: round; } .hj-n b { position: absolute; inset: 0; display: grid; place-items: center; font-size: .85rem; }
+.hj-x { color: #c3c9f0; font-size: .82rem; white-space: nowrap; } .hj-x b { color: #ffd23f; } .hj-e { color: #ffd23f; white-space: nowrap; } .hj-e b { color: #fff; }
+@media (max-width: 380px) { .hj-x { display: none; } }
+@media (min-width: 1100px) { .hud-jeu { margin: 0 -32px 0 calc(-1 * max(24px, env(safe-area-inset-left, 0px))); padding: 6px 32px 6px max(24px, env(safe-area-inset-left, 0px)); } }
+/* La peau de jeu : sur toutes les pages de jeux du site (Jouer, chemin, ludothèque, chaque jeu, jeux de son, parcours), le monde en 3D de TIMBRE en fond
+   et les éléments du site habillés comme dans TIMBRE : verre bleu nuit à bord néon, titres en italique épais, boutons jaunes en relief. */
+#monde-site { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; display: block; pointer-events: none; } #monde-site[hidden] { display: none; }
+html:has(body.jeu-nuit) { background: radial-gradient(90vmax 70vmax at 50% 110%, #2a2f8f, transparent 60%), linear-gradient(180deg, #04051a, #0a1140 55%, #2a2f8f) fixed; }
+html.signal body.jeu-nuit { background: transparent !important; --pv: rgba(9,13,52,.84); --pn: #3b7bff; --pc: #35e0ff; --pj: #ffd23f; --pt: #c3c9f0; }
+html.signal body.jeu-nuit::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(180deg, rgba(4,5,26,.35), rgba(4,5,26,.72) 38%, rgba(4,5,26,.86)); }
+html.signal body.jeu-nuit :is(h1, h2, h3, h4, p, li, label, dt, dd, summary, span, b, strong, em, td, th) { color: inherit; }
+html.signal body.jeu-nuit main, html.signal body.jeu-nuit #app { color: #fff; }
+html.signal body.jeu-nuit .small, html.signal body.jeu-nuit p.small, html.signal body.jeu-nuit span.small, html.signal body.jeu-nuit .ludo-s, html.signal body.jeu-nuit .fb2 { color: var(--pt) !important; }
+/* fil d'Ariane et bandeau de titre */
+html.signal body.jeu-nuit .barre { background: rgba(7,10,42,.82); border-bottom: 2px solid var(--pn); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); } html.signal body.jeu-nuit .fil, html.signal body.jeu-nuit .fil a { color: #fff; } html.signal body.jeu-nuit .barre .retour { display: none; }   /* sur les pages de jeux, le retour est dans la barre de jeu : un seul bouton retour */
+html.signal body.jeu-nuit .page-head { background: transparent; color: #fff; padding-right: clamp(16px, 3vw, 32px); } html.signal body.jeu-nuit .page-head::before, html.signal body.jeu-nuit .page-head::after { display: none; }
+html.signal body.jeu-nuit .page-head .label, html.signal body.jeu-nuit .ph-etiq { background: linear-gradient(90deg, #27b8e8, var(--pc)); color: #04122f; font-weight: 800; }
+html.signal body.jeu-nuit .page-head h1, html.signal body.jeu-nuit .ph-titre { font: 900 italic clamp(2.2rem, 10vw, 4rem)/.95 "Archivo Variable", "Archivo Black", Arial, sans-serif; font-stretch: 100%; letter-spacing: -.02em; text-transform: uppercase; color: #fff; -webkit-text-stroke: 2px #0a0f45; paint-order: stroke fill; text-shadow: 0 4px 0 #0a0f45, 0 0 28px rgba(53,224,255,.55); }
+html.signal body.jeu-nuit .page-head h1 .l2, html.signal body.jeu-nuit .ph-titre .l2 { color: var(--pj); } html.signal body.jeu-nuit .page-head .lead, html.signal body.jeu-nuit .ph-lead { color: var(--pt); font-family: var(--f-body); letter-spacing: 0; font-size: 1rem; }
+html.signal body.jeu-nuit h2.sec, html.signal body.jeu-nuit .ludo-jeu h2, html.signal body.jeu-nuit .tool h2 { color: #fff; border: 0; font: 900 italic 1.4rem/1.1 "Archivo Variable", "Archivo Black", Arial, sans-serif; text-transform: uppercase; }
+/* le verre : panneaux, cartes, tuiles */
+html.signal body.jeu-nuit :is(.tool, .card, .ludo-carte, .labo-tuile, .badge, .niveau-carte, .rappel, .note, .jouer-stats a, .prog-seq, .ludo-pills a, details.lab-avance, .listen) { background: var(--pv) !important; color: #fff !important; border: 2px solid var(--pn) !important; border-radius: 20px !important; box-shadow: 0 0 0 1px rgba(53,224,255,.16) inset, 0 0 20px rgba(59,123,255,.3) !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+html.signal body.jeu-nuit .tool { padding: 16px !important; margin-top: 14px; } html.signal body.jeu-nuit .ludo-carte { border-top: 8px solid var(--c) !important; } html.signal body.jeu-nuit .ludo-carte b, html.signal body.jeu-nuit .labo-tuile b, html.signal body.jeu-nuit .labo-tuile .labo-n { color: #fff; }
+html.signal body.jeu-nuit :is(.ludo-carte, .labo-tuile, .badge, .ludo-pills a, .jouer-stats a):hover { filter: brightness(1.25); background: var(--pv) !important; } html.signal body.jeu-nuit .ludo-carte.verrou { opacity: .55; }
+html.signal body.jeu-nuit .ludo-pills a { border-top: 6px solid var(--c) !important; color: #fff !important; } html.signal body.jeu-nuit .ludo-band { background: transparent; } html.signal body.jeu-nuit .ludo-band h2 { color: #fff; font-style: italic; } html.signal body.jeu-nuit .ludo-band::before { background: var(--c); border-radius: 0 0 0 14px; }
+html.signal body.jeu-nuit .ludo-ic { background: var(--c); color: #fff; border-radius: 14px; } html.signal body.jeu-nuit .ludo-go { background: var(--pj); color: #2a1a00; font-weight: 800; }
+/* boutons : jaune en relief pour l'action, bleu nuit en relief pour le reste */
+html.signal body.jeu-nuit .btn-main, html.signal body.jeu-nuit a.btn-main { background: linear-gradient(180deg, #ffe566, #ffbe0b) !important; color: #2a1a00 !important; border: 0 !important; border-radius: 16px !important; min-height: 50px; font: 900 italic 1.05rem "Archivo Variable", Arial, sans-serif; text-transform: uppercase; box-shadow: inset 0 3px 0 rgba(255,255,255,.6), 0 5px 0 #a86f00 !important; }
+html.signal body.jeu-nuit :is(.btn2, .sonbtn, .btn, .lien-btn.btn2) { background: linear-gradient(180deg, #2c3a9c, #1b2470) !important; color: #fff !important; border: 0 !important; border-radius: 16px !important; min-height: 48px; box-shadow: inset 0 3px 0 rgba(255,255,255,.22), 0 5px 0 #0c1242 !important; }
+html.signal body.jeu-nuit :is(.btn-main, .btn2, .sonbtn, .btn):active { transform: translateY(4px); box-shadow: 0 1px 0 #0c1242 !important; } html.signal body.jeu-nuit :is(.btn-main, .btn2):disabled { filter: saturate(.4) brightness(.7); }
+html.signal body.jeu-nuit .chip, html.signal body.jeu-nuit .tag { background: var(--pv); color: #fff; border: 2px solid var(--pn); border-radius: 999px; } html.signal body.jeu-nuit .chip[aria-pressed="true"], html.signal body.jeu-nuit .chip[aria-selected="true"] { background: var(--pc); color: #04122f; border-color: var(--pc); } html.signal body.jeu-nuit .chip:disabled { opacity: .45; }
+html.signal body.jeu-nuit .levels a, html.signal body.jeu-nuit .levels button { background: var(--pv); color: #fff; border: 2px solid var(--pn) !important; box-shadow: none; } html.signal body.jeu-nuit .levels a[aria-current="page"], html.signal body.jeu-nuit .levels button[aria-current="page"] { background: var(--pc); color: #04122f !important; border-color: var(--pc) !important; }
+/* le jeu en cours */
+html.signal body.jeu-nuit .jq { color: #fff; font: 900 italic 1.3rem/1.2 "Archivo Variable", Arial, sans-serif; text-transform: uppercase; } html.signal body.jeu-nuit .lj-live { border: 2px solid var(--pn); border-radius: 16px; background: rgba(4,6,30,.85); }
+html.signal body.jeu-nuit .rappel { border-left: 6px solid var(--pj) !important; } html.signal body.jeu-nuit .rappel b { color: var(--pj); }
+html.signal body.jeu-nuit #app a:not([class]) { color: var(--pc); } html.signal body.jeu-nuit footer.sig, html.signal body.jeu-nuit footer.sig * { color: var(--pt); }
+html.signal body.jeu-nuit .medaille { filter: drop-shadow(0 0 8px rgba(255,210,63,.5)); }
 /* Jouer et Mon chemin : la même direction que TIMBRE (fond presque noir, une couleur vive par jeu, grands titres droits et blancs). Lisible d'abord. */
 html:has(body.jeu-nuit) { background: #06070d; }
 html.signal body.jeu-nuit { --bg: #06070d; --surface: #131522; --ink: #fff; --muted: #a9aecb; --line: rgba(255,255,255,.1); --rule: rgba(255,255,255,.1); color: #fff;
@@ -4695,7 +4740,27 @@ async function jouerGeste(type, opt) {
 }
 const prechargerGestes = () => { ["eclat", "ombre", "nuage", "drone", "masse"].forEach((t, i) => setTimeout(() => varianteGeste(t).catch(() => {}), 600 + i * 900)); };
 /* La puce de niveau, en haut des pages de l'élève */
+/* La barre de jeu : en mode Jouer, elle reste en haut de toutes les pages (la flamme, le niveau, les points, les étoiles : on voit ses points tout le temps).
+   Sur les pages de jeux, elle porte aussi le retour à l'accueil Jouer : on ne se perd pas dans le site. Toucher les points ouvre le parcours. */
+const PAGE_JEU = /^#(jouer|chemin|parcours|ludo(-.*)?|jeu-.*|pratiquer-\w+-jeux)$/;
+function majHudJeu() {
+  const actif = jeuActif(), h = location.hash || "", surJeu = PAGE_JEU.test(h); let el = document.getElementById("hud-jeu");
+  if (!actif && !surJeu || document.body.classList.contains("porte")) { if (el) el.hidden = true; return; }
+  if (!el) { el = document.createElement("div"); el.id = "hud-jeu"; el.className = "hud-jeu"; el.setAttribute("role", "navigation"); el.setAttribute("aria-label", "Jeu : retour et points"); const e = document.querySelector("header.entete"); if (e) e.after(el); else document.body.prepend(el); }
+  el.hidden = false;
+  const lien = h === "#jouer" ? `<span class="hj-titre">Jouer</span>` : surJeu ? `<a class="hj-retour" href="#jouer">&#8249; Jouer</a>` : `<a class="hj-retour hj-aller" href="#jouer">Jouer &#8250;</a>`;
+  if (!actif) { el.innerHTML = lien + `<span class="hj-calme">Mode Réviser : pas de points</span>`; }
+  else { const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], part = Math.min(1, (j.xp - bas) / (haut - bas)), C = 2 * Math.PI * 13, serie = duoSerie(), auj = duoJour().p > 0;
+    const etoiles = Object.values(j.etoiles || {}).reduce((a, b) => a + b, 0) + etoilesTimbre();
+    el.innerHTML = lien + `<a class="hj-stats" href="#parcours" aria-label="Mon parcours : ${serie} jour${serie > 1 ? "s" : ""} de suite, niveau ${n + 1}, ${j.xp} points, ${etoiles} étoiles">
+      <span class="hj-f${auj ? " on" : ""}" title="Jours de suite">${FLAMME_SVG}<b>${serie}</b></span>
+      <span class="hj-n"><svg viewBox="0 0 32 32" aria-hidden="true"><circle class="f" cx="16" cy="16" r="13"/><circle class="v" cx="16" cy="16" r="13" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - part)).toFixed(1)}"/></svg><b>${n + 1}</b></span>
+      <span class="hj-x"><b>${j.xp}</b> XP</span><span class="hj-e">&#9733; <b>${etoiles}</b></span></a>`; }
+  const e = document.querySelector("header.entete"); el.style.top = e && getComputedStyle(e).position === "sticky" ? e.offsetHeight + "px" : "0px";
+}
+addEventListener("resize", () => { const el = document.getElementById("hud-jeu"); if (el && !el.hidden) majHudJeu(); });
 function majPuce() {
+  majHudJeu();
   const P = document.querySelectorAll(".puce-jeu"); if (!P.length) return;
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0];
   P.forEach(p => p.innerHTML = `<span class="pn-n">${n + 1}</span><span class="pn-t"><b>${esc(NIVEAUX_JEU[n][1])}</b><span class="pn-b"><span style="width:${Math.min(100, (j.xp - bas) / (haut - bas) * 100)}%"></span></span></span><span class="pn-x">${j.xp} XP</span>`);
@@ -4925,6 +4990,17 @@ document.addEventListener("click", e => {
   const b = e.target.closest && e.target.closest("[data-obj]"); if (b && jeuActif()) { const y = scrollY; jeu().obj = +b.dataset.obj; sauverJeu(); rendre(); scrollTo(0, y); return; }
   if (e.target.closest && e.target.closest("[data-passer-jouer]")) { const s = document.querySelector('.mode-sw [data-mode="jouer"]'); if (s) s.click(); }
 });
+/* Le monde en 3D de TIMBRE (sonora/timbre/scene.js) sert de décor à toutes les pages de jeux du site : l'accueil Jouer, le chemin, la ludothèque, chaque jeu, le parcours.
+   Il n'est chargé que sur ces pages, et mis en pause dès qu'on les quitte. Sans WebGL, le fond de nuit reste seul. */
+const MONDE_SITE = { p: null, m: null };
+function mondeSite(on) {
+  let cv = document.getElementById("monde-site");
+  if (!on) { if (cv) cv.hidden = true; if (MONDE_SITE.m) MONDE_SITE.m.pause(true); return; }
+  if (!D.sonora_timbre) return;
+  if (!cv) { cv = document.createElement("canvas"); cv.id = "monde-site"; cv.setAttribute("aria-hidden", "true"); document.body.prepend(cv); }
+  cv.hidden = false; if (MONDE_SITE.m) return MONDE_SITE.m.pause(false);
+  if (!MONDE_SITE.p) MONDE_SITE.p = import(new URL(D.sonora_timbre.replace(/index\.html$/, "scene.js"), location.href).href).then(x => { MONDE_SITE.m = x.monter(cv); if (!MONDE_SITE.m) cv.remove(); else if (!document.body.classList.contains("jeu-nuit")) MONDE_SITE.m.pause(true); }).catch(() => {});
+}
 /* La page Jouer : un écran de jeu, pas une pile de menus. L'état du joueur (flamme, objectif, niveau), un seul grand bouton « Continuer »,
    puis des tuiles de même forme qui mènent chacune à un mode de jeu. Le chemin des jeux de la classe a sa propre page (#chemin). */
 const HUB_ICO = {
@@ -5987,7 +6063,7 @@ let FERME_ETAT = null;
 setInterval(() => { const f = fermeEleve(); if (FERME_ETAT !== null && f !== FERME_ETAT) rendre(); }, 30000);
 function rendre() {
   /* La recherche et le lien Tutos n'existent qu'une fois la porte franchie : ni sur le choix de l'espace, ni devant le code de la classe ou du professeur, ni sur l'écran « fermé ». */
-  document.body.classList.remove("sans-recherche"); document.body.classList.toggle("jeu-nuit", /^#(jouer|chemin)$/.test(location.hash));
+  document.body.classList.remove("sans-recherche"); { const nuit = PAGE_JEU.test(location.hash); document.body.classList.toggle("jeu-nuit", nuit); mondeSite(nuit); setTimeout(majHudJeu, 0); }
   if (fermeEleve()) { document.body.classList.add("sans-recherche"); FERME_ETAT = true; document.body.classList.add("porte"); toutArreter(); barre("semaine"); menu(""); app.innerHTML = vueFerme(); window.scrollTo(0, 0); return; }
   FERME_ETAT = false;
   /* Tant qu'une porte (code de classe ou code du professeur) est fermée, les menus sont cachés : ils ne mèneraient qu'à la porte. */
