@@ -174,13 +174,13 @@
 .blocs .bl-familles button:hover, .blocs .bl-onglets button:hover { box-shadow: inset 0 0 0 2px var(--ac); }
 .blocs .bl-familles button[aria-selected="true"], .blocs .bl-onglets button[aria-selected="true"] { background: var(--ac); color: var(--enc); box-shadow: none; font-weight: 700; }
 .bl-onglets { border-radius: 0; background: transparent; padding: 0; gap: 6px; }
-.blocs .bl-inst button { border-radius: 0; background: var(--enc); color: var(--pap); box-shadow: inset 0 0 0 2px var(--filet); }
-.blocs .bl-inst button:hover { background: #26251e; box-shadow: inset 0 0 0 2px var(--ac); }
+.blocs .bl-inst button { border-radius: 0; background: var(--pap); color: var(--enc); box-shadow: none; --tuile: var(--pap); }
+.blocs .bl-inst button:hover { background: #fff; box-shadow: inset 0 0 0 3px var(--ac); }
 .blocs .bl-inst button[aria-pressed="true"] { background: var(--ac); color: var(--enc); box-shadow: none; --tuile: var(--ac); }
 .blocs .bl-inst button[aria-pressed="true"] .bl-ico-g { color: var(--enc); }
-.blocs .bl-inst .bl-num { border: 0; height: auto; background: var(--filet); color: var(--pap); border-radius: 0; line-height: 1.5; }
+.blocs .bl-inst .bl-num { border: 0; height: auto; background: var(--enc); color: var(--pap); border-radius: 0; line-height: 1.5; }
 .blocs .bl-inst button[aria-pressed="true"] .bl-num { background: var(--enc); color: var(--ac); }
-.bl-ico-g { color: var(--ac); --tuile: var(--enc); }
+.bl-ico-g { color: var(--enc); --tuile: var(--pap); width: 88px; height: 88px; }
 .bl-motif { border-radius: 0; background: var(--enc); box-shadow: inset 0 0 0 2px var(--filet); }
 .bl-motif::before { width: 6px; background: var(--ac); }
 .bl-motif-t small, .bl-palette .bl-aide { color: #b5b4aa; }

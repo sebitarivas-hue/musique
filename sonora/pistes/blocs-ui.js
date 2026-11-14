@@ -1,9 +1,9 @@
 // L'écran du mode blocs de SONORA Pistes (le modèle est dans blocs.js, sans DOM et testé dans Node).
 // Une grille : une ligne par instrument (une pastille de couleur que l'on touche pour changer d'instrument), une colonne par mesure, quatre mesures à la fois.
 // Toucher une case vide pose un bloc et ouvre ses notes ; toucher un bloc l'ouvre. Le piano roll et la partition existants servent d'éditeur : rien n'est doublé.
-import * as B from "./blocs.js?v=1ec6804efe";
-import * as M from "./motifs.js?v=1ec6804efe";
-import { PICTOS } from "./pictos.js?v=1ec6804efe";
+import * as B from "./blocs.js?v=586e91cf4f";
+import * as M from "./motifs.js?v=586e91cf4f";
+import { PICTOS } from "./pictos.js?v=586e91cf4f";
 
 // Les instruments qu'on propose en gros boutons quand on touche une pastille : les plus connus d'abord, les autres dans la liste.
 const PRINCIPAUX = [["ech:clavier", "Piano"], ["ech:rhodes", "Piano électrique"], ["ech:guitare-folk", "Guitare"], ["ech:basse-moderne", "Basse"], ["ech:sax-alto", "Saxophone"], ["ech:synthe", "Synthé"], ["ech:violoncelle-solo", "Violoncelle"], ["batt:reel", "Batterie"]];
@@ -29,7 +29,18 @@ export function sorteDe(id) {
   if (/^syn:|^lib:|^ech:synthe/.test(i)) return "onde";
   return "note";
 }
-export const pictoDe = id => PICTOS[sorteDe(id)];
+// La silhouette précise d'un instrument (une par instrument, ou presque) ; à défaut, celle de sa sorte.
+const ICONES = [
+  [/^ech:clavier$/, "queue"], [/^ech:orgue$/, "orgue"], [/^syn:orgueRock/, "piano"], [/^ech:harpe/, "harpe"], [/^ech:(guitare-elec|guitare-verte|guitare-noire|guitare-jazz)/, "guitareElec"],
+  [/^ech:(violoncelle|celli|contrebasse|basses-)/, "violoncelle"], [/^ech:(hautbois|anche|clarinettes)/, "clarinette"], [/^ech:(basson)/, "basson"], [/^ech:cors?(-|$)/, "cor"],
+  [/^ech:trombone/, "trombone"], [/^ech:tuba/, "tuba"], [/^ech:choeur/, "choeur"], [/^ech:(marimba|xylophone|glockenspiel|balafon)/, "lames"], [/^(ech:vibraphone|lib:lames-metal)/, "vibra"],
+  [/^ech:kalimba/, "kalimba"], [/^(ech:cloche|syn:cloches)/, "cloche"], [/^lib:steelpan/, "steelpan"], [/^(ech:djembe|lib:tambour-main|syn:conga)/, "djembe"], [/^ech:timbale/, "timbale"],
+  [/^syn:bongo/, "bongo"], [/^syn:blocBois/, "blocBois"], [/^syn:trianglePerc/, "triangle"], [/^syn:tambourin/, "tambourin"], [/^syn:cymbale/, "cymbale"], [/^syn:gong/, "gong"], [/^syn:bol/, "bol"],
+  [/^batt:(909|808)/, "boite"], [/^(syn:nappe|lib:supersaw)/, "nappe"], [/^(syn:basse808|syn:sub|lib:basse)/, "enceinte"], [/^(syn:lead|syn:stab|lib:fm|syn:pluck)/, "synthe"],
+  [/^syn:laser/, "laser"], [/^syn:sirene/, "sirene"], [/^syn:vent/, "vent"], [/^syn:montee/, "montee"], [/^syn:impact/, "impact"], [/^syn:goutte/, "goutte"], [/^syn:blip/, "blip"], [/^syn:tonnerre/, "tonnerre"],
+];
+export function iconeDe(id) { const i = String(id || ""); const t = ICONES.find(([re]) => re.test(i)); return t ? t[1] : sorteDe(i); }
+export const pictoDe = id => PICTOS[iconeDe(id)];
 const COULEUR_SORTE = { piano: "#4C9BF5", guitare: "#FFC53D", basse: "#A86CF0", violon: "#FF6B57", flute: "#3FC79A", trompette: "#F26BA3", sax: "#F2A93B", batterie: "#FF8A3D", voix: "#4FC3E0", onde: "#8E9BFF", note: "#B7B6AC" };
 const FAM_COULEUR = { rythme: "#FF8A3D", basse: "#A86CF0", accords: "#4C9BF5", melodie: "#3FC79A" };
 
