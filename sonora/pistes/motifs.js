@@ -3,8 +3,8 @@
 // Aucune mélodie connue n'est écrite de mémoire. Les motifs avec hauteur sont écrits en do ; la tonalité choisie les transpose (la batterie n'est pas transposée).
 // Un motif dure une mesure : `temps` dit à combien de temps par mesure il est écrit (4 ou 3). Les notes sont en temps (1 = une noire), comme partout dans Pistes.
 // Sans DOM : testé dans Node (tests/motifs.test.js).
-import * as B from "./blocs.js?v=3ee469f0ef";
-import * as P from "./projet.js?v=3ee469f0ef";
+import * as B from "./blocs.js?v=67293a0507";
+import * as P from "./projet.js?v=67293a0507";
 
 // Les notes de batterie (numéros généraux) : grosse caisse, caisse claire, baguette sur le cadre, charleston fermé et ouvert, claquement, tom, cloche à vache, cymbale
 const K = 36, S = 38, RIM = 37, HF = 42, HO = 46, CLAP = 39, TOM = 41, CRASH = 49;
@@ -108,7 +108,7 @@ const BASSES = /^(ech:(basse|contrebasse|basses)|syn:basse|lib:basse)/;
 export function genreDe(instrument) {
   if (typeof instrument === "string" && instrument.startsWith("batt:")) return "rythme";
   if (BASSES.test(instrument || "")) return "basse";
-  if (/^ech:(clavier|piano-droit|wurlitzer|pianet|cp80|orgue|clavecin|guitare|guitare-elec|guitare-jazz|guitare-folk|harpe|cordes)/.test(instrument || "")) return "accords";
+  if (/^ech:(clavier|piano-droit|rhodes|wurlitzer|pianet|cp80|orgue|clavecin|guitare|guitare-elec|guitare-jazz|guitare-folk|harpe|cordes)/.test(instrument || "")) return "accords";
   return "melodie";
 }
 // Les onglets d'une ligne : une batterie ne reçoit que des rythmes, un autre instrument jamais de rythme de batterie.
@@ -140,13 +140,13 @@ export const MODELES = [
       { nom: "Batterie", instrument: "batt:909", volume: 0.85, motifs: ["r-quatre", "r-quatre", "r-quatre", "r-quatre"] },
       { nom: "Basse", instrument: "syn:basse808", volume: 0.4, motifs: ["b-octave", "b-octave", "b-octave", "b-octave"] },
       { nom: "Accords", instrument: "ech:synthe", volume: 0.55, motifs: ["a-vi-arpege", "a-IV-arpege", "a-I-arpege", "a-V-arpege"] },
-      { nom: "Mélodie", instrument: "ech:wurlitzer", volume: 0.75, motifs: ["m-ostinato", "m-ostinato", "m-ostinato", "m-synco"] },
+      { nom: "Mélodie", instrument: "ech:rhodes", volume: 0.75, motifs: ["m-ostinato", "m-ostinato", "m-ostinato", "m-synco"] },
     ] },
   { id: "mod-lent", nom: "Groove lent", temps: 4, aide: "Un hip-hop lent, une basse syncopée, des accords tenus : le silence et le balancement font le travail.",
     lignes: [
       { nom: "Batterie", instrument: "batt:808", volume: 0.85, motifs: ["r-lent", "r-lent", "r-lent", "r-lent"] },
       { nom: "Basse", instrument: "ech:basse-moderne", volume: 0.6, motifs: ["b-synco", "b-synco", "b-synco", "b-synco"] },
-      { nom: "Accords", instrument: "ech:wurlitzer", volume: 0.6, motifs: ["a-I-plaque", "a-I-plaque", "a-IV-plaque", "a-V-plaque"] },
+      { nom: "Accords", instrument: "ech:rhodes", volume: 0.6, motifs: ["a-I-plaque", "a-I-plaque", "a-IV-plaque", "a-V-plaque"] },
     ] },
 ];
 export const modeleDe = id => MODELES.find(m => m.id === id) || null;

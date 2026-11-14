@@ -4,13 +4,13 @@
 //              joués à deux mesures, au tempo du projet ;
 //   Sons       les neuf sons de synthèse d'Harmonie (basse 808, sous-basse, lead, nappe, piano électrique, pincé, orgue rock, cloches, stab) sur la note et la durée de son choix.
 // Tout est fabriqué à la demande, sans fichier ni réseau, et reproductible. Sans DOM : testé dans Node.
-import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS, chargerKit } from "../harmonie/batterie.js?v=3ee469f0ef";
+import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS, chargerKit } from "../harmonie/batterie.js?v=67293a0507";
 export const preparerBatterie = chargerKit;   // la vraie batterie (enregistrée) : à charger au démarrage de Pistes
-import { GENRES } from "../harmonie/genres.js?v=3ee469f0ef";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=3ee469f0ef";
-import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=3ee469f0ef";
-import { rendreSuite } from "../harmonie/son.js?v=3ee469f0ef";
-import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=3ee469f0ef";
+import { GENRES } from "../harmonie/genres.js?v=67293a0507";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=67293a0507";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=67293a0507";
+import { rendreSuite } from "../harmonie/son.js?v=67293a0507";
+import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=67293a0507";
 
 export const NOMS_PIECES = { kick: "Grosse caisse", snare: "Caisse claire", clap: "Clap", hatc: "Charleston fermé", hato: "Charleston ouvert", rim: "Rimshot", tom: "Tom", cow: "Cloche", shaker: "Shaker", ride: "Cymbale ride", crash: "Cymbale crash" };
 // Des rythmes du monde, sur seize pas (huit, neuf ou douze quand le rythme l'exige). Les mêmes que ceux de l'atelier sonore du cours.
@@ -28,7 +28,7 @@ export const RYTHMES_MONDE = [
 // Les instruments enregistrés de la banque du site (VS Chamber Orchestra, Community Edition et VCSL, domaine public CC0, voir outils/banque_vsco.py) : de vraies notes, transposées à la hauteur demandée.
 // [nom dans la banque, nom affiché, famille, note de départ (dans l'étendue enregistrée)]
 export const INSTRUMENTS_ECH = [
-  ["clavier", "Piano", "Claviers", 60], ["piano-droit", "Piano droit", "Claviers", 60], ["wurlitzer", "Piano électrique Wurlitzer", "Claviers", 60], ["pianet", "Pianet", "Claviers", 60], ["cp80", "Piano électrique CP80", "Claviers", 60], ["orgue", "Orgue", "Claviers", 48], ["clavecin", "Clavecin", "Claviers", 60],
+  ["clavier", "Piano", "Claviers", 60], ["piano-droit", "Piano droit", "Claviers", 60], ["rhodes", "Piano Rhodes", "Claviers", 60], ["wurlitzer", "Piano électrique Wurlitzer", "Claviers", 60], ["pianet", "Pianet", "Claviers", 60], ["cp80", "Piano électrique CP80", "Claviers", 60], ["orgue", "Orgue", "Claviers", 48], ["clavecin", "Clavecin", "Claviers", 60],
   ["harpe", "Harpe", "Cordes", 60], ["guitare", "Guitare", "Cordes", 52], ["violon", "Violon", "Cordes", 69], ["cordes", "Cordes frottées, ensemble", "Cordes", 60], ["violoncelle", "Violoncelle", "Cordes", 48], ["contrebasse", "Contrebasse", "Cordes", 36],
   ["souffle", "Flûte", "Vents", 72], ["hautbois", "Hautbois", "Vents", 69], ["anche", "Instrument à anche", "Vents", 64], ["basson", "Basson", "Vents", 48], ["cor", "Cor", "Vents", 48], ["trompette", "Trompette", "Vents", 66], ["trombone", "Trombone", "Vents", 48], ["tuba", "Tuba", "Vents", 46],
   ["marimba", "Marimba", "Percussions à hauteurs", 60], ["vibraphone", "Vibraphone", "Percussions à hauteurs", 65], ["xylophone", "Xylophone", "Percussions à hauteurs", 79], ["glockenspiel", "Glockenspiel", "Percussions à hauteurs", 84], ["balafon", "Balafon", "Percussions à hauteurs", 65], ["kalimba", "Kalimba", "Percussions à hauteurs", 72], ["cloche", "Cloches", "Percussions à hauteurs", 72],

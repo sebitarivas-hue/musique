@@ -1,12 +1,12 @@
 // L'écran du mode blocs de SONORA Pistes (le modèle est dans blocs.js, sans DOM et testé dans Node).
 // Une grille : une ligne par instrument (une pastille de couleur que l'on touche pour changer d'instrument), une colonne par mesure, quatre mesures à la fois.
 // Toucher une case vide pose un bloc et ouvre ses notes ; toucher un bloc l'ouvre. Le piano roll et la partition existants servent d'éditeur : rien n'est doublé.
-import * as B from "./blocs.js?v=3ee469f0ef";
-import * as M from "./motifs.js?v=3ee469f0ef";
-import { PICTOS } from "./pictos.js?v=3ee469f0ef";
+import * as B from "./blocs.js?v=67293a0507";
+import * as M from "./motifs.js?v=67293a0507";
+import { PICTOS } from "./pictos.js?v=67293a0507";
 
 // Les instruments qu'on propose en gros boutons quand on touche une pastille : les plus connus d'abord, les autres dans la liste.
-const PRINCIPAUX = [["ech:clavier", "Piano"], ["ech:wurlitzer", "Piano électrique"], ["ech:guitare-folk", "Guitare"], ["ech:basse-moderne", "Basse"], ["ech:sax-alto", "Saxophone"], ["ech:synthe", "Synthé"], ["ech:violoncelle-solo", "Violoncelle"], ["batt:reel", "Batterie"]];
+const PRINCIPAUX = [["ech:clavier", "Piano"], ["ech:rhodes", "Piano électrique"], ["ech:guitare-folk", "Guitare"], ["ech:basse-moderne", "Basse"], ["ech:sax-alto", "Saxophone"], ["ech:synthe", "Synthé"], ["ech:violoncelle-solo", "Violoncelle"], ["batt:reel", "Batterie"]];
 
 // Les petits dessins de l'interface (haut-parleur, lecture, plus) ; les silhouettes d'instruments sont dans pictos.js.
 const SVG = d => `<svg viewBox="0 0 32 32" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
@@ -25,7 +25,7 @@ export function sorteDe(id) {
   if (/^ech:(souffle|hautbois|anche|basson)|^lib:flute/.test(i)) return "flute";
   if (/^ech:(trompette|trombone|cor|tuba|trompettes)/.test(i)) return "trompette";
   if (/^ech:(voix|choeur)|^lib:(voyelles|diphonique)/.test(i)) return "voix";
-  if (/^ech:(clavier|piano-droit|wurlitzer|pianet|cp80|orgue|clavecin)|^syn:pianoElec|^syn:orgue/.test(i)) return "piano";
+  if (/^ech:(clavier|piano-droit|rhodes|wurlitzer|pianet|cp80|orgue|clavecin)|^syn:pianoElec|^syn:orgue/.test(i)) return "piano";
   if (/^syn:|^lib:|^ech:synthe/.test(i)) return "onde";
   return "note";
 }

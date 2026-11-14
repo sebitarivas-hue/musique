@@ -1,7 +1,7 @@
 // SONORA Orchestre, espace 04 « Comprendre les variations » : des transformations d'un thème (sans DOM, testées dans Node).
 // Le thème est celui de l'élève (espace 05) ou le sujet d'exemple écrit pour ce cours ; le Rondeau de Purcell s'ajoutera quand une partition libre sera déposée dans le dépôt.
 // Une mélodie : une liste de { m, t, d } : hauteur MIDI, début et durée en temps. Les silences sont des trous.
-import { SUJET_EXEMPLE } from "./fugue_logique.js?v=3ee469f0ef";
+import { SUJET_EXEMPLE } from "./fugue_logique.js?v=67293a0507";
 export { SUJET_EXEMPLE };
 
 export const melodie = notes => { const r = []; notes.forEach((m, t) => { if (m !== null && m !== undefined) r.push({ m, t, d: 1 }); }); return r; };
