@@ -316,6 +316,7 @@ ul.classe { list-style: none; padding: 0; margin: 8px 0; } ul.classe li { margin
 button.terme-liste { cursor: help; } h2.grandes { margin-top: 20px; }
 .tuiles-p { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 8px; margin: 10px 0 14px; } a.tuile-p { display: flex; flex-direction: column; justify-content: space-between; gap: 6px; min-height: 96px; padding: 10px 12px; background: #fff; border: 2px solid var(--noir); border-left: 8px solid var(--c); color: var(--noir); text-decoration: none; } a.tuile-p b { font-size: .95rem; line-height: 1.25; } a.tuile-p:hover { outline: 3px solid var(--noir); } a.tuile-p[hidden] { display: none; }
 .filtre-t { position: sticky; top: 0; z-index: 5; background: var(--fond, #F0EFE8); padding: 8px 0; } .filtre-t input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 2px solid var(--noir); font: inherit; margin-top: 6px; } details.autres-t > summary h2 { font-size: 1.1rem; }
+details.theme > div > .concepts, details.theme > div > .sonora-liens { margin-top: 4px; } .edito details.theme > summary h3 { margin: 0; font-size: 1.05rem; } details.plus-accueil { margin: 18px 0; }
 </style>
 </head>
 <body>
@@ -455,6 +456,23 @@ function menuParcours(id) {
   if (!gen.length && !tra.length) return "";
   return `<p class="pcomprendre"><b>Pour comprendre :</b> ${[...gen.map(g => `<a href="${g.href}">${esc(g.nom)}</a> <span class="petit">(schéma)</span>`), ...tra.map(t => `<a href="${t.href}">${esc(t.nom)}</a> <span class="petit">(trajet pas à pas)</span>`)].join(" &middot; ")}</p>`;
 }
+/* Sections d'une fiche : les essentielles restent ouvertes, les autres se plient pour que la page tienne en un ou deux écrans. */
+const SECTIONS_OUVERTES = ["La fiche pédagogique", "Repères", "Œuvres représentatives", "Écouter", "D'où elle vient", "Ce qu'elle a donné", "Pour la classe"];
+function plierSections(app) {
+  app.querySelectorAll("ul.liens").forEach(ul => { const li = [...ul.children]; if (li.length > 3 && (ul.previousElementSibling || ul.parentElement).matches && ul.closest("#app")) {
+    const d = document.createElement("details"); d.className = "theme"; d.innerHTML = `<summary><h3>Voir les ${li.length - 3} autres</h3></summary>`; const u2 = document.createElement("ul"); u2.className = "liens"; li.slice(3).forEach(x => u2.appendChild(x)); const c = document.createElement("div"); c.appendChild(u2); d.appendChild(c); ul.after(d); } });
+  const enfants = [...app.children];
+  for (let i = 0; i < enfants.length; i++) {
+    const h = enfants[i]; if (h.tagName !== "H2" || SECTIONS_OUVERTES.includes(h.textContent.trim())) continue;
+    const groupe = [h]; let k = i + 1;
+    while (k < enfants.length && enfants[k].tagName !== "H2" && !enfants[k].classList.contains("avis") && !enfants[k].matches("details.plusloin")) { groupe.push(enfants[k]); k++; }
+    if (groupe.length < 2) continue;
+    const d = document.createElement("details"); d.className = "theme"; const sm = document.createElement("summary"); const titre = document.createElement("h2"); titre.textContent = h.textContent; sm.appendChild(titre);
+    const nb = groupe.slice(1).reduce((n, x) => n + x.querySelectorAll("li, a.pastille, details.concept").length, 0); if (nb > 1) { const c = document.createElement("span"); c.className = "petit"; c.textContent = nb; sm.appendChild(c); }
+    d.appendChild(sm); const corps = document.createElement("div"); groupe.slice(1).forEach(x => corps.appendChild(x)); d.appendChild(corps);
+    app.insertBefore(d, enfants[k] || null); h.remove(); enfants.splice(i, groupe.length, d);
+  }
+}
 function vueAccueil() {
   const f = fav.lire();
   const nb = D.parcours.length, ng = (D.genealogies || []).length;
@@ -490,6 +508,7 @@ function uneHtml(apresVisuel = "") {
   <div class="une-bande" aria-hidden="true">${BANDE.map(([n, w]) => `<img src="images/${n}.webp" alt="" width="${w}" height="156" style="flex-grow:${w}" loading="lazy">`).join("")}</div>
   <p class="une-credit">Illustrations générées pour l'Atlas par Sebastian Rivas : ce ne sont pas des documents d'archive.</p>
   ${apresVisuel}
+  <details class="theme plus-accueil"><summary><h2>Expérimenter, sources et passerelles</h2><span class="petit">ouvrir</span></summary>
   <nav class="portes" aria-label="Les quatre portes de l'Atlas">
    ${porte("#tout", "Explorer", "Artistes, œuvres, genres et territoires", [["#arbre", "Arbre"], ["#monde", "Carte"], ["#frise", "Frise"], ["#graphe", "Graphe"]])}
    ${porte("#techniques", "Apprendre", "Comprendre les musiques et leurs langages", [["#parcours", "Trajets"], ["#ecoute", "Écoute"], ["#passerelles", "Passerelles"]])}
@@ -497,7 +516,8 @@ function uneHtml(apresVisuel = "") {
    ${porte("#sources", "Sources", "Comment l'Atlas est construit et vérifié", [["#sources", "Sources et méthode"]])}
   </nav>
   ${(D.une || []).length ? `<section aria-labelledby="pass-titre"><div class="pass-bande"><h2 id="pass-titre">Passerelles</h2><p>Écouter, comparer, relier les musiques</p><a href="#passerelles">Toutes les passerelles (${D.passerelles.length}) &#8250;</a></div>
-  <div class="pass-rang">${D.une.map(u => { const p = passe(u.id); return `<a class="pass-carte" href="#pa/${u.id}"><img src="${esc(u.image)}" alt="" width="171" height="89" loading="lazy"><b>${esc(u.a)} <span aria-hidden="true">${SYMB[p.nature] || "/"}</span> ${esc(u.b)}</b><small>${esc(p.nature)}, proposition à relire</small></a>`; }).join("")}</div></section>` : ""}`;
+  <div class="pass-rang">${D.une.map(u => { const p = passe(u.id); return `<a class="pass-carte" href="#pa/${u.id}"><img src="${esc(u.image)}" alt="" width="171" height="89" loading="lazy"><b>${esc(u.a)} <span aria-hidden="true">${SYMB[p.nature] || "/"}</span> ${esc(u.b)}</b><small>${esc(p.nature)}, proposition à relire</small></a>`; }).join("")}</div></section>` : ""}
+  </details>`;
 }
 function vuePasserelles() {
   return `<div class="bande"><span class="etiq">Passerelles</span><h1>Écouter, <span class="l2">comparer, relier</span></h1><p class="lead">Des rapprochements d'écoute entre des musiques éloignées. Ce sont des propositions à relire et à sourcer : une passerelle n'est pas une filiation historique.</p></div>
@@ -1085,41 +1105,42 @@ function ressourcesDe(ids) {
 }
 const lienEcoute = ([t, q]) => `<li><b>${esc(t)}</b> <a href="${spot(q)}" target="_blank" rel="noopener">Spotify</a> <a href="${yt(q)}" target="_blank" rel="noopener">YouTube</a></li>`;
 const lienSonora = ([v, t, h, p]) => `<li><a href="${esc(h)}" style="--c:${VERBE_COUL[v] || "#11110F"}"><span class="verbe">${esc(v)}</span><span class="nom">${esc(t)}</span><span class="phrase">${esc(p)}</span></a></li>`;
+const pli = (titre, contenu, ouvert) => contenu ? `<details class="theme"${ouvert ? " open" : ""}><summary><h3>${titre}</h3></summary><div>${contenu}</div></details>` : "";
 function blocGenealogie(g) {
   const ed = g.edito; if (!ed) return "";
   const ids = [...(g.racine ? [g.racine.id] : []), ...g.niveaux.flatMap(n => n.ids)];
   const r = ressourcesDe(ids), CO2 = Object.fromEntries(D.concepts.map(c => [c.id, c]));
   const tr = ed.trajets.map(t => D.parcours.find(p => p.id === t)).filter(Boolean);
   return `<div class="edito">
-   <h3>Techniques à repérer</h3><p class="petit">Chaque idée a une définition, une consigne d'écoute et des musiques où l'entendre.</p><div class="concepts">${ed.techniques.map(i => CO2[i] ? conceptHtml(CO2[i]) : "").join("")}</div>
-   <h3>Dans le cours</h3><ul class="plain">${ed.seances.map(([k, why]) => D.cours[k] ? `<li><a href="../eleves/${D.cours[k][1]}">${esc(D.cours[k][0])}</a><br><span class="petit">${esc(why)}</span></li>` : "").join("")}</ul>
-   ${r.sonora.length ? `<h3>À expérimenter dans SONORA</h3><p class="petit">Chaque lien ouvre l'outil correspondant, sans rien installer.</p><ul class="sonora-liens">${r.sonora.slice(0, 8).map(lienSonora).join("")}</ul>` : ""}
-   <h3>À écouter</h3><p class="petit">Chaque morceau a deux liens : une recherche Spotify et une recherche YouTube, dans un nouvel onglet.</p><ul class="plain">${ed.ecoutes.map(lienEcoute).join("")}</ul>
-   <h3>Pour aller plus loin</h3><div class="pastilles">${tr.map(p => `<a class="pastille" style="--c:#e0457b" href="#p/${p.id}">Trajet : ${esc(p.titre)}</a>`).join("")}${ed.fiches.map(([k, n]) => `<a class="pastille" style="--c:#11110F" href="../eleves/#fiche-${k}">Fiche de notions : ${esc(n)}</a>`).join("")}<a class="pastille clair" href="#techniques">Laboratoire des techniques</a><a class="pastille clair" href="../eleves/#labo">Labo Faust</a></div></div>`;
+   ${pli("À écouter", `<p class="petit">Chaque morceau a deux liens : une recherche Spotify et une recherche YouTube, dans un nouvel onglet.</p><ul class="plain">${ed.ecoutes.map(lienEcoute).join("")}</ul>`, true)}
+   ${pli("Techniques à repérer", `<p class="petit">Chaque idée a une définition, une consigne d'écoute et des musiques où l'entendre.</p><div class="concepts">${ed.techniques.map(i => CO2[i] ? conceptHtml(CO2[i]) : "").join("")}</div>`)}
+   ${pli("Dans le cours", `<ul class="plain">${ed.seances.map(([k, why]) => D.cours[k] ? `<li><a href="../eleves/${D.cours[k][1]}">${esc(D.cours[k][0])}</a><br><span class="petit">${esc(why)}</span></li>` : "").join("")}</ul>`)}
+   ${r.sonora.length ? pli("À expérimenter dans SONORA", `<p class="petit">Chaque lien ouvre l'outil correspondant, sans rien installer.</p><ul class="sonora-liens">${r.sonora.slice(0, 8).map(lienSonora).join("")}</ul>`) : ""}
+   ${pli("Pour aller plus loin", `<div class="pastilles">${tr.map(p => `<a class="pastille" style="--c:#e0457b" href="#p/${p.id}">Parcours : ${esc(p.titre)}</a>`).join("")}${ed.fiches.map(([k, n]) => `<a class="pastille" style="--c:#11110F" href="../eleves/#fiche-${k}">Fiche de notions : ${esc(n)}</a>`).join("")}<a class="pastille clair" href="#techniques">Laboratoire des techniques</a><a class="pastille clair" href="../eleves/#labo">Labo Faust</a></div>`)}</div>`;
 }
 function blocDoc(p) {
   const ed = p.edito; if (!ed || !ed.reperes) return "";
   const motsP = D.lexique.map((l, i) => [l, i]).filter(([l]) => l[2] === "p:" + p.id);
-  return `<div class="edito"><h2>Repères</h2><ol class="reperes-q">${ed.reperes.map(([d, f]) => `<li><span class="d">${esc(d)}</span> ${esc(f)}</li>`).join("")}</ol>
-   <h2>En classe</h2><ul class="classe">${ed.classe.map(([v, t, c, h]) => `<li><span class="verbe" style="--c:${VERBE_COUL[v] || "#11110F"}">${esc(v)}</span> <b>${h ? `<a href="${esc(h)}">${esc(t)}</a>` : esc(t)}</b><br><span class="petit">${esc(c)}</span></li>`).join("")}</ul>
-   <h3>Questions pour la discussion</h3><ul class="plain">${ed.questions.map(q => `<li>${esc(q)}</li>`).join("")}</ul>
-   ${motsP.length ? `<h2>Les mots du parcours</h2><p class="petit">Touche un mot pour sa définition.</p><div class="pastilles">${motsP.map(([l, i]) => `<button type="button" class="pastille clair terme-liste" data-k="l" data-id="${i}">${esc(l[0])}</button>`).join("")}</div>` : ""}</div>`;
+  return `<div class="edito">
+   ${pli("En classe", `<ul class="classe">${ed.classe.map(([v, t, c, h]) => `<li><span class="verbe" style="--c:${VERBE_COUL[v] || "#11110F"}">${esc(v)}</span> <b>${h ? `<a href="${esc(h)}">${esc(t)}</a>` : esc(t)}</b><br><span class="petit">${esc(c)}</span></li>`).join("")}</ul><h3>Questions pour la discussion</h3><ul class="plain">${ed.questions.map(q => `<li>${esc(q)}</li>`).join("")}</ul>`, true)}
+   ${motsP.length ? pli("Les mots du parcours", `<p class="petit">Touche un mot pour sa définition.</p><div class="pastilles">${motsP.map(([l, i]) => `<button type="button" class="pastille clair terme-liste" data-k="l" data-id="${i}">${esc(l[0])}</button>`).join("")}</div>`, true) : ""}
+   ${pli("Repères", `<ol class="reperes-q">${ed.reperes.map(([d, f]) => `<li><span class="d">${esc(d)}</span> ${esc(f)}</li>`).join("")}</ol>`)}</div>`;
 }
 function blocSources(p) {
   const ed = p.edito; if (!ed || !ed.sources) return "";
-  return `<div class="edito"><h2>Sources à consulter</h2><p class="petit">Institutions et bases pour aller vérifier et approfondir. Les liens ouvrent le site d'origine dans un nouvel onglet ; vérifie toujours les droits avant de réutiliser un enregistrement.</p><ul class="plain">${ed.sources.map(([n, u, note]) => `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)}</a><br><span class="petit">${esc(note)}</span></li>`).join("")}</ul></div>`;
+  return `<div class="edito">${pli("Sources à consulter", `<p class="petit">Institutions et bases pour aller vérifier et approfondir. Les liens ouvrent le site d'origine dans un nouvel onglet ; vérifie toujours les droits avant de réutiliser un enregistrement.</p><ul class="plain">${ed.sources.map(([n, u, note]) => `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)}</a><br><span class="petit">${esc(note)}</span></li>`).join("")}</ul>`)}</div>`;
 }
 function blocTrajet(p) {
   const ids = p.etapes.map(s => s.id), r = ressourcesDe(ids), ed = p.edito, CO2 = Object.fromEntries(D.concepts.map(c => [c.id, c]));
   const tech = ed ? ed.techniques.map(i => CO2[i]).filter(Boolean) : r.tech.slice(0, 5);
   if (!tech.length && !r.sonora.length && !r.ecoutes.length) return "";
   const cours = ed ? ed.seances.filter(([k]) => D.cours[k]).map(([k, why]) => `<li><a href="../eleves/${D.cours[k][1]}">${esc(D.cours[k][0])}</a><br><span class="petit">${esc(why)}</span></li>`) : r.cours.map(k => `<li><a href="../eleves/${D.cours[k][1]}">${esc(D.cours[k][0])}</a></li>`);
-  return `<div class="edito"><h2>Techniques et ressources du site</h2>
-   ${tech.length ? `<h3>Techniques à repérer</h3><div class="concepts">${tech.map(c => conceptHtml(c)).join("")}</div>` : ""}
-   ${cours.length ? `<h3>Dans le cours</h3><ul class="plain">${cours.join("")}</ul>` : ""}
-   ${r.sonora.length ? `<h3>À expérimenter dans SONORA</h3><ul class="sonora-liens">${r.sonora.slice(0, 6).map(lienSonora).join("")}</ul>` : ""}
-   ${r.ecoutes.length && !ed ? `<h3>Écoute comparée</h3>${r.ecoutes.slice(0, 3).map(c => `<section class="comparaison"><h3>${esc(c.titre)}</h3><div class="duo">${c.morceaux.map(([t, q]) => `<a href="${spot(q)}" target="_blank" rel="noopener">${esc(t)}<span>Spotify</span></a><a class="alt" href="${yt(q)}" target="_blank" rel="noopener">${esc(t)}<span>YouTube</span></a>`).join("")}</div><p class="question">${esc(c.question)}</p></section>`).join("")}` : ""}
-   ${ed && ed.fiches.length ? `<h3>Pour aller plus loin</h3><div class="pastilles">${ed.fiches.map(([k, n]) => `<a class="pastille" style="--c:#11110F" href="../eleves/#fiche-${k}">Fiche de notions : ${esc(n)}</a>`).join("")}</div>` : ""}</div>`;
+  return `<div class="edito">
+   ${pli("Techniques à repérer", tech.length ? `<div class="concepts">${tech.map(c => conceptHtml(c)).join("")}</div>` : "")}
+   ${pli("Dans le cours", cours.length ? `<ul class="plain">${cours.join("")}</ul>` : "")}
+   ${pli("À expérimenter dans SONORA", r.sonora.length ? `<ul class="sonora-liens">${r.sonora.slice(0, 6).map(lienSonora).join("")}</ul>` : "")}
+   ${r.ecoutes.length && !ed ? pli("Écoute comparée", r.ecoutes.slice(0, 3).map(c => `<section class="comparaison"><h3>${esc(c.titre)}</h3><div class="duo">${c.morceaux.map(([t, q]) => `<a href="${spot(q)}" target="_blank" rel="noopener">${esc(t)}<span>Spotify</span></a><a class="alt" href="${yt(q)}" target="_blank" rel="noopener">${esc(t)}<span>YouTube</span></a>`).join("")}</div><p class="question">${esc(c.question)}</p></section>`).join("")) : ""}
+   ${ed && ed.fiches.length ? pli("Pour aller plus loin", `<div class="pastilles">${ed.fiches.map(([k, n]) => `<a class="pastille" style="--c:#11110F" href="../eleves/#fiche-${k}">Fiche de notions : ${esc(n)}</a>`).join("")}</div>`) : ""}</div>`;
 }
 function vueGenealogies(cible) {
   const G = D.genealogies || [];
@@ -1203,7 +1224,7 @@ function rendre() {
   else if (r === "sources") { html = vueSources(); onglet = ""; }
   else if (r === "hasard") { const L = D.entries.filter(e => !["artist", "group", "composer", "instrument"].includes(e.type)); location.replace("#e/" + L[Math.floor(Math.random() * L.length)].id); return; }
   else { html = vueAccueil(); apres = brancherAccueil; }
-  app.innerHTML = html; if (apres) apres(); if (r !== "monde" && r !== "graphe") lierTermes(app);
+  app.innerHTML = html; if (apres) apres(); if (r === "e") plierSections(app); if (r !== "monde" && r !== "graphe") lierTermes(app);
   if (r === "e" && E[a] && window.COURS_POINTS) window.__arretLecture = window.COURS_POINTS.lecture(app, "atlas:e:" + a, 1, "atlas", { apres: () => {
     for (const pc of D.parcours || []) if (pc.etapes.some(x => x.id === a) && pc.etapes.every(x => window.COURS_POINTS.deja("atlas:e:" + x.id))) window.COURS_POINTS.gagner("atlas:p:" + pc.id, 5, "atlas"); } });
   document.querySelectorAll("header.haut nav a").forEach(x => x.toggleAttribute("aria-current", x.dataset.n === onglet));
