@@ -120,6 +120,7 @@ h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-trans
 .rel.interp::before { background: repeating-linear-gradient(0deg, var(--c, var(--noir)) 0 6px, transparent 6px 10px); }   /* rayé : interprétation, plein : fait établi */ .rel b { flex: 1; font-weight: 600; } .rel small { font: 500 .64rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: #4B4A44; text-align: right; }
 .rel:hover, .rel:focus-visible { background: var(--acide); outline: none; }
 /* fiches détaillées : repères, bandeau de brouillon, liens pour aller plus loin */
+.source-fiche { font-size: .85rem; color: var(--gris, #4B4A44); border-left: 4px solid var(--acide, #D6FF00); padding: 4px 10px; margin: 14px 0 6px; max-width: 80ch; } .source-fiche a { color: inherit; }
 .brouillon { background: #fff; border-left: 6px solid var(--rouge, #FF5638); padding: 8px 12px; margin: 8px 0 14px; font-size: .88rem; max-width: 80ch; }
 .reperes { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; max-width: 80ch; } .reperes li { display: grid; grid-template-columns: 62px 1fr; gap: 12px; align-items: baseline; padding: 8px 10px; background: #fff; border: 2px solid var(--noir); }
 .reperes .an { font: 500 .85rem var(--f-mono, ui-monospace, monospace); background: var(--acide, #D6FF00); padding: 2px 6px; text-align: center; }
@@ -596,12 +597,14 @@ function axesHtml(e) {
   if ((e.axes || []).length) return `<h2>Pour la classe</h2><ul class="axes-cours">${e.axes.map(([a, n, p]) => `<li><span class="nat">${esc(n)}</span><span>${esc(p)}</span></li>`).join("")}</ul>`;
   return e.grand_public ? `<h2>Pour la classe</h2><p class="petit">Pas encore de lien établi avec les axes du cours (danse, littérature, arts plastiques, physique, mathématiques, philosophie et engagement) : à citer en classe, mais à garder hors des supports de cours.</p>` : "";
 }
+/* Les sources d'une fiche vérifiée (verifier_fiches.py) : où chaque fait se recoupe, et le statut « à relire ». */
+const sourcesFicheHtml = e => (e.sources || []).length ? `<p class="source-fiche">${esc(e.statut_fiche ? e.statut_fiche[0].toUpperCase() + e.statut_fiche.slice(1) : "Sources")} : ${e.sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.nom)}</a>`).join(", ")}${e.sources[0].consulte ? `, consulté le ${esc(e.sources[0].consulte)}` : ""}.</p>` : "";
 function referencesHtml(e) {
   const q = encodeURIComponent(e.name), v = ((D.verifiees || {}).entrees || {})[e.id] || {}, constats = [];
   if (v.imslp) constats.push(`<li><a href="${esc(v.imslp.url)}" target="_blank" rel="noopener">IMSLP : ${v.imslp.pages} pages dans la catégorie « ${esc(v.imslp.titre.replace("Category:", ""))} »</a><span class="petit">Constat du ${esc(v.imslp.date)}, par l'interface de programmation d'IMSLP. Les droits des partitions varient selon les pays : lis la mention de chaque fichier.</span></li>`);
   if (v.europeana && v.europeana.total >= 3) constats.push(`<li><a href="${esc(v.europeana.url)}" target="_blank" rel="noopener">Europeana : ${v.europeana.total} documents sonores trouvés pour « ${esc(e.name)} »</a><span class="petit">Constat du ${esc(v.europeana.date)}. Résultats de recherche, pertinence non vérifiée : lis les droits de chaque notice.</span></li>`);
   const groupes = {}; (D.motifs || []).filter(m => (!m.types || m.types.includes(e.type)) && (!m.familles || m.familles.includes(e.family))).forEach(m => (groupes[m.groupe] ||= []).push(m));
-  return `<details class="plusloin"><summary>Aller plus loin : chercher ailleurs (encyclopédies, discographies, archives)</summary><p class="petit">Les liens ouvrent, dans un nouvel onglet, la recherche d'un site de référence sur « ${esc(e.name)} ». Ils ne garantissent pas qu'une page existe ni que son contenu est exact : vérifie toujours la source et les droits.</p>
+  return sourcesFicheHtml(e) + `<details class="plusloin"><summary>Aller plus loin : chercher ailleurs (encyclopédies, discographies, archives)</summary><p class="petit">Les liens ouvrent, dans un nouvel onglet, la recherche d'un site de référence sur « ${esc(e.name)} ». Ils ne garantissent pas qu'une page existe ni que son contenu est exact : vérifie toujours la source et les droits.</p>
   ${constats.length ? `<h3>Présence dans les catalogues</h3><p class="petit">Recherche par le nom, non rapprochée : les résultats peuvent concerner un homonyme. Ce n'est pas une vérification.</p><ul class="constats">${constats.join("")}</ul>` : ""}
   ${Object.entries(groupes).map(([gr, L]) => `<h3>${esc(gr)}</h3><ul class="plus">${L.map(m => `<li><a href="${esc(m.modele.replace("{q}", q))}" target="_blank" rel="noopener">${esc(m.nom)}</a><span class="petit">${esc(m.note)}</span></li>`).join("")}</ul>`).join("")}</details>`;
 }
