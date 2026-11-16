@@ -2,12 +2,12 @@
 // Elle construit en même temps le graphe de signal (écart assumé par rapport au découpage de SPEC.md : sema et graphe
 // sont fusionnés, car typer une expression et la placer dans le graphe sont le même parcours).
 
-import { Graphe, RANG, rmax, valeurNominale, trouverCycles, SR_NOMINAL } from "./graphe.js?v=db67ece40c";
-import { MODULES, MATHS } from "./bibliotheque.js?v=db67ece40c";
-import * as U from "./unites.js?v=db67ece40c";
-import { COMPOSITES } from "./prelude.js?v=db67ece40c";
-import { analyser } from "./analyseur.js?v=db67ece40c";
-import { Diagnostics, proche } from "./diagnostics.js?v=db67ece40c";
+import { Graphe, RANG, rmax, valeurNominale, trouverCycles, SR_NOMINAL } from "./graphe.js?v=cef954e286";
+import { MODULES, MATHS } from "./bibliotheque.js?v=cef954e286";
+import * as U from "./unites.js?v=cef954e286";
+import { COMPOSITES } from "./prelude.js?v=cef954e286";
+import { analyser } from "./analyseur.js?v=cef954e286";
+import { Diagnostics, proche } from "./diagnostics.js?v=cef954e286";
 
 const { ZERO } = U;
 

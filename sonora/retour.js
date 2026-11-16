@@ -11,12 +11,29 @@
     d.append(t, b); (document.body || document.documentElement).appendChild(d);
   }
   const court = u => String(u || "").split("/").slice(-2).join("/");
+  // Quand un module n'arrive pas à se charger, le navigateur ne dit pas lequel des dizaines de fichiers de la page est en cause.
+  // La sonde les relit un à un (réseau, puis exécution, les dépendances d'abord) et donne le premier qui échoue et pourquoi.
+  async function sonde(src) {
+    const etat = new Map(), ordre = [];
+    async function lire(u) {
+      if (etat.has(u)) return; etat.set(u, "?");
+      let t; try { const r = await fetch(u, { cache: "no-store" }); if (!r.ok) { etat.set(u, "HTTP " + r.status); return; } t = await r.text(); } catch (e) { etat.set(u, "réseau : " + String(e && e.message || e).slice(0, 60)); return; }
+      const deps = []; for (const m of t.matchAll(/(?:^|[;\s}])(?:import|export)\s*(?:[^'";(]*?\sfrom\s*)?["'](\.{1,2}\/[^"']+\.js(?:\?[^"']*)?)["']/g)) { try { deps.push(new URL(m[1], u).href); } catch (_) {} }
+      for (const d of deps) await lire(d);
+      ordre.push(u); if (etat.get(u) === "?") etat.set(u, "ok");
+    }
+    try { await lire(src); } catch (e) { return "sonde : " + String(e && e.message || e).slice(0, 80); }
+    const mal = [...etat].filter(([, v]) => v !== "ok"); if (mal.length) return mal.slice(0, 3).map(([u, v]) => court(u) + " (" + v + ")").join(" ; ");
+    for (const u of ordre) { try { await import(u); } catch (e) { return court(u) + " : " + String(e && (e.name + " " + e.message) || e).slice(0, 140); } }
+    return "";
+  }
   window.addEventListener("error", e => {
     const c = e.target;
     if (c && c !== window && (c.tagName === "SCRIPT" || (c.tagName === "LINK" && /stylesheet/i.test(c.rel)))) {
       // Une page SONORA se compose de dizaines de fichiers : sur un réseau de téléphone, un seul qui n'arrive pas suffit à la laisser muette (retour du 16/11/2026, iPhone).
       // On recharge donc la page une seule fois, sans rien dire ; si le fichier manque encore, la bande donne la cause.
       try { const k = "sonora-reessai:" + location.pathname; if (!sessionStorage.getItem(k)) { sessionStorage.setItem(k, "1"); setTimeout(() => location.reload(), 600); return; } sessionStorage.removeItem(k); } catch (_) {}
+      if (c.tagName === "SCRIPT" && c.type === "module" && c.src) { sonde(c.src).then(cause => bande("fichier non chargé (" + court(c.src) + ")" + (cause ? ", cause : " + cause : ""))); return; }
       bande("fichier non chargé (" + court(c.src || c.href) + ")"); return; }
     const m = String(e.message || ""); if (!m || /ResizeObserver|^Script error\.?$/.test(m)) return;
     // Erreurs qui ne viennent pas de la page : scripts injectés par le navigateur ou une extension (portefeuille de Brave : « window.ethereum »), évalués avec l'adresse de la page à la ligne 1.
