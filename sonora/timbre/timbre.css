@@ -128,3 +128,7 @@ main { width: min(1080px, 100%); margin: 0 auto; padding: 0 16px 28px; } main:fo
 .trois-d #ecran-partie #rejouer-trio { position: fixed; z-index: 6; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom)); transform: translateX(-50%); }
 .trois-d #ecran-partie .tour { position: fixed; z-index: 6; left: 0; right: 0; bottom: calc(26px + env(safe-area-inset-bottom)); }
 .trois-d #ecran-partie .aide { display: none; }
+
+/* Lien vers les quiz de l'Atlas (quiz.html), sous les jeux d'oreille. */
+.vers-quiz { display: flex; align-items: center; gap: 12px; max-width: 760px; margin: 18px auto 0; padding: 14px 18px; border-radius: 20px; border: 2px solid var(--jaune); background: var(--verre); text-decoration: none; box-shadow: 0 5px 0 #8a6a00; }
+.vers-quiz b { font: 800 1.15rem/1.1 var(--f-titre); } .vers-quiz span { color: var(--txt2); flex: 1; font-size: .92rem; } .vers-quiz i { font-style: normal; font-size: 1.6rem; color: var(--jaune); }
