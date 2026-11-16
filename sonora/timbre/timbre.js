@@ -1,9 +1,9 @@
 // TIMBRE : la salle de jeux de l'oreille. Six jeux, de vrais enregistrements de la banque du site, des questions tirées au hasard à chaque partie
 // (deux élèves côte à côte n'ont jamais la même série). La logique pure est dans jeu_logique.js, testée dans Node.
-import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=cef954e286";
-import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=cef954e286";
-import { preparer, mixer } from "../harmonie/echantillons.js?v=cef954e286";
-import { monter } from "./scene.js?v=cef954e286";
+import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=c56535eb99";
+import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=c56535eb99";
+import { preparer, mixer } from "../harmonie/echantillons.js?v=c56535eb99";
+import { monter } from "./scene.js?v=c56535eb99";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
