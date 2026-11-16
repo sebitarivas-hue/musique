@@ -176,3 +176,28 @@ header.haut a.accueil-sonora { display: none; }
 @media (pointer: coarse) and (min-width: 761px) { #grille button, #grille select, #grille input:not([type=checkbox]):not([type=file]):not([type=radio]) { min-height: 44px; } }
 /* Onglets : 44 px au moins sur écran étroit (34 px auparavant). */
 @media (max-width: 700px) { .onglets button { min-height: 44px; } }
+/* La barre du haut, refaite le 16/11/2026 (retour de Sébastien sur iPad et iPhone : boutons empilés en colonne, boutons coupés).
+   Une grille : la marque et l'état en haut ; les espaces SONORA sur une seule ligne ; les commandes du Studio sur leur propre ligne.
+   Ordinateur (plus de 1100 px) : marque, espaces, état sur la même ligne. Tablette : les espaces sur toute la largeur, répartis.
+   Téléphone (700 px et moins) : la marque et « Tous les outils », puis les commandes sur une ligne qui défile. */
+header.haut { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "marque espaces etat" "cmd cmd cmd"; align-items: center; gap: 8px 16px; }
+header.haut > .marque { grid-area: marque; white-space: nowrap; }
+header.haut > nav.actions { grid-area: espaces; display: flex; flex-wrap: nowrap; justify-content: flex-end; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+header.haut > nav.actions::-webkit-scrollbar, header.haut > div.actions::-webkit-scrollbar { display: none; }
+header.haut > .etat { grid-area: etat; white-space: nowrap; }
+header.haut > a.accueil-sonora { grid-area: etat; justify-self: end; }
+header.haut > div.actions { grid-area: cmd; display: flex; flex-wrap: nowrap; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+header.haut > div.actions button, header.haut > nav.actions .lien-bouton { flex: none; min-height: 40px; padding: 6px 14px; font-size: .88rem; line-height: 1.1; white-space: nowrap; }
+@media (pointer: coarse) { header.haut > div.actions button, header.haut > nav.actions .lien-bouton, header.haut > a.accueil-sonora { min-height: 44px; } }
+@media (max-width: 1100px) {
+  header.haut { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "marque etat" "espaces espaces" "cmd cmd"; }
+  header.haut > .etat { justify-self: end; }
+  header.haut > nav.actions { justify-content: stretch; } header.haut > nav.actions .lien-bouton { flex: 1 1 0; justify-content: center; padding: 6px 8px; }
+}
+@media (max-width: 700px) {
+  header.haut { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "marque etat" "cmd cmd"; gap: 6px 8px; }
+  header.haut > .etat { display: none; }
+  header.haut > div.actions button { padding: 4px 12px; font-size: .82rem; }
+}
+@media (max-width: 700px) { header.haut > .marque { min-width: 0; overflow: hidden; } header.haut > a.accueil-sonora { padding: 4px 12px; font-size: .82rem; white-space: nowrap; } }
+@media (max-width: 400px) { header.haut > .marque .sous { display: none; } }

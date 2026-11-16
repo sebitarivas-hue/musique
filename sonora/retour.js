@@ -13,7 +13,11 @@
   const court = u => String(u || "").split("/").slice(-2).join("/");
   window.addEventListener("error", e => {
     const c = e.target;
-    if (c && c !== window && (c.tagName === "SCRIPT" || (c.tagName === "LINK" && /stylesheet/i.test(c.rel)))) { bande("fichier non chargé (" + court(c.src || c.href) + ")"); return; }
+    if (c && c !== window && (c.tagName === "SCRIPT" || (c.tagName === "LINK" && /stylesheet/i.test(c.rel)))) {
+      // Une page SONORA se compose de dizaines de fichiers : sur un réseau de téléphone, un seul qui n'arrive pas suffit à la laisser muette (retour du 16/11/2026, iPhone).
+      // On recharge donc la page une seule fois, sans rien dire ; si le fichier manque encore, la bande donne la cause.
+      try { const k = "sonora-reessai:" + location.pathname; if (!sessionStorage.getItem(k)) { sessionStorage.setItem(k, "1"); setTimeout(() => location.reload(), 600); return; } sessionStorage.removeItem(k); } catch (_) {}
+      bande("fichier non chargé (" + court(c.src || c.href) + ")"); return; }
     const m = String(e.message || ""); if (!m || /ResizeObserver|^Script error\.?$/.test(m)) return;
     // Erreurs qui ne viennent pas de la page : scripts injectés par le navigateur ou une extension (portefeuille de Brave : « window.ethereum »), évalués avec l'adresse de la page à la ligne 1.
     const f = String(e.filename || ""), page = location.href.split("#")[0];
