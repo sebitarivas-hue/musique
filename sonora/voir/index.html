@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONORA Voir la musique</title>
+<meta name="description" content="Écouter un morceau et le voir en six vues synchronisées : piano roll, orbite du rythme, spectre, oscilloscope, niveau et réseau des notes.">
+<link rel="stylesheet" href="../studio/studio.css?v=4c4edd87d4">
+<link rel="stylesheet" href="voir.css?v=4c4edd87d4">
+</head>
+<body>
+<a class="saut" href="#contenu">Aller au contenu</a>
+<header class="haut">
+  <div class="marque"><a href="../../choix.html" class="retour" aria-label="Retour au cours">&#8249;</a><span class="nom">SONORA</span><span class="sous">Voir la musique</span></div>
+  <a class="lien-bouton accueil-sonora" href="../index.html">Tous les outils</a>
+  <nav class="actions" aria-label="Espaces SONORA"><a class="lien-bouton" href="../decouverte/index.html">Découvertes</a><a class="lien-bouton" href="../academy/index.html">Apprendre</a><a class="lien-bouton" href="../harmonie/index.html">Harmonie</a><a class="lien-bouton" href="../orchestre/index.html">Orchestre</a><a class="lien-bouton" aria-current="page" href="index.html">Voir</a><a class="lien-bouton" href="../pistes/index.html">Pistes</a><a class="lien-bouton" href="../studio/index.html">Studio</a><a class="lien-bouton" href="../science/index.html">Science</a><a class="lien-bouton" href="../library/index.html">Library</a><a class="lien-bouton" href="../code/index.html">Code</a></nav>
+  <div class="etat" id="etat" role="status" aria-live="polite">prêt</div>
+</header>
+<main id="contenu" class="voir">
+  <section class="intro"><h1>Voir la musique, <span>pendant qu'on l'écoute</span></h1><p>Un même morceau, six façons de le regarder. Choisis un morceau, lance l'écoute, puis cherche ce que chaque vue montre : la hauteur des notes, la place dans la mesure, le timbre, la force du son, les notes qui se suivent.</p></section>
+  <div class="barre" role="group" aria-label="Morceau et lecture">
+    <div class="choix" id="choix" role="group" aria-label="Morceau"></div>
+    <button type="button" class="principal" id="lire" aria-pressed="false">Écouter</button>
+    <label class="tempo">Tempo <input type="range" id="tempo" min="50" max="160" value="100" aria-label="Tempo, en pourcentage"><output id="tempo-v">100 %</output></label>
+    <div class="voix" id="voix" role="group" aria-label="Voix à entendre"></div>
+  </div>
+  <p class="consigne" id="consigne" aria-live="polite"></p>
+  <div class="tableau" id="tableau">
+    <figure class="panneau" data-p="roll"><figcaption><b>ROLL</b><span>le piano roll : hauteur et durée des notes</span><i id="s-roll"></i></figcaption><canvas width="640" height="300" role="img" aria-label="Piano roll"></canvas></figure>
+    <figure class="panneau" data-p="orbite"><figcaption><b>ORBITE</b><span>le cycle du morceau en cercle</span><i id="s-orbite"></i></figcaption><canvas width="640" height="300" role="img" aria-label="Orbite du rythme"></canvas></figure>
+    <figure class="panneau" data-p="reseau"><figcaption><b>RÉSEAU</b><span>les notes et leurs passages de l'une à l'autre</span><i id="s-reseau"></i></figcaption><canvas width="640" height="300" role="img" aria-label="Réseau des notes"></canvas></figure>
+    <figure class="panneau" data-p="spectre"><figcaption><b>SPECTRE</b><span>les fréquences : graves à gauche, aigus à droite</span><i id="s-spectre"></i></figcaption><canvas width="640" height="300" role="img" aria-label="Spectre"></canvas></figure>
+    <figure class="panneau" data-p="scope"><figcaption><b>SCOPE</b><span>la forme de l'onde, l'instant précis</span><i id="s-scope"></i></figcaption><canvas width="640" height="300" role="img" aria-label="Oscilloscope"></canvas></figure>
+    <figure class="panneau" data-p="niveau"><figcaption><b>NIVEAU</b><span>la force du son, les dernières secondes</span><i id="s-niveau"></i></figcaption><canvas width="640" height="300" role="img" aria-label="Niveau sonore"></canvas></figure>
+  </div>
+  <p class="note" id="note"></p>
+</main>
+<script type="module" src="voir.js?v=4c4edd87d4"></script>
+<script src="../barre-cours.js?v=4c4edd87d4"></script>
+<script src="../retour.js?v=4c4edd87d4"></script>
+</body>
+</html>

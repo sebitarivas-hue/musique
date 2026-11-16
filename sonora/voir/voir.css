@@ -1,0 +1,18 @@
+/* SONORA Voir la musique : un tableau de bord sombre, six vues du même morceau. */
+.voir { width: min(1180px, 100%); margin: 0 auto; padding: 16px 16px 48px; }
+.voir .intro h1 { font: 400 clamp(1.8rem, 5vw, 3rem)/1.05 var(--f-display, sans-serif); margin: 6px 0 10px; text-transform: none; } .voir .intro h1 span { background: var(--acide); padding: 0 .15em; }
+.voir .intro p { max-width: 62ch; font-size: 1.05rem; margin: 0 0 14px; color: var(--gris); }
+.barre { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin: 0 0 10px; }
+.choix, .voix { display: flex; flex-wrap: wrap; gap: 6px; }
+.choix button[aria-pressed="true"], .voix button[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
+.voix button[aria-pressed="false"] { opacity: .5; text-decoration: line-through; }
+.tempo { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; } .tempo output { font: 700 .85rem var(--f-mono, monospace); min-width: 4ch; }
+.consigne { max-width: 70ch; margin: 0 0 12px; font-size: 1.02rem; } .note { font-size: .85rem; color: var(--gris); margin: 12px 0 0; }
+.tableau { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.panneau { margin: 0; background: #11140f; color: #e8ecd8; border: 2px solid var(--noir); display: flex; flex-direction: column; min-width: 0; }
+.panneau figcaption { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; padding: 6px 10px; font: 700 .7rem var(--f-mono, monospace); border-bottom: 1px solid #2c3326; }
+.panneau figcaption b { color: var(--acide); letter-spacing: .08em; } .panneau figcaption span { color: #aab29a; font-weight: 500; flex: 1 1 100%; order: 3; } .panneau figcaption i { margin-left: auto; font-style: normal; color: #e8ecd8; }
+.panneau canvas { display: block; width: 100%; height: auto; aspect-ratio: 640 / 300; }
+@media (max-width: 900px) { .tableau { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .tableau { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .panneau canvas { transition: none; } }

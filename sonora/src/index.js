@@ -1,10 +1,10 @@
 // Point d'entrée du compilateur SONORA. Aucune dépendance, aucune référence à l'interface : tourne dans un Worker, dans Node ou sur le fil principal.
-import { Diagnostics, rendre as rendreDiagnostic } from "./diagnostics.js?v=8cf74d6fca";
-import { analyser } from "./analyseur.js?v=8cf74d6fca";
-import { analyserSemantique } from "./sema.js?v=8cf74d6fca";
-import { optimiser } from "./optimise.js?v=8cf74d6fca";
-import { verifierGenerable, genererNoyau } from "./gen_js.js?v=8cf74d6fca";
-import { MODULES, MATHS } from "./bibliotheque.js?v=8cf74d6fca";
+import { Diagnostics, rendre as rendreDiagnostic } from "./diagnostics.js?v=4c4edd87d4";
+import { analyser } from "./analyseur.js?v=4c4edd87d4";
+import { analyserSemantique } from "./sema.js?v=4c4edd87d4";
+import { optimiser } from "./optimise.js?v=4c4edd87d4";
+import { verifierGenerable, genererNoyau } from "./gen_js.js?v=4c4edd87d4";
+import { MODULES, MATHS } from "./bibliotheque.js?v=4c4edd87d4";
 
 export { rendreDiagnostic, MODULES, MATHS };
 
