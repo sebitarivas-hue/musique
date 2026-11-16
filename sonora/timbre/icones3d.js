@@ -1,9 +1,9 @@
 // Des icônes en 3D, vernies comme de la pâte à modeler : une scène, un seul moteur de rendu, une photo par icône (image PNG transparente), gardée pour la session.
 // Sert à la page Jouer du site (jeux, chiffres) et à TIMBRE. Three.js (licence MIT) et son éclairage d'ambiance RoomEnvironment sont dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=4c4edd87d4";
-import { RoomEnvironment } from "./vendor/RoomEnvironment.js?v=4c4edd87d4";
+import * as T from "./vendor/three.module.min.js?v=da1c67aaeb";
+import { RoomEnvironment } from "./vendor/RoomEnvironment.js?v=da1c67aaeb";
 
-const VERSION = "ico3d-3";
+const VERSION = "ico3d-4";
 const vernis = (c, o = {}) => new T.MeshPhysicalMaterial(Object.assign({ color: new T.Color(c), roughness: .36, metalness: 0, clearcoat: 1, clearcoatRoughness: .12, envMapIntensity: .55 }, o));
 // Un rectangle aux coins arrondis, extrudé avec un biseau : la brique de base, toute ronde.
 function brique(w, h, p, r, c, o) { const s = new T.Shape(), x = -w / 2, y = -h / 2; r = Math.min(r, w / 2, h / 2);
@@ -33,6 +33,19 @@ const FABRIQUES = {
   de(c) { const g = new T.Group(); g.add(brique(1.7, 1.7, 1.2, .38, c)); [[-.42, .42], [.42, .42], [0, 0], [-.42, -.42], [.42, -.42]].forEach(([x, y]) => { const b = boule(.15, "#ffffff"); b.position.set(x, y, .78); g.add(b); }); g.rotation.set(.35, -.45, 0); return g; },
   harmonie() { const g = new T.Group(); ["#47e6c1", "#12b76a", "#0e8f6a"].forEach((k, i) => { const b = brique(2, .5, .5, .24, k); b.position.set((i - 1) * .15, (1 - i) * .62, 0); g.add(b); }); return g; },
   orchestre(c) { const g = new T.Group(); [1.15, .72].forEach((r, i) => { const a = new T.Mesh(new T.TorusGeometry(r, .14, 16, 50, Math.PI), vernis(i ? "#ffd23f" : c)); a.position.y = -.5; g.add(a); }); const b = boule(.28, "#ffffff"); b.position.y = -.5; g.add(b); return g; },
+  // Les outils du Labo (16/11/2026) : le diapason de l'atelier, la loupe des découvertes, les pistes, l'onde du studio, l'écran de la science, les livres, le code.
+  diapason(c) { const g = new T.Group(); [-.42, .42].forEach(x => { const b = brique(.3, 1.7, .4, .14, c); b.position.set(x, .35, 0); g.add(b); }); const u = new T.Mesh(new T.TorusGeometry(.42, .15, 16, 40, Math.PI), vernis(c)); u.rotation.z = Math.PI; u.position.y = -.5; g.add(u);
+    const t = brique(.26, .8, .3, .12, "#ffffff"); t.position.y = -1.25; g.add(t); const b = boule(.24, "#ffd23f"); b.position.y = -1.7; g.add(b); return g; },
+  loupe(c) { const g = new T.Group(), r = new T.Mesh(new T.TorusGeometry(.7, .17, 20, 60), vernis(c)); r.position.set(-.25, .3, 0); const v = new T.Mesh(new T.CylinderGeometry(.62, .62, .08, 40), vernis("#bff4ff", { transparent: true, opacity: .55 }));
+    v.rotation.x = Math.PI / 2; v.position.copy(r.position); const m = brique(.32, 1.15, .32, .15, "#ffd23f"); m.rotation.z = .78; m.position.set(.62, -.62, 0); g.add(r, v, m); return g; },
+  pistes(c) { const g = new T.Group(); [[1, [[-.6, 1.1, c], [.75, .9, "#ffd23f"]]], [0, [[-.85, .7, "#35e0ff"], [.3, 1.4, c]]], [-1, [[-.3, 1.6, "#ff4d8d"], [.95, .5, "#ffffff"]]]].forEach(([y, L]) => L.forEach(([x, w, k]) => { const b = brique(w, .5, .4, .2, k); b.position.set(x, y * .68, 0); g.add(b); })); return g; },
+  studio(c) { const g = new T.Group(), pts = Array.from({ length: 41 }, (_, i) => { const x = -1.3 + i * 2.6 / 40; return new T.Vector3(x, Math.sin(x * 2.6) * .55, 0); });
+    g.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 80, .17, 12), vernis(c))); [pts[0], pts[40]].forEach(p => { const b = boule(.24, "#ffffff"); b.position.copy(p); g.add(b); }); return g; },
+  science(c) { const g = new T.Group(), e = brique(2.3, 1.7, .45, .3, "#20124d"); g.add(e); const pts = Array.from({ length: 31 }, (_, i) => { const x = -.85 + i * 1.7 / 30; return new T.Vector3(x, Math.sin(x * 5) * .35 * Math.exp(-Math.abs(x)), .3); });
+    g.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 60, .07, 8), vernis(c, { emissive: new T.Color(c), emissiveIntensity: .45 }))); [-.6, .6].forEach(x => { const b = boule(.16, "#ffd23f"); b.position.set(x, -1.05, .1); g.add(b); }); return g; },
+  livres(c) { const g = new T.Group(); [[.9, c], [1.25, "#ffd23f"], [1.05, "#35e0ff"], [1.4, "#ff4d8d"]].forEach(([h, k], i) => { const b = brique(.42, h, .9, .1, k); b.position.set((i - 1.5) * .48, h / 2 - .7, 0); if (i === 3) { b.rotation.z = -.28; b.position.x += .12; } g.add(b); }); return g; },
+  code(c) { const g = new T.Group(), ch = [[.45, 1], [-.35, 0], [.45, -1], [.15, -1], [-.65, 0], [.15, 1]], a = forme(ch, .4, c), b = forme(ch, .4, c); a.position.x = -.85; b.rotation.y = Math.PI; b.position.x = .85;
+    const s = brique(.26, 1.9, .36, .12, "#ffd23f"); s.rotation.z = -.35; g.add(a, b, s); return g; },
   son(c) { const g = new T.Group(); [.6, 1.4, .95, 1.8, .7].forEach((h, i) => { const b = brique(.32, h, .4, .16, i % 2 ? c : "#ffffff"); b.position.set((i - 2) * .45, 0, 0); g.add(b); }); return g; },
 };
 
