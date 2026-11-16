@@ -1,5 +1,5 @@
 // Worker de compilation : le compilateur tourne hors du fil de l'interface et hors du fil audio.
-import { compiler } from "./index.js?v=09b5ee52f0";
+import { compiler } from "./index.js?v=12013fdb2a";
 self.onmessage = e => {
   const { id, source, options } = e.data;
   try {
