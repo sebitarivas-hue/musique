@@ -632,7 +632,7 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .pt-nom { font-size: .72rem; font-weight: 600; letter-spacing: .02em; }
 .pt-invite { margin: 0 0 8px; color: var(--daw-doux); font-size: .92rem; }
 .pt-score.pt-outil-actif, .pt-score.pt-outil-actif svg { cursor: crosshair; }
-.pt-score.pt-gomme-actif .pt-note { cursor: not-allowed; }
+.pt-score.pt-gomme-actif .pt-note, .pt-score.pt-gomme-actif .pt-silence { cursor: not-allowed; }
 .pt-score.pt-en-glisse { cursor: grabbing; }
 .pt-score .pt-choisie path, .pt-score .pt-choisie ellipse, .pt-score .pt-choisie text { fill: #1f6feb !important; stroke: #1f6feb !important; }
 .pt-score .pt-note { touch-action: none; }

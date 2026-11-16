@@ -1,14 +1,14 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=c19f85b976";
-import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=c19f85b976";
-import { monterTimbres } from "./timbres.js?v=c19f85b976";
-import { monterFugue } from "./fugue.js?v=c19f85b976";
-import { monterBritten } from "./britten.js?v=c19f85b976";
-import { monterVariations } from "./variations.js?v=c19f85b976";
-import { svgIcone, dessin } from "./icones.js?v=c19f85b976";
-import { PHOTOS } from "./photos.js?v=c19f85b976";
-import { FICHES } from "./fiches.js?v=c19f85b976";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=764727ea38";
+import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=764727ea38";
+import { monterTimbres } from "./timbres.js?v=764727ea38";
+import { monterFugue } from "./fugue.js?v=764727ea38";
+import { monterBritten } from "./britten.js?v=764727ea38";
+import { monterVariations } from "./variations.js?v=764727ea38";
+import { svgIcone, dessin } from "./icones.js?v=764727ea38";
+import { PHOTOS } from "./photos.js?v=764727ea38";
+import { FICHES } from "./fiches.js?v=764727ea38";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

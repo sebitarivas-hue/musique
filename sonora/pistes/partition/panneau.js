@@ -1,10 +1,10 @@
 // Le panneau « Partition » de SONORA Pistes : la partition gravée d'un clip de notes, et à côté son texte façon LilyPond. On écrit le texte, la partition se dessine et les notes du clip suivent ;
 // on change les notes dans le piano roll, la partition suit. Le panneau ne connaît ni le projet ni l'audio : tout passe par des rappels (comme le piano roll).
 // rappels : { ecouter(n, v), message(t), appliquer({ notes, temps, partition }) : le texte a changé les notes, memoriser(partition) : seul le texte a changé }
-import { lire, ecrire, ErreurLily } from "./lily.js?v=c19f85b976";
-import { depuisNotes, versNotes, devinerTonalite, longueurMesure, unitesValeur } from "./modele.js?v=c19f85b976";
-import { chargerVexflow, graver } from "./gravure.js?v=c19f85b976";
-import { nomTonalite, alterationsArmure, midiDe, nomFrancais } from "./hauteurs.js?v=c19f85b976";
+import { lire, ecrire, ErreurLily } from "./lily.js?v=764727ea38";
+import { depuisNotes, versNotes, devinerTonalite, longueurMesure, unitesValeur } from "./modele.js?v=764727ea38";
+import { chargerVexflow, graver } from "./gravure.js?v=764727ea38";
+import { nomTonalite, alterationsArmure, midiDe, nomFrancais } from "./hauteurs.js?v=764727ea38";
 
 const BASE = new URL("../", import.meta.url);
 const TONALITES = [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7];
@@ -203,6 +203,7 @@ export class PanneauPartition {
     sc.addEventListener("pointerleave", () => { if (!this.session) this._cacherApercu(); });
     sc.addEventListener("click", e => {
       if (this._apresGlisser(e.timeStamp)) return; const g = e.target.closest && e.target.closest(".pt-note");
+      const sil = e.target.closest && e.target.closest(".pt-silence"); if (sil && this.outil.gomme) { this._effacerSilence({ t: +sil.getAttribute("data-t"), u: +sil.getAttribute("data-u") || 0 }); return; }
       if (g && this.outil.gomme) { const t = +g.getAttribute("data-t"), u = +g.getAttribute("data-u") || 0, midis = (g.getAttribute("data-midis") || "").split(",").filter(Boolean).map(Number); this._effacerItem({ t, u, midis }); return; }
       if (!this.outil.actif || this.outil.gomme || (g && this.outil.mode !== "silence")) return; const c = this._cibleSouris(e.clientX, e.clientY); if (c) this._poser(c, { val: this.outil.val, mode: this.outil.mode });
     });
@@ -292,6 +293,11 @@ export class PanneauPartition {
   _effacerItem(info) {
     const cibles = new Set(this._notesDe({ ...info, midis: info.midis || [info.n] })); if (!cibles.size) return;
     this._commit(this.notes.filter(n => !cibles.has(n)));
+  }
+  // Gommer un silence, c'est l'enlever : tout ce qui suit recule d'autant (la note d'après prend sa place), et la fin de la partition se complète en silence.
+  _effacerSilence(info) {
+    const d = info.u / 24, fin = (info.t + info.u) / 24; if (!(d > 0)) return;
+    this._commit(this.notes.map(n => n.t >= fin - 1e-6 ? { ...n, t: Math.max(0, n.t - d) } : n));
   }
   _deplacer(info, c) {
     const anc = this._notesDe(info); if (!anc.length) return; const m = this._midiDe(c.diat, this.outil.alt), dn = m.midi - info.midis[0], dt = (c.tU - info.t) / 24; if (!dn && Math.abs(dt) < 1e-6) return;

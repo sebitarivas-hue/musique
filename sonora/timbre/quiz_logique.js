@@ -40,7 +40,7 @@ export function questionsMots(Q, niveau, rnd, n = MANCHES.mots) {
 // Les musiques du cours (l'ancienne carte du monde du site) : on lit la description, on retrouve la musique ; ensuite, sa question d'écoute et ses écoutes.
 export function questionsCours(Q, niveau, rnd, n = MANCHES.cours) {
   return tirer(Q.cours, n, rnd, x => x[1]).map(([id, nom, lieu, texte, question, ecoutes]) => {
-    const faux = tirer(Q.cours.filter(x => x[1] !== nom), niveau === 1 ? 3 : 5, rnd).map(x => x[1]);
+    const faux = tirer(Q.cours.filter(x => x[1] !== nom), niveau === 1 ? 3 : 5, rnd, x => x[1]).map(x => x[1]);
     return { id, type: "Les musiques du cours", titre: niveau === 1 ? lieu : "Quelle musique ?", texte, ...choix(nom, faux, rnd), question, ecoutes };
   });
 }
