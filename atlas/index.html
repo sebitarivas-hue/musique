@@ -1135,7 +1135,7 @@ function brancherZoomMonde() {
   sv.addEventListener("keydown", ev => { if ((ev.key === "Enter" || ev.key === " ") && ev.target.closest && ev.target.closest(".pt-monde")) { ev.preventDefault(); mToucher(ev.target.closest(".pt-monde")); } });
   sv.addEventListener("wheel", e => { e.preventDefault(); const [cx, cy] = carte(e.clientX, e.clientY); mZoomer(Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.002)), cx, cy); }, { passive: false });
   sv.addEventListener("dblclick", e => { const [cx, cy] = carte(e.clientX, e.clientY); mZoomer(2, cx, cy); });
-  $(".monde-ctrl").addEventListener("click", e => { const b = e.target.closest("[data-z]"); if (!b) return; MONDE.focus = null; if (b.dataset.z === "in") mZoomer(1.6, null, null, true); else if (b.dataset.z === "out") mZoomer(1 / 1.6, null, null, true); else { if (!mToutes()) MONDE.fam = new Set(D.families.map(f => f.id)); mAller({ x: 0, y: 0, w: D.carte.w }); } });
+  $("#mplat .monde-ctrl").addEventListener("click", e => { const b = e.target.closest("[data-z]"); if (!b) return; MONDE.focus = null; if (b.dataset.z === "in") mZoomer(1.6, null, null, true); else if (b.dataset.z === "out") mZoomer(1 / 1.6, null, null, true); else { if (!mToutes()) MONDE.fam = new Set(D.families.map(f => f.id)); mAller({ x: 0, y: 0, w: D.carte.w }); } });
 }
 function mToucher(g) { if (g.dataset.id) { MONDE.focus = null; mChoisir(g.dataset.id); } else if (g.dataset.g != null) { const gr = MONDE.grappes[+g.dataset.g]; if (gr) mOuvrirGrappe(gr); } }
 function mZoomer(f, cx, cy, anim) {   // cx, cy : point fixe en coordonnées de carte
