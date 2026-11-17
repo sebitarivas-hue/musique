@@ -40,6 +40,17 @@ export const suitLeTempo = s => estMidi(s) || estSource(s);
 // midi : { notes: [{ t, d, n, v }], instrument: identifiant de l'instrument de Pistes, temps: durée en temps du clip }.
 export const copieMidi = m => ({ notes: (m.notes || []).map(x => ({ ...x })), instrument: m.instrument || "ech:clavier", temps: m.temps || 4, rendu: m.rendu, ...(m.partition ? { partition: JSON.parse(JSON.stringify(m.partition)) } : {}) });
 export const estMidi = s => !!(s && s.midi && Array.isArray(s.midi.notes));
+// L'instrument d'une piste de notes (comme dans un séquenceur : l'instrument est sur la piste, les clips ne portent que des notes). `piste.instrument` l'emporte quand il existe ;
+// un ancien projet, ou une piste qui n'a jamais reçu d'instrument, garde celui de chaque clip.
+export const instrumentDeClip = (pi, son) => (pi && pi.instrument) || (son && son.midi && son.midi.instrument) || "ech:clavier";
+// Les instruments dont le projet a besoin pour jouer ses clips de notes.
+export function instrumentsUtilises(p) { const out = new Set(); for (const pi of p.pistes || []) for (const c of pi.clips || []) { const s = p.sons[c.son]; if (estMidi(s)) out.add(instrumentDeClip(pi, s)); } return out; }
+// Change l'instrument d'une piste : tous ses clips de notes le jouent, tout de suite. Renvoie les sons de notes touchés.
+export function definirInstrumentPiste(p, pisteId, id) {
+  const pi = (p.pistes || []).find(x => x.id === pisteId); if (!pi || !id) return [];
+  pi.instrument = String(id); const touches = []; for (const c of pi.clips) { const s = p.sons[c.son]; if (estMidi(s) && s.midi.instrument !== pi.instrument) { s.midi.instrument = pi.instrument; s.midi.rendu = -1; touches.push(c.son); } }
+  return [...new Set(touches)];
+}
 export function trouverPiste(p, id) { return p.pistes.find(x => x.id === id) || null; }
 export function trouverClip(p, id) { for (const pi of p.pistes) { const c = pi.clips.find(x => x.id === id); if (c) return { piste: pi, clip: c }; } return null; }
 

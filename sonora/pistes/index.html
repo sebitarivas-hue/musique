@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=7e141dd94c">
-<link rel="stylesheet" href="pistes.css?v=7e141dd94c"><link rel="stylesheet" href="blocs.css?v=7e141dd94c"><link rel="stylesheet" href="console.css?v=7e141dd94c"><link rel="stylesheet" href="notions.css?v=7e141dd94c">
+<link rel="stylesheet" href="../studio/studio.css?v=b1d246c8fe">
+<link rel="stylesheet" href="pistes.css?v=b1d246c8fe"><link rel="stylesheet" href="blocs.css?v=b1d246c8fe"><link rel="stylesheet" href="console.css?v=b1d246c8fe"><link rel="stylesheet" href="notions.css?v=b1d246c8fe">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -28,7 +28,7 @@
     <span class="position" id="position" aria-live="off">0:00.0</span>
     <label class="mini">Tempo<input type="number" id="tempo" min="40" max="240" value="100"></label><button type="button" class="notion" data-notion="tempo" aria-label="Comprendre : le tempo">?</button>
     <span data-avance class="av"><label class="mini">Aimant<select id="aimant"><option value="0">aucun</option><option value="1" selected>temps</option><option value="0.5">demi-temps</option><option value="0.25">double croche</option></select></label><button type="button" class="notion" data-notion="aimant" aria-label="Comprendre : l'aimant">?</button>
-    <label class="mini case"><input type="checkbox" id="metro"> Métronome</label><button type="button" class="notion" data-notion="metronome" aria-label="Comprendre : le métronome">?</button>
+    <label class="mini case"><input type="checkbox" id="metro"> Métronome</label><button type="button" class="notion" data-notion="metronome" aria-label="Comprendre : le métronome">?</button><span data-avance class="av"><label class="mini" title="Avant une prise, des clics de métronome marquent la mesure : la prise commence juste après">Précompte<select id="precompte" aria-label="Précompte avant une prise"><option value="0">aucun</option><option value="1" selected>1 mesure</option><option value="2">2 mesures</option></select></label><button type="button" id="b-boucle" class="boucle" aria-pressed="false" title="Boucle : rejouer sans fin une zone. Tire sur la règle pour la tracer ; sans zone, ce sont les clips choisis ou les quatre premières mesures">Boucle</button></span>
     <label class="mini case" title="Enregistrer plusieurs pistes à la fois : un canal de l'entrée par piste armée"><input type="checkbox" id="multi"> Plusieurs pistes</label><button type="button" class="notion" data-notion="multi" aria-label="Comprendre : enregistrer plusieurs pistes à la fois">?</button>
     <label class="mini">Entrée<select id="entree-audio" aria-label="Entrée audio"><option value="">Entrée par défaut</option></select></label><button type="button" class="notion" data-notion="entree" aria-label="Comprendre : l'entrée audio">?</button></span>
     <button type="button" id="b-ajouter-m" class="btn-m btn-ajouter" aria-haspopup="dialog" aria-controls="feuille-ajouter">+ Ajouter</button><button type="button" id="b-reglages-m" class="btn-m" aria-haspopup="dialog" aria-controls="feuille-reglages" aria-label="Réglages du projet"><span class="ic ic-roue" aria-hidden="true"></span></button>
@@ -79,15 +79,6 @@
     <div class="midi-rang"><label class="mini">Chercher<input id="biblio-chercher" type="search" autocomplete="off" aria-label="Chercher dans la bibliothèque"></label>
       <span id="biblio-reglages" hidden><label class="mini">Note<select id="biblio-note" aria-label="Note"></select></label><label class="mini">Durée<select id="biblio-duree" aria-label="Durée"><option value="0.4">0,4 s</option><option value="0.8">0,8 s</option><option value="1.5" selected>1,5 s</option><option value="3">3 s</option></select></label></span></div>
     <p class="petit" id="biblio-info"></p><ul class="liste-biblio" id="biblio-liste"></ul><p class="petit" id="msg-biblio" role="status"></p>
-  </section>
-  <section class="midi pas" id="pas" aria-label="Séquenceur à pas" hidden>
-    <div class="midi-haut"><h2>Séquenceur à pas</h2><button type="button" class="notion" data-notion="sequenceur" aria-label="Comprendre : le séquenceur à pas">?</button><button type="button" class="croix-b" id="pas-fermer" aria-label="Fermer le séquenceur à pas"><span class="croix" aria-hidden="true"></span></button></div>
-    <p class="petit">Allume des cases pour fabriquer un rythme : un clic pour un coup, deux pour un coup doux, trois pour effacer. Le motif suit le tempo du projet ; « Ajouter au projet » en fait un clip.</p>
-    <div class="midi-rang"><label class="mini">Longueur<select id="pas-longueur" aria-label="Nombre de pas"></select></label><label class="mini">Jeu de sons<select id="pas-jeu" aria-label="Jeu de sons"></select></label>
-      <label class="mini">Swing <output id="pas-sw">0 %</output><input type="range" id="pas-swing" min="0" max="50" value="0" aria-label="Swing"></label>
-      <label class="mini">Mesures<select id="pas-mesures" aria-label="Nombre de mesures"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option></select></label></div>
-    <div class="pas-grille" id="pas-grille" role="group" aria-label="Grille du séquenceur"></div>
-    <div class="midi-rang"><button type="button" id="pas-ecouter">Écouter en boucle</button><button type="button" id="pas-ajouter">Ajouter au projet</button><button type="button" id="pas-annuler" disabled>&#8630; Annuler</button><button type="button" id="pas-vider">Vider</button></div><p class="petit" id="msg-pas" role="status"></p>
   </section>
   <section class="midi projets" id="projets" aria-label="Mes projets" hidden>
     <div class="midi-haut"><h2>Mes projets</h2><button type="button" class="croix-b" id="projets-fermer" aria-label="Fermer la liste des projets"><span class="croix" aria-hidden="true"></span></button></div>
@@ -153,103 +144,6 @@
     <header class="cs-haut"><h2>Console</h2><span class="cs-aide">Un fader par piste (double-clic : remettre à 0 dB), le panoramique, les effets, muet et solo. Les vumètres bougent à la lecture.</span><button type="button" id="cs-fermer" class="cs-fermer">Fermer</button></header>
     <div class="cs-corps"><div class="cs-voies" id="cs-voies"></div><div class="cs-voie cs-maitre" id="cs-maitre" style="--c:#FFFFFF"></div></div>
   </section>
-  <section class="rouleau" id="rouleau" aria-label="Notes du clip" hidden>
-    <div class="rl-onglets" role="tablist" aria-label="Façon de voir les notes">
-      <button type="button" role="tab" id="rl-onglet-roll" aria-selected="true" aria-controls="rl-corps" data-tip="Les notes en piano roll : on pose, on déplace, on allonge à la souris"><span class="ic ic-piano" aria-hidden="true"></span> Piano roll</button>
-      <button type="button" role="tab" id="rl-onglet-partition" aria-selected="false" aria-controls="partition" data-tip="Les notes en partition (clé, armure, nuances), avec un texte façon LilyPond pour composer en écrivant"><span class="ic ic-partition" aria-hidden="true"></span> Partition</button>
-    </div>
-    <div class="rl-haut"><b id="rl-titre">Notes</b>
-      <button type="button" id="rl-ecouter" data-tip="Écouter les notes de ce clip, une fois"><span class="ic ic-play" aria-hidden="true"></span> Écouter</button>
-      <label class="mini rl-seul-roll" data-tip="Le pas des notes : elles se posent et se déplacent de cette valeur">Grille<select id="rl-grille" aria-label="Grille des notes"><option value="1">le temps</option><option value="0.5" selected>la croche</option><option value="0.25">la double croche</option><option value="0">libre</option></select></label>
-      <span class="rl-groupe rl-seul-roll" role="group" aria-label="Longueur du clip"><button type="button" id="rl-moins" data-tip="Raccourcir le clip d'une mesure">&minus; mesure</button><output id="rl-mesures" aria-live="polite"></output><button type="button" id="rl-plus" data-tip="Allonger le clip d'une mesure">+ mesure</button></span>
-      <label class="mini rl-seul-roll" data-tip="La force de la note choisie, et des notes que tu poses ensuite">Vitesse<input type="range" id="rl-vitesse" min="5" max="100" value="80" aria-label="Vitesse de la note"><output id="rl-vitesse-val" aria-live="polite">80</output></label>
-      <button type="button" id="rl-caler" class="rl-seul-roll" data-tip="Remettre toutes les notes sur la grille choisie"><span class="ic ic-ok" aria-hidden="true"></span> Caler tout</button>
-      <button type="button" id="rl-suppr" class="rl-seul-roll" disabled data-tip="Enlever la note choisie (touche Suppr)"><span class="ic ic-corbeille" aria-hidden="true"></span> Supprimer la note</button>
-      <button type="button" id="rl-vider" class="rl-seul-roll" data-tip="Enlever toutes les notes de ce clip"><span class="ic ic-gomme" aria-hidden="true"></span> Tout effacer</button>
-      <button type="button" id="rl-fin" class="principal"><span class="ic ic-ok" aria-hidden="true"></span> Terminé</button>
-    </div>
-    <div class="rl-haut rl-haut2 rl-seul-roll" role="group" aria-label="Outils du piano roll">
-      <label class="mini" data-tip="Le son qui joue ces notes : le changer refait l'audio du clip">Instrument<select id="rl-instrument" aria-label="Instrument du clip"></select></label>
-      <label class="mini" data-tip="Éclairer les notes d'une gamme sur le piano roll, pour composer dans une tonalité">Gamme<select id="rl-tonique" aria-label="Tonique de la gamme"><option value="0">do</option><option value="1">do♯</option><option value="2">ré</option><option value="3">ré♯</option><option value="4">mi</option><option value="5">fa</option><option value="6">fa♯</option><option value="7">sol</option><option value="8">sol♯</option><option value="9">la</option><option value="10">la♯</option><option value="11">si</option></select><select id="rl-mode" aria-label="Mode de la gamme"><option value="aucune">aucune</option><option value="majeur">majeur</option><option value="mineur">mineur</option><option value="dorien">dorien</option><option value="mixolydien">mixolydien</option><option value="pentatonique majeure">pentatonique majeure</option><option value="pentatonique mineure">pentatonique mineure</option><option value="blues">blues</option></select></label>
-      <span class="rl-groupe" role="group" aria-label="Zoom du piano roll"><button type="button" id="rl-zoom-moins" aria-label="Zoom arrière" data-tip="Voir plus de temps (Ctrl + molette)">&minus;</button><output id="rl-zoom" aria-live="polite">100 %</output><button type="button" id="rl-zoom-plus" aria-label="Zoom avant" data-tip="Voir les notes plus larges (Ctrl + molette)">+</button></span>
-      <span class="rl-groupe" role="group" aria-label="Transposer"><button type="button" id="rl-octave-moins" data-tip="Descendre les notes choisies (toutes s'il n'y en a pas) d'une octave : Maj + flèche du bas">&minus; octave</button><button type="button" id="rl-octave-plus" data-tip="Monter d'une octave : Maj + flèche du haut">+ octave</button></span>
-      <span class="rl-groupe" role="group" aria-label="Notes choisies"><button type="button" id="rl-tout" data-tip="Choisir toutes les notes (Ctrl+A)">Tout choisir</button><button type="button" id="rl-copier" disabled data-tip="Copier les notes choisies (Ctrl+C)">Copier</button><button type="button" id="rl-coller" data-tip="Coller au repère, la flèche de la règle (Ctrl+V)">Coller</button><button type="button" id="rl-dupliquer" disabled data-tip="Dupliquer les notes choisies juste après (Ctrl+D)">Dupliquer</button></span>
-    </div>
-    <p class="petit rl-seul-roll" id="rl-aide">Clique dans la grille pour poser une note. Glisse dans le vide pour en choisir plusieurs (Maj ou Ctrl pour en ajouter). Glisse les notes choisies pour les déplacer, tire le bord droit pour les allonger, le bord gauche pour les raccourcir. Clique la règle pour placer le repère (où l'on colle et d'où l'on écoute). Les barres du bas règlent la vitesse de chaque note. Flèches : un pas ; Maj + haut ou bas : une octave ; Ctrl + C, X, V, D, A : copier, couper, coller, dupliquer, tout choisir.</p>
-    <div id="rl-corps" class="rl"></div>
-    <div id="partition" class="partition" hidden>
-      <div class="rl-haut pt-barre" role="group" aria-label="Clé, armure et mesure">
-        <label class="mini" data-tip="Clé de sol, clé de fa, ou deux portées pour le piano (sol et fa)"><span class="pt-lib">Clé</span><select id="pt-cle" aria-label="Clé de la portée"><option value="treble">clé de sol</option><option value="bass">clé de fa</option><option value="alto">clé d'ut 3e (alto)</option><option value="tenor">clé d'ut 4e (ténor)</option><option value="piano">piano (sol et fa)</option></select></label>
-        <label class="mini" data-tip="L'armure : les dièses ou les bémols de la tonalité (choisir la tonalité règle l'armure)"><span class="pt-lib">Armure</span><select id="pt-tonalite" aria-label="Armure de clé et tonalité"></select></label>
-        <label class="mini" data-tip="L'indication de mesure : 2/4, 3/4, 4/4, 6/8..."><span class="pt-lib">Mesure</span><select id="pt-chiffrage" aria-label="Indication de mesure"></select></label>
-      </div>
-      <div class="pt-palette" id="pt-palette" role="toolbar" aria-label="Notes à poser sur la partition">
-        <div class="pt-groupe" role="group" aria-label="Note ou silence">
-          <button type="button" class="pt-mode" id="pt-mode-note" aria-pressed="true" data-tip="Poser des notes">Notes</button>
-          <button type="button" class="pt-mode" id="pt-mode-silence" aria-pressed="false" data-tip="Poser des silences">Silences</button>
-        </div>
-        <div class="pt-groupe" id="pt-valeurs" role="group" aria-label="Durée"></div>
-        <div class="pt-groupe" role="group" aria-label="Changer la note">
-          <button type="button" class="pt-mod" id="pt-point" aria-pressed="false" data-tip="Note pointée : sa durée augmente de moitié"><span class="pt-glyphe">&#xECB7;</span><span class="pt-nom">point</span></button>
-          <button type="button" class="pt-mod" id="pt-dieze" aria-pressed="false" data-tip="Dièse : un demi-ton plus haut"><span class="pt-glyphe">&#xE262;</span><span class="pt-nom">dièse</span></button>
-          <button type="button" class="pt-mod" id="pt-bemol" aria-pressed="false" data-tip="Bémol : un demi-ton plus bas"><span class="pt-glyphe">&#xE260;</span><span class="pt-nom">bémol</span></button>
-          <button type="button" class="pt-mod" id="pt-becarre" aria-pressed="false" data-tip="Bécarre : annule le dièse ou le bémol de l'armure"><span class="pt-glyphe">&#xE261;</span><span class="pt-nom">bécarre</span></button>
-        </div>
-        <div class="pt-groupe" role="group" aria-label="Corriger">
-          <button type="button" class="pt-mod" id="pt-gomme" aria-pressed="false" data-tip="Gomme : touche une note pour l'enlever (ou choisis une note puis Suppr)"><span class="pt-glyphe pt-gomme-ic" aria-hidden="true">&#x2715;</span><span class="pt-nom">gomme</span></button>
-          <button type="button" class="pt-mod" id="pt-annuler" data-tip="Annuler la dernière modification (Ctrl+Z)"><span class="pt-glyphe pt-gomme-ic" aria-hidden="true">&#x21B6;</span><span class="pt-nom">annuler</span></button>
-          <button type="button" class="pt-mod" id="pt-mesure" data-tip="Ajouter une mesure vide à la fin du clip"><span class="pt-glyphe pt-gomme-ic" aria-hidden="true">+</span><span class="pt-nom">mesure</span></button>
-        </div>
-      </div>
-      <p class="pt-invite" id="pt-invite">Glisse une note sur la portée : tu l'entends pendant que tu la déplaces. Ou touche une note de la palette, puis touche la portée. Glisse une note posée pour la changer de place, appuie sur Suppr pour l'enlever.</p>
-      <div class="pt-gauche">
-        <div id="pt-score" class="pt-score" role="region" aria-label="Partition" tabindex="0"></div>
-      </div>
-      <div class="rl-haut pt-barre pt-barre2" role="group" aria-label="Autres réglages de la partition">
-        <button type="button" class="notion" data-notion="partition" aria-label="Comprendre : la partition">?</button>
-        <button type="button" id="pt-deviner" data-tip="Chercher la tonalité d'après les notes du clip">Deviner la tonalité</button>
-        <span class="rl-groupe" role="group" aria-label="Taille de la partition"><button type="button" id="pt-zoom-moins" aria-label="Partition plus petite" data-tip="Partition plus petite">&minus;</button><button type="button" id="pt-zoom-plus" aria-label="Partition plus grande" data-tip="Partition plus grande">+</button></span>
-      </div>
-      <details class="pt-texte-det" id="pt-texte-det">
-        <summary>Écrire en texte (comme dans LilyPond)</summary>
-        <div class="pt-droite">
-          <div class="pt-outils">
-            <label class="mini" data-tip="Écrire les notes c d e f g a b (comme LilyPond) ou do ré mi fa sol la si">Notes<select id="pt-langue" aria-label="Noms des notes dans le texte"><option value="neerlandais">c d e f g a b</option><option value="francais">do ré mi fa sol la si</option></select></label>
-            <label class="mini">Insérer<select id="pt-inserer" aria-label="Insérer un signe dans le texte"></select></label>
-            <button type="button" id="pt-reecrire" data-tip="Écrire de nouveau le texte à partir des notes du piano roll (les soufflets, liaisons et commentaires du texte actuel sont perdus)">Réécrire d'après les notes</button>
-            <button type="button" id="pt-retour" hidden data-tip="Remettre le texte qu'il y avait avant la dernière réécriture">Revenir au texte d'avant</button>
-            <button type="button" id="pt-ly" data-tip="Enregistrer le texte dans un fichier .ly, pour LilyPond ou Frescobaldi">Fichier .ly</button>
-          </div>
-          <textarea id="pt-texte" class="pt-texte" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" rows="12" aria-label="Texte de la partition, écrit comme dans LilyPond" aria-describedby="pt-erreur"></textarea>
-          <div id="pt-erreur" class="pt-erreur" role="alert" hidden><span id="pt-erreur-texte"></span> <button type="button" id="pt-erreur-va">Aller à l'endroit</button></div>
-          <p class="petit pt-note">Écris la musique en texte : la partition se dessine et les notes du clip suivent. Clique une note de la partition pour retrouver son texte. Quand tu changes le texte, les notes du clip deviennent exactement celles de la partition.</p>
-          <details class="pt-aide"><summary>Aide-mémoire LilyPond</summary>
-            <ul>
-              <li><b>Notes</b> : <code>c d e f g a b</code> (ou <code>do ré mi fa sol la si</code>). Dièse : <code>cis</code>, bémol : <code>ees</code>, <code>bes</code>. Octave plus haute : <code>c'</code>, plus basse : <code>c,</code>. Avec <code>\relative c' { ... }</code>, chaque note se place à l'octave la plus proche de la précédente.</li>
-              <li><b>Durées</b> : <code>c1</code> ronde, <code>c2</code> blanche, <code>c4</code> noire, <code>c8</code> croche, <code>c16</code> double croche ; point : <code>c4.</code> ; une durée écrite vaut pour les notes suivantes.</li>
-              <li><b>Silence</b> <code>r4</code> ; <b>accord</b> <code>&lt;c e g&gt;4</code> ; <b>prolongation</b> <code>c4~ c4</code> ; <b>liaison</b> <code>c( d e)</code>.</li>
-              <li><b>Nuances</b> <code>c4\p</code> <code>\mf</code> <code>\f</code> ; <b>soufflets</b> <code>c\&lt; d e\!</code> ; <b>articulations</b> <code>c-.</code> staccato, <code>c-&gt;</code> accent, <code>c--</code> tenuto.</li>
-              <li><b>Réglages</b> <code>\clef bass</code> <code>\key d \major</code> <code>\time 3/4</code> <code>\tempo 4 = 100</code> <code>\partial 4</code> (anacrouse).</li>
-              <li><b>Triolet</b> <code>\tuplet 3/2 { c8 d e }</code> ; <b>reprise</b> <code>\repeat volta 2 { ... }</code>.</li>
-              <li><b>Deux portées (piano)</b> : <code>\new PianoStaff &lt;&lt; \new Staff { ... } \new Staff { \clef bass ... } &gt;&gt;</code>. <b>Variables</b> : <code>melodie = \relative c'' { ... }</code> puis <code>\melodie</code>.</li>
-              <li><b>Commentaire</b> : <code>%</code> jusqu'à la fin de la ligne.</li>
-              <li>SONORA comprend le cœur de LilyPond, pas tout : pas de voix superposées, de paroles, de notes d'agrément ni d'alternatives de reprise. Chaque refus s'explique dans le message d'erreur.</li>
-            </ul>
-          </details>
-        </div>
-      </details>
-    </div>
-  </section>
-  <section class="auto" id="auto" aria-label="Courbes de la piste" hidden>
-    <b id="auto-titre"></b>
-    <span class="seg" role="group" aria-label="Quelle courbe modifier ?"><button type="button" id="auto-volume" aria-pressed="true" data-tip="Dessiner comment le volume monte et descend (un fondu, par exemple)"><span class="ic ic-volume" aria-hidden="true"></span> Volume</button><button type="button" id="auto-pan" aria-pressed="false" data-tip="Dessiner comment le son passe de gauche à droite"><span class="ic ic-pan" aria-hidden="true"></span> Panoramique</button></span>
-    <button type="button" id="auto-sup" disabled data-tip="Enlever le point choisi (touche Suppr)"><span class="ic ic-corbeille" aria-hidden="true"></span> Supprimer le point</button>
-    <button type="button" id="auto-vider" data-tip="Enlever tous les points de cette courbe"><span class="ic ic-gomme" aria-hidden="true"></span> Effacer la courbe</button>
-    <label class="mini case" data-tip="Montrer les courbes sur toutes les pistes, ou seulement pendant qu'on les modifie"><input type="checkbox" id="auto-voir" checked> Voir les courbes</label>
-    <button type="button" id="auto-fin" class="principal"><span class="ic ic-ok" aria-hidden="true"></span> Terminé</button>
-    <button type="button" class="notion" data-notion="enveloppe" aria-label="Comprendre : les courbes">?</button>
-    <p class="petit" id="auto-aide" role="status" aria-live="polite"></p>
-  </section>
   <p class="petit aide" id="message" role="status" aria-live="polite">Glisse des fichiers audio sur une piste, ou choisis une piste et appuie sur Enregistrer. Les sons restent dans ce navigateur.</p>
   <div class="ligne" id="ligne">
     <div class="entetes" id="entetes"></div>
@@ -271,8 +165,119 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
-<script type="module" src="pistes.js?v=7e141dd94c"></script>
-<script src="../barre-cours.js?v=7e141dd94c"></script>
-<script src="../retour.js?v=7e141dd94c"></script>
+<div class="dock" id="dock" aria-label="Éditeur : notes, rythme, courbes" hidden>
+  <div class="dock-poignee" id="dock-poignee" role="separator" aria-orientation="horizontal" aria-label="Hauteur de l'éditeur (flèches haut et bas, ou tirer)" aria-valuemin="160" aria-valuemax="800" aria-valuenow="340" tabindex="0"><span aria-hidden="true"></span></div>
+  <div class="dock-corps" id="dock-corps">
+<section class="midi pas" id="pas" aria-label="Séquenceur à pas" hidden>
+  <div class="midi-haut"><h2>Séquenceur à pas</h2><button type="button" class="notion" data-notion="sequenceur" aria-label="Comprendre : le séquenceur à pas">?</button><button type="button" class="croix-b" id="pas-fermer" aria-label="Fermer le séquenceur à pas"><span class="croix" aria-hidden="true"></span></button></div>
+  <p class="petit">Allume des cases pour fabriquer un rythme : un clic pour un coup, deux pour un coup doux, trois pour effacer. Le motif suit le tempo du projet ; « Ajouter au projet » en fait un clip.</p>
+  <div class="midi-rang"><label class="mini">Longueur<select id="pas-longueur" aria-label="Nombre de pas"></select></label><label class="mini">Jeu de sons<select id="pas-jeu" aria-label="Jeu de sons"></select></label>
+    <label class="mini">Swing <output id="pas-sw">0 %</output><input type="range" id="pas-swing" min="0" max="50" value="0" aria-label="Swing"></label>
+    <label class="mini">Mesures<select id="pas-mesures" aria-label="Nombre de mesures"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option></select></label></div>
+  <div class="pas-grille" id="pas-grille" role="group" aria-label="Grille du séquenceur"></div>
+  <div class="midi-rang"><button type="button" id="pas-ecouter">Écouter en boucle</button><button type="button" id="pas-ajouter">Ajouter au projet</button><button type="button" id="pas-annuler" disabled>&#8630; Annuler</button><button type="button" id="pas-vider">Vider</button></div><p class="petit" id="msg-pas" role="status"></p>
+</section>
+<section class="rouleau" id="rouleau" aria-label="Notes du clip" hidden>
+  <div class="rl-onglets" role="tablist" aria-label="Façon de voir les notes">
+    <button type="button" role="tab" id="rl-onglet-roll" aria-selected="true" aria-controls="rl-corps" data-tip="Les notes en piano roll : on pose, on déplace, on allonge à la souris"><span class="ic ic-piano" aria-hidden="true"></span> Piano roll</button>
+    <button type="button" role="tab" id="rl-onglet-partition" aria-selected="false" aria-controls="partition" data-tip="Les notes en partition (clé, armure, nuances), avec un texte façon LilyPond pour composer en écrivant"><span class="ic ic-partition" aria-hidden="true"></span> Partition</button>
+  </div>
+  <div class="rl-haut"><b id="rl-titre">Notes</b>
+    <button type="button" id="rl-ecouter" data-tip="Écouter les notes de ce clip, une fois"><span class="ic ic-play" aria-hidden="true"></span> Écouter</button>
+    <label class="mini rl-seul-roll" data-tip="Le pas des notes : elles se posent et se déplacent de cette valeur">Grille<select id="rl-grille" aria-label="Grille des notes"><option value="1">le temps</option><option value="0.5" selected>la croche</option><option value="0.25">la double croche</option><option value="0">libre</option></select></label>
+    <span class="rl-groupe rl-seul-roll" role="group" aria-label="Longueur du clip"><button type="button" id="rl-moins" data-tip="Raccourcir le clip d'une mesure">&minus; mesure</button><output id="rl-mesures" aria-live="polite"></output><button type="button" id="rl-plus" data-tip="Allonger le clip d'une mesure">+ mesure</button></span>
+    <label class="mini rl-seul-roll" data-tip="La force de la note choisie, et des notes que tu poses ensuite">Vitesse<input type="range" id="rl-vitesse" min="5" max="100" value="80" aria-label="Vitesse de la note"><output id="rl-vitesse-val" aria-live="polite">80</output></label>
+    <button type="button" id="rl-caler" class="rl-seul-roll" data-tip="Remettre toutes les notes sur la grille choisie"><span class="ic ic-ok" aria-hidden="true"></span> Caler tout</button>
+    <button type="button" id="rl-suppr" class="rl-seul-roll" disabled data-tip="Enlever la note choisie (touche Suppr)"><span class="ic ic-corbeille" aria-hidden="true"></span> Supprimer la note</button>
+    <button type="button" id="rl-vider" class="rl-seul-roll" data-tip="Enlever toutes les notes de ce clip"><span class="ic ic-gomme" aria-hidden="true"></span> Tout effacer</button>
+    <button type="button" id="rl-fin" class="principal"><span class="ic ic-ok" aria-hidden="true"></span> Terminé</button>
+  </div>
+  <div class="rl-haut rl-haut2 rl-seul-roll" role="group" aria-label="Outils du piano roll">
+    <label class="mini" data-tip="Le son qui joue ces notes : le changer refait l'audio du clip">Instrument<select id="rl-instrument" aria-label="Instrument du clip"></select></label>
+    <label class="mini" data-tip="Éclairer les notes d'une gamme sur le piano roll, pour composer dans une tonalité">Gamme<select id="rl-tonique" aria-label="Tonique de la gamme"><option value="0">do</option><option value="1">do♯</option><option value="2">ré</option><option value="3">ré♯</option><option value="4">mi</option><option value="5">fa</option><option value="6">fa♯</option><option value="7">sol</option><option value="8">sol♯</option><option value="9">la</option><option value="10">la♯</option><option value="11">si</option></select><select id="rl-mode" aria-label="Mode de la gamme"><option value="aucune">aucune</option><option value="majeur">majeur</option><option value="mineur">mineur</option><option value="dorien">dorien</option><option value="mixolydien">mixolydien</option><option value="pentatonique majeure">pentatonique majeure</option><option value="pentatonique mineure">pentatonique mineure</option><option value="blues">blues</option></select></label>
+    <span class="rl-groupe" role="group" aria-label="Zoom du piano roll"><button type="button" id="rl-zoom-moins" aria-label="Zoom arrière" data-tip="Voir plus de temps (Ctrl + molette)">&minus;</button><output id="rl-zoom" aria-live="polite">100 %</output><button type="button" id="rl-zoom-plus" aria-label="Zoom avant" data-tip="Voir les notes plus larges (Ctrl + molette)">+</button></span>
+    <span class="rl-groupe" role="group" aria-label="Transposer"><button type="button" id="rl-octave-moins" data-tip="Descendre les notes choisies (toutes s'il n'y en a pas) d'une octave : Maj + flèche du bas">&minus; octave</button><button type="button" id="rl-octave-plus" data-tip="Monter d'une octave : Maj + flèche du haut">+ octave</button></span>
+    <span class="rl-groupe" role="group" aria-label="Notes choisies"><button type="button" id="rl-tout" data-tip="Choisir toutes les notes (Ctrl+A)">Tout choisir</button><button type="button" id="rl-copier" disabled data-tip="Copier les notes choisies (Ctrl+C)">Copier</button><button type="button" id="rl-coller" data-tip="Coller au repère, la flèche de la règle (Ctrl+V)">Coller</button><button type="button" id="rl-dupliquer" disabled data-tip="Dupliquer les notes choisies juste après (Ctrl+D)">Dupliquer</button></span>
+  </div>
+  <p class="petit rl-seul-roll" id="rl-aide">Clique dans la grille pour poser une note. Glisse dans le vide pour en choisir plusieurs (Maj ou Ctrl pour en ajouter). Glisse les notes choisies pour les déplacer, tire le bord droit pour les allonger, le bord gauche pour les raccourcir. Clique la règle pour placer le repère (où l'on colle et d'où l'on écoute). Les barres du bas règlent la vitesse de chaque note. Flèches : un pas ; Maj + haut ou bas : une octave ; Ctrl + C, X, V, D, A : copier, couper, coller, dupliquer, tout choisir.</p>
+  <div id="rl-corps" class="rl"></div>
+  <div id="partition" class="partition" hidden>
+    <div class="rl-haut pt-barre" role="group" aria-label="Clé, armure et mesure">
+      <label class="mini" data-tip="Clé de sol, clé de fa, ou deux portées pour le piano (sol et fa)"><span class="pt-lib">Clé</span><select id="pt-cle" aria-label="Clé de la portée"><option value="treble">clé de sol</option><option value="bass">clé de fa</option><option value="alto">clé d'ut 3e (alto)</option><option value="tenor">clé d'ut 4e (ténor)</option><option value="piano">piano (sol et fa)</option></select></label>
+      <label class="mini" data-tip="L'armure : les dièses ou les bémols de la tonalité (choisir la tonalité règle l'armure)"><span class="pt-lib">Armure</span><select id="pt-tonalite" aria-label="Armure de clé et tonalité"></select></label>
+      <label class="mini" data-tip="L'indication de mesure : 2/4, 3/4, 4/4, 6/8..."><span class="pt-lib">Mesure</span><select id="pt-chiffrage" aria-label="Indication de mesure"></select></label>
+    </div>
+    <div class="pt-palette" id="pt-palette" role="toolbar" aria-label="Notes à poser sur la partition">
+      <div class="pt-groupe" role="group" aria-label="Note ou silence">
+        <button type="button" class="pt-mode" id="pt-mode-note" aria-pressed="true" data-tip="Poser des notes">Notes</button>
+        <button type="button" class="pt-mode" id="pt-mode-silence" aria-pressed="false" data-tip="Poser des silences">Silences</button>
+      </div>
+      <div class="pt-groupe" id="pt-valeurs" role="group" aria-label="Durée"></div>
+      <div class="pt-groupe" role="group" aria-label="Changer la note">
+        <button type="button" class="pt-mod" id="pt-point" aria-pressed="false" data-tip="Note pointée : sa durée augmente de moitié"><span class="pt-glyphe">&#xECB7;</span><span class="pt-nom">point</span></button>
+        <button type="button" class="pt-mod" id="pt-dieze" aria-pressed="false" data-tip="Dièse : un demi-ton plus haut"><span class="pt-glyphe">&#xE262;</span><span class="pt-nom">dièse</span></button>
+        <button type="button" class="pt-mod" id="pt-bemol" aria-pressed="false" data-tip="Bémol : un demi-ton plus bas"><span class="pt-glyphe">&#xE260;</span><span class="pt-nom">bémol</span></button>
+        <button type="button" class="pt-mod" id="pt-becarre" aria-pressed="false" data-tip="Bécarre : annule le dièse ou le bémol de l'armure"><span class="pt-glyphe">&#xE261;</span><span class="pt-nom">bécarre</span></button>
+      </div>
+      <div class="pt-groupe" role="group" aria-label="Corriger">
+        <button type="button" class="pt-mod" id="pt-gomme" aria-pressed="false" data-tip="Gomme : touche une note pour l'enlever (ou choisis une note puis Suppr)"><span class="pt-glyphe pt-gomme-ic" aria-hidden="true">&#x2715;</span><span class="pt-nom">gomme</span></button>
+        <button type="button" class="pt-mod" id="pt-annuler" data-tip="Annuler la dernière modification (Ctrl+Z)"><span class="pt-glyphe pt-gomme-ic" aria-hidden="true">&#x21B6;</span><span class="pt-nom">annuler</span></button>
+        <button type="button" class="pt-mod" id="pt-mesure" data-tip="Ajouter une mesure vide à la fin du clip"><span class="pt-glyphe pt-gomme-ic" aria-hidden="true">+</span><span class="pt-nom">mesure</span></button>
+      </div>
+    </div>
+    <p class="pt-invite" id="pt-invite">Glisse une note sur la portée : tu l'entends pendant que tu la déplaces. Ou touche une note de la palette, puis touche la portée. Glisse une note posée pour la changer de place, appuie sur Suppr pour l'enlever.</p>
+    <div class="pt-gauche">
+      <div id="pt-score" class="pt-score" role="region" aria-label="Partition" tabindex="0"></div>
+    </div>
+    <div class="rl-haut pt-barre pt-barre2" role="group" aria-label="Autres réglages de la partition">
+      <button type="button" class="notion" data-notion="partition" aria-label="Comprendre : la partition">?</button>
+      <button type="button" id="pt-deviner" data-tip="Chercher la tonalité d'après les notes du clip">Deviner la tonalité</button>
+      <span class="rl-groupe" role="group" aria-label="Taille de la partition"><button type="button" id="pt-zoom-moins" aria-label="Partition plus petite" data-tip="Partition plus petite">&minus;</button><button type="button" id="pt-zoom-plus" aria-label="Partition plus grande" data-tip="Partition plus grande">+</button></span>
+    </div>
+    <details class="pt-texte-det" id="pt-texte-det">
+      <summary>Écrire en texte (comme dans LilyPond)</summary>
+      <div class="pt-droite">
+        <div class="pt-outils">
+          <label class="mini" data-tip="Écrire les notes c d e f g a b (comme LilyPond) ou do ré mi fa sol la si">Notes<select id="pt-langue" aria-label="Noms des notes dans le texte"><option value="neerlandais">c d e f g a b</option><option value="francais">do ré mi fa sol la si</option></select></label>
+          <label class="mini">Insérer<select id="pt-inserer" aria-label="Insérer un signe dans le texte"></select></label>
+          <button type="button" id="pt-reecrire" data-tip="Écrire de nouveau le texte à partir des notes du piano roll (les soufflets, liaisons et commentaires du texte actuel sont perdus)">Réécrire d'après les notes</button>
+          <button type="button" id="pt-retour" hidden data-tip="Remettre le texte qu'il y avait avant la dernière réécriture">Revenir au texte d'avant</button>
+          <button type="button" id="pt-ly" data-tip="Enregistrer le texte dans un fichier .ly, pour LilyPond ou Frescobaldi">Fichier .ly</button>
+        </div>
+        <textarea id="pt-texte" class="pt-texte" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" rows="12" aria-label="Texte de la partition, écrit comme dans LilyPond" aria-describedby="pt-erreur"></textarea>
+        <div id="pt-erreur" class="pt-erreur" role="alert" hidden><span id="pt-erreur-texte"></span> <button type="button" id="pt-erreur-va">Aller à l'endroit</button></div>
+        <p class="petit pt-note">Écris la musique en texte : la partition se dessine et les notes du clip suivent. Clique une note de la partition pour retrouver son texte. Quand tu changes le texte, les notes du clip deviennent exactement celles de la partition.</p>
+        <details class="pt-aide"><summary>Aide-mémoire LilyPond</summary>
+          <ul>
+            <li><b>Notes</b> : <code>c d e f g a b</code> (ou <code>do ré mi fa sol la si</code>). Dièse : <code>cis</code>, bémol : <code>ees</code>, <code>bes</code>. Octave plus haute : <code>c'</code>, plus basse : <code>c,</code>. Avec <code>\relative c' { ... }</code>, chaque note se place à l'octave la plus proche de la précédente.</li>
+            <li><b>Durées</b> : <code>c1</code> ronde, <code>c2</code> blanche, <code>c4</code> noire, <code>c8</code> croche, <code>c16</code> double croche ; point : <code>c4.</code> ; une durée écrite vaut pour les notes suivantes.</li>
+            <li><b>Silence</b> <code>r4</code> ; <b>accord</b> <code>&lt;c e g&gt;4</code> ; <b>prolongation</b> <code>c4~ c4</code> ; <b>liaison</b> <code>c( d e)</code>.</li>
+            <li><b>Nuances</b> <code>c4\p</code> <code>\mf</code> <code>\f</code> ; <b>soufflets</b> <code>c\&lt; d e\!</code> ; <b>articulations</b> <code>c-.</code> staccato, <code>c-&gt;</code> accent, <code>c--</code> tenuto.</li>
+            <li><b>Réglages</b> <code>\clef bass</code> <code>\key d \major</code> <code>\time 3/4</code> <code>\tempo 4 = 100</code> <code>\partial 4</code> (anacrouse).</li>
+            <li><b>Triolet</b> <code>\tuplet 3/2 { c8 d e }</code> ; <b>reprise</b> <code>\repeat volta 2 { ... }</code>.</li>
+            <li><b>Deux portées (piano)</b> : <code>\new PianoStaff &lt;&lt; \new Staff { ... } \new Staff { \clef bass ... } &gt;&gt;</code>. <b>Variables</b> : <code>melodie = \relative c'' { ... }</code> puis <code>\melodie</code>.</li>
+            <li><b>Commentaire</b> : <code>%</code> jusqu'à la fin de la ligne.</li>
+            <li>SONORA comprend le cœur de LilyPond, pas tout : pas de voix superposées, de paroles, de notes d'agrément ni d'alternatives de reprise. Chaque refus s'explique dans le message d'erreur.</li>
+          </ul>
+        </details>
+      </div>
+    </details>
+  </div>
+</section>
+<section class="auto" id="auto" aria-label="Courbes de la piste" hidden>
+  <b id="auto-titre"></b>
+  <span class="seg" role="group" aria-label="Quelle courbe modifier ?"><button type="button" id="auto-volume" aria-pressed="true" data-tip="Dessiner comment le volume monte et descend (un fondu, par exemple)"><span class="ic ic-volume" aria-hidden="true"></span> Volume</button><button type="button" id="auto-pan" aria-pressed="false" data-tip="Dessiner comment le son passe de gauche à droite"><span class="ic ic-pan" aria-hidden="true"></span> Panoramique</button></span>
+  <button type="button" id="auto-sup" disabled data-tip="Enlever le point choisi (touche Suppr)"><span class="ic ic-corbeille" aria-hidden="true"></span> Supprimer le point</button>
+  <button type="button" id="auto-vider" data-tip="Enlever tous les points de cette courbe"><span class="ic ic-gomme" aria-hidden="true"></span> Effacer la courbe</button>
+  <label class="mini case" data-tip="Montrer les courbes sur toutes les pistes, ou seulement pendant qu'on les modifie"><input type="checkbox" id="auto-voir" checked> Voir les courbes</label>
+  <button type="button" id="auto-fin" class="principal"><span class="ic ic-ok" aria-hidden="true"></span> Terminé</button>
+  <button type="button" class="notion" data-notion="enveloppe" aria-label="Comprendre : les courbes">?</button>
+  <p class="petit" id="auto-aide" role="status" aria-live="polite"></p>
+</section>
+  </div>
+</div>
+<script type="module" src="pistes.js?v=b1d246c8fe"></script>
+<script src="../barre-cours.js?v=b1d246c8fe"></script>
+<script src="../retour.js?v=b1d246c8fe"></script>
 </body>
 </html>

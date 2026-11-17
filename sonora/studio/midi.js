@@ -26,7 +26,7 @@ export class Clavier {
 }
 // Branche toutes les entrées MIDI disponibles. acces : résultat de navigator.requestMIDIAccess().
 export function brancher(acces, clavier) {
-  const ecouteur = e => clavier.recevoir(e.data);
+  const ecouteur = e => { clavier.horodatage = e.timeStamp; clavier.recevoir(e.data); };   // la date du message (horloge de la page) : Pistes s'en sert pour dater les notes
   const noms = []; for (const entree of acces.inputs.values()) { entree.onmidimessage = ecouteur; noms.push(entree.name || "entrée MIDI"); }
   acces.onstatechange = () => { for (const entree of acces.inputs.values()) if (!entree.onmidimessage) entree.onmidimessage = ecouteur; };
   return noms;

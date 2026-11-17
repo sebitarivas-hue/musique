@@ -3,14 +3,14 @@
 // Maintenant : un seul mécanisme pour tout. Chaque instrument est un jeu de notes (des « tampons ») : des enregistrements réels de la banque du site, ou des notes rendues
 // une fois par SONORA (synthèse) à plusieurs hauteurs. Le clavier les joue en direct par transposition (Sampleur) et le clip est mixé avec les mêmes tampons (mixer) :
 // ce qu'on entend est ce qui est mis sur la piste. Plus de dépendance au moteur temps réel : si le son sort ailleurs sur la page, il sort ici.
-import { compiler } from "../src/index.js?v=7e141dd94c";
-import { rendre } from "../src/rendu.js?v=7e141dd94c";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=7e141dd94c";
-import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=7e141dd94c";
-import { ENTREES } from "../library/catalogue.js?v=7e141dd94c";
-import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=7e141dd94c";
-import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=7e141dd94c";
-import { INSTRUMENTS_BATTERIE, tamponsBatterieAsync, kitDe } from "./batterie_midi.js?v=7e141dd94c";
+import { compiler } from "../src/index.js?v=b1d246c8fe";
+import { rendre } from "../src/rendu.js?v=b1d246c8fe";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=b1d246c8fe";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=b1d246c8fe";
+import { ENTREES } from "../library/catalogue.js?v=b1d246c8fe";
+import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=b1d246c8fe";
+import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=b1d246c8fe";
+import { INSTRUMENTS_BATTERIE, tamponsBatterieAsync, kitDe } from "./batterie_midi.js?v=b1d246c8fe";
 
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 export const GROUPES = ["Claviers", "Cordes", "Orchestre", "Batteries", "Vents", "Voix", "Percussions à hauteurs", "Percussions du monde", "Synthés et basses", "Effets sonores"];
@@ -104,6 +104,27 @@ export class Sampleur {
     const rel = vite ? 0.03 : I.relache; try { v.g.gain.cancelScheduledValues(t); v.g.gain.setValueAtTime(v.g.gain.value, t); v.g.gain.setTargetAtTime(0, t, rel / 4); v.src.stop(t + rel * 1.5 + 0.05); } catch (_) {}
   }
   toutCouper() { for (const n of [...this.voix.keys()]) this.noteOff(n, true); }
+}
+
+// Une note programmée à une date de l'horloge audio : le même jeu que mixer() (attaque de 4 ms, relâchement exponentiel de constante relache / 4, boucle d'un son tenu,
+// étalement stéréo, légère variation de vitesse sans hasard), mais en voix Web Audio : elle se joue en direct, dans la chaîne de la piste, et sert aussi à l'export (contexte hors ligne).
+// debut, fin : dates de l'horloge audio de l'attaque et du relâchement. Renvoie { stop(t), _fin } ou null si l'instrument n'a pas de tampon.
+const VARIATION_NOTE = [0, 0.05, -0.04, 0.07, -0.06, 0.02, -0.03, 0.06];
+const tamponsAudio = new WeakMap();
+const bufferDeTampon = (ctx, tp) => { let m = tamponsAudio.get(ctx); if (!m) tamponsAudio.set(ctx, m = new WeakMap()); let b = m.get(tp); if (!b) { b = ctx.createBuffer(1, tp.canal.length, tp.sr); b.copyToChannel(tp.canal, 0); m.set(tp, b); } return b; };
+export function programmerNote(ctx, sortie, inst, { note, hauteur, vitesse = 0.8, debut, fin, graine = 0 }) {
+  const h = hauteur || hz(note), tp = choisir(inst.tampons, h, vitesse, graine); if (!tp) return null;
+  const rel = inst.relache ?? 0.4, tau = rel / 4, niveau = vitesse * (1 + VARIATION_NOTE[((note % 8) + 8) % 8]) * (inst.niveau ?? 1) * 0.5, taux = h / tp.f, off = fin < debut + 0.01 ? debut + 0.01 : fin;
+  const src = ctx.createBufferSource(), g = ctx.createGain(), pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+  src.buffer = bufferDeTampon(ctx, tp); src.playbackRate.value = taux;
+  if (tp.a && tp.b && off - debut + 0.3 > tp.b) { src.loop = true; src.loopStart = tp.off + tp.a; src.loopEnd = tp.off + tp.b; }   // un son tenu plus longtemps que l'enregistrement est bouclé
+  g.gain.setValueAtTime(0, debut); g.gain.linearRampToValueAtTime(niveau, debut + 0.004);
+  const ponctuel = inst.ponctuel || tp.ponctuel; let arret = null;   // une percussion sonne en entier, même si la note est courte
+  if (!ponctuel) { g.gain.setValueAtTime(niveau, off); g.gain.setTargetAtTime(0, off, tau); arret = off + rel * 1.5 + 0.05; }
+  if (pan) { pan.pan.value = Math.max(-1, Math.min(1, (note - 60) / 36)) * 0.35; src.connect(g); g.connect(pan); pan.connect(sortie); } else { src.connect(g); g.connect(sortie); }
+  src.start(debut, tp.off); if (arret !== null) src.stop(arret);
+  src.onended = () => { try { g.disconnect(); if (pan) pan.disconnect(); } catch (_) {} };
+  return { stop(t) { try { src.stop(t); } catch (_) {} }, _fin: (arret !== null ? arret : debut + (tp.canal.length / tp.sr - tp.off) / taux) + 0.1 };
 }
 
 // Les notes jouées (EnregistreurNotes) en événements du mixeur. `depart` : la date, sur la ligne de temps du projet, où le clip commence (le curseur au début de la prise).

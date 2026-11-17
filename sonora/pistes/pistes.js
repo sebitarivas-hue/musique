@@ -1,35 +1,36 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=7e141dd94c";
-import * as Ed from "./editions.js?v=7e141dd94c";
-import * as P from "./projet.js?v=7e141dd94c";
-import { Stockage } from "./stockage.js?v=7e141dd94c";
-import { creerBouton } from "./bouton.js?v=7e141dd94c";
-import * as MI from "./midi.js?v=7e141dd94c";
-import * as N from "./notes.js?v=7e141dd94c";
-import { Rouleau } from "./rouleau.js?v=7e141dd94c";
-import { PanneauPartition } from "./partition/panneau.js?v=7e141dd94c";
-import { separer, NOMS_PARTIES } from "./separation.js?v=7e141dd94c";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=7e141dd94c";
-import * as BM from "./batterie_midi.js?v=7e141dd94c";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=7e141dd94c";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=7e141dd94c";
-import * as INS from "./instruments.js?v=7e141dd94c";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=7e141dd94c";
-import * as OMR from "./omr.js?v=7e141dd94c";
-import { creerConsole } from "./console.js?v=7e141dd94c";
-import { creerVueBlocs } from "./blocs-ui.js?v=7e141dd94c";
-import { creerMaster } from "./master.js?v=7e141dd94c";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=7e141dd94c";
-import * as MO from "./moteurs.js?v=7e141dd94c";
-import { monterPanneaux } from "./panneaux.js?v=7e141dd94c";
-import { monterNotions } from "./notions.js?v=7e141dd94c";
-import { DEMOS } from "./demos.js?v=7e141dd94c";
-import * as B from "./bibliotheque.js?v=7e141dd94c";
-import { encoderWAV } from "../studio/wav.js?v=7e141dd94c";
-import { ENTREES } from "../library/catalogue.js?v=7e141dd94c";
-import { compiler } from "../src/index.js?v=7e141dd94c";
-import { rendre } from "../src/rendu.js?v=7e141dd94c";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=b1d246c8fe";
+import * as Ed from "./editions.js?v=b1d246c8fe";
+import * as P from "./projet.js?v=b1d246c8fe";
+import * as TR from "./transport.js?v=b1d246c8fe";
+import { Stockage } from "./stockage.js?v=b1d246c8fe";
+import { creerBouton } from "./bouton.js?v=b1d246c8fe";
+import * as MI from "./midi.js?v=b1d246c8fe";
+import * as N from "./notes.js?v=b1d246c8fe";
+import { Rouleau } from "./rouleau.js?v=b1d246c8fe";
+import { PanneauPartition } from "./partition/panneau.js?v=b1d246c8fe";
+import { separer, NOMS_PARTIES } from "./separation.js?v=b1d246c8fe";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=b1d246c8fe";
+import * as BM from "./batterie_midi.js?v=b1d246c8fe";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=b1d246c8fe";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=b1d246c8fe";
+import * as INS from "./instruments.js?v=b1d246c8fe";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=b1d246c8fe";
+import * as OMR from "./omr.js?v=b1d246c8fe";
+import { creerConsole } from "./console.js?v=b1d246c8fe";
+import { creerVueBlocs } from "./blocs-ui.js?v=b1d246c8fe";
+import { creerMaster } from "./master.js?v=b1d246c8fe";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=b1d246c8fe";
+import * as MO from "./moteurs.js?v=b1d246c8fe";
+import { monterPanneaux } from "./panneaux.js?v=b1d246c8fe";
+import { monterNotions } from "./notions.js?v=b1d246c8fe";
+import { DEMOS } from "./demos.js?v=b1d246c8fe";
+import * as B from "./bibliotheque.js?v=b1d246c8fe";
+import { encoderWAV } from "../studio/wav.js?v=b1d246c8fe";
+import { ENTREES } from "../library/catalogue.js?v=b1d246c8fe";
+import { compiler } from "../src/index.js?v=b1d246c8fe";
+import { rendre } from "../src/rendu.js?v=b1d246c8fe";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -66,7 +67,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=7e141dd94c"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=b1d246c8fe"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -101,16 +102,20 @@ async function chainePiste(ctx, pi, sortie) {
   return { bus, vol, env, pan, ana, veilles };
 }
 // Programme l'enveloppe de volume de chaque piste, à partir de l'instant `depuis` du projet qui tombe à l'instant `debut` de l'horloge audio.
-function appliquerEnveloppes(projet, chaines, depuis, debut) {
+// `jusque` (un tour de boucle) : les courbes s'arrêtent à cet instant du projet, à la valeur qu'elles y ont, pour que le tour suivant reparte proprement.
+function rampe(param, pts, valeurA, depuis, debut, jusque) {
+  param.setValueAtTime(valeurA(depuis), debut);
+  for (const q of pts) if (q.t > depuis && (jusque === null || q.t < jusque)) param.linearRampToValueAtTime(q.v, debut + (q.t - depuis));
+  if (jusque !== null && pts.some(q => q.t >= jusque)) param.linearRampToValueAtTime(valeurA(jusque), debut + (jusque - depuis));
+}
+function appliquerEnveloppes(projet, chaines, depuis, debut, jusque = null) {
   for (const pi of P.pistesAudibles(projet)) {
     const ch = chaines[pi.id], pts = P.enveloppeDe(pi); if (!ch || !ch.env || !pts.length) continue;
-    ch.env.gain.setValueAtTime(P.gainEnveloppe(pi, depuis), debut);
-    for (const q of pts) if (q.t > depuis) ch.env.gain.linearRampToValueAtTime(q.v, debut + (q.t - depuis));
+    rampe(ch.env.gain, pts, t => P.gainEnveloppe(pi, t), depuis, debut, jusque);
   }
   for (const pi of P.pistesAudibles(projet)) {   // la courbe de panoramique pilote le panoramique de la piste
     const ch = chaines[pi.id], pts = P.courbeDe(pi, "pan"); if (!ch || !ch.pan || !pts.length) continue;
-    ch.pan.pan.setValueAtTime(P.valeurCourbe(pi, "pan", depuis), debut);
-    for (const q of pts) if (q.t > depuis) ch.pan.pan.linearRampToValueAtTime(q.v, debut + (q.t - depuis));
+    rampe(ch.pan.pan, pts, t => P.valeurCourbe(pi, "pan", t), depuis, debut, jusque);
   }
 }
 // La sortie des chaînes de pistes : directe, ou par le « Son pro » (mixage et mastering, master.js) quand le projet le demande. Une seule chaîne par contexte audio.
@@ -122,9 +127,16 @@ function sortieProjet(ctx, projet) {
 }
 async function chainesProjet(ctx, projet, sortie) { const ch = {}; for (const pi of P.pistesAudibles(projet)) ch[pi.id] = await chainePiste(ctx, pi, sortie); return ch; }
 // Les clips sont programmés sur les chaînes déjà prêtes : un gain par clip, avec des fondus de 5 ms.
-function planifier(ctx, projet, depuis, debut, chaines) {
+// `jusque` (un tour de boucle) : la fin du tour dans le projet ; les clips qui la dépassent sont coupés net et ne laissent pas de queue.
+// `instruments` : les instruments chargés (instrumentsProjet). Un clip de notes dont l'instrument est chargé joue ses NOTES, une voix par note, sur la chaîne de sa piste :
+// pas d'audio rendu d'avance, donc une note changée s'entend à la prochaine reprogrammation, et l'export (contexte hors ligne) joue exactement la même chose.
+// Sans instrument chargé, le clip retombe sur son audio rendu.
+function planifier(ctx, projet, depuis, debut, chaines, jusque = null, instruments = null) {
   const sources = [], f = 0.005;
-  for (const e of P.planLecture(projet, depuis)) {
+  for (let e of P.planLecture(projet, depuis)) {
+    if (jusque !== null) { const reste = jusque - depuis - e.quand; if (reste <= 0.001) continue; if (e.duree > reste) e = { ...e, duree: reste, queue: 0 }; }
+    const ch0 = chaines[e.piste], son = projet.sons[e.son];
+    if (instruments && ch0 && P.estMidi(son)) { const inst = instruments[P.instrumentDeClip(P.trouverPiste(projet, e.piste), son)]; if (inst) { for (const v of programmerNotes(ctx, projet, e, debut + e.quand, ch0, inst)) sources.push(v); continue; } }
     const buf = bufferDe(ctx, e.son), ch = chaines[e.piste]; if (!buf || !ch) continue;
     const src = ctx.createBufferSource(); src.buffer = buf;
     const g = ctx.createGain(), t0 = debut + e.quand, t1 = t0 + e.duree, gc = e.gainClip;
@@ -133,24 +145,62 @@ function planifier(ctx, projet, depuis, debut, chaines) {
     g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(gc, t0 + Math.min(f, e.duree / 2));
     if (q > 0.02) { g.gain.setValueAtTime(gc, t1); g.gain.linearRampToValueAtTime(gc * 0.35, t1 + q * 0.4); g.gain.linearRampToValueAtTime(0, t1 + q); }
     else { g.gain.setValueAtTime(gc, Math.max(t0 + f, t1 - f)); g.gain.linearRampToValueAtTime(0, t1); }
-    src.connect(g); g.connect(ch.bus); src.start(t0, e.decalage, e.duree + (q > 0.02 ? q : 0)); sources.push(src);
+    src.connect(g); g.connect(ch.bus); src.start(t0, e.decalage, e.duree + (q > 0.02 ? q : 0)); src._fin = t1 + (q > 0.02 ? q : 0) + 0.1; sources.push(src);
   }
   return sources;
 }
 
+// Les notes d'un morceau de clip (une entrée du plan de lecture : e.decalage et e.duree, en secondes du son) : une voix par note qui commence dans ce morceau,
+// relâchée à la fin de la note ou du morceau (une boucle, une coupe). Le gain du clip s'applique à l'ensemble.
+function programmerNotes(ctx, projet, e, t0, ch, inst) {
+  const s = projet.sons[e.son], sec = 60 / projet.tempo, a = e.decalage, b = e.decalage + e.duree, voix = [], g = ctx.createGain(); g.gain.value = e.gainClip; g.connect(ch.bus);
+  let i = 0; for (const n of s.midi.notes) {
+    const on = n.t * sec, off = (n.t + n.d) * sec; if (on < a - 1e-6 || on >= b - 1e-6) { i++; continue; }
+    const v = INS.programmerNote(ctx, g, inst, { note: n.n, hauteur: n.h, vitesse: n.v, debut: t0 + (on - a), fin: t0 + (Math.min(off, b) - a), graine: i++ }); if (v) voix.push(v);
+  }
+  return voix;
+}
+// Charge (une fois) les instruments dont les clips de notes ont besoin. Un instrument qui ne se charge pas est absent du résultat : ses clips jouent leur audio rendu.
+async function instrumentsProjet(ctx, projet) {
+  const cat = INS.catalogue(), out = {};
+  await Promise.all([...P.instrumentsUtilises(projet)].map(async id => { const e = cat.find(x => x.id === id); if (!e) return; try { out[id] = await INS.charger(e, ctx); } catch (_) { /* repli sur l'audio rendu */ } }));
+  return out;
+}
+
 // ---------------------------------------------------------------- lecture
+// L'horloge de la lecture en cours (transport.js) : tout ce qui dépend du temps (tête, métronome, tours de boucle, date des notes) en découle.
+// La boucle ne joue pas pendant une prise : on enregistre en ligne droite, après le précompte.
+const HORIZON = 3;   // secondes d'avance du métronome et des tours de boucle ; le minuteur passe toutes les 250 ms, un blocage de la page de moins de 2,5 s ne coupe rien
+const horloge = () => ({ debutCtx: etat.debutCtx, debutTete: etat.debutTete, boucle: etat.boucleOn && etat.boucle && !etat.enreg && !etat.notes ? etat.boucle : null });
+const precompteMesures = () => { const v = +($("precompte") && $("precompte").value); return v === 1 || v === 2 ? v : 0; };
 async function lire() {
   if (etat.lecture || etat.prepare) return arreter();
   const ctx = contexte(); etat.prepare = true; let chaines;
   // Safari ne fait avancer l'horloge audio que si le contexte tourne vraiment : on attend la reprise (appelée dans le geste de l'utilisateur) et on le dit si elle n'a pas lieu.
   try { await Promise.race([ctx.resume(), new Promise(ok => setTimeout(ok, 1500))]); } catch (_) {}
   if (ctx.state !== "running") { etat.prepare = false; message("Le navigateur n'a pas démarré le son. Clique à nouveau sur Lire ; sur Safari, vérifie que le site n'est pas coupé dans Réglages pour ce site, Lecture automatique."); return; }
-  try { chaines = await chainesProjet(ctx, etat.projet, sortieProjet(ctx, etat.projet)); } catch (e) { message("La lecture n'a pas pu démarrer : " + (e && e.message || e)); return; } finally { etat.prepare = false; }
-  etat.debutCtx = ctx.currentTime + 0.06; etat.debutTete = etat.tete;
-  etat.sources = planifier(ctx, etat.projet, etat.tete, etat.debutCtx, chaines); etat.chaines = chaines; appliquerEnveloppes(etat.projet, chaines, etat.tete, etat.debutCtx);
-  if ($("metro").checked) etat.metro = metronome(ctx, etat.tete, etat.debutCtx);
-  etat.lecture = true; $("b-lire").innerHTML = '<span class="ic ic-stop" aria-hidden="true"></span> Arrêter'; badge(etat.enreg ? "enregistrement" : "lecture", etat.enreg ? "erreur" : "marche");
+  try { chaines = await chainesProjet(ctx, etat.projet, sortieProjet(ctx, etat.projet)); etat.instruments = await instrumentsProjet(ctx, etat.projet); } catch (e) { message("La lecture n'a pas pu démarrer : " + (e && e.message || e)); return; } finally { etat.prepare = false; }
+  // Précompte : pour une prise (micro ou notes), la lecture ne commence qu'après une mesure ou deux de clics, la tête attend au départ.
+  const dt = P.dureeTemps(etat.projet), mesures = etat.enreg || etat.notes ? precompteMesures() : 0, pre = TR.dureePrecompte(dt, etat.projet.temps, mesures);
+  const debutPrecompte = ctx.currentTime + 0.06; etat.debutCtx = debutPrecompte + pre; etat.debutTete = etat.tete; etat.precompte = pre ? { dt, temps: etat.projet.temps * mesures } : null;
+  if (etat.capture) etat.capture.debutLecture = etat.debutCtx;   // la capture du micro a commencé avant : ce qui précède ne fait pas partie de la prise
+  const h = horloge(), T0 = TR.tour(h, 0);
+  etat.sources = planifier(ctx, etat.projet, etat.tete, etat.debutCtx, chaines, T0.jusque, etat.instruments); etat.chaines = chaines; appliquerEnveloppes(etat.projet, chaines, etat.tete, etat.debutCtx, T0.jusque);
+  if (pre) etat.metroPre = clicsPrecompte(ctx, TR.precompte(etat.debutCtx, dt, etat.projet.temps, mesures));   // il sonne même si le métronome est coupé
+  if ($("metro").checked) etat.metro = metronome(ctx, h);
+  etat.lecture = true; demarrerTours(ctx, h, chaines); $("b-lire").innerHTML = '<span class="ic ic-stop" aria-hidden="true"></span> Arrêter'; badge(etat.enreg ? "enregistrement" : "lecture", etat.enreg ? "erreur" : "marche");
 }
+// Les tours de la boucle : tant que la lecture dure, le tour suivant est programmé HORIZON secondes avant d'être joué, sur les mêmes chaînes de pistes.
+function demarrerTours(ctx, h, chaines) {
+  arreterTours(); if (!TR.boucleActive(h)) return; let n = 1;
+  const passer = () => {
+    if (!etat.lecture || etat.chaines !== chaines) return arreterTours(); const limite = ctx.currentTime + HORIZON;
+    for (let T; (T = TR.tour(h, n)) && T.ctx <= limite; n++) { for (const s of planifier(ctx, etat.projet, T.depuis, T.ctx, chaines, T.jusque, etat.instruments)) etat.sources.push(s); appliquerEnveloppes(etat.projet, chaines, T.depuis, T.ctx, T.jusque); }
+    etat.sources = etat.sources.filter(s => !(s._fin < ctx.currentTime));
+  };
+  etat.minuteurTours = setInterval(passer, 250); passer();
+}
+function arreterTours() { clearInterval(etat.minuteurTours); etat.minuteurTours = null; }
 // Modifier le projet PENDANT la lecture : la lecture continue. Les chaînes de pistes et les clips sont reprogrammés depuis l'endroit exact où l'on en est, et l'ancien son s'éteint en 12 ms à l'instant du remplacement
 // (au lieu d'arrêter la lecture à chaque geste, comme avant : il fallait arrêter et relire pour entendre une modification).
 let replanOccupe = false, replanEnAttente = false;
@@ -159,38 +209,46 @@ async function replanifierLecture() {
   if (replanOccupe) { replanEnAttente = true; return; }
   replanOccupe = true; const ctx = etat.ctx;
   try {
-    let chaines; try { chaines = await chainesProjet(ctx, etat.projet, sortieProjet(ctx, etat.projet)); } catch (_) { arreter(); return; }
+    let chaines, instruments; try { chaines = await chainesProjet(ctx, etat.projet, sortieProjet(ctx, etat.projet)); instruments = await instrumentsProjet(ctx, etat.projet); } catch (_) { arreter(); return; }
     if (!etat.lecture) { for (const ch of Object.values(chaines)) { try { ch.vol.disconnect(); (ch.veilles || []).forEach(v => v.stop()); } catch (_) {} } return; }
-    const t0 = ctx.currentTime + 0.03, pos = etat.debutTete + t0 - etat.debutCtx, sources = planifier(ctx, etat.projet, pos, t0, chaines); appliquerEnveloppes(etat.projet, chaines, pos, t0);
-    for (const s of etat.sources) { try { s.stop(t0 + 0.012); } catch (_) {} }
-    const anciennes = etat.chaines || {};
+    const t0 = ctx.currentTime + 0.03, pos = TR.teteDe(horloge(), t0), anciennes = etat.chaines || {}, anciennesSources = etat.sources;
+    arreterTours(); const h = { debutCtx: t0, debutTete: pos, boucle: horloge().boucle }, T0 = TR.tour(h, 0);
+    etat.instruments = instruments; const sources = planifier(ctx, etat.projet, pos, t0, chaines, T0.jusque, instruments); appliquerEnveloppes(etat.projet, chaines, pos, t0, T0.jusque);
+    for (const s of anciennesSources) { try { s.stop(t0 + 0.012); } catch (_) {} }
     for (const ch of Object.values(anciennes)) { try { ch.vol.gain.cancelScheduledValues(t0); ch.vol.gain.setValueAtTime(ch.vol.gain.value, t0); ch.vol.gain.linearRampToValueAtTime(0.0001, t0 + 0.012); } catch (_) {} }
     setTimeout(() => { for (const ch of Object.values(anciennes)) { try { ch.vol.disconnect(); (ch.veilles || []).forEach(v => v.stop()); } catch (_) {} } }, 250);
-    etat.sources = sources; etat.chaines = chaines; etat.debutCtx = t0; etat.debutTete = pos;
-    if (etat.metro) { etat.metro.stop(); etat.metro = null; } if ($("metro").checked) etat.metro = metronome(ctx, pos, t0);
+    etat.sources = sources; etat.chaines = chaines; etat.debutCtx = t0; etat.debutTete = pos; demarrerTours(ctx, h, chaines);
+    if (etat.metro) { etat.metro.stop(); etat.metro = null; } if ($("metro").checked) etat.metro = metronome(ctx, h);
   } finally { replanOccupe = false; if (replanEnAttente) { replanEnAttente = false; replanifierLecture(); } }
 }
 // La session audio de Safari (iOS 16.4 et après) : le micro n'est accessible qu'en « play-and-record » ; ailleurs, la propriété n'existe pas.
 function sessionAudio(type) { try { if (navigator.audioSession && navigator.audioSession.type !== type) navigator.audioSession.type = type; } catch (_) {} }
 function arreter() {
-  for (const s of etat.sources) { try { s.stop(); } catch (_) {} } etat.sources = [];
+  for (const s of etat.sources) { try { s.stop(); } catch (_) {} } etat.sources = []; arreterTours();
   for (const ch of Object.values(etat.chaines || {})) { try { ch.vol.disconnect(); (ch.veilles || []).forEach(v => v.stop()); } catch (_) {} } etat.chaines = null;
-  if (etat.metro) { etat.metro.stop(); etat.metro = null; }
+  if (etat.metro) { etat.metro.stop(); etat.metro = null; } if (etat.metroPre) { etat.metroPre.stop(); etat.metroPre = null; } etat.precompte = null;
   if (etat.enreg) finirEnregistrement();
   if (etat.notes) finirNotes();
   etat.lecture = false; $("b-lire").innerHTML = '<span class="ic ic-play" aria-hidden="true"></span> Lire'; badge("prêt");
 }
-// Métronome : des clics programmés sur les temps (le premier temps de la mesure plus aigu). Il n'est jamais exporté.
-function metronome(ctx, depuis, debut) {
-  const p = etat.projet, dt = P.dureeTemps(p), osc = []; let k = Math.ceil(depuis / dt - 1e-9);
-  const programmer = jusque => { for (; k * dt < jusque; k++) { const t = debut + k * dt - depuis; if (t < ctx.currentTime) continue; const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = k % p.temps === 0 ? 1600 : 1000; g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05); o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + 0.06); osc.push(o); } };
-  programmer(depuis + 2); const m = setInterval(() => programmer(etat.tete + 2), 400);
+// Un clic de métronome (le premier temps de la mesure plus aigu), programmé à l'instant t de l'horloge audio. Il n'est jamais exporté.
+function clic(ctx, t, accent, liste) {
+  const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = accent ? 1600 : 1000; g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05); o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + 0.06); o._fin = t + 0.1; liste.push(o);
+}
+// Le précompte : les clics sont programmés d'un coup (une ou deux mesures).
+function clicsPrecompte(ctx, liste) { const osc = []; for (const c of liste) if (c.t >= ctx.currentTime - 0.005) clic(ctx, c.t, c.accent, osc); return { stop() { osc.forEach(o => { try { o.stop(); } catch (_) {} }); } }; }
+// Métronome : des fenêtres successives de l'horloge audio (transport.js), suivies à la boucle près. Chaque fenêtre commence où la précédente finit : un minuteur en retard n'ôte aucun clic, il en programme plusieurs d'un coup.
+function metronome(ctx, h) {
+  const p = etat.projet, dt = P.dureeTemps(p); let c0 = h.debutCtx, osc = [];
+  const programmer = () => { const c1 = ctx.currentTime + HORIZON; for (const x of TR.clics(h, c0, c1, dt, p.temps)) if (x.t >= ctx.currentTime - 0.005) clic(ctx, x.t, x.accent, osc); c0 = Math.max(c0, c1); osc = osc.filter(o => !(o._fin < ctx.currentTime)); };
+  programmer(); const m = setInterval(programmer, 250);
   return { stop() { clearInterval(m); osc.forEach(o => { try { o.stop(); } catch (_) {} }); } };
 }
 function boucle() {
   requestAnimationFrame(boucle);
-  if (etat.lecture && etat.ctx) { etat.tete = Math.max(0, etat.debutTete + etat.ctx.currentTime - etat.debutCtx); const fin = P.dureeTotale(etat.projet) + Math.max(P.queueMax(etat.projet), etat.projet.master === "pro" ? 2 : 0); if (!etat.enreg && !etat.notes && etat.tete > fin + 0.3 && fin > 0) { finEcoute(); arreter(); } }
-  $("position").textContent = fmtT(etat.tete); $("curseur").style.left = (etat.tete * etat.pxs) + "px";
+  if (etat.lecture && etat.ctx) { const h = horloge(), ct = etat.ctx.currentTime; etat.tete = TR.teteDe(h, ct); const fin = P.dureeTotale(etat.projet) + Math.max(P.queueMax(etat.projet), etat.projet.master === "pro" ? 2 : 0); if (!TR.boucleActive(h) && !etat.enreg && !etat.notes && etat.tete > fin + 0.3 && fin > 0) { finEcoute(); arreter(); } }
+  const attente = etat.lecture && etat.ctx && etat.precompte && etat.ctx.currentTime < etat.debutCtx ? Math.min(etat.precompte.temps, Math.max(1, Math.ceil((etat.debutCtx - etat.ctx.currentTime) / etat.precompte.dt - 1e-6))) : 0;
+  $("position").textContent = attente ? "Précompte " + attente : fmtT(etat.tete); $("curseur").style.left = (etat.tete * etat.pxs) + "px";
   if (vueBlocs) vueBlocs.suivre(etat.tete);
   if (laConsole) laConsole.suivre();
   if (etat.enreg && etat.capture) { majClipEnCours(); majNiveauMicro(); } if (etat.notes) majNotesEnCours();
@@ -315,16 +373,18 @@ async function finirEnregistrement() {
   }
   if (!canaux.length || canaux[0].length < sr * 0.05) { message("Enregistrement trop court ou vide : rien n'est gardé. Si le micro ne capte rien, regarde la barre de niveau pendant que tu parles."); afficher(); return; }
   // compensation de la latence de sortie (voie worklet seulement) : la piste d'accompagnement est entendue en retard, donc ce que l'on joue arrive en retard d'autant
-  const lat = voie === "worklet" ? Math.min(0.3, (etat.ctx.baseLatency || 0) + (etat.ctx.outputLatency || 0)) : 0, coupe = Math.round(lat * sr);
+  // Ce qui est retiré au début de la capture : le temps entre l'ouverture du micro et le départ de la lecture (précompte compris), puis la latence de sortie.
+  const lat = voie === "worklet" ? Math.min(0.3, (etat.ctx.baseLatency || 0) + (etat.ctx.outputLatency || 0)) : 0, coupe = TR.echantillonsADecouper({ debutCapture: c.t0, debutLecture: c.debutLecture ?? c.t0, latence: lat, sr });
+  if (canaux[0].length - coupe < sr * 0.05) { message("Enregistrement trop court ou vide : rien n'est gardé. Si le micro ne capte rien, regarde la barre de niveau pendant que tu parles."); afficher(); return; }
   const k = Math.min(canaux.length, c.pistes.length), num = Object.values(etat.projet.sons).filter(x => /^Enregistrement \d+$/.test(x.nom)).length + 1, ids = [];
   for (let i = 0; i < k; i++) {
-    const x = canaux[i], y = coupe && coupe < x.length / 2 ? x.slice(coupe) : x;
+    const x = canaux[i], y = coupe ? x.slice(coupe) : x;
     const id = ajouterAudio(k > 1 ? `Enregistrement ${num + i}` : `Enregistrement ${num}`, [y], sr); ids.push(id); P.placerClip(etat.projet, P.pisteLibre(etat.projet, c.pistes[i], c.debut, y.length / sr), id, c.debut);
   }
-  const dur = canaux[0].length / sr - coupe / sr, d = dur.toFixed(1).replace(".", ",");
+  const dur = (canaux[0].length - coupe) / sr, d = dur.toFixed(1).replace(".", ",");
   const reste = c.pistes.length > k ? ` Cette entrée n'a que ${k} canal${k > 1 ? "ux" : ""} : seule${k > 1 ? "s" : ""} la première${k > 1 ? "s" : ""} piste${k > 1 ? "s" : ""} armée${k > 1 ? "s ont" : " a"} enregistré (${c.pistes.length} armées).` : "";
   message(`Enregistré : ${d} s sur ${k > 1 ? k + " pistes, un canal par piste" : "la piste"}.${voie === "worklet" ? ` Latence compensée : ${Math.round(lat * 1000)} ms.` : " Ton navigateur a utilisé l'enregistreur de secours (un seul canal, sans compensation de latence) : décale le clip à la main si besoin."}${reste}`);
-  etat.dernierEnreg = { duree: dur, latence: lat, voie, canaux: canaux.length, pistes: c.pistes.length, enregistres: k }; etat.aReecouter = (etat.aReecouter || []).concat(ids); changer();
+  etat.dernierEnreg = { duree: dur, latence: lat, depart: Math.max(0, (c.debutLecture ?? c.t0) - c.t0), voie, canaux: canaux.length, pistes: c.pistes.length, enregistres: k }; etat.aReecouter = (etat.aReecouter || []).concat(ids); changer();
 }
 
 // ---------------------------------------------------------------- MIDI : jouer un instrument de la Library, enregistrer les notes, les rendre en clip
@@ -333,7 +393,15 @@ async function finirEnregistrement() {
 const midi = etat.midi = { ouvert: false, octave: 4, catalogue: INS.catalogue(), courant: null, inst: null, sampleur: null, chargement: null, clavier: null, enfoncees: new Map(), acces: null };
 const entreeJeu = () => midi.catalogue.find(x => x.id === $("midi-instrument").value) || midi.catalogue.find(x => x.id === "ech:clavier") || midi.catalogue[0];
 const hauteurMidi = note => MI.frequenceGamme(note, $("midi-gamme").value || "egal");
-const dateProjet = () => Math.max(0, etat.lecture && etat.ctx ? etat.debutTete + etat.ctx.currentTime - etat.debutCtx : etat.tete); // la lecture démarre 60 ms après la commande : une note jouée avant n'a pas de date négative
+const dateProjet = () => etat.lecture && etat.ctx ? TR.teteDe(horloge(), etat.ctx.currentTime) : etat.tete;
+// La date d'une note jouée : celle de la touche (horloge de la page, event.timeStamp), ramenée à ce que la personne entendait à cet instant.
+// ctx.getOutputTimestamp() donne la position du son qui sort vraiment du haut-parleur : la latence de sortie y est déjà. Sans lui, on la retire de l'horloge audio.
+function dateNote(ts) {
+  const ctx = etat.ctx; if (!etat.lecture || !ctx || !Number.isFinite(ts)) return dateProjet();
+  let rep = null; try { rep = ctx.getOutputTimestamp && ctx.getOutputTimestamp(); } catch (_) {}
+  if (rep && rep.performanceTime > 0 && Number.isFinite(rep.contextTime)) return TR.dateJouee(horloge(), TR.ctxDePage(ts, rep), 0);
+  return TR.dateJouee(horloge(), ctx.currentTime - (performance.now() - ts) / 1000, (ctx.baseLatency || 0) + (ctx.outputLatency || 0));
+}
 // Charge l'instrument choisi (enregistrements de la banque, ou synthèse rendue une fois) et le branche sur le clavier. Les notes jouées pendant le chargement sont ignorées, et on le dit.
 async function moteurMidi() {
   const ctx = contexte(), e = entreeJeu(); if (!midi.sampleur) midi.sampleur = new INS.Sampleur(ctx, ctx.destination);
@@ -345,15 +413,15 @@ async function moteurMidi() {
     finally { if (midi.chargement && midi.chargement.id === e.id) midi.chargement = null; } })();
   midi.chargement = { id: e.id, p }; return p;
 }
-async function noteMidi(note, vitesse, actif) {
-  const t = dateProjet();
+async function noteMidi(note, vitesse, actif, ts) {
+  const t = dateNote(ts), enPrecompte = !!(etat.precompte && etat.ctx && etat.ctx.currentTime < etat.debutCtx);   // les notes jouées pendant le précompte s'entendent mais ne sont pas gardées
   if (actif) { if (midi.enfoncees.has(note)) return; midi.enfoncees.set(note, true); } else { if (!midi.enfoncees.has(note)) return; midi.enfoncees.delete(note); }
   document.querySelectorAll(`#midi-clavier [data-note="${note}"]`).forEach(b => b.classList.toggle("jouee", actif));
-  if (etat.notes) { if (actif) etat.notes.noteOn(note, hauteurMidi(note), vitesse, t); else etat.notes.noteOff(note, t); }
+  if (etat.notes && !enPrecompte) { if (actif) etat.notes.noteOn(note, hauteurMidi(note), vitesse, t); else etat.notes.noteOff(note, t); }
   try { const m = await moteurMidi(); if (!midi.enfoncees.has(note) && actif) return; if (actif) m.noteOn(note, hauteurMidi(note), vitesse); else m.noteOff(note); }
   catch (e) { /* le message est déjà affiché par moteurMidi */ }
 }
-midi.clavier = new Clavier({ noteOn: (n, h, v) => noteMidi(n, v, true), noteOff: n => noteMidi(n, 1, false) });
+midi.clavier = new Clavier({ noteOn: (n, h, v) => noteMidi(n, v, true, midi.clavier.horodatage), noteOff: n => noteMidi(n, 1, false, midi.clavier.horodatage) });   // horodatage : la date du message MIDI, posée par brancher() (studio/midi.js)
 // Les pièces de la batterie en pavés : une ligne de pavés colorés, chacun avec son nom et sa lettre au clavier (au lieu d'un clavier de piano où huit noms se chevauchent).
 const PAVES = [[49, "#FFC53D"], [51, "#D8E043"], [46, "#8BD450"], [42, "#3FC79A"], [56, "#35BFD3"], [70, "#4C9BF5"], [39, "#7A7CF0"], [37, "#A86CF0"], [41, "#D766D8"], [38, "#F26BA3"], [36, "#FF6B57"]];
 function dessinerPaves(z) {
@@ -396,9 +464,9 @@ $("b-midi-brancher").onclick = async () => {
 document.addEventListener("keydown", e => {
   if (!midi.ouvert || !$("midi-ordi").checked || e.ctrlKey || e.metaKey || e.altKey) return; const t = e.target; if (t && (t.tagName === "INPUT" && t.type !== "checkbox" || t.tagName === "SELECT" || t.tagName === "TEXTAREA")) return;
   const k = e.key.toLowerCase(); if (k === "z" || k === "x") { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { midi.octave = Math.max(0, Math.min(8, midi.octave + (k === "x" ? 1 : -1))); dessinerClavierMidi(); } return; }
-  const n = MI.noteDeTouche(k, midi.octave); if (n === null) return; e.preventDefault(); e.stopPropagation(); if (!e.repeat) { midi.touches = midi.touches || new Map(); midi.touches.set(k, n); noteMidi(n, 0.8, true); }
+  const n = MI.noteDeTouche(k, midi.octave); if (n === null) return; e.preventDefault(); e.stopPropagation(); if (!e.repeat) { midi.touches = midi.touches || new Map(); midi.touches.set(k, n); noteMidi(n, 0.8, true, e.timeStamp); }
 }, true);
-document.addEventListener("keyup", e => { const k = e.key.toLowerCase(); if (midi.touches && midi.touches.has(k)) { noteMidi(midi.touches.get(k), 1, false); midi.touches.delete(k); } }, true);
+document.addEventListener("keyup", e => { const k = e.key.toLowerCase(); if (midi.touches && midi.touches.has(k)) { noteMidi(midi.touches.get(k), 1, false, e.timeStamp); midi.touches.delete(k); } }, true);
 $("b-notes").onclick = async () => {
   if (etat.notes) return arreter();
   const piste = pistesArmees()[0]; if (!piste) return;
@@ -511,7 +579,7 @@ async function ecouterNote(n, v) {
 }
 function ouvrirRouleau(sonId) {
   const s = etat.projet.sons[sonId]; if (!P.estMidi(s)) { message("Ce clip n'est pas un clip de notes : il n'a pas de notes à modifier. Enregistre des notes avec « Jouer un instrument »."); return; }
-  rl.son = sonId; $("rouleau").hidden = false; $("rl-titre").textContent = `Notes de « ${s.nom} »`; rouleau.grille = +$("rl-grille").value; const batt = BM.estBatterie(s.midi.instrument);   // une batterie : une ligne par pièce, avec son nom, au lieu du clavier de piano
+  rl.son = sonId; $("rouleau").hidden = false; majDock();   /* le panneau doit être visible avant que le piano roll se centre sur ses notes */ $("rl-titre").textContent = `Notes de « ${s.nom} »`; rouleau.grille = +$("rl-grille").value; const batt = BM.estBatterie(s.midi.instrument);   // une batterie : une ligne par pièce, avec son nom, au lieu du clavier de piano
   rouleau.ouvrir({ notes: s.midi.notes, temps: s.midi.temps, parMesure: etat.projet.temps, nom: s.nom, ...(batt ? { lignes: BM.LIGNES, ligneDe: BM.ligneDe, nomLigne: n => BM.NOMS_LIGNES[n] || n } : {}) }); majRouleauBarre(); majVitesseBarre(); rouleau.reglerGamme($("rl-tonique").value, $("rl-mode").value); remplirInstrumentsRouleau(s); $("rl-zoom").textContent = Math.round(rouleau.zoom * 100) + " %"; afficherOnglet(rl.onglet); $("rouleau").scrollIntoView({ block: "nearest" });
 }
 // Le choix de l'instrument du clip : changer l'instrument refait l'audio ; passer d'un instrument à une batterie (ou l'inverse) change aussi les lignes du piano roll.
@@ -519,10 +587,39 @@ function remplirInstrumentsRouleau(s) {
   const sel = $("rl-instrument"); if (!sel.options.length) sel.innerHTML = INS.GROUPES.map(g => `<optgroup label="${esc(g)}">${INS.catalogue().filter(x => x.groupe === g).map(x => `<option value="${esc(x.id)}">${esc(x.nom)}</option>`).join("")}</optgroup>`).join("");
   sel.value = s.midi.instrument; if (sel.value !== s.midi.instrument) sel.value = "ech:clavier";
 }
+// L'instrument est celui de la PISTE : tous ses clips de notes le jouent, tout de suite (les notes sont jouées en direct, rien à refaire pour les entendre).
 $("rl-instrument").onchange = e => {
-  const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; const avant = BM.estBatterie(s.midi.instrument); s.midi.instrument = e.target.value; s.midi.rendu = -1; rl.samp = null; changer();
-  if (BM.estBatterie(s.midi.instrument) !== avant) ouvrirRouleau(rl.son); remettreAJourMidi();
+  const s = etat.projet.sons[rl.son]; if (!P.estMidi(s)) return; const avant = BM.estBatterie(s.midi.instrument), r = etat.projet.pistes.find(pi => pi.clips.some(c => c.son === rl.son));
+  if (r) P.definirInstrumentPiste(etat.projet, r.id, e.target.value); else { s.midi.instrument = e.target.value; s.midi.rendu = -1; }
+  rl.samp = null; changer(); if (BM.estBatterie(s.midi.instrument) !== avant) ouvrirRouleau(rl.son); remettreAJourMidi();
 };
+// ---------------------------------------------------------------- le panneau inférieur (éditeur)
+// Il apparaît quand un de ses éditeurs (notes, rythme, courbes) s'ouvre et disparaît quand tous sont fermés. La poignée le redimensionne (souris, doigt ou flèches) ; la hauteur est retenue.
+const dock = $("dock"), poignee = $("dock-poignee");
+const poserDock = h => { const max = Math.max(200, Math.round(innerHeight * 0.8)), v = Math.max(160, Math.min(max, Math.round(h))); etat.hDock = v; dock.style.setProperty("--h-dock", v + "px"); poignee.setAttribute("aria-valuenow", String(v)); poignee.setAttribute("aria-valuemax", String(max)); return v; };
+const retenirDock = h => { try { localStorage.setItem("sonora:pistes:dock", String(poserDock(h))); } catch (_) {} ajusterArrangement(); };
+const dockParDefaut = () => Math.max(380, Math.min(560, Math.round(innerHeight * 0.5)));   // la moitié de la fenêtre, comme le partage habituel entre arrangement et éditeur
+{ let h = dockParDefaut(); try { h = +localStorage.getItem("sonora:pistes:dock") || h; } catch (_) {} poserDock(h); }
+// L'arrangement garde la place au-dessus du panneau : sa hauteur est ce qui reste de la fenêtre (il défile dedans) et la page le remonte sous la barre de lecture.
+const telephoneEtroit = () => matchMedia("(max-width: 700px)").matches;
+function ajusterArrangement() {
+  const l = $("ligne"); if (dock.hidden || telephoneEtroit()) { l.style.height = ""; l.style.overflowY = ""; return; }
+  const tr = document.querySelector(".transport"), collante = tr && getComputedStyle(tr).position === "sticky", hTr = collante ? tr.getBoundingClientRect().height : 0;
+  l.style.height = Math.max(140, innerHeight - dock.getBoundingClientRect().height - hTr - 20) + "px"; l.style.overflowY = "auto";   // hauteur fixe : un redessin des pistes ne fait pas reculer la page
+  return hTr;
+}
+const majDock = () => {
+  const avant = dock.hidden; dock.hidden = ![...$("dock-corps").children].some(x => x.tagName === "SECTION" && !x.hidden);
+  const hTr = ajusterArrangement();
+  if (avant && !dock.hidden && !telephoneEtroit()) { const haut = $("ligne").getBoundingClientRect().top, bas = innerHeight - dock.getBoundingClientRect().height; if (haut > bas - 160) scrollBy(0, haut - (hTr || 0) - 8); }   // à l'ouverture : si le panneau cache l'arrangement, la page le remonte ; sinon elle ne bouge pas
+};
+new MutationObserver(majDock).observe($("dock-corps"), { subtree: true, attributes: true, attributeFilter: ["hidden"] }); majDock();
+poignee.onpointerdown = e => {
+  e.preventDefault(); poignee.setPointerCapture(e.pointerId); const y0 = e.clientY, h0 = dock.getBoundingClientRect().height, bouge = ev => poserDock(h0 + (y0 - ev.clientY));
+  poignee.addEventListener("pointermove", ev => { bouge(ev); ajusterArrangement(); }); poignee.addEventListener("pointerup", () => { retenirDock(dock.getBoundingClientRect().height); }, { once: true });
+};
+poignee.onkeydown = e => { const d = e.key === "ArrowUp" ? 24 : e.key === "ArrowDown" ? -24 : 0; if (!d) return; e.preventDefault(); retenirDock(dock.getBoundingClientRect().height + d); };
+addEventListener("resize", () => { poserDock(etat.hDock || dockParDefaut()); ajusterArrangement(); });
 // Après Annuler ou Rétablir, le piano roll ouvert relit les notes du projet.
 function rafraichirRouleau() { if (!rl.son) return; if (P.estMidi(etat.projet.sons[rl.son])) ouvrirRouleau(rl.son); else { $("rouleau").hidden = true; rl.son = null; } }
 function fermerRouleau() { arreterEcouteRouleau(); panneauPartition.fermer(); clearTimeout(rl.minuteur); const id = rl.son; $("rouleau").hidden = true; rl.son = null; if (rl.lecture) { try { rl.lecture.stop(); } catch (_) {} rl.lecture = null; } if (id && P.estMidi(etat.projet.sons[id]) && etat.projet.sons[id].midi.rendu !== etat.projet.tempo) remettreAJourMidi(); }
@@ -692,7 +789,7 @@ function afficher() {
   $("tempo").value = p.tempo;
   // règle : une marque par mesure
   const dm = P.dureeMesure(p); let r = ""; for (let m = 0; m * dm * etat.pxs < largeur; m++) r += `<span style="left:${m * dm * etat.pxs}px">${m + 1}</span>`;
-  $("regle").innerHTML = r; $("regle").style.width = largeur + "px"; $("voies").style.width = largeur + "px";
+  $("regle").innerHTML = r; $("regle").style.width = largeur + "px"; $("voies").style.width = largeur + "px"; dessinerBoucle();
   $("entetes").innerHTML = `<div class="ent-regle"><button type="button" id="b-blocs" class="ent-blocs" data-tip="Composer par blocs : une ligne par instrument, une case par mesure, sans notation">Blocs</button><button type="button" id="b-console" class="ent-blocs ent-console" data-tip="La console de mixage : un fader, un panoramique, des effets et un vumètre par piste">Console</button></div>` + p.pistes.map(pi => { const nfx = P.rackDe(pi).length; return `<div class="entete${estArmee(pi) ? " armee" : ""}" data-piste="${pi.id}">
     <input type="text" value="${esc(pi.nom)}" aria-label="Nom de la piste" maxlength="30">
     <div class="ent-b"><button type="button" class="b-arme" aria-pressed="${estArmee(pi)}" title="Enregistrer sur cette piste">Rec</button><button type="button" class="b-muet" aria-pressed="${pi.muet}" title="Muet">M</button><button type="button" class="b-solo" aria-pressed="${pi.solo}" title="Solo">S</button><button type="button" class="b-fx" aria-pressed="${etat.fx === pi.id}" title="Effets de la piste">Effets${nfx ? " " + nfx : ""}</button><button type="button" class="b-env" aria-pressed="${etat.env === pi.id}" title="Courbes : dessiner sur la piste comment le volume et le panoramique changent au fil du temps"><span class="ic ic-courbe" aria-hidden="true"></span> Courbes${P.courbeDe(pi, "volume").length + P.courbeDe(pi, "pan").length ? " <i>" + (P.courbeDe(pi, "volume").length + P.courbeDe(pi, "pan").length) + "</i>" : ""}</button><button type="button" class="b-plus" aria-label="Plus de réglages pour ${esc(pi.nom)} : volume, panoramique, effets, enveloppe" title="Volume, panoramique, effets, enveloppe">&hellip;</button></div>
@@ -796,6 +893,7 @@ $("auto-sup").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env)
 $("auto-vider").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env); if (!pi) return; P.viderCourbe(pi, etat.courbe || "volume"); etat.pointSel = null; changer(); };
 function majSelection() {
   const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); $("selection").hidden = !r; if (!r) return;
+  if (!$("rouleau").hidden && P.estMidi(etat.projet.sons[r.clip.son]) && rl.son !== r.clip.son) ouvrirRouleau(r.clip.son);   // l'éditeur ouvert suit le clip de notes choisi
   $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain; $("b-modifier-notes").hidden = !P.estMidi(etat.projet.sons[r.clip.son]); $("b-partition").hidden = !P.estMidi(etat.projet.sons[r.clip.son]); $("b-tempo-trouver").hidden = P.suitLeTempo(etat.projet.sons[r.clip.son]);
 }
 let minuteur = null;
@@ -828,7 +926,8 @@ function deplacerPourTelephone() {
     for (const id of ["fichiers", "fichier-midi"]) deplacer($(id).closest("label"), A);
     for (const id of ["b-biblio", "b-pas", "b-midi", "b-piste"]) deplacer($(id), A);
     const son = groupe(A, "tuile-son"); deplacer($("choix-sonora").closest("label"), son); deplacer($("b-ajout-sonora"), son);
-    for (const id of ["tempo", "aimant", "metro", "multi", "entree-audio"]) for (const e of avecAide($(id).closest("label"))) deplacer(e, R);
+    for (const id of ["tempo", "aimant", "metro", "precompte", "multi", "entree-audio"]) for (const e of avecAide($(id).closest("label"))) deplacer(e, R);
+    deplacer($("b-boucle"), R);
     const z = document.createElement("div"); z.className = "rl-groupe"; z.innerHTML = "<span>Zoom de la règle</span>"; R.appendChild(z); deplacer($("b-zoom-moins"), z); deplacer($("b-zoom-plus"), z);
     deplacer($("b-debut"), R); deplacer($("b-export"), R); deplacer($("b-export-midi"), R); deplacer($("b-nouveau"), R);
   } else { fermerFeuille(); for (const { el, note } of lieux) if (note.parentNode) note.parentNode.insertBefore(el, note); }
@@ -1057,7 +1156,7 @@ async function exporter() {
   const p = etat.projet, duree = P.dureeTotale(p); if (!duree) { message("Rien à exporter : ajoute d'abord un son."); return; }
   const queue = Math.max(0.05, P.queueMax(p), p.master === "pro" ? 2 : 0, ...p.pistes.map(pi => { const e = P.effetsDe(pi); return Math.max(e.reverb.actif ? e.reverb.duree : 0, e.echo.actif ? Math.min(6, e.echo.temps * Math.ceil(Math.log(0.001) / Math.log(Math.max(0.01, e.echo.retour)))) : 0); }));
   const sr = 44100, ctx = new OfflineAudioContext(2, Math.ceil((duree + queue) * sr), sr), t0 = performance.now();
-  const chaines = await chainesProjet(ctx, p, sortieProjet(ctx, p)); planifier(ctx, p, 0, 0, chaines); appliquerEnveloppes(p, chaines, 0, 0); const buf = await ctx.startRendering(), canaux = [buf.getChannelData(0), buf.getChannelData(1)];
+  const chaines = await chainesProjet(ctx, p, sortieProjet(ctx, p)); planifier(ctx, p, 0, 0, chaines, null, await instrumentsProjet(ctx, p)); appliquerEnveloppes(p, chaines, 0, 0); const buf = await ctx.startRendering(), canaux = [buf.getChannelData(0), buf.getChannelData(1)];
   const w = encoderWAV(canaux, sr, 16); etat.dernierExport = { octets: w.octets.length, ecretes: w.ecretes, duree };
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([w.octets], { type: "audio/wav" })); a.download = (p.titre || "pistes").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9_-]+/g, "-") + ".wav"; document.body.appendChild(a); a.click(); a.remove();
   if (etat.toutEcoute && P.dureeTotale(p) >= 8 && p.pistes.reduce((n, pi) => n + pi.clips.length, 0) >= 2) points("pistes:export", 10, "sonora"); // points : tout le projet écouté du début à la fin, sans modification depuis
@@ -1081,7 +1180,37 @@ $("tempo").onchange = async e => {
 };
 $("b-annuler").onclick = () => annuler(); $("b-refaire").onclick = () => retablir();
 $("b-zoom-plus").onclick = () => { etat.pxs = Math.min(400, etat.pxs * 1.5); afficher(); }; $("b-zoom-moins").onclick = () => { etat.pxs = Math.max(10, etat.pxs / 1.5); afficher(); };
-$("regle").onpointerdown = e => { const r = $("regle").getBoundingClientRect(); etat.tete = Math.max(0, (e.clientX - r.left) / etat.pxs); if (etat.lecture) { arreter(); lire(); } };
+// La règle : un clic place la tête ; un glissement (sur les temps) trace la zone de boucle et l'allume.
+const relancer = t => { if (!etat.lecture || etat.enreg || etat.notes) return; arreter(); etat.tete = t; lire(); };
+$("regle").onpointerdown = e => {
+  const r = $("regle").getBoundingClientRect(), x0 = e.clientX, t0 = Math.max(0, (x0 - r.left) / etat.pxs), pos = ev => Math.max(0, (ev.clientX - r.left) / etat.pxs); let trace = false;
+  const bouge = ev => {
+    if (!trace && Math.abs(ev.clientX - x0) < 6) return; trace = true; const p = etat.projet, dt = P.dureeTemps(p), a = P.aimanter(p, Math.min(t0, pos(ev)), 1); let b = P.aimanter(p, Math.max(t0, pos(ev)), 1); if (b - a < dt) b = a + dt;
+    etat.boucle = { debut: a, fin: b }; dessinerBoucle();
+  };
+  const fini = () => {
+    window.removeEventListener("pointermove", bouge);
+    if (trace) { etat.boucleOn = true; majBoucle(); relancer(dateProjet()); }
+    else { etat.tete = t0; if (etat.lecture) { arreter(); lire(); } }
+  };
+  window.addEventListener("pointermove", bouge); window.addEventListener("pointerup", fini, { once: true });
+};
+// La zone de boucle : une bande sur la règle et les pistes, et le bouton Boucle. Sans zone tracée, la boucle prend les clips choisis, ou les quatre premières mesures.
+function dessinerBoucle() {
+  let z = $("zone-boucle"); if (!z) { z = document.createElement("div"); z.id = "zone-boucle"; z.className = "zone-boucle"; z.setAttribute("aria-hidden", "true"); $("defile").appendChild(z); }
+  const b = etat.boucle; z.hidden = !b; if (!b) return; z.classList.toggle("eteinte", !etat.boucleOn); z.style.left = b.debut * etat.pxs + "px"; z.style.width = Math.max(2, (b.fin - b.debut) * etat.pxs) + "px";
+}
+function majBoucle() { dessinerBoucle(); const b = $("b-boucle"); if (b) b.setAttribute("aria-pressed", String(!!etat.boucleOn)); }
+$("b-boucle").onclick = () => {
+  const p = etat.projet;
+  if (!etat.boucle) {
+    const cl = [...etat.choisis].map(id => P.trouverClip(p, id)).filter(Boolean).map(r => r.clip);
+    etat.boucle = cl.length ? { debut: Math.min(...cl.map(c => c.debut)), fin: Math.max(...cl.map(c => c.debut + c.duree)) } : { debut: 0, fin: 4 * P.dureeMesure(p) };
+  }
+  etat.boucleOn = !etat.boucleOn; majBoucle(); relancer(dateProjet());
+};
+$("precompte").value = (() => { try { return localStorage.getItem("sonora:pistes:precompte") ?? "1"; } catch (_) { return "1"; } })(); if (!["0", "1", "2"].includes($("precompte").value)) $("precompte").value = "1";
+$("precompte").onchange = () => { try { localStorage.setItem("sonora:pistes:precompte", $("precompte").value); } catch (_) {} };
 $("b-couper").onclick = () => { const ids = clipsChoisis(); if (!ids.length) return; let n = 0; for (const id of ids) if (P.couperClip(etat.projet, id, etat.tete)) n++; if (!n) { message("Place le curseur rouge à l'intérieur du clip pour le couper."); return; } changer(); };
 $("b-dupliquer").onclick = () => {
   const ids = clipsChoisis(); if (!ids.length) return; const avant = new Set(Object.keys(etat.projet.sons));

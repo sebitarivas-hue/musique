@@ -1,6 +1,6 @@
 // Éditions de sons pour SONORA Pistes : chaque fonction renvoie un NOUVEAU son { canaux, sr } et ne modifie jamais l'original (on peut toujours annuler).
 // Sans DOM : testé dans Node.
-import { reglablesVoix } from "./voix.js?v=7e141dd94c";
+import { reglablesVoix } from "./voix.js?v=b1d246c8fe";
 const copie = c => c.canaux.map(x => Float32Array.from(x));
 export const duree = c => c.canaux[0].length / c.sr;
 export const crete = c => { let m = 0; for (const x of c.canaux) for (let i = 0; i < x.length; i++) m = Math.max(m, Math.abs(x[i])); return m; };
