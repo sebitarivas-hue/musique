@@ -1,7 +1,7 @@
 // La batterie en MIDI : les notes de batterie de la norme General MIDI (36 grosse caisse, 38 caisse claire, 42 charleston fermé...) jouent les pièces des kits de SONORA.
 // Un clip de batterie est donc un clip de notes comme les autres : on l'enregistre au clavier, on le change dans le rouleau, il suit le tempo, il s'exporte en fichier MIDI
 // (les notes de batterie de General MIDI sont comprises par tous les logiciels). Sans DOM : testé dans Node.
-import { son, KITS, kitPret, chargerKit, prisesDe, KITS_ENREGISTRES } from "../harmonie/batterie.js?v=b1d246c8fe";
+import { son, KITS, GROUPES_KITS, kitPret, chargerKit, prisesDe, KITS_ENREGISTRES } from "../harmonie/batterie.js?v=574992f1c3";
 
 // La pièce du kit que joue chaque note. Les notes qui n'ont pas de pièce propre (les autres toms, les autres cymbales) jouent la plus proche.
 export const PIECE_DE_NOTE = {
@@ -41,5 +41,4 @@ export async function tamponsBatterieAsync(kit, sr = 44100) {
 }
 // Les instruments de batterie proposés dans Pistes : [identifiant, nom].
 // Les kits enregistrés d'abord (rock ou studio, jazz, électro, analogique, hip-hop, club, percussions), puis les kits calculés (qui jouent sans réseau).
-export const INSTRUMENTS_BATTERIE = [["batt:reel", "Vraie batterie"], ["batt:brute", "Batterie brute"], ["batt:jazz", "Batterie jazz"], ["batt:tr808", "TR-808 analogique"], ["batt:uzu", "Électro moderne"], ["batt:club", "Club"], ["batt:hiphop", "Hip-hop"],
-  ["batt:perc", "Percussions du monde"], ["batt:tabla", "Tabla et percussions indiennes"], ["batt:909", "Boîte à rythmes sèche"], ["batt:808", "Boîte à rythmes grave"], ["batt:acoustique", "Batterie douce"]];
+export const INSTRUMENTS_BATTERIE = GROUPES_KITS.flatMap(([, ks]) => ks).map(k => ["batt:" + k, KITS[k]]);   // les mêmes vingt-trois kits que le séquenceur à pas, rangés par famille (harmonie/batterie.js)

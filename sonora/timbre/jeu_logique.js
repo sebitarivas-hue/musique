@@ -1,5 +1,5 @@
 // TIMBRE : la logique du jeu, sans DOM (testée dans Node) : niveaux, questions, points, étoiles.
-import { alea } from "../orchestre/timbres_logique.js?v=b1d246c8fe";
+import { alea } from "../orchestre/timbres_logique.js?v=574992f1c3";
 export { alea };
 
 export const MANCHES = 10;

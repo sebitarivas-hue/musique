@@ -1,12 +1,12 @@
 // SONORA Orchestre, espace 02 : écouter Britten. Un guide d'écoute : l'œuvre est protégée, aucun enregistrement n'est fourni ici. On écoute ailleurs (en classe, en bibliothèque, sur une plateforme autorisée)
 // et ce guide indique, section après section, qui joue, avec le timbre de l'instrument enregistré dans la banque du site et un jeu pour remettre les entrées de la fugue dans l'ordre.
-import { FAMILLES, parId } from "./donnees.js?v=b1d246c8fe";
-import { liensEcoute } from "./ecoutes.js?v=b1d246c8fe";
-import { htmlGlossaire } from "./fugue_glossaire.js?v=b1d246c8fe";
-import { RECHERCHE_OEUVRE, RECHERCHE_PURCELL, rechercheSection, OEUVRE, CONTEXTE, EFFECTIF, THEME, VARIATIONS, FUGUE, parcoursOeuvre, melangeFugue, trous, banqueDeMots, CARACTERES, NOMS_EXPOSITION, ATTENDU, verifierTableau } from "./britten_logique.js?v=b1d246c8fe";
-import { alea } from "./timbres_logique.js?v=b1d246c8fe";
-import { registresDe_ } from "./audio_aide.js?v=b1d246c8fe";
-import { jouer, message } from "./audio.js?v=b1d246c8fe";
+import { FAMILLES, parId } from "./donnees.js?v=574992f1c3";
+import { liensEcoute } from "./ecoutes.js?v=574992f1c3";
+import { htmlGlossaire } from "./fugue_glossaire.js?v=574992f1c3";
+import { RECHERCHE_OEUVRE, RECHERCHE_PURCELL, rechercheSection, OEUVRE, CONTEXTE, EFFECTIF, THEME, VARIATIONS, FUGUE, parcoursOeuvre, melangeFugue, trous, banqueDeMots, CARACTERES, NOMS_EXPOSITION, ATTENDU, verifierTableau } from "./britten_logique.js?v=574992f1c3";
+import { alea } from "./timbres_logique.js?v=574992f1c3";
+import { registresDe_ } from "./audio_aide.js?v=574992f1c3";
+import { jouer, message } from "./audio.js?v=574992f1c3";
 
 const $ = id => document.getElementById(id), CLE = "sonora.orchestre.britten";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

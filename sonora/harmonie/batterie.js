@@ -5,10 +5,22 @@
 const SR_DEFAUT = 44100;
 export const SONS_BATTERIE = ["kick", "snare", "clap", "hatc", "hato", "rim", "tom", "cow", "shaker", "ride", "crash"];
 export const KITS = { "909": "Boîte à rythmes sèche", "808": "Boîte à rythmes grave", acoustique: "Batterie douce", reel: "Vraie batterie",
-  tr808: "TR-808 analogique", uzu: "Électro moderne", club: "Club", hiphop: "Hip-hop", brute: "Batterie brute", jazz: "Jazz", perc: "Percussions du monde", tabla: "Tabla et percussions indiennes" };
+  tr808: "TR-808 analogique", uzu: "Électro moderne", club: "Club", hiphop: "Hip-hop", brute: "Batterie brute", jazz: "Jazz", perc: "Percussions du monde", tabla: "Tabla et percussions indiennes",
+  // Douze kits de plus (17/11/2026, demande de Sébastien : « au moins une douzaine » ; outils/banque_kits2.py) : des machines à rythmes d'époque, deux kits de studio et trois jeux de Big Rusty.
+  lm2: "LinnDrum LM-2", cr78: "Roland CR-78", tr505: "Roland TR-505", mrk2: "Maestro Rhythm King", swirly: "Swirly, batterie de studio", salle: "Swirly, dans une grande salle",
+  rouille: "Big Rusty, rock aux baguettes", balais: "Big Rusty, balais", maillets: "Big Rusty, maillets", elec: "Électro bruité (Sonic Pi)", orchestre: "Percussions d'orchestre" };
+// Les kits rangés pour un menu : [titre du groupe, [kits]]. Les kits calculés (sans fichier ni réseau) viennent en dernier.
+export const GROUPES_KITS = [
+  ["Batteries", ["reel", "brute", "jazz", "rouille", "balais", "maillets", "swirly", "salle"]],
+  ["Boîtes à rythmes", ["tr808", "lm2", "cr78", "tr505", "mrk2", "uzu", "club", "hiphop", "elec"]],
+  ["Percussions", ["perc", "tabla", "orchestre"]],
+  ["Calculés, sans réseau", ["909", "808", "acoustique"]]];
 // Les kits enregistrés : chacun a un fichier JSON dans faust/banque/batterie/ (« batterie.json » pour « reel », « <kit>.json » pour les autres). Un kit pas encore chargé (ou dans Node) joue le kit calculé de SECOURS.
-export const KITS_ENREGISTRES = ["reel", "tr808", "uzu", "club", "hiphop", "brute", "jazz", "perc", "tabla"];
-const SECOURS = { reel: "acoustique", tr808: "808", uzu: "909", club: "909", hiphop: "808", brute: "acoustique", jazz: "acoustique", perc: "acoustique", tabla: "acoustique" };
+export const KITS_ENREGISTRES = ["reel", "tr808", "uzu", "club", "hiphop", "brute", "jazz", "perc", "tabla", "lm2", "cr78", "tr505", "mrk2", "swirly", "salle", "rouille", "balais", "maillets", "elec", "orchestre"];
+// Chargés d'avance, en arrière-plan, au démarrage de Pistes. Les autres (plus lourds : plusieurs mégaoctets décodés chacun) se chargent quand on les choisit (assurerKit).
+export const KITS_PRECHARGES = ["reel", "tr808", "uzu", "club", "hiphop", "brute", "jazz", "perc", "tabla"];
+const SECOURS = { reel: "acoustique", tr808: "808", uzu: "909", club: "909", hiphop: "808", brute: "acoustique", jazz: "acoustique", perc: "acoustique", tabla: "acoustique",
+  lm2: "909", cr78: "808", tr505: "909", mrk2: "909", swirly: "acoustique", salle: "acoustique", rouille: "acoustique", balais: "acoustique", maillets: "acoustique", elec: "909", orchestre: "acoustique" };
 // « reel » : une vraie batterie enregistrée (Big Rusty Drums, Karoryfer Samples, CC0 ; voir outils/banque_batterie.py), avec des coups forts, moyens et doux et plusieurs alternances de chaque coup.
 // Tant que les enregistrements ne sont pas chargés (ou dans Node), « reel » joue la batterie douce calculée.
 
@@ -97,7 +109,9 @@ export function chargerKit(ctx = new OfflineAudioContext(1, 1, 44100), base = ra
   return ENCOURS[nom];
 }
 // Tous les kits enregistrés, l'un après l'autre (la vraie batterie d'abord) : à lancer en arrière-plan au démarrage de Pistes.
-export async function chargerTousLesKits(ctx, base) { for (const k of KITS_ENREGISTRES) { try { await chargerKit(ctx, base, k); } catch (_) { /* ce kit joue son kit de secours */ } } return KITS_ENREGISTRES.filter(kitPret); }
+export async function chargerTousLesKits(ctx, base) { for (const k of KITS_PRECHARGES) { try { await chargerKit(ctx, base, k); } catch (_) { /* ce kit joue son kit de secours */ } } return KITS_PRECHARGES.filter(kitPret); }
+// Le kit choisi est prêt avant qu'on le joue : chargé s'il est enregistré et pas encore là, sans rien faire pour un kit calculé. Ne rejette jamais (sans réseau, le kit de secours joue).
+export const assurerKit = (kit, ctx, base) => KITS_ENREGISTRES.includes(kit) && !kitPret(kit) ? chargerKit(ctx, base, kit).catch(() => false) : Promise.resolve(true);
 
 // Niveau relatif de chaque pièce dans le mélange.
 const NIVEAU = { kick: 0.95, snare: 0.8, clap: 0.7, hatc: 0.42, hato: 0.42, rim: 0.6, tom: 0.75, cow: 0.4, shaker: 0.35, ride: 0.4, crash: 0.5 };
