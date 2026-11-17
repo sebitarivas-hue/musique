@@ -714,6 +714,9 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .dock #rl-corps { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .dock #rl-corps .rl-corps { flex: 1 1 auto; max-height: none; min-height: 140px; }
 @media (max-width: 700px) { .dock, .dock-corps { display: contents; } .dock-poignee { display: none; } }
+/* Le panneau du bas défile : la partition est plus haute que lui sur un écran de 900 px, et la palette (durées, silence, gomme) partait au-dessus, hors de vue (constat du 17/11/2026,
+   tests de la palette). Elle reste donc collée en haut du panneau, la portée défile dessous. Pas sur téléphone, où le panneau n'existe pas (display: contents). */
+@media (min-width: 701px) { .dock-corps .pt-palette { position: sticky; top: 0; z-index: 5; box-shadow: 0 8px 10px -8px rgba(0, 0, 0, .7); } }
 /* Dans le panneau, la barre d'outils du piano roll est compacte : la grille des notes prend la place. L'aide longue reste dans le bouton d'aide. */
 .dock .rouleau { padding: 6px 10px 8px; border-radius: 10px; } .dock .rouleau .petit { display: none; }
 .dock .rl-onglets button { min-height: 28px; padding: 0 10px; font-size: .78rem; }
