@@ -42,7 +42,7 @@ function arc(a, b) {
 /* zone : l'élément qui contient le canvas (sa taille fixe celle du globe).
    options : { terres, frontieres, pays, auToucher(ids), auSurvol(id | null, x, y) }
    Rend null si WebGL n'est pas disponible : la page garde alors la carte à plat. */
-export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], auToucher = () => {}, auSurvol = () => {}, obstacles = () => null }) {
+export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], auToucher = () => {}, auSurvol = () => {}, obstacles = () => null, ralenti = () => false }) {
   let rendu; try { rendu = new T.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "low-power" }); } catch (_) { return null; }
   if (!rendu.getContext()) return null;
   const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches, scene = new T.Scene(), cam = new T.PerspectiveCamera(40, 1, .1, 400), H = halo();
@@ -148,7 +148,7 @@ export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], 
     if (dep <= 4) inertie = [0, 0];
   };
   canvas.addEventListener("pointerup", fin); canvas.addEventListener("pointercancel", fin);
-  canvas.addEventListener("wheel", e => { e.preventDefault(); vol = null; auto = false; V.dist = borne(V.dist * Math.exp(e.deltaY * (e.ctrlKey ? .012 : .0016)), DMIN, DMAX); but.dist = V.dist; sale = true; }, { passive: false });
+  canvas.addEventListener("wheel", e => { e.preventDefault(); dernierGeste = performance.now(); vol = null; auto = false; V.dist = borne(V.dist * Math.exp(e.deltaY * (e.ctrlKey ? .012 : .0016)), DMIN, DMAX); but.dist = V.dist; sale = true; }, { passive: false });
   canvas.addEventListener("dblclick", e => { const [x, y] = px(e.clientX, e.clientY), r = trouver(x, y, 16); if (!r.length) zoomer(.6); });
   function toucher(x, y, rayon) {
     const r = trouver(x, y, rayon); if (!r.length) return;
@@ -168,13 +168,14 @@ export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], 
       const u = Math.min(1, (now - vol.t0) / vol.duree), e = lisse(u);
       V.lon = vol.l0 + vol.dl * e; V.lat = vol.la0 + (vol.lat - vol.la0) * e; V.dist = vol.d0 + (vol.dist - vol.d0) * e + Math.sin(Math.PI * u) * R * .35 * vol.hop; sale = true;
       if (trait) { const nb = Math.max(2, Math.floor(e * 48) + 1); trait.geometry.setDrawRange(0, nb); const p = trait.userData.f(e); lueur.position.copy(p); lueur.material.opacity = 1; }
-      if (u >= 1) { V.lon = vol.l0 + vol.dl; V.lat = vol.lat; V.dist = vol.dist; vol = null; if (trait) trait.userData.fin = now; }
+      if (u >= 1) { V.lon = vol.l0 + vol.dl; V.lat = vol.lat; V.dist = vol.dist; vol = null; dernierGeste = now; if (trait) trait.userData.fin = now; }
     } else if (inertie[0] || inertie[1]) { V.lon += inertie[0]; V.lat = borne(V.lat + inertie[1], -85, 85); inertie[0] *= .92; inertie[1] *= .92; if (Math.abs(inertie[0]) + Math.abs(inertie[1]) < .01) inertie = [0, 0]; sale = true; }
-    else if (auto && now - dernierGeste > 1500) { V.lon += dt * 5; sale = true; }
+    else if (!reduit && now - dernierGeste > 2200) { V.lon += dt * (ralenti() ? 0.9 : 2.6); sale = true; }   // le globe ne s'arrête jamais : il dérive doucement, plus doucement quand une fenêtre est ouverte
     if (trait && trait.userData.fin) { const a = 1 - (now - trait.userData.fin) / 1400; if (a <= 0) { traits.remove(trait); trait.geometry.dispose(); trait = null; lueur.material.opacity = 0; } else { trait.material.opacity = .9 * a; lueur.material.opacity = a; } sale = true; }
     V.lon = ((V.lon + 540) % 360) - 180;
     if (decal[0] !== decalBut[0] || decal[1] !== decalBut[1]) { majDecal(false); sale = true; }
     if (choisie.children.length) { const g = choisie.children[0], t = ((now - g.userData.t0) % 1800) / 1800; g.userData.anneau.scale.setScalar(1 + t * 1.6); g.userData.anneau.material.opacity = .95 * (1 - t); sale = true; }
+    apercu(now);
     if (!sale) return; sale = false;
     cam.position.copy(vers(V.lon, V.lat, V.dist)); cam.up.set(0, 1, 0); cam.lookAt(0, 0, 0); soleil.position.copy(cam.position).add(new T.Vector3(8, 10, 4));
     matPts.uniforms.horizon.value = R / V.dist + .03;
@@ -196,8 +197,34 @@ export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], 
       out.push(`<span${liste[i].cours ? ' class="cours"' : ""} style="left:${b[0].toFixed(0)}px;top:${b[1].toFixed(0)}px">${n.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</span>`); }
     calqueNoms.innerHTML = out.join(""); nomsVides = !out.length;
   }
+  // De temps en temps (toutes les douze à vingt secondes), une petite fiche s'ouvre sur une musique, pour donner envie de toucher. Une seule à la fois, jamais pendant un geste ou un vol.
+  const carte = document.createElement("div"); carte.className = "g-apercu-zone"; carte.setAttribute("aria-hidden", "true"); zone.appendChild(carte);
+  const pt = document.createElement("i"); pt.className = "g-apercu-pt"; const fic = document.createElement("button"); fic.type = "button"; fic.className = "g-apercu"; fic.tabIndex = -1; carte.append(pt, fic);
+  let ap = null, prochain = performance.now() + 7000; const recents = [];
+  const cacher = () => { ap = null; carte.classList.remove("on"); prochain = performance.now() + 12000 + Math.random() * 8000; };
+  fic.onclick = () => { if (ap) { const id = liste[ap.i].id; cacher(); auToucher([id]); } };
+  fic.onpointerenter = () => { if (ap) ap.fin = Infinity; }; fic.onpointerleave = () => { if (ap) ap.fin = performance.now() + 2500; };
+  function apercu(now) {
+    if (reduit || !pts) return;
+    const w = canvas.clientWidth, h = canvas.clientHeight, camN = cam.position.clone().normalize(), hz = R / cam.position.length();
+    if (ap) {
+      const p = pos3[ap.i]; v3.copy(p).project(cam); const sx = (v3.x + 1) / 2 * w, sy = (1 - v3.y) / 2 * h;
+      if (p.clone().normalize().dot(camN) < hz + .1 || ptr.size || vol || now > ap.fin) { cacher(); return; }
+      const gauche = sx + 230 > (obstacles() ? obstacles().left : w - 8);
+      carte.style.setProperty("--x", sx.toFixed(0) + "px"); carte.style.setProperty("--y", sy.toFixed(0) + "px"); carte.classList.toggle("gauche", gauche); return;
+    }
+    if (now < prochain || ptr.size || vol || document.hidden || V.dist > R * 3.7 || !liste.length) return;
+    const obs = obstacles(), cand = [];
+    for (let i = 0; i < pos3.length; i++) { const p = pos3[i]; if (p.clone().normalize().dot(camN) < hz + .25 || recents.includes(liste[i].id)) continue; v3.copy(p).project(cam); const sx = (v3.x + 1) / 2 * w, sy = (1 - v3.y) / 2 * h;
+      if (sx < 90 || sx > w - 90 || sy < 50 || sy > h - 50 || (obs && sx > obs.left - 40 && sy > obs.top - 40 && sy < obs.bottom + 40 && sx < obs.right)) continue; cand.push(i); }
+    if (!cand.length) { prochain = now + 4000; return; }
+    const cours = cand.filter(i => liste[i].cours), pool = (cours.length && Math.random() < .55 ? cours : cand.sort((a, b) => liste[b].w - liste[a].w).slice(0, 40)), i = pool[Math.floor(Math.random() * pool.length)];
+    recents.push(liste[i].id); if (recents.length > 12) recents.shift();
+    fic.style.setProperty("--c", liste[i].c); fic.innerHTML = ""; const a = document.createElement("small"), b = document.createElement("span"), c = document.createElement("em"); a.textContent = liste[i].r || ""; b.textContent = liste[i].n; c.textContent = "Ouvrir"; fic.append(a, b, c);
+    ap = { i, fin: now + 6500 }; carte.classList.add("on");
+  }
   requestAnimationFrame(image);
-  function detruire() { arret = true; calqueNoms.remove(); if (ro) ro.disconnect(); removeEventListener("resize", taille); try { rendu.dispose(); rendu.forceContextLoss(); } catch (_) {} }
+  function detruire() { arret = true; calqueNoms.remove(); carte.remove(); if (ro) ro.disconnect(); removeEventListener("resize", taille); try { rendu.dispose(); rendu.forceContextLoss(); } catch (_) {} }
 
   return {
     majPoints,
@@ -208,6 +235,7 @@ export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], 
     cadrer(lon, lat, dist) { aller(lon, lat, borne(dist, DMIN, DMAX)); },
     decaler(x, y) { decalBut = [x, y]; sale = true; },
     redessiner() { sale = true; },
+    apercuMaintenant() { if (ap) cacher(); prochain = 0; },
     pos: () => ({ ...V }),
   };
 }

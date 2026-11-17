@@ -321,6 +321,13 @@ h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-trans
 .g-corps .g-classe { margin-top: 4px; } .g-bloc { border-left: 4px solid var(--acide); padding-left: 10px; } .g-bloc .petit { color: #A9A89F; font-size: .78rem; margin: 6px 0 0; }
 .g-instr { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; } .g-instr span { border: 1px solid #55554E; padding: 3px 8px; font-size: .78rem; color: #D3D2CA; }
 .g-corps .g-question { margin-top: 10px; padding: 8px 10px; background: #1f1f1b; color: var(--papier); } .g-question span { display: block; font: 500 .62rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--acide); margin-bottom: 3px; }
+.g-apercu-zone { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; transition: opacity .5s; } .g-apercu-zone.on { opacity: 1; }
+.g-apercu-pt { position: absolute; left: var(--x, 0); top: var(--y, 0); width: 26px; height: 26px; margin: -13px 0 0 -13px; border: 2px solid var(--acide); border-radius: 50%; animation: g-pouls 1.6s ease-out infinite; }
+@keyframes g-pouls { from { transform: scale(.5); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
+.g-apercu { position: absolute; left: calc(var(--x, 0px) + 16px); top: calc(var(--y, 0px) - 26px); display: flex; flex-direction: column; align-items: flex-start; gap: 1px; max-width: 210px; padding: 6px 10px 6px 12px; background: var(--noir); color: var(--papier); border: 0; border-left: 6px solid var(--c, var(--acide)); text-align: left; font: inherit; cursor: pointer; pointer-events: auto; box-shadow: 0 4px 16px rgba(0, 0, 0, .5); }
+.g-apercu-zone.gauche .g-apercu { left: auto; right: calc(100% - var(--x, 0px) + 16px); width: max-content; } .g-apercu-zone.gauche .g-apercu { position: absolute; }
+.g-apercu small { font: 500 .6rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: #A9A89F; } .g-apercu span { font: 900 1.05rem/1.05 var(--f-cond); font-stretch: 62%; text-transform: uppercase; } .g-apercu em { font: 500 .62rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; font-style: normal; color: var(--acide); margin-top: 2px; } .g-apercu:hover { background: #26261f; }
+@media (prefers-reduced-motion: reduce) { .g-apercu-pt { animation: none; } }
 .g-voisines { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; } .g-voisines button { width: 100%; min-height: 46px; display: flex; flex-direction: column; justify-content: center; gap: 1px; text-align: left; padding: 6px 10px 6px 14px; background: #1f1f1b; color: var(--papier); border: 0; border-left: 8px solid var(--c); font: inherit; cursor: pointer; } .g-voisines button:hover, .g-voisines button:focus-visible { background: var(--acide); color: var(--noir); outline: none; }
 .g-voisines small { font: 500 .62rem var(--f-mono); letter-spacing: .05em; text-transform: uppercase; opacity: .78; }
 @media (max-width: 760px) { .globe-wrap { height: clamp(520px, 86vh, 760px); } .g-fens { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 56%; } .globe-wrap .monde-ctrl { bottom: auto; top: 10px; } .g-tip { display: none; } }
@@ -1188,7 +1195,7 @@ function gObstacle() {   // la zone des fenêtres, en pixels du globe : les noms
   const r = [...f.children].reduce((m, c) => { const q = c.getBoundingClientRect(); return { left: Math.min(m.left, q.left), right: Math.max(m.right, q.right), top: Math.min(m.top, q.top), bottom: Math.max(m.bottom, q.bottom) }; }, { left: 1e9, right: -1e9, top: 1e9, bottom: -1e9 });
   return { left: r.left - b.left - 4, right: r.right - b.left + 4, top: r.top - b.top - 4, bottom: r.bottom - b.top + 4 };
 }
-function gMaj(L) { if (GLOBE.api) GLOBE.api.majPoints((L || mVisibles()).map(e => { const [lon, lat] = gLL(e); return { id: e.id, lon, lat, c: COUL[e.family] || "#11110F", n: e.name, w: mDeg(e.id), cours: COURS_IDS.has(e.id) }; })); }
+function gMaj(L) { if (GLOBE.api) GLOBE.api.majPoints((L || mVisibles()).map(e => { const [lon, lat] = gLL(e); return { id: e.id, lon, lat, c: COUL[e.family] || "#11110F", n: e.name, r: e.region, w: mDeg(e.id), cours: COURS_IDS.has(e.id) }; })); }
 function gAjuster(L) {   // la vue qui montre ces musiques (ou le globe entier)
   const A = GLOBE.api; if (!A) return;
   if (!L.length) { A.tout(); return; }
@@ -1211,9 +1218,9 @@ function brancherGlobe() {
 async function gDemarrer() {
   const cv = $("#gcv"), msg = $("#gmsg"); if (!cv || GLOBE.api) return;
   try {
-    const [mod, d] = await Promise.all([import("./globe3d.js?v=c87f3d4112"), GLOBE.donnees || gCharger()]);
+    const [mod, d] = await Promise.all([import("./globe3d.js?v=e20a55add0"), GLOBE.donnees || gCharger()]);
     if (!$("#gcv") || $("#gcv") !== cv || GLOBE.api) return;   // on a changé de page pendant le chargement
-    const api = mod.monterGlobe(cv, $("#gwrap"), { terres: d.terres, frontieres: d.frontieres, pays: d.pays, auToucher: gToucher, auSurvol: gSurvol, obstacles: gObstacle });
+    const api = mod.monterGlobe(cv, $("#gwrap"), { terres: d.terres, frontieres: d.frontieres, pays: d.pays, auToucher: gToucher, auSurvol: gSurvol, obstacles: gObstacle, ralenti: () => GLOBE.fenetres.length > 0 });
     if (!api) throw new Error("WebGL");
     GLOBE.api = api; msg.hidden = true; gMaj(); gDecal();
     $("#mmode").scrollIntoView({ block: "start" });   // le globe est la page : on le met sous les yeux
