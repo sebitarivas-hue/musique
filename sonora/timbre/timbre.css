@@ -132,3 +132,8 @@ main { width: min(1080px, 100%); margin: 0 auto; padding: 0 16px 28px; } main:fo
 /* Lien vers les quiz de l'Atlas (quiz.html), sous les jeux d'oreille. */
 .vers-quiz { display: flex; align-items: center; gap: 12px; max-width: 760px; margin: 18px auto 0; padding: 14px 18px; border-radius: 20px; border: 2px solid var(--jaune); background: var(--verre); text-decoration: none; box-shadow: 0 5px 0 #8a6a00; }
 .vers-quiz b { font: 800 1.15rem/1.1 var(--f-titre); } .vers-quiz span { color: var(--txt2); flex: 1; font-size: .92rem; } .vers-quiz i { font-style: normal; font-size: 1.6rem; color: var(--jaune); }
+/* Le mot juste (17/11/2026) : la définition est un vrai texte, lisible, dans un panneau de verre ; les mots sont posés sur les cristaux de la place. */
+.consigne.mot-def { width: min(680px, 100%); margin: 0 auto 6px; padding: 14px 18px 16px; border-radius: 22px; background: var(--verre); border: 2px solid var(--k, #ffd23f); box-shadow: 0 0 28px color-mix(in srgb, var(--k, #ffd23f) 35%, transparent);
+  font: 700 normal clamp(1.05rem, 3.8vw, 1.4rem)/1.35 var(--f-texte, system-ui); text-transform: none; text-wrap: pretty; }
+.consigne.mot-def small { display: block; margin-bottom: 6px; font: 900 italic .9rem var(--f-titre); letter-spacing: .06em; text-transform: uppercase; color: var(--k, #ffd23f); }
+.mots-retenir { display: grid; gap: 6px; margin-top: 10px; text-align: left; font-size: .92rem; color: var(--txt2); } .mots-retenir b { color: var(--txt); }

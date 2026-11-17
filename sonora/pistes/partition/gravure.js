@@ -1,8 +1,8 @@
 // La gravure de la partition de SONORA Pistes : le modèle (modele.js) dessiné en SVG avec VexFlow (MIT, police musicale Bravura sous licence SIL OFL), dans pistes/vendor/vexflow.
 // Navigateur seulement. Dessine : clé, armure, chiffrage, tempo, notes et accords, silences, points, altérations (selon l'armure), ligatures, triolets, liaisons de prolongation et d'expression,
 // articulations, nuances, soufflets, reprises, barres de mesure, portée de piano avec accolade, retours à la ligne.
-import { mesurer, longueurMesure, pulsation, U_NOIRE } from "./modele.js?v=ad61ef2d3c";
-import { midiDe, nomArmureVexflow, diatonique } from "./hauteurs.js?v=ad61ef2d3c";
+import { mesurer, longueurMesure, pulsation, U_NOIRE } from "./modele.js?v=70d453468b";
+import { midiDe, nomArmureVexflow, diatonique } from "./hauteurs.js?v=70d453468b";
 
 let CHARGE = null;
 // VexFlow dessine les signes de la musique (clés, têtes de notes, altérations...) avec la police Bravura, qu'il embarque (base64) mais dont le chargement est asynchrone :

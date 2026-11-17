@@ -1,9 +1,10 @@
-// TIMBRE : la salle de jeux de l'oreille. Six jeux, de vrais enregistrements de la banque du site, des questions tirées au hasard à chaque partie
+// TIMBRE : la salle de jeux de l'oreille. Sept jeux (le septième, Le mot juste, sur le lexique de l'Atlas), de vrais enregistrements de la banque du site, des questions tirées au hasard à chaque partie
 // (deux élèves côte à côte n'ont jamais la même série). La logique pure est dans jeu_logique.js, testée dans Node.
-import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=ad61ef2d3c";
-import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=ad61ef2d3c";
-import { preparer, mixer } from "../harmonie/echantillons.js?v=ad61ef2d3c";
-import { monter } from "./scene.js?v=ad61ef2d3c";
+import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=70d453468b";
+import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=70d453468b";
+import { preparer, mixer } from "../harmonie/echantillons.js?v=70d453468b";
+import { monter } from "./scene.js?v=70d453468b";
+import { questionsMots } from "./quiz_logique.js?v=70d453468b";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -15,7 +16,7 @@ const CADENAS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const HP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l6 5V4L8 9z"/><path d="M17 8.500a5 5 0 0 1 0 7" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
 const FL_HAUT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V5M5 11l7-7 7 7"/></svg>', FL_BAS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M5 13l7 7 7-7"/></svg>';
 
-/* ---------- Les six jeux ---------- */
+/* ---------- Les sept jeux ---------- */
 const G = (d) => `<svg class="glyphe" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const MODES = [
   { id: "quiz", nom: "Qui joue ?", pitch: "Reconnais l'instrument avant la fin du temps.", k: "#7c5cff", g: G('<path d="M22 60V48a28 28 0 0 1 56 0v12"/><rect x="14" y="56" width="16" height="26" rx="7" fill="currentColor"/><rect x="70" y="56" width="16" height="26" rx="7" fill="currentColor"/>') },
@@ -23,6 +24,7 @@ const MODES = [
   { id: "intrus", nom: "L'intrus", pitch: "Trois sons. Un seul n'est pas le même instrument.", k: "#0ea5e9", g: G('<circle cx="24" cy="62" r="13" fill="currentColor"/><circle cx="50" cy="62" r="13" fill="currentColor"/><rect x="66" y="28" width="24" height="24" rx="6" transform="rotate(12 78 40)"/>') },
   { id: "hautbas", nom: "Plus haut, plus bas", pitch: "45 secondes. La deuxième note monte ou descend ?", k: "#b8f400", tx: "#0c1400", g: G('<path d="M30 78V26M14 42l16-16 16 16M70 22v52M54 58l16 16 16-16"/>') },
   { id: "memoire", nom: "Mémoire", pitch: "Écoute la suite, rejoue-la. Elle s'allonge à chaque tour.", k: "#ff8a00", g: G('<rect x="16" y="16" width="30" height="30" rx="9" fill="currentColor"/><rect x="54" y="16" width="30" height="30" rx="9"/><rect x="16" y="54" width="30" height="30" rx="9"/><rect x="54" y="54" width="30" height="30" rx="9" fill="currentColor"/>') },
+  { id: "mots", nom: "Le mot juste", pitch: "Une définition, quatre mots. Trois vies, et le chrono raccourcit.", k: "#ffd23f", tx: "#1a1400", g: G('<path d="M16 22h68a8 8 0 0 1 8 8v30a8 8 0 0 1-8 8H46L28 84V68H16a8 8 0 0 1-8-8V30a8 8 0 0 1 8-8z" fill="currentColor"/><path d="M30 52l8-18 8 18M33 46h10M58 34v18M58 42c0-5 12-5 12 2s-12 7-12 0" stroke="#1a1400" stroke-width="5"/>') },
   { id: "paires", nom: "Paires", pitch: "Retrouve les deux cartes qui cachent le même instrument.", k: "#12b76a", g: G('<rect x="14" y="26" width="36" height="50" rx="8" transform="rotate(-8 32 51)" fill="currentColor"/><rect x="50" y="24" width="36" height="50" rx="8" transform="rotate(8 68 49)"/>') },
 ];
 const mode = id => MODES.find(m => m.id === id);
@@ -130,7 +132,7 @@ function majJoueur() {
   $("joueur").setAttribute("aria-label", `Niveau ${n.n}, ${titreJoueur(n.n)}. Voir ma collection`);
 }
 
-/* ---------- L'accueil : les six jeux d'un coup d'œil. On en touche un : sa lanterne s'approche, son panneau s'ouvre, on joue. ---------- */
+/* ---------- L'accueil : les sept jeux d'un coup d'œil. On en touche un : sa lanterne s'approche, son panneau s'ouvre, on joue. ---------- */
 function selectionner(id, lancer) {
   const m = mode(id) || MODES[0], i = MODES.indexOf(m), j = lire(), etq = Object.values(j.etoiles).reduce((a, b) => a + b, 0);
   if (lancer && App.choisi === m.id) { contexte(); return LANCER[m.id](); }
@@ -300,6 +302,46 @@ function jeuMemoire() {
 }
 
 /* ---------- Jeu 6 : Paires ---------- */
+/* ---------- Le mot juste (17/11/2026) : le lexique de l'Atlas, en jeu de TIMBRE. Une définition, quatre mots posés en cristaux sur la place ;
+   trois vies, un chrono qui raccourcit de mot en mot, des séries qui font monter les points. Les mots viennent de quiz_atlas.json (outils/atlas/construire.py). ---------- */
+let MOTS = null;
+const chargerMots = () => MOTS ? Promise.resolve(MOTS) : fetch("quiz_atlas.json").then(r => r.json()).then(d => (MOTS = { mots: d.mots }));
+const MOTS_N = 12, MOTS_COUL = ["#ffd23f", "#22d3ee", "#ff3d7f", "#b8f400"];
+function jeuMots() {
+  const m = mode("mots"), moi = ouvrirPartie(m, "Le mot juste"), st = App.st = { n: 0, serie: 0, bonnes: 0, vies: 3, rates: [], serieMax: 0, qs: [] };
+  App.relance = jeuMots;
+  const vies = () => { $("hud-vies").innerHTML = [0, 1, 2].map(k => COEUR.replace("<svg", `<svg class="${k < st.vies ? "" : "perdue"}"`)).join(""); };
+  chargerMots().then(Q => { if (!vivant(moi)) return; st.qs = questionsMots(Q, 1, rnd, MOTS_N); vies(); question(); })
+    .catch(() => { if (vivant(moi)) $("zone").innerHTML = `<p class="consigne">Les mots n'ont pas pu se charger. Reviens à l'accueil et réessaie.</p>`; });
+  function question() {
+    if (!vivant(moi)) return; const q = App.q = st.qs[st.n]; App.etat = "attente";
+    $("hud-info").textContent = `Mot ${st.n + 1} sur ${st.qs.length}`;
+    $("zone").innerHTML = `<p class="consigne mot-def"><small>Quel mot ?</small>${esc(q.titre)}</p>
+      <div class="reponses mots" id="reponses" role="group" aria-label="Réponses">${q.choix.map((c, k) => `<button type="button" class="rep" data-k="${k}" data-ancre="mot${k}" aria-keyshortcuts="${k + 1}"><span>${esc(c)}</span></button>`).join("")}</div>`;
+    troisD(q.choix.map((c, k) => ({ id: "mot" + k, forme: "cristal", couleur: MOTS_COUL[k] })), false);
+    $("reponses").onclick = e => { const b = e.target.closest(".rep"); if (b && !b.disabled) repondre(+b.dataset.k, b); };
+    Chrono.lancer(Math.max(6, 15 - st.n * .75), () => repondre(null, null));
+  }
+  function repondre(k, bouton) {
+    if (!vivant(moi) || App.etat !== "attente") return;
+    const q = App.q, juste = k === q.bonne, rest = Chrono.reste(), total = Chrono.total, mot = q.choix[q.bonne]; App.etat = "verdict"; Chrono.stop();
+    st.serie = juste ? st.serie + 1 : 0; st.serieMax = Math.max(st.serieMax, st.serie); const p = points({ juste, restant: rest, total, serie: st.serie });
+    $("reponses").querySelectorAll(".rep").forEach(b => { b.disabled = true; b.classList.add(+b.dataset.k === q.bonne ? "ok" : +b.dataset.k === k ? "ko" : "fondu"); });
+    if (juste) { st.bonnes++; sonJuste(st.serie); vibrer(18); marquer(p, bouton); FX.eclat(...centre(bouton), [m.k, "#fff", "#22d3ee"], 20 + Math.min(30, st.serie * 5)); if (st.serie >= 3) Monde.fete(); }
+    else { sonFaux(); secouer(); st.vies--; vies(); st.rates.push([mot, q.titre]); }
+    st.n++; const finie = st.vies <= 0 || st.n >= st.qs.length, apres = () => finie ? fin() : question();
+    const aller = verdict(juste, juste ? (st.serie >= 3 ? `Série de ${st.serie} !` : "Bien joué !") : k === null ? "Temps écoulé" : "Raté",
+      (juste ? `<span class="pts">+${p} points${st.serie > 1 ? `, série de ${st.serie}` : ""}</span>` : "") + `<p><b>${esc(mot)}</b> : ${esc(q.titre)}</p>`,
+      finie ? "Voir mon score" : "Mot suivant", apres);
+    if (juste) App.auto = setTimeout(aller, 1300);
+  }
+  function fin() {
+    const et = etoilesDe(st.bonnes, st.qs.length), CP = window.COURS_POINTS;
+    if (CP) for (let t = 1; t <= et; t++) CP.gagner(`quiz:mots:1:${t}`, 10 * t, "timbre");   // la même clé que l'ancien quiz : jamais deux fois les mêmes points
+    terminer({ cle: "mots", etoiles: et, detail: `<b>${st.bonnes}</b> mot${st.bonnes > 1 ? "s" : ""} juste${st.bonnes > 1 ? "s" : ""} sur ${st.n}${st.vies <= 0 ? ", plus de vies" : ""}${st.serieMax > 1 ? `, meilleure série : <b>${st.serieMax}</b>` : ""}.`
+      + (st.rates.length ? `<span class="mots-retenir">${st.rates.slice(0, 5).map(([w, d]) => `<span><b>${esc(w)}</b> : ${esc(d)}</span>`).join("")}</span>` : "") });
+  }
+}
 function jeuPaires() {
   const m = mode("paires"), moi = ouvrirPartie(m, "Coups : 0"), deck = creerPaires(TOUS, 6, rnd), st = App.st = { deck, ouvertes: [], trouvees: 0, coups: 0, t0: 0, verrou: true }; App.relance = jeuPaires; $("chrono").classList.add("sans"); App.q = deck;
   $("zone").innerHTML = `<p class="consigne">Retrouve les paires à l'oreille</p><div class="paires" id="paires">${deck.map((id, k) => `<button type="button" class="carte-p" data-k="${k}" data-ancre="c${k}" aria-label="Carte ${k + 1}"><span class="dos">${HP}</span><span class="face">${HP}</span></button>`).join("")}</div>`;
@@ -318,7 +360,7 @@ function jeuPaires() {
   $("paires").onclick = e => { const c = e.target.closest(".carte-p"); if (c) toucher(+c.dataset.k); }; App.repondre = toucher;
   (async () => { for (const id of new Set(deck)) bufs[id] = await tampon(inst(id).banque, 60, 1.1); await tampon("glockenspiel", 84, .7); if (vivant(moi)) { st.verrou = false; App.etat = "attente"; } })();
 }
-const LANCER = { quiz: () => ecranNiveaux(), survie: () => jeuQuiz({ survie: true }), intrus: jeuIntrus, hautbas: jeuHautBas, memoire: jeuMemoire, paires: jeuPaires };
+const LANCER = { quiz: () => ecranNiveaux(), survie: () => jeuQuiz({ survie: true }), intrus: jeuIntrus, hautbas: jeuHautBas, memoire: jeuMemoire, mots: jeuMots, paires: jeuPaires };
 
 /* ---------- La fin : score, record, étoiles, niveau du joueur ---------- */
 function terminer({ cle, etoiles = null, cleEtoiles = null, detail, retenir = [], suivant = null, univers = null, niveau = null }) {
@@ -384,6 +426,7 @@ document.addEventListener("keydown", e => {
   else if (m === "intrus" && /^[1-3]$/.test(e.key) && App.etat === "attente") document.querySelectorAll(".pad")[+e.key - 1].click();
   else if (m === "hautbas" && (e.key === "ArrowUp" || e.key === "ArrowDown")) { e.preventDefault(); App.repondre(e.key === "ArrowUp"); }
   else if (m === "memoire" && /^[1-4]$/.test(e.key)) App.repondre(+e.key - 1);
+  else if (m === "mots" && /^[1-4]$/.test(e.key) && App.etat === "attente") { const b = document.querySelectorAll("#reponses .rep")[+e.key - 1]; if (b) b.click(); }
 });
 $("vers-jouer").href = HUB;
 window.TIMBRE = { App, MODES, lire, accueil, Chrono, inst };

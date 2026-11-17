@@ -1,7 +1,7 @@
 // Les quiz de l'Atlas, dans la salle de jeux : cinq jeux sur ce qu'on apprend en classe, tirés au hasard à chaque partie.
 // Les points du cours suivent les règles du site : une étoile gagnée rapporte une seule fois (jamais « une fois par jour »), rien pour une simple visite.
-import { CREER, MANCHES, etoiles } from "./quiz_logique.js?v=ad61ef2d3c";
-import { monterGlobe } from "./globe.js?v=ad61ef2d3c";
+import { CREER, MANCHES, etoiles } from "./quiz_logique.js?v=70d453468b";
+import { monterGlobe } from "./globe.js?v=70d453468b";
 
 const $ = id => document.getElementById(id), esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const rnd = Math.random, ATLAS = "../../atlas/index.html#e/";
@@ -10,7 +10,7 @@ const JEUX = [
   { id: "cours", nom: "Les musiques du cours", pitch: "Une description, une musique du cours à retrouver, puis sa question d'écoute.", k: "#12a07a" },
   { id: "lieux", nom: "D'où vient cette musique ?", pitch: "Niveau 1 : le continent. Niveau 2 : le pays ou la région.", k: "#35e0ff" },
   { id: "ordre", nom: "Remets dans l'ordre", pitch: "Quatre musiques à ranger de la plus ancienne à la plus récente.", k: "#ff8a00" },
-  { id: "mots", nom: "Le mot juste", pitch: "Le lexique de l'année : une définition, quatre mots. Puis l'inverse.", k: "#ff3d7f" },
+  { id: "mots", nom: "Le mot juste", pitch: "Devenu un jeu de TIMBRE : une définition, quatre mots en cristaux, trois vies et le chrono.", k: "#ffd23f", timbre: true },
   { id: "trajets", nom: "Le fil du trajet", pitch: "Une étape d'un trajet de l'Atlas : retrouve de quelle musique il s'agit.", k: "#9b6bff" },
 ];
 const CLE = "timbre.quiz", lire = () => { try { return JSON.parse(localStorage.getItem(CLE) || "{}") || {}; } catch (_) { return {}; } }, ecrire = j => { try { localStorage.setItem(CLE, JSON.stringify(j)); } catch (_) {} };
@@ -37,8 +37,8 @@ function voyage(cibles) {   // [[id, nom, sous-titre]] : l'avion vole d'une esca
 
 function accueil() {
   const j = lire(); document.documentElement.style.setProperty("--c", "#ffd23f"); $("jeu").classList.remove("en-partie"); document.body.classList.remove("partie"); dispatchEvent(new Event("resize")); if (G) { G.remettre(); G.vue("tout"); }
-  $("jeu").innerHTML = `<h1>Quiz de <span>l'Atlas</span></h1><p class="chapo">Cinq jeux sur ce qu'on apprend en classe : les musiques du cours, les lieux, les dates, les mots, les trajets. Tu décolles d'Ablon-sur-Seine : à chaque réponse, l'avion t'emmène là où la musique est née. Les questions sont tirées au hasard : ton voisin n'a pas les mêmes.</p>
-  <div class="qa-jeux">${JEUX.map(g => { const e1 = j[g.id + ":1"] || 0, e2 = j[g.id + ":2"] || 0; return `<div class="qa-jeu" style="--k:${g.k}"><b>${esc(g.nom)}</b><span>${esc(g.pitch)}</span>
+  $("jeu").innerHTML = `<h1>Quiz de <span>l'Atlas</span></h1><p class="chapo">Quatre jeux sur ce qu'on apprend en classe : les musiques du cours, les lieux, les dates, les trajets. Le mot juste est devenu un jeu de TIMBRE. Tu décolles d'Ablon-sur-Seine : à chaque réponse, l'avion t'emmène là où la musique est née. Les questions sont tirées au hasard : ton voisin n'a pas les mêmes.</p>
+  <div class="qa-jeux">${JEUX.map(g => { if (g.timbre) return `<a class="qa-jeu" style="--k:${g.k}" href="index.html#mots"><b>${esc(g.nom)}</b><span>${esc(g.pitch)}</span><span class="qa-niv"><span class="qa-btn" style="margin:6px 0 0">Jouer dans TIMBRE &#8250;</span></span></a>`; const e1 = j[g.id + ":1"] || 0, e2 = j[g.id + ":2"] || 0; return `<div class="qa-jeu" style="--k:${g.k}"><b>${esc(g.nom)}</b><span>${esc(g.pitch)}</span>
     <div class="qa-niv"><button type="button" data-jeu="${g.id}" data-niv="1">Niveau 1 ${etoilesHtml(e1)}</button><button type="button" data-jeu="${g.id}" data-niv="2" ${e1 >= 2 ? "" : "disabled title=\"Deux étoiles au niveau 1 pour ouvrir le niveau 2\""}>Niveau 2 ${etoilesHtml(e2)}</button></div></div>`; }).join("")}</div>
   <p class="chapo" style="margin-top:18px">Toutes les réponses viennent de l'Atlas des musiques : après chaque question, un lien ouvre la fiche pour en savoir plus.</p>`;
   $("jeu").querySelectorAll("[data-jeu]").forEach(b => b.onclick = () => lancer(b.dataset.jeu, +b.dataset.niv));
@@ -97,5 +97,5 @@ function fin() {
   $("rejouer").onclick = () => lancer(P.jeu, P.niv); if (ouvre) $("niv2").onclick = () => lancer(P.jeu, 2); $("accueil").onclick = accueil;
 }
 
-fetch("quiz_atlas.json").then(r => r.json()).then(d => { Q = d; demarrerGlobe(); const m = /^#(\w+)-([12])$/.exec(location.hash); if (m && CREER[m[1]] && (m[2] === "1" || (lire()[m[1] + ":1"] || 0) >= 2)) lancer(m[1], +m[2]); else accueil(); })
+fetch("quiz_atlas.json").then(r => r.json()).then(d => { Q = d; demarrerGlobe(); const m = /^#(\w+)-([12])$/.exec(location.hash); if (m && m[1] === "mots") { location.replace("index.html#mots"); return; } if (m && CREER[m[1]] && (m[2] === "1" || (lire()[m[1] + ":1"] || 0) >= 2)) lancer(m[1], +m[2]); else accueil(); })
   .catch(() => { $("jeu").innerHTML = `<p class="chapo">Les quiz n'ont pas pu se charger. Recharge la page.</p>`; });

@@ -1,7 +1,7 @@
 // Le monde de TIMBRE : un petit décor en 3D, la nuit. Une île avec une place de pierre, des falaises, des montagnes au loin, de l'eau, des maisons éclairées,
-// et six grandes lanternes qui flottent : une par jeu. Le décor vit (lanternes qui montent, lucioles, étoiles), suit le doigt ou la souris, et réagit au son.
+// et de grandes lanternes qui flottent : une par jeu. Le décor vit (lanternes qui montent, lucioles, étoiles), suit le doigt ou la souris, et réagit au son.
 // Tout est fabriqué ici en formes simples (aucune image, aucun modèle à télécharger). Three.js (licence MIT) est dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=ad61ef2d3c";
+import * as T from "./vendor/three.module.min.js?v=70d453468b";
 
 const alea = g => () => { g |= 0; g = g + 0x6D2B79F5 | 0; let t = Math.imul(g ^ g >>> 15, 1 | g); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 
@@ -70,7 +70,7 @@ export function monter(canvas, { couleurs = ["#7c5cff", "#ff3d7f", "#0ea5e9", "#
     for (let q = 0; q < 6; q++) { const f = new T.Mesh(new T.TorusGeometry(2.42, .05, 4, 20, Math.PI), new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .35 })); f.rotation.set(0, q * Math.PI / 6, Math.PI / 2); f.scale.set(1.18, 1, 1); g.add(f); }
     const bas = new T.Mesh(new T.ConeGeometry(1.3, 1.6, 10, 1, true), new T.MeshBasicMaterial({ color: col.clone().multiplyScalar(.7), side: T.DoubleSide })); bas.position.y = -2.9; bas.rotation.x = Math.PI; g.add(bas);
     const nacelle = new T.Mesh(new T.BoxGeometry(.8, .6, .8), new T.MeshPhongMaterial({ color: 0x8a5a34, flatShading: true })); nacelle.position.y = -4.4; g.add(nacelle);
-    const l = lueur(col, 16, .75); g.add(l); const a = (i - 2.5) * .42; g.userData = { x: Math.sin(a) * 19, y: 12 + Math.cos(i * 1.7) * 2.2, z: -6 - Math.cos(a) * 9, ph: i * 1.3, l, k: 1, cible: 1 }; g.position.set(g.userData.x, g.userData.y, g.userData.z); scene.add(g); return g; });
+    const l = lueur(col, 16, .75); g.add(l); const a = (i - (couleurs.length - 1) / 2) * .42 * Math.min(1, 6 / couleurs.length); g.userData = { x: Math.sin(a) * 19, y: 12 + Math.cos(i * 1.7) * 2.2, z: -6 - Math.cos(a) * 9, ph: i * 1.3, l, k: 1, cible: 1 }; g.position.set(g.userData.x, g.userData.y, g.userData.z); scene.add(g); return g; });
   const petites = []; for (let i = 0; i < 14; i++) { const c = [0xff7ad9, 0xffb060, 0xff5f9e][i % 3], s = lueur(c, 5 + rnd() * 6, .8); s.position.set((rnd() - .5) * 220, 10 + rnd() * 80, -60 - rnd() * 150); s.userData = { v: .6 + rnd() * 1.4, x: s.position.x, ph: rnd() * 6 }; scene.add(s); petites.push(s); }
 
   // La caméra : elle regarde la place, se balance doucement, suit le doigt, et se tourne vers la lanterne choisie.
@@ -187,7 +187,7 @@ export function monter(canvas, { couleurs = ["#7c5cff", "#ff3d7f", "#0ea5e9", "#
   function boucle(t) { raf = 0; if (!actif || document.hidden) return; image(t); if ((!reduit && !calme) || J.eclats.length || (J.k > 0 && J.k < 1)) raf = requestAnimationFrame(boucle); }
   const relance = () => { if (!raf) raf = requestAnimationFrame(boucle); }; document.addEventListener("visibilitychange", relance); relance();
   return {
-    choisir(i) { lanternes.forEach((g, k) => g.userData.cible = i == null ? 1 : k === i ? 1.45 : .78); etat.cibleLacet = i == null ? 0 : -(i - 2.5) * .11; relance(); },
+    choisir(i) { lanternes.forEach((g, k) => g.userData.cible = i == null ? 1 : k === i ? 1.45 : .78); etat.cibleLacet = i == null ? 0 : -(i - (lanternes.length - 1) / 2) * .11; relance(); },
     son(n) { etat.niveau = Math.max(etat.niveau, Math.min(1, n)); }, fete() { etat.fete = 1; relance(); }, redessiner: relance,
     pause(v) { actif = !v; if (actif) relance(); },
     /* Le plateau de jeu */
