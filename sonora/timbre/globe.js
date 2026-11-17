@@ -2,7 +2,7 @@
 // d'une question à l'autre, un truc super chiadé »). Une Terre de nuit en 3D ; après chaque réponse, un petit avion vole en arc jusqu'au lieu de la musique,
 // la caméra le suit, l'escale s'allume. On part d'Ablon-sur-Seine, la ville du collège.
 // Les continents viennent de terres.json (Natural Earth, domaine public ; outils/monde/terres_globe.py). Three.js (licence MIT) est dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=70d453468b";
+import * as T from "./vendor/three.module.min.js?v=c4e4cb4607";
 
 const R = 10, DEG = Math.PI / 180, ABLON = [2.42, 48.72];
 const vers = (lon, lat, r = R) => new T.Vector3(r * Math.cos(lat * DEG) * Math.sin(lon * DEG), r * Math.sin(lat * DEG), r * Math.cos(lat * DEG) * Math.cos(lon * DEG));
@@ -46,6 +46,9 @@ export function monterGlobe(canvas, terres, lumieres) {
   rendu.outputColorSpace = T.SRGBColorSpace; rendu.setClearColor(0x000000, 0);
   scene.add(new T.AmbientLight(0x6f86c8, .9)); const soleil = new T.DirectionalLight(0xfff1d6, 1.6); scene.add(soleil);
   const terre = new T.Mesh(new T.SphereGeometry(R, 96, 64), new T.MeshPhongMaterial({ map: carteTerre(terres, lumieres), shininess: 18, specular: 0x24406e })); scene.add(terre);
+  // La sphère de three.js pose la longitude L de la carte en (cos L, -sin L) ; vers() place L en (sin L, cos L) : un quart de tour les accorde.
+  // Sans lui, tout était décalé de 90 degrés (retour du 17/11/2026 : la réponse « Afrique du Sud » emmenait l'avion en Argentine).
+  terre.rotation.y = -Math.PI / 2;
   // L'atmosphère : une lueur bleue au bord du globe (effet de Fresnel).
   scene.add(new T.Mesh(new T.SphereGeometry(R * 1.12, 64, 48), new T.ShaderMaterial({ side: T.BackSide, transparent: true, blending: T.AdditiveBlending, depthWrite: false,
     vertexShader: "varying vec3 vN; void main(){ vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
@@ -129,13 +132,16 @@ export function monterGlobe(canvas, terres, lumieres) {
     cam.position.copy(camPos); cam.up.set(0, 1, 0); cam.lookAt(camVise);
     soleil.position.copy(cam.position).add(new T.Vector3(8, 10, 4));
     escales.children.forEach(g => { const k = Math.min(1, (now - g.userData.t0) / 600); g.scale.setScalar(.2 + .8 * k + .08 * Math.sin(now / 300)); });
-    terre.rotation.y = 0; rendu.render(scene, cam);
+    rendu.render(scene, cam);
     if (window.GLOBE_ETIQUETTE && ICI.etiquette) { const p = vers(ICI.etiquette.lonlat[0], ICI.etiquette.lonlat[1], R + 1.7).project(cam); window.GLOBE_ETIQUETTE((p.x + 1) / 2, (1 - p.y) / 2, p.z < 1); }
   }
   requestAnimationFrame(image);
   document.addEventListener("visibilitychange", () => { if (document.hidden) arret = true; else if (arret) { arret = false; dernier = performance.now(); requestAnimationFrame(image); } });
   return {
     voler, remettre, km,
+    /* Contrôle : la longitude et la latitude de la carte qui se trouvent sous un point donné (doivent redonner le point lui-même). */
+    controle(lon, lat) { const v = terre.worldToLocal(vers(lon, lat)), phi = Math.atan2(v.z, -v.x), u = ((phi / (2 * Math.PI)) % 1 + 1) % 1, theta = Math.acos(v.y / v.length());
+      return [Math.round((u * 360 - 180) * 10) / 10, Math.round((90 - theta / DEG) * 10) / 10]; },
     vue: x => { vue = x; ICI.survol = performance.now(); },
     get escales() { return ICI.nb; }, get total() { return ICI.total; }, get enVol() { return !!ICI.vol; },
   };
