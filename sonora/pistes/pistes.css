@@ -724,10 +724,10 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .dock .rl-haut button { min-height: 30px; padding: 0 9px; font-size: .75rem; gap: 5px; } .dock .rl-haut select, .dock .rl-haut2 select { min-height: 30px; font-size: .78rem; padding-block: 0; }
 .dock .rl-haut2 { margin-top: 2px; }
 
-/* ---------------------------------------------------------------- Zones fixes sur ordinateur (au moins 901 x 640 px)
+/* ---------------------------------------------------------------- Zones fixes sur ordinateur (au moins 901 x 820 px)
    La page n'est plus une longue page qui défile : c'est un cadre à la hauteur de la fenêtre. Transport et outils en haut, panneaux d'outils sous eux (avec leur propre défilement),
    l'arrangement prend tout ce qui reste et défile dedans, la règle et les en-têtes de pistes restent en place, l'éditeur est en bas. Plus petit, ou sur téléphone, la page garde son défilement. */
-@media (min-width: 901px) and (min-height: 640px) {
+@media (min-width: 901px) and (min-height: 820px) {
   html, body { height: 100dvh; overflow: hidden; } body { display: flex; flex-direction: column; padding-bottom: 0; }
   .bandeau-page { display: none; }
   #pistes-app { flex: 1 1 0; min-height: 0; padding: 6px 14px 0; }

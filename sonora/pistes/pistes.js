@@ -1,36 +1,36 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=2d154f00b4";
-import * as Ed from "./editions.js?v=2d154f00b4";
-import * as P from "./projet.js?v=2d154f00b4";
-import * as TR from "./transport.js?v=2d154f00b4";
-import { Stockage } from "./stockage.js?v=2d154f00b4";
-import { creerBouton } from "./bouton.js?v=2d154f00b4";
-import * as MI from "./midi.js?v=2d154f00b4";
-import * as N from "./notes.js?v=2d154f00b4";
-import { Rouleau } from "./rouleau.js?v=2d154f00b4";
-import { PanneauPartition } from "./partition/panneau.js?v=2d154f00b4";
-import { separer, NOMS_PARTIES } from "./separation.js?v=2d154f00b4";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=2d154f00b4";
-import * as BM from "./batterie_midi.js?v=2d154f00b4";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=2d154f00b4";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=2d154f00b4";
-import * as INS from "./instruments.js?v=2d154f00b4";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=2d154f00b4";
-import * as OMR from "./omr.js?v=2d154f00b4";
-import { creerConsole } from "./console.js?v=2d154f00b4";
-import { creerVueBlocs } from "./blocs-ui.js?v=2d154f00b4";
-import { creerMaster } from "./master.js?v=2d154f00b4";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=2d154f00b4";
-import * as MO from "./moteurs.js?v=2d154f00b4";
-import { monterPanneaux } from "./panneaux.js?v=2d154f00b4";
-import { monterNotions } from "./notions.js?v=2d154f00b4";
-import { DEMOS } from "./demos.js?v=2d154f00b4";
-import * as B from "./bibliotheque.js?v=2d154f00b4";
-import { encoderWAV } from "../studio/wav.js?v=2d154f00b4";
-import { ENTREES } from "../library/catalogue.js?v=2d154f00b4";
-import { compiler } from "../src/index.js?v=2d154f00b4";
-import { rendre } from "../src/rendu.js?v=2d154f00b4";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=60d7aa4f10";
+import * as Ed from "./editions.js?v=60d7aa4f10";
+import * as P from "./projet.js?v=60d7aa4f10";
+import * as TR from "./transport.js?v=60d7aa4f10";
+import { Stockage } from "./stockage.js?v=60d7aa4f10";
+import { creerBouton } from "./bouton.js?v=60d7aa4f10";
+import * as MI from "./midi.js?v=60d7aa4f10";
+import * as N from "./notes.js?v=60d7aa4f10";
+import { Rouleau } from "./rouleau.js?v=60d7aa4f10";
+import { PanneauPartition } from "./partition/panneau.js?v=60d7aa4f10";
+import { separer, NOMS_PARTIES } from "./separation.js?v=60d7aa4f10";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=60d7aa4f10";
+import * as BM from "./batterie_midi.js?v=60d7aa4f10";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=60d7aa4f10";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=60d7aa4f10";
+import * as INS from "./instruments.js?v=60d7aa4f10";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=60d7aa4f10";
+import * as OMR from "./omr.js?v=60d7aa4f10";
+import { creerConsole } from "./console.js?v=60d7aa4f10";
+import { creerVueBlocs } from "./blocs-ui.js?v=60d7aa4f10";
+import { creerMaster } from "./master.js?v=60d7aa4f10";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=60d7aa4f10";
+import * as MO from "./moteurs.js?v=60d7aa4f10";
+import { monterPanneaux } from "./panneaux.js?v=60d7aa4f10";
+import { monterNotions } from "./notions.js?v=60d7aa4f10";
+import { DEMOS } from "./demos.js?v=60d7aa4f10";
+import * as B from "./bibliotheque.js?v=60d7aa4f10";
+import { encoderWAV } from "../studio/wav.js?v=60d7aa4f10";
+import { ENTREES } from "../library/catalogue.js?v=60d7aa4f10";
+import { compiler } from "../src/index.js?v=60d7aa4f10";
+import { rendre } from "../src/rendu.js?v=60d7aa4f10";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -67,7 +67,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=2d154f00b4"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=60d7aa4f10"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -595,7 +595,7 @@ $("rl-instrument").onchange = e => {
 };
 // ---------------------------------------------------------------- le panneau inférieur (éditeur)
 // Il apparaît quand un de ses éditeurs (notes, rythme, courbes) s'ouvre et disparaît quand tous sont fermés. La poignée le redimensionne (souris, doigt ou flèches) ; la hauteur est retenue.
-const bureauFixe = matchMedia("(min-width: 901px) and (min-height: 640px)");   // le cadre à zones fixes : l'arrangement prend ce qui reste de la fenêtre tout seul (css)
+const bureauFixe = matchMedia("(min-width: 901px) and (min-height: 820px)");   // le cadre à zones fixes : l'arrangement prend ce qui reste de la fenêtre tout seul (css)
 const dock = $("dock"), poignee = $("dock-poignee");
 const poserDock = h => { const max = Math.max(200, Math.round(innerHeight * 0.8)), v = Math.max(160, Math.min(max, Math.round(h))); etat.hDock = v; dock.style.setProperty("--h-dock", v + "px"); poignee.setAttribute("aria-valuenow", String(v)); poignee.setAttribute("aria-valuemax", String(max)); return v; };
 const retenirDock = h => { try { localStorage.setItem("sonora:pistes:dock", String(poserDock(h))); } catch (_) {} ajusterArrangement(); };
@@ -784,9 +784,20 @@ function sonSonora(idEntree) {
 }
 
 // ---------------------------------------------------------------- affichage
+// Un clip de notes montre ses NOTES (une barre par note, plus foncée si elle est jouée fort), pas une onde : elles sont jouées en direct, il n'y a pas d'audio à dessiner.
+function dessinerNotesClip(g, w, h, son, clip) {
+  const notes = son.midi.notes; if (!notes.length) return;
+  const sec = 60 / etat.projet.tempo, B = clip.boucle ? P.longueurMotif(etat.projet, clip) : clip.duree, bas = Math.min(...notes.map(n => n.n)) - 1, haut = Math.max(...notes.map(n => n.n)) + 1, rang = Math.max(6, haut - bas + 1), hn = Math.max(3, Math.min(10, (h - 8) / rang));
+  for (const n of notes) {
+    const on = n.t * sec - clip.decalage; if (on < -1e-6 || on >= B - 1e-6) continue; const y = Math.round(4 + (haut - n.n) * ((h - 8 - hn) / Math.max(1, rang - 1))), lw = Math.max(2, n.d * sec * etat.pxs);
+    g.fillStyle = `rgba(17,17,15,${(0.45 + 0.5 * Math.min(1, n.v)).toFixed(2)})`;
+    for (let off = 0; off < clip.duree - 1e-6; off += B) g.fillRect(Math.round((on + off) * etat.pxs), y, Math.min(lw, (clip.duree - on - off) * etat.pxs), Math.round(hn) - 1);
+  }
+  if (clip.boucle) { g.fillStyle = "rgba(17,17,15,.55)"; for (let k = 1; k * B * etat.pxs < w; k++) g.fillRect(Math.round(k * B * etat.pxs), 0, 2, h); }
+}
 function dessinerOnde(cv, son, clip) {
-  const d = etat.buffers[clip.son]; const w = cv.width = Math.max(4, Math.round(clip.duree * etat.pxs)), h = cv.height = 58, g = cv.getContext("2d");
-  g.clearRect(0, 0, w, h); if (!d) return; const x = d.canaux[0], B = clip.boucle ? P.longueurMotif(etat.projet, clip) : 0, pas = Math.max(1, d.sr / etat.pxs);
+  const d = etat.buffers[clip.son], midiClip = P.estMidi(son); const w = cv.width = Math.max(4, Math.round(clip.duree * etat.pxs)), h = cv.height = midiClip ? 150 : 58, g = cv.getContext("2d");
+  g.clearRect(0, 0, w, h); if (midiClip) return dessinerNotesClip(g, w, h, son, clip); if (!d) return; const x = d.canaux[0], B = clip.boucle ? P.longueurMotif(etat.projet, clip) : 0, pas = Math.max(1, d.sr / etat.pxs);
   g.fillStyle = "#11110F"; for (let i = 0; i < w; i++) { let mn = 0, mx = 0; const ti = B ? (i / etat.pxs) % B : i / etat.pxs, s = Math.floor((clip.decalage + ti) * d.sr), e2 = Math.min(x.length, s + Math.ceil(pas)); for (let j = s; j < e2; j++) { if (x[j] < mn) mn = x[j]; if (x[j] > mx) mx = x[j]; } const y0 = h / 2 - mx * h / 2 * 0.95, y1 = h / 2 - mn * h / 2 * 0.95; g.fillRect(i, y0, 1, Math.max(1, y1 - y0)); }
   if (B) { g.fillStyle = "rgba(17,17,15,.55)"; for (let k = 1; k * B * etat.pxs < w; k++) g.fillRect(Math.round(k * B * etat.pxs), 0, 2, h); }   // un trait à chaque répétition du motif
 }
