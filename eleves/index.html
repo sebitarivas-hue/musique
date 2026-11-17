@@ -3578,6 +3578,7 @@ function brancherJeux() {
     if (!O.sons) return;
     const ok = r === O.bon; O.manche++; if (ok) O.points++; setTimeout(() => bip(ok), 50);
     if (ok) gagner("plafond:oreille", 2, "oreille", 1, 20); if (O.manche >= 10 && O.points === 10) gagner("oreille10", 30, "oreille10");
+    if (O.manche === 10) partieHors("oreille-fine", ETOILES_DE(O.points, 10));
     $("jo-fb").textContent = (ok ? "Bien entendu. " : `Non, c'était le ${O.bon === 1 ? "premier" : "second"}. `) + (O.manche >= 10 ? `Résultat : ${O.points} sur 10.` : `${O.points} sur ${O.manche}.`);
     O.sons = null; $("jo-1").disabled = $("jo-2").disabled = true; $("jo-play").textContent = O.manche >= 10 ? "Rejouer" : "Manche suivante";
   }
@@ -3588,7 +3589,7 @@ function brancherJeux() {
   chargerInstruments([sonChoisi("son-clavier", "clavier", SONS_MELODIE)]);
   document.querySelectorAll(".piano button").forEach((b, i) => b.onclick = () => {
     jouer(+b.dataset.f, .8, .3, sonClavier(), 0, voixOpt()); b.classList.add("on"); setTimeout(() => b.classList.remove("on"), 250);
-    if (C.cible !== null) { const ok = i === C.cible; if (ok) gagner("plafond:clavier", 5, "clavier", 1, 25); $("jc-fb").textContent = ok ? `Oui, c'était ${NOTES[i][0]}.` : `Ce n'est pas ${NOTES[i][0]}. Réécoute avec « Défi » ou cherche encore.`; if (ok) C.cible = null; }
+    if (C.cible !== null) { const ok = i === C.cible; if (ok) gagner("plafond:clavier", 5, "clavier", 1, 25); C.ess = (C.ess || 0) + 1; if (ok) { C.ok = (C.ok || 0) + 1; if (C.ok === 5) { partieHors("clavier", ETOILES_DE(Math.max(0, 10 - C.ess), 5)); C.ok = C.ess = 0; } } $("jc-fb").textContent = ok ? `Oui, c'était ${NOTES[i][0]}.` : `Ce n'est pas ${NOTES[i][0]}. Réécoute avec « Défi » ou cherche encore.`; if (ok) C.cible = null; }
     else $("jc-fb").textContent = NOTES[i][0];
   });
   $("jc-gamme").onclick = () => { C.cible = null; NOTES.filter(n => !n[2]).forEach(([n, f], j) => jouer(f, .4, .3, sonClavier(), j * .42, voixOpt())); $("jc-fb").textContent = "do, ré, mi, fa, sol, la, si, do"; };
@@ -3611,12 +3612,12 @@ function brancherJeux() {
     for (let i = 0; i < 4; i++) percuEch(4, i * t, i === 0 ? .6 : .4, i === 0 ? 2200 : 1500);
     let x = 4 * t; const frappe = (d, x) => son === "mains" ? claque(x) : son === "tambour" ? jouer(M(52), .3, .5, "djembe", x) : son === "bois" ? percuEch(4, x, .55, 1500) : jouer(523.25, Math.max(.1, d * t * .85), .32, "triangle", x);
     sels.forEach(s => { if (s.disabled) return; FIGURES[+s.value][2].forEach(d => { if (d > 0) frappe(d, x); x += Math.abs(d) * t; }); });
-    setTimeout(() => { if (window.__jetonRythme === jeton) gagner("rythme:" + motif, 5, "rythme"); }, x * 1000 + 200); }; /* points : le rythme entendu jusqu'au bout, sans être relancé */
+    setTimeout(() => { if (window.__jetonRythme === jeton) { const neuf = !jeu().faits["rythme:" + motif]; if (neuf) { jeu().faits["rythme:" + motif] = 1; gagner("plafond:rythme", 5, "rythme", 1, 25); partieHors("compose-rythme", 1); } } }, x * 1000 + 200); }; /* points : le rythme entendu jusqu'au bout, sans être relancé */
   $("jr-hasard").onclick = () => { sels.forEach(s => { s.disabled = false; s.value = String(Math.floor(Math.random() * FIGURES.length)); }); verifier(); };
   /* Instruments : de l'orchestre ou du monde */
   const I = JEU.i = { liste: INSTR, fams: FAMILLES, points: 0, total: 0 }; I.reste = melange(I.liste);
   const poser = () => { if (!I.reste.length) I.reste = melange(I.liste); I.cur = I.reste.pop(); $("ji-q").textContent = I.cur[0]; };
-  const brancherFam = () => document.querySelectorAll("[data-fam]").forEach(b => b.onclick = () => { const ok = b.dataset.fam === I.cur[1]; if (ok) gagner("plafond:instr", 2, "instr", 1, 20); I.total++; if (ok) I.points++; bip(ok);
+  const brancherFam = () => document.querySelectorAll("[data-fam]").forEach(b => b.onclick = () => { const ok = b.dataset.fam === I.cur[1]; if (ok) gagner("plafond:instr", 2, "instr", 1, 20); I.total++; if (ok) I.points++; I.lot = I.lot || { n: 0, p: 0 }; I.lot.n++; if (ok) I.lot.p++; if (I.lot.n === 10) { partieHors("familles-instruments", ETOILES_DE(I.lot.p, 10)); I.lot = { n: 0, p: 0 }; } bip(ok);
     $("ji-fb").textContent = `${ok ? "Oui" : "Non"} : ${I.cur[0]}, famille des ${I.cur[1]}. ${I.cur[2]} (${I.points} sur ${I.total})`; poser(); });
   const mode = monde => { I.liste = monde ? INSTR_MONDE : INSTR; I.fams = monde ? FAMILLES_MONDE : FAMILLES; I.reste = melange(I.liste);
     $("ji-orch").setAttribute("aria-pressed", !monde); $("ji-monde").setAttribute("aria-pressed", monde);
@@ -3625,14 +3626,14 @@ function brancherJeux() {
   brancherFam(); poser();
   /* Frise */
   const F = JEU.f = {};
-  function serie() { F.l = melange(FRISE).slice(0, 5); dessiner(); $("jf-fb").textContent = ""; }
+  function serie() { F.v = 0; F.l = melange(FRISE).slice(0, 5); dessiner(); $("jf-fb").textContent = ""; }
   function dessiner(fini) {
     $("jf-l").innerHTML = F.l.map(([n, , d], i) => `<li><span class="fn">${esc(n)}${fini ? ` <span class="meta">${d}</span>` : ""}</span>
       <button type="button" class="mv" data-i="${i}" data-d="-1" aria-label="Monter ${esc(n)}"${i === 0 ? " disabled" : ""}>&#8593;</button><button type="button" class="mv" data-i="${i}" data-d="1" aria-label="Descendre ${esc(n)}"${i === F.l.length - 1 ? " disabled" : ""}>&#8595;</button></li>`).join("");
     document.querySelectorAll("#jf-l .mv").forEach(b => b.onclick = () => { const i = +b.dataset.i, j = i + +b.dataset.d; [F.l[i], F.l[j]] = [F.l[j], F.l[i]]; dessiner();
       const nb = document.querySelector(`#jf-l .mv[data-i="${j}"][data-d="${b.dataset.d}"]`) || document.querySelector(`#jf-l .mv[data-i="${j}"]`); if (nb) nb.focus(); });
   }
-  $("jf-ok").onclick = () => { const bons = F.l.filter((x, i) => [...F.l].sort((a, b) => a[1] - b[1])[i] === x).length; if (bons === F.l.length) gagner("frise:reussie", 20, "frise");
+  $("jf-ok").onclick = () => { const bons = F.l.filter((x, i) => [...F.l].sort((a, b) => a[1] - b[1])[i] === x).length; F.v++; if (bons === F.l.length) { gagner("frise:reussie", 20, "frise"); partieHors("frise", F.v === 1 ? 3 : F.v === 2 ? 2 : 1); }
     bip(bons === F.l.length); $("jf-fb").textContent = bons === F.l.length ? "Tout est dans l'ordre. Les dates sont affichées." : `${bons} sur ${F.l.length} à la bonne place. Les dates sont affichées : corrige, puis vérifie encore.`; dessiner(true); };
   $("jf-new").onclick = serie; serie();
 }
@@ -4069,12 +4070,22 @@ function brancherAtelier2(id) {
       b.addEventListener("pointerdown", on); ["pointerup", "pointerleave", "pointercancel"].forEach(ev => b.addEventListener(ev, off));
       b.addEventListener("keydown", e => { if ((e.key === " " || e.key === "Enter") && !e.repeat) on(e); }); b.addEventListener("keyup", e => { if (e.key === " " || e.key === "Enter") off(); });
     });
-    if (a.mysteres) brancherMystere();
+    if (a.mysteres) brancherMystere(); else brancherDefisEcoutes();
     document.querySelectorAll(".labo-defis .defi").forEach(b => b.onclick = () => { reveiller(); Object.entries(a.defis[+b.dataset.defi][1]).forEach(([k, v]) => regler(k, v)); });
   }
   /* Le son mystère : une valeur cachée parmi les choix d'une commande ; on l'entend, puis on règle la sienne et on vérifie. */
+  /* Un jeu Faust sans son mystère (blues, déphasage, métronomes) se joue par ses défis : un défi est réussi quand l'élève l'a choisi et l'a écouté 8 secondes sans interruption (le son tourne, l'onglet est visible).
+     Tous les défis écoutés : le jeu est fini. Rien ne se gagne en cliquant. */
+  function brancherDefisEcoutes() {
+    if (!a.niveau || !a.defis.length) return; const faits = new Set(); let actif = -1, t = 0;
+    document.querySelectorAll(".labo-defis .defi").forEach(b => b.addEventListener("click", () => { actif = +b.dataset.defi; t = 0; }));
+    const tic = setInterval(() => { if (LABO !== L) return clearInterval(tic); if (actif < 0 || document.hidden || !L.node || !val("jouer")) { t = 0; return; }
+      if (++t >= 8) { faits.add(actif); gagner(`defi:${id}:${actif}`, 5, "defis"); const el = document.querySelector(`.labo-defis [data-defi="${actif}"]`); if (el) el.classList.add("ok"); actif = -1; t = 0;
+        if (faits.size === a.defis.length) jeuFaustFini(id, 3); } }, 1000);
+  }
+  function jeuFaustFini(id, etoiles) { if (!a.niveau) return; gagner(`ludo:${id}:0`, 15, "ludo"); partieHors(id, etoiles); toast(`${a.titre} : terminé`, "xp"); }
   function brancherMystere() {
-    const $ = x => document.getElementById(x), fb = $("myst-fb"); let sorte = 0, cible = null, coups = 0, reussis = 0;
+    const $ = x => document.getElementById(x), fb = $("myst-fb"); let sorte = 0, cible = null, coups = 0, reussis = 0, rates = 0; const trouves = new Set();
     const choixDe = k => (a.ui.find(u => u[0] === "choix" && u[1] === k) || [])[3] || [];
     const tirer = () => { const [k] = a.mysteres[sorte], vals = choixDe(k).map(c => c[0]).filter(v => v !== val(k)); cible = vals[Math.floor(Math.random() * vals.length)]; coups++; fb.textContent = `Mystère n° ${coups} : écoute-le, puis règle ${a.mysteres[sorte][1]} de ton son.`; };
     document.querySelectorAll("[data-myst]").forEach(b => b.onclick = () => { sorte = +b.dataset.myst; document.querySelectorAll("[data-myst]").forEach(x => x.setAttribute("aria-pressed", x === b)); tirer(); });
@@ -4086,8 +4097,8 @@ function brancherAtelier2(id) {
         else if (cl) { L.node.setParamValue(L.chemins[cl[1]], 262); L.node.setParamValue(L.chemins[cl[2]], 1); setTimeout(() => { L.node.setParamValue(L.chemins[cl[2]], 0); setTimeout(fin, 400); }, 1600); }
         else if (jouer) { const etaitOn = !!val(jouer[1]); L.node.setParamValue(L.chemins[jouer[1]], 1); setTimeout(() => { if (!etaitOn) L.node.setParamValue(L.chemins[jouer[1]], 0); fin(); }, 3500); } }); };
     $("myst-verif").onclick = () => { if (cible === null) return void (fb.textContent = "Écoute d'abord un son mystère."); const [k, l] = a.mysteres[sorte], nom = (choixDe(k).find(c => c[0] === cible) || [])[1];
-      if (val(k) === cible) { reussis++; fb.textContent = `Bravo : c'était bien ${nom}. ${reussis} trouvé${reussis > 1 ? "s" : ""} sur ${coups}. Nouveau mystère ?`; gagner("plafond:mystere", 3, null, 1, 15); cible = null; }
-      else fb.textContent = `Pas encore : ton son et le mystère n'ont pas ${l} pareille. Réécoute les deux.`; };
+      if (val(k) === cible) { reussis++; fb.textContent = `Bravo : c'était bien ${nom}. ${reussis} trouvé${reussis > 1 ? "s" : ""} sur ${coups}. Nouveau mystère ?`; gagner(`myst:${id}:${sorte}`, 5, "mystere"); cible = null; trouves.add(sorte); if (trouves.size === a.mysteres.length) jeuFaustFini(id, rates <= 1 ? 3 : rates <= 3 ? 2 : 1); }
+      else { rates++; fb.textContent = `Pas encore : ton son et le mystère n'ont pas ${l} pareille. Réécoute les deux.`; } };
   }
   function majUI() {
     cmd.querySelectorAll(".labo-jouer").forEach(b => { const on = !!val(b.dataset.k); b.setAttribute("aria-pressed", on); b.querySelector(".tx").textContent = on ? "Arrêter" : "Jouer"; });
@@ -4946,6 +4957,9 @@ const ETOILES_DE = (score, manches) => score >= manches - 1 ? 3 : score >= Math.
 const etoilesNiv = (id, niv) => ((jeu().etoiles || {})[id + ":" + niv]) || 0;
 const ludoEtoiles = id => [0, 1, 2].reduce((a, n) => a + etoilesNiv(id, n), 0);
 function noterEtoiles(id, niv, et) { if (!jeuActif()) return false; duoNoter(id, et); const j = jeu(); j.etoiles = j.etoiles || {}; const c = id + ":" + niv; if (et > (j.etoiles[c] || 0)) { j.etoiles[c] = et; sauverJeu(); return true; } return false; }
+/* Un jeu hors moteur (il vit dans sa page d'origine : oreille, clavier, instruments, frise, rythme, jeux Faust) : sa partie finie compte comme celles du moteur
+   pour la flamme, l'objectif et les défis du jour, et enregistre ses étoiles sur un seul niveau. Les points restent ceux de chaque jeu, une seule fois (audit/AUDIT_XP.md). */
+const partieHors = (id, et) => { if (jeuActif()) noterEtoiles(id, 0, Math.max(0, Math.min(3, et))); };
 const niveauOuvert = (id, niv) => !jeuActif() || niv === 0 || etoilesNiv(id, niv - 1) >= 2;
 const nivMaxOuvert = id => [2, 1, 0].find(n => niveauOuvert(id, n));
 const calSeance = (k, a, b) => D.niveaux[k].calendrier.find(e => e.type === "seance" && e.seq === a && e.num === b);
@@ -4968,9 +4982,9 @@ const etoilesHtml = (n, niv) => `<span class="ludo-et" aria-label="${n} étoile$
 function carteJeu(j, force) {
   const k = niveauCarte(), f = ludoFam(j.famille), ouvert = force || !j.moteur || jeuOuvert(j, k), o = !ouvert && ouvertureDe(j, k);
   if (!ouvert && o) return `<a class="ludo-carte verrou" href="#seance-${k}-${o.seq}-${o.num}" style="--c:${f[2]}"><span class="ludo-ic">${CADENAS}</span><span class="ludo-tx"><b>${insec(j.titre)}</b><span class="small">Se débloque à la séance du ${esc(o.date)} (séquence ${o.seq}). Ouvre la séance pour jouer tout de suite.</span></span><span class="ludo-go">Séance du ${esc(o.date)} &#8250;</span></a>`;
-  const et = j.moteur && modeJeu() ? ludoEtoiles(j.id) : 0, niv = j.moteur ? nivMaxOuvert(j.id) + 1 : 0;
+  const et = j.moteur && modeJeu() ? ludoEtoiles(j.id) : 0, niv = j.moteur ? nivMaxOuvert(j.id) + 1 : 0, eh = !j.moteur && modeJeu() ? etoilesNiv(j.id, 0) : 0;
   return `<a class="ludo-carte${j.moteur && !et ? " neuf" : ""}" ${ludoLien(j)} style="--c:${f[2]}"><span class="ludo-ic">${famIco(j.famille)}</span><span class="ludo-tx"><b>${insec(j.titre)}</b><span class="small">${insec(j.consigne)}</span>
-    <span class="ludo-s">${j.seances.map(ludoSeance).map(esc).join(" ; ")}</span></span><span class="ludo-go">${j.moteur ? (et ? etoilesHtml(et, niv) : "Nouveau : jouer") : "Ouvrir"} &#8250;</span></a>`;
+    <span class="ludo-s">${j.seances.map(ludoSeance).map(esc).join(" ; ")}</span></span><span class="ludo-go">${j.moteur ? (et ? etoilesHtml(et, niv) : "Nouveau : jouer") : eh ? `<span class="ludo-et" aria-label="${eh} étoile${eh > 1 ? "s" : ""} sur 3"><span class="on">&#9733;</span> ${eh} sur 3</span>` : "Ouvrir"} &#8250;</span></a>`;
 }
 const ludoCarte = j => carteJeu(j);
 /* La carte de progression de la classe : où on en est, ce qui s'ouvre ensuite, quoi faire maintenant. */
@@ -5899,7 +5913,7 @@ function vueParcours() {
   h += `<h2 class="sec">Badges</h2><p class="small">Touche un badge pour savoir comment le gagner et y aller directement.</p><div class="badges">${BADGES.map(([id, nom, cond, g]) => { const on = !!j.badges[id], [a, b] = progresBadge(id, j), cible = cibleBadge(id);
       return lienCible(on ? null : cible, `${medaille(g, on)}<b>${esc(nom)}</b><span class="small">${esc(cond)}</span>${on ? `<span class="b-ok">Gagné</span>` : `${b > 1 ? `<span class="b-bar"><span style="width:${Math.min(100, a / b * 100)}%"></span></span><span class="b-pr">${Math.min(a, b)} sur ${b}</span>` : ""}<span class="b-go">${cible ? "Vas-y &#8250;" : "Reviens demain"}</span>`}`, "badge" + (on ? " on" : "")); }).join("")}</div>`;
   h += `<h2 class="sec">Les niveaux</h2><ol class="niveaux-l">${NIVEAUX_JEU.map(([x, nom, d], i) => `<li class="${i <= n ? "atteint" : ""}"><span class="lvlbadge" style="background:${i <= n ? "#0b0b0b" : "transparent"};color:${i <= n ? "#fff" : "var(--muted)"};border:1.5px solid ${i <= n ? "#0b0b0b" : "var(--line)"}">${i + 1}</span><span><b>${esc(nom)}</b><span class="small">${x} XP. ${esc(d)}</span></span></li>`).join("")}</ol>`;
-  h += `<h2 class="sec">Comment gagner des XP</h2><p class="small">Les points sont là pour garder une trace de ce que tu as fait, pas pour faire un concours. Ils ne se gagnent qu'en travaillant vraiment : on ne peut pas en gagner en cliquant vite, en revenant chaque jour ou en rejouant le même jeu.</p><ul class="plain"><li>Une séance : 10 XP, une seule fois, quand tu l'as lue en entier.</li><li>Un son : 5 XP, une seule fois, quand tu l'as écouté jusqu'au bout. Une partition suivie jusqu'au bout : 15 XP.</li><li>Une bonne réponse au quiz : 10 XP, une seule fois par question, et 30 XP de bonus pour un quiz sans faute.</li><li>Les jeux : chaque jeu et chaque niveau rapportent une seule fois. Les jeux d'oreille, de clavier, d'instruments et de mystère ont un plafond : une fois atteint, tu peux continuer à t'entraîner, sans plus de points.</li><li>Venir sur le site, venir plusieurs jours de suite ou y passer du temps ne rapporte rien.</li></ul>`;
+  h += `<h2 class="sec">Comment gagner des XP</h2><p class="small">Les points sont là pour garder une trace de ce que tu as fait, pas pour faire un concours. Ils ne se gagnent qu'en travaillant vraiment : on ne peut pas en gagner en cliquant vite, en revenant chaque jour ou en rejouant le même jeu.</p><ul class="plain"><li>Une séance : 10 XP, une seule fois, quand tu l'as lue en entier.</li><li>Un son : 5 XP, une seule fois, quand tu l'as écouté jusqu'au bout. Une partition suivie jusqu'au bout : 15 XP.</li><li>Une bonne réponse au quiz : 10 XP, une seule fois par question, et 30 XP de bonus pour un quiz sans faute.</li><li>Les jeux de la ludothèque : chaque jeu et chaque niveau rapportent une seule fois. Les jeux d'oreille, de clavier et d'instruments ont un plafond : une fois atteint, tu peux continuer à t'entraîner, sans plus de points.</li><li>Les jeux de son (le son mystère, le chant diphonique, l'organum, Pian e forte, le canon, le blues, le déphasage, les métronomes) : 10 XP pour la page lue en entier, 5 XP par mystère trouvé ou par défi écouté pendant 8 secondes, et 15 XP quand le jeu est fini.</li><li>Venir sur le site, venir plusieurs jours de suite ou y passer du temps ne rapporte rien.</li></ul>`;
   h += `<p style="margin-top:14px"><button type="button" class="btn2" onclick="guide()">Revoir « Comment ça marche »</button> <a class="btn2" href="#guide">Le guide du site</a></p>`;
   h += `<h2 class="sec" id="sauvegarde" tabindex="-1">Garder mon parcours</h2><p class="small">Ton parcours reste sur cet appareil, dans deux mémoires du navigateur : rien n'est envoyé, personne d'autre ne le voit. Pour ne jamais le perdre, ou le retrouver sur un autre appareil, garde une sauvegarde.</p>
     <p><button type="button" class="btn2" id="sv-fichier">Enregistrer dans un fichier</button> <button type="button" class="btn2" id="sv-code">Copier mon code</button></p>
@@ -6306,7 +6320,8 @@ function rendre() {
     const bl = document.getElementById("sv-lire"); if (bl) bl.onchange = () => { const f = bl.files && bl.files[0]; if (!f) return; if (f.size > 2e6) return msg("Ce fichier est trop gros pour être une sauvegarde."); const fr = new FileReader(); fr.onload = () => { try { fait(SAUV.importer(fr.result)); } catch (e) { msg("Cela n'a pas marché : " + e.message + "."); } }; fr.readAsText(f); }; }
   { let m; if ((m = v.match(/^seance-(\w+)-(\d+)-(\d+)$/))) lectureSite(app, `seance:${m[1]}-${m[2]}-${m[3]}`, 10, "seances", verifierSemaine);
     if (v.startsWith("fiche-")) lectureSite(app, "fiche:" + v.slice(6), 5, "fiches");
-    if (v.startsWith("faust-") && atelierDe(v.slice(6))) lectureSite(app, "faust:" + v.slice(6), 10, "faust"); }
+    if (v.startsWith("faust-") && atelierDe(v.slice(6))) lectureSite(app, "faust:" + v.slice(6), 10, "faust");
+    if (v.startsWith("jeu-") && atelierDe(v)) lectureSite(app, "jeu:" + v, 10, "jeux"); }
   brancherAtelier(); brancherJeux(); brancherQuiz(); if (v.startsWith("faust-")) brancherAtelier2(v.slice(6)); if (v.startsWith("jeu-")) brancherAtelier2(v); if (v === "faust-matieres") brancherLaboMatieres(); remplirGaleries(app);
   app.querySelectorAll(".lvlbadge, .levels a").forEach(b => { const t = b.textContent.trim(); if (D.niveaux[t]) b.dataset.n = t; });
   eclore(app);
