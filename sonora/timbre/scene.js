@@ -1,7 +1,7 @@
 // Le monde de TIMBRE : un petit décor en 3D, la nuit. Une île avec une place de pierre, des falaises, des montagnes au loin, de l'eau, des maisons éclairées,
 // et de grandes lanternes qui flottent : une par jeu. Le décor vit (lanternes qui montent, lucioles, étoiles), suit le doigt ou la souris, et réagit au son.
 // Tout est fabriqué ici en formes simples (aucune image, aucun modèle à télécharger). Three.js (licence MIT) est dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=c4e4cb4607";
+import * as T from "./vendor/three.module.min.js?v=1fe4208838";
 
 const alea = g => () => { g |= 0; g = g + 0x6D2B79F5 | 0; let t = Math.imul(g ^ g >>> 15, 1 | g); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 
@@ -114,7 +114,7 @@ export function monter(canvas, { couleurs = ["#7c5cff", "#ff3d7f", "#0ea5e9", "#
     const sx = carte ? (portrait ? 3.4 : 3.5) : portrait ? (n === 3 ? 3.9 : 5.6) : (n >= 4 ? 4.4 : 5), sz = carte ? (portrait ? 3.9 : 4.4) : portrait ? 5.2 : 4.6;
     return Array.from({ length: n }, (_, i) => { const r = Math.floor(i / cols), c = i % cols, nc = Math.min(cols, n - r * cols); return new T.Vector3((c - (nc - 1) / 2) * sx, .7, (r - (rows - 1) / 2) * sz + (carte ? 1.2 : 2.2)); });
   }
-  // Les objets : socle et carte photo (réponses), tambour (l'intrus), cristal (mémoire), carte à retourner (paires), boule (plus haut, plus bas).
+  // Les objets : socle et carte photo (réponses), tambour (l'intrus), cristal (mémoire), lanterne (le mot juste), carte à retourner (paires), boule (plus haut, plus bas).
   function fabriquer(d, pos) {
     const g = new T.Group(), col = new T.Color(d.couleur || "#7c5cff"), u = { id: d.id, forme: d.forme, base: pos.clone(), etat: "normal", t: 0, mats: [], haut: 2, flip: 0, lueur: null, vis: null, y: 0 };
     const mat = (o = {}) => { const m = new T.MeshPhongMaterial(Object.assign({ color: col, emissive: col.clone().multiplyScalar(.35), flatShading: true, shininess: 40 }, o)); m.userData.e0 = m.emissive.clone(); u.mats.push(m); return m; };
@@ -133,6 +133,17 @@ export function monter(canvas, { couleurs = ["#7c5cff", "#ff3d7f", "#0ea5e9", "#
     } else if (d.forme === "cristal") {
       const socle = new T.Mesh(new T.CylinderGeometry(1.4, 1.7, .6, 8), matPierre); socle.position.y = .3; g.add(socle);
       const c = new T.Mesh(new T.OctahedronGeometry(1.35, 0), mat({ shininess: 100, emissive: col.clone().multiplyScalar(.18) })); c.scale.set(1, 1.5, 1); c.position.y = 2.4; g.add(c); u.vis = c; u.tourne = true; u.haut = 2.2;
+    } else if (d.forme === "lanterne") {
+      // Une petite lanterne de papier, du même dessin que les grandes lanternes de l'île (une par jeu) : elle se balance sur son socle, une flamme brille dedans.
+      const socle = new T.Mesh(new T.CylinderGeometry(1.2, 1.5, .7, 10), matPierre); socle.position.y = .35; g.add(socle);
+      const bague = new T.Mesh(new T.TorusGeometry(1.27, .09, 6, 28), new T.MeshBasicMaterial({ color: col })); bague.rotation.x = Math.PI / 2; bague.position.y = .72; g.add(bague);
+      const vis = new T.Group(); vis.position.y = 2.7; g.add(vis); u.vis = vis;
+      const corps = new T.Mesh(new T.SphereGeometry(1.15, 18, 14), mat({ shininess: 70, specular: 0xffffff, emissive: col.clone().multiplyScalar(.55), transparent: true, opacity: .93 })); corps.scale.set(1, 1.2, 1); vis.add(corps);
+      for (let q = 0; q < 6; q++) { const f = new T.Mesh(new T.TorusGeometry(1.16, .035, 4, 22, Math.PI), new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .45 })); f.rotation.set(0, q * Math.PI / 6, Math.PI / 2); f.scale.set(1.2, 1, 1); vis.add(f); }
+      const chapeau = new T.Mesh(new T.CylinderGeometry(.42, .55, .28, 12), new T.MeshPhongMaterial({ color: 0xffd23f, emissive: 0x5a4200, shininess: 80 })); chapeau.position.y = 1.45; vis.add(chapeau);
+      const pied = new T.Mesh(new T.ConeGeometry(.62, .75, 12, 1, true), new T.MeshBasicMaterial({ color: col.clone().multiplyScalar(.7), side: T.DoubleSide })); pied.position.y = -1.6; pied.rotation.x = Math.PI; vis.add(pied);
+      const flamme = new T.Mesh(new T.SphereGeometry(.32, 10, 8), new T.MeshBasicMaterial({ color: 0xfff1b8 })); flamme.scale.set(1, 1.5, 1); vis.add(flamme); vis.add(lueur(0xffd27a, 4.2, .85));
+      u.balance = true; u.haut = 2.7;
     } else if (d.forme === "carte") {
       const dos = new T.MeshBasicMaterial({ map: textureDos("#" + col.getHexString()) }), face = new T.MeshBasicMaterial({ map: textureHP("#" + col.getHexString()) }), bord = new T.MeshPhongMaterial({ color: 0xffffff, emissive: 0x333355 });
       const c = new T.Mesh(new T.BoxGeometry(2.6, .16, 3.2), [bord, bord, dos, face, bord, bord]); c.rotation.y = 0; const pivot = new T.Group(); pivot.position.y = .2; pivot.add(c); g.add(pivot); u.vis = pivot; u.matFace = face; u.couleur = "#" + col.getHexString(); u.haut = .3;
@@ -163,6 +174,7 @@ export function monter(canvas, { couleurs = ["#7c5cff", "#ff3d7f", "#0ea5e9", "#
       if (u.forme === "carte") { const vise = u.etat === "vue" || u.etat === "trouve" || u.etat === "joue" ? Math.PI : 0; u.flip += (vise - u.flip) * (reduit ? 1 : .18); u.vis.rotation.z = u.flip; y += Math.sin(u.flip) * 1.4; if (u.etat === "joue") k = 1.06; }
       if (u.forme === "note") { y += u.y; }
       g.position.set(u.base.x + sx, u.base.y + y + (u.forme === "carte" || u.forme === "note" ? 0 : Math.sin(s * 1.6 + u.base.x) * .08), u.base.z); g.scale.setScalar(k);
+      if (u.balance) { u.vis.rotation.z = Math.sin(s * 1.3 + u.base.x) * .09; u.vis.rotation.x = Math.sin(s * 1.1 + u.base.z) * .05; u.vis.position.y = 2.7 + Math.sin(s * 1.8 + u.base.x) * .16; }
       if (u.vis && u.tourne) u.vis.rotation.y = s * .8; if (u.billboard) u.vis.quaternion.copy(cam.quaternion);
       for (const m of u.mats) { m.emissive.copy(e ? m.userData.e0.clone().lerp(e, .85) : m.userData.e0); if (u.etat === "fondu" || u.etat === "attente") m.emissive.multiplyScalar(.35); }
       u.lueur.material.opacity += ((glow ? .55 + .35 * glow : 0) - u.lueur.material.opacity) * .2; if (e) u.lueur.material.color.copy(e); }

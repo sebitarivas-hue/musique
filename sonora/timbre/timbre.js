@@ -1,10 +1,10 @@
 // TIMBRE : la salle de jeux de l'oreille. Sept jeux (le septième, Le mot juste, sur le lexique de l'Atlas), de vrais enregistrements de la banque du site, des questions tirées au hasard à chaque partie
 // (deux élèves côte à côte n'ont jamais la même série). La logique pure est dans jeu_logique.js, testée dans Node.
-import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=c4e4cb4607";
-import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=c4e4cb4607";
-import { preparer, mixer } from "../harmonie/echantillons.js?v=c4e4cb4607";
-import { monter } from "./scene.js?v=c4e4cb4607";
-import { questionsMots } from "./quiz_logique.js?v=c4e4cb4607";
+import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=1fe4208838";
+import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=1fe4208838";
+import { preparer, mixer } from "../harmonie/echantillons.js?v=1fe4208838";
+import { monter } from "./scene.js?v=1fe4208838";
+import { questionsMots } from "./quiz_logique.js?v=1fe4208838";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -302,7 +302,7 @@ function jeuMemoire() {
 }
 
 /* ---------- Jeu 6 : Paires ---------- */
-/* ---------- Le mot juste (17/11/2026) : le lexique de l'Atlas, en jeu de TIMBRE. Une définition, quatre mots posés en cristaux sur la place ;
+/* ---------- Le mot juste (17/11/2026) : le lexique de l'Atlas, en jeu de TIMBRE. Une définition, quatre mots portés par des lanternes sur la place ;
    trois vies, un chrono qui raccourcit de mot en mot, des séries qui font monter les points. Les mots viennent de quiz_atlas.json (outils/atlas/construire.py). ---------- */
 let MOTS = null;
 const chargerMots = () => MOTS ? Promise.resolve(MOTS) : fetch("quiz_atlas.json").then(r => r.json()).then(d => (MOTS = { mots: d.mots }));
@@ -318,7 +318,7 @@ function jeuMots() {
     $("hud-info").textContent = `Mot ${st.n + 1} sur ${st.qs.length}`;
     $("zone").innerHTML = `<p class="consigne mot-def"><small>Quel mot ?</small>${esc(q.titre)}</p>
       <div class="reponses mots" id="reponses" role="group" aria-label="Réponses">${q.choix.map((c, k) => `<button type="button" class="rep" data-k="${k}" data-ancre="mot${k}" aria-keyshortcuts="${k + 1}"><span>${esc(c)}</span></button>`).join("")}</div>`;
-    troisD(q.choix.map((c, k) => ({ id: "mot" + k, forme: "cristal", couleur: MOTS_COUL[k] })), false);
+    troisD(q.choix.map((c, k) => ({ id: "mot" + k, forme: "lanterne", couleur: MOTS_COUL[k] })), false);
     $("reponses").onclick = e => { const b = e.target.closest(".rep"); if (b && !b.disabled) repondre(+b.dataset.k, b); };
     Chrono.lancer(Math.max(6, 15 - st.n * .75), () => repondre(null, null));
   }

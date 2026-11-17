@@ -1,7 +1,7 @@
 // Les quiz de l'Atlas, dans la salle de jeux : cinq jeux sur ce qu'on apprend en classe, tirés au hasard à chaque partie.
 // Les points du cours suivent les règles du site : une étoile gagnée rapporte une seule fois (jamais « une fois par jour »), rien pour une simple visite.
-import { CREER, MANCHES, etoiles } from "./quiz_logique.js?v=c4e4cb4607";
-import { monterGlobe } from "./globe.js?v=c4e4cb4607";
+import { CREER, MANCHES, etoiles } from "./quiz_logique.js?v=1fe4208838";
+import { monterGlobe } from "./globe.js?v=1fe4208838";
 
 const $ = id => document.getElementById(id), esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const rnd = Math.random, ATLAS = "../../atlas/index.html#e/";
@@ -20,8 +20,9 @@ $("vers-jouer").href = RACINE + (ESPACE === "prof" ? "index.html" : ESPACE === "
 let Q = null, P = null, G = null;
 /* Le globe : il démarre quand les continents sont chargés ; sans WebGL, le quiz reste tel quel, sans globe. */
 function demarrerGlobe() {
-  return fetch("terres.json").then(r => r.json()).then(terres => {
-    G = monterGlobe($("globe"), terres, Object.values(Q.geo || {}));
+  const lire = f => fetch(f).then(r => r.json()).catch(() => []);
+  return Promise.all([lire("terres.json"), lire("frontieres.json"), lire("pays.json")]).then(([terres, frontieres, pays]) => {
+    G = monterGlobe($("globe"), terres, Object.values(Q.geo || {}), { frontieres, pays });
     if (!G) { $("globe").remove(); return; }
     document.body.classList.add("globe-on"); window.GLOBE = G;
     const e = $("escale");
