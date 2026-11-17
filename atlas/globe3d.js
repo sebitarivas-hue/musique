@@ -42,7 +42,7 @@ function arc(a, b) {
 /* zone : l'élément qui contient le canvas (sa taille fixe celle du globe).
    options : { terres, frontieres, pays, auToucher(ids), auSurvol(id | null, x, y) }
    Rend null si WebGL n'est pas disponible : la page garde alors la carte à plat. */
-export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], auToucher = () => {}, auSurvol = () => {} }) {
+export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], auToucher = () => {}, auSurvol = () => {}, obstacles = () => null }) {
   let rendu; try { rendu = new T.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "low-power" }); } catch (_) { return null; }
   if (!rendu.getContext()) return null;
   const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches, scene = new T.Scene(), cam = new T.PerspectiveCamera(40, 1, .1, 400), H = halo();
@@ -70,17 +70,18 @@ export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], 
   // Les musiques : un point par entrée, rond, à la couleur de sa famille, caché sur la face de derrière.
   const matPts = new T.ShaderMaterial({ transparent: true, depthWrite: false,
     uniforms: { dpr: { value: 1 }, horizon: { value: .3 }, echelle: { value: 1 } },
-    vertexShader: "attribute vec3 couleur; attribute float taille; uniform float dpr; uniform float horizon; uniform float echelle; varying vec3 vC; varying float vA;" +
-      "void main(){ vC = couleur; float f = dot(normalize(position), normalize(cameraPosition)); vA = smoothstep(horizon - .015, horizon + .05, f); gl_PointSize = taille * dpr * echelle * vA; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
-    fragmentShader: "varying vec3 vC; varying float vA; void main(){ if (vA < .02) discard; float d = length(gl_PointCoord - .5); if (d > .5) discard; float bord = smoothstep(.33, .41, d); gl_FragColor = vec4(mix(vC, vec3(1.0), bord), 1.0); }" });
+    vertexShader: "attribute vec3 couleur; attribute float taille; attribute float classe; uniform float dpr; uniform float horizon; uniform float echelle; varying vec3 vC; varying float vA; varying float vK;" +
+      "void main(){ vC = couleur; vK = classe; float f = dot(normalize(position), normalize(cameraPosition)); vA = smoothstep(horizon - .015, horizon + .05, f); gl_PointSize = taille * dpr * echelle * vA; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: "varying vec3 vC; varying float vA; varying float vK; void main(){ if (vA < .02) discard; float d = length(gl_PointCoord - .5); if (d > .5) discard; float bord = smoothstep(.33, .41, d); gl_FragColor = vec4(mix(vC, vK > .5 ? vec3(.84, 1.0, 0.0) : vec3(1.0), bord), 1.0); }" });
+  const calqueNoms = document.createElement("div"); calqueNoms.className = "g-noms"; calqueNoms.setAttribute("aria-hidden", "true"); zone.appendChild(calqueNoms); let dernierNoms = 0, nomsVides = true;
   let pts = null, liste = [], pos3 = [];
   const choisie = new T.Group(); scene.add(choisie);
   function majPoints(L) {   // L : [{ id, lon, lat, c }]
     if (pts) { scene.remove(pts); pts.geometry.dispose(); }
     liste = L; pos3 = L.map(p => vers(p.lon, p.lat, R + .02));
-    const g = new T.BufferGeometry(), P = new Float32Array(L.length * 3), C = new Float32Array(L.length * 3), S = new Float32Array(L.length), col = new T.Color();
-    L.forEach((p, i) => { P.set([pos3[i].x, pos3[i].y, pos3[i].z], i * 3); col.set(p.c); C.set([col.r, col.g, col.b], i * 3); S[i] = 8; });
-    g.setAttribute("position", new T.BufferAttribute(P, 3)); g.setAttribute("couleur", new T.BufferAttribute(C, 3)); g.setAttribute("taille", new T.BufferAttribute(S, 1));
+    const g = new T.BufferGeometry(), P = new Float32Array(L.length * 3), C = new Float32Array(L.length * 3), S = new Float32Array(L.length), K = new Float32Array(L.length), col = new T.Color();
+    L.forEach((p, i) => { P.set([pos3[i].x, pos3[i].y, pos3[i].z], i * 3); col.set(p.c); C.set([col.r, col.g, col.b], i * 3); S[i] = p.cours ? 12 : 8; K[i] = p.cours ? 1 : 0; });
+    g.setAttribute("position", new T.BufferAttribute(P, 3)); g.setAttribute("couleur", new T.BufferAttribute(C, 3)); g.setAttribute("taille", new T.BufferAttribute(S, 1)); g.setAttribute("classe", new T.BufferAttribute(K, 1));
     pts = new T.Points(g, matPts); pts.frustumCulled = false; pts.renderOrder = 3; scene.add(pts);
   }
 
@@ -180,10 +181,23 @@ export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], 
     const camN = cam.position.clone().normalize();
     noms.forEach(s => { const { rang, n } = s.userData, f = n.dot(camN), vu = rang === 1 ? V.dist < R * 3.6 : rang === 2 ? V.dist < R * 2.5 : V.dist < R * 1.7;
       s.material.opacity += ((vu && f > .3 ? Math.min(1, (f - .3) * 4) : 0) - s.material.opacity) * .3; s.visible = s.material.opacity > .02; });
-    rendu.render(scene, cam);
+    rendu.render(scene, cam); noms2(now);
+  }
+  // Les noms des musiques, de près : les plus reliées d'abord (celles du cours en tête), sans se chevaucher ni passer sous les fenêtres.
+  function noms2(now) {
+    if (V.dist > R * 1.95) { if (!nomsVides) { calqueNoms.innerHTML = ""; nomsVides = true; } return; }
+    if (now - dernierNoms < 90) { sale = true; return; } dernierNoms = now;
+    const w = canvas.clientWidth, h = canvas.clientHeight, camN = cam.position.clone().normalize(), hz = R / cam.position.length() + .05, obs = obstacles(), pris = [], out = [], cand = [];
+    for (let i = 0; i < pos3.length; i++) { const p = pos3[i]; if (p.clone().normalize().dot(camN) < hz) continue; v3.copy(p).project(cam); const sx = (v3.x + 1) / 2 * w, sy = (1 - v3.y) / 2 * h; if (sx < 4 || sx > w - 4 || sy < 14 || sy > h - 4) continue; cand.push([i, sx, sy]); }
+    cand.sort((a, b) => (liste[b[0]].cours ? 1e6 : 0) + liste[b[0]].w - (liste[a[0]].cours ? 1e6 : 0) - liste[a[0]].w);
+    for (const [i, sx, sy] of cand) { if (out.length >= 42) break; const n = liste[i].n, bw = n.length * 6.3 + 8, b = [sx + 8, sy - 8, bw, 16];
+      if (obs && b[0] + b[2] > obs.left && b[0] < obs.right && b[1] + b[3] > obs.top && b[1] < obs.bottom) continue;
+      if (pris.some(q => b[0] < q[0] + q[2] && b[0] + b[2] > q[0] && b[1] < q[1] + q[3] && b[1] + b[3] > q[1])) continue; pris.push(b);
+      out.push(`<span${liste[i].cours ? ' class="cours"' : ""} style="left:${b[0].toFixed(0)}px;top:${b[1].toFixed(0)}px">${n.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</span>`); }
+    calqueNoms.innerHTML = out.join(""); nomsVides = !out.length;
   }
   requestAnimationFrame(image);
-  function detruire() { arret = true; if (ro) ro.disconnect(); removeEventListener("resize", taille); try { rendu.dispose(); rendu.forceContextLoss(); } catch (_) {} }
+  function detruire() { arret = true; calqueNoms.remove(); if (ro) ro.disconnect(); removeEventListener("resize", taille); try { rendu.dispose(); rendu.forceContextLoss(); } catch (_) {} }
 
   return {
     majPoints,

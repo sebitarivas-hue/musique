@@ -317,6 +317,10 @@ h2 { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; text-trans
 .g-corps p { margin: 8px 0 0; font-size: .9rem; line-height: 1.4; color: #D3D2CA; }
 .g-corps .pastilles { margin-top: 10px; gap: 6px; } .g-corps .pastille { background: var(--acide); color: var(--noir); padding: 8px 12px; font-size: .76rem; } .g-corps .pastille.clair, .g-corps .paire .pastille.clair { background: transparent; color: var(--papier); border: 1.5px solid var(--papier); } .g-corps .pastille:hover, .g-corps .pastille:focus-visible, .g-corps .pastille.clair:hover { background: var(--papier); color: var(--noir); }
 .g-corps .g-sous { margin: 14px 0 6px; font: 500 .64rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--acide); }
+.g-noms { position: absolute; inset: 0; z-index: 3; overflow: hidden; pointer-events: none; } .g-noms span { position: absolute; white-space: nowrap; font: 600 11px/16px var(--f-txt); color: #f3fff9; text-shadow: 0 0 3px #040a1e, 0 0 3px #040a1e, 0 0 2px #040a1e; } .g-noms span.cours { color: #D6FF00; }
+.g-corps .g-classe { margin-top: 4px; } .g-bloc { border-left: 4px solid var(--acide); padding-left: 10px; } .g-bloc .petit { color: #A9A89F; font-size: .78rem; margin: 6px 0 0; }
+.g-instr { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; } .g-instr span { border: 1px solid #55554E; padding: 3px 8px; font-size: .78rem; color: #D3D2CA; }
+.g-corps .g-question { margin-top: 10px; padding: 8px 10px; background: #1f1f1b; color: var(--papier); } .g-question span { display: block; font: 500 .62rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--acide); margin-bottom: 3px; }
 .g-voisines { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; } .g-voisines button { width: 100%; min-height: 46px; display: flex; flex-direction: column; justify-content: center; gap: 1px; text-align: left; padding: 6px 10px 6px 14px; background: #1f1f1b; color: var(--papier); border: 0; border-left: 8px solid var(--c); font: inherit; cursor: pointer; } .g-voisines button:hover, .g-voisines button:focus-visible { background: var(--acide); color: var(--noir); outline: none; }
 .g-voisines small { font: 500 .62rem var(--f-mono); letter-spacing: .05em; text-transform: uppercase; opacity: .78; }
 @media (max-width: 760px) { .globe-wrap { height: clamp(520px, 86vh, 760px); } .g-fens { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 56%; } .globe-wrap .monde-ctrl { bottom: auto; top: 10px; } .g-tip { display: none; } }
@@ -998,7 +1002,7 @@ function vueMonde(sel) { GLOBE.api = null; GLOBE.fenetres = []; GLOBE.actif = nu
   <p class="m-etat" id="metat" aria-live="polite"></p>
   <div class="m-mode" id="mmode" role="group" aria-label="Façon de voir le monde"><button type="button" data-mode="globe" aria-pressed="${MONDE.mode === "globe"}">Globe en 3D</button><button type="button" data-mode="plat" aria-pressed="${MONDE.mode === "plat"}">Carte à plat</button></div>
   <div class="globe-wrap" id="gwrap"${MONDE.mode === "globe" ? "" : " hidden"}><canvas id="gcv" role="application" tabindex="0" aria-label="Globe en 3D des musiques du monde. Glisser pour le tourner, molette ou pincement pour zoomer, toucher un point pour ouvrir sa fiche dans une fenêtre. La recherche et la liste sous le globe donnent le même accès au clavier."></canvas><div class="g-tip" id="gtip" hidden></div><p class="g-msg" id="gmsg" role="status">Le globe se prépare</p><div class="monde-ctrl" role="group" aria-label="Zoom du globe"><button type="button" data-gz="in" aria-label="Zoomer">+</button><button type="button" data-gz="out" aria-label="Dézoomer">−</button><button type="button" data-gz="all">Globe entier</button></div><div class="g-fens" id="gfens" aria-label="Fiches ouvertes"></div></div>
-  <p class="petit m-aide" id="gaide"${MONDE.mode === "globe" ? "" : " hidden"}>Glisse le globe pour le tourner, zoome à la molette ou en pinçant. Touche un point : sa fiche s'ouvre dans une fenêtre à droite, et ses musiques voisines y sont proposées pour voyager de l'une à l'autre.</p>
+  <p class="petit m-aide" id="gaide"${MONDE.mode === "globe" ? "" : " hidden"}>Glisse le globe pour le tourner, zoome à la molette ou en pinçant. Touche un point : sa fiche s'ouvre dans une fenêtre à droite, et ses musiques voisines y sont proposées pour voyager de l'une à l'autre. Les points cerclés de jaune sont les musiques du cours, avec leurs écoutes et une question ; les noms apparaissent en s'approchant.</p>
   <div id="mplat"${MONDE.mode === "plat" ? "" : " hidden"}>
   <div class="monde-wrap" id="mwrap"><svg id="msvg" viewBox="0 0 ${D.carte.w} ${D.carte.h}" role="group" aria-label="Carte du monde des musiques"><rect x="-3000" y="-3000" width="${D.carte.w + 6000}" height="${D.carte.h + 6000}" fill="#dfe9f0"/><path id="terres" class="terre" d=""/><g id="mpts"></g><g id="mnoms"></g></svg><div class="monde-ctrl" role="group" aria-label="Zoom de la carte"><button type="button" data-z="in" aria-label="Zoomer">+</button><button type="button" data-z="out" aria-label="Dézoomer">−</button><button type="button" data-z="all">Monde entier</button></div></div>
   <p class="petit m-aide">Touche un rond numéroté pour zoomer dessus, un point pour ouvrir sa musique. Glisse pour te déplacer, pince ou double touche pour zoomer.</p>
@@ -1179,7 +1183,12 @@ function gLonLat(g) {   // l'inverse de la projection Equal Earth de la carte (o
 const gLL = e => e.__ll || (e.__ll = gLonLat(e.geo));
 function gKm(a, b) { const r = Math.PI / 180, p1 = a[1] * r, p2 = b[1] * r, h = Math.sin((p2 - p1) / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin((b[0] - a[0]) * r / 2) ** 2; return 2 * 6371 * Math.asin(Math.min(1, Math.sqrt(h))); }
 const gKmTexte = km => km < 50 ? "tout près" : km < 1000 ? "à " + Math.round(km / 10) * 10 + " km" : "à " + (Math.round(km / 100) * 100).toLocaleString("fr-FR") + " km";
-function gMaj(L) { if (GLOBE.api) GLOBE.api.majPoints((L || mVisibles()).map(e => { const [lon, lat] = gLL(e); return { id: e.id, lon, lat, c: COUL[e.family] || "#11110F" }; })); }
+function gObstacle() {   // la zone des fenêtres, en pixels du globe : les noms ne passent pas dessous
+  const f = $("#gfens"), w = $("#gwrap"); if (!f || !w || !f.children.length) return null; const a = f.getBoundingClientRect(), b = w.getBoundingClientRect();
+  const r = [...f.children].reduce((m, c) => { const q = c.getBoundingClientRect(); return { left: Math.min(m.left, q.left), right: Math.max(m.right, q.right), top: Math.min(m.top, q.top), bottom: Math.max(m.bottom, q.bottom) }; }, { left: 1e9, right: -1e9, top: 1e9, bottom: -1e9 });
+  return { left: r.left - b.left - 4, right: r.right - b.left + 4, top: r.top - b.top - 4, bottom: r.bottom - b.top + 4 };
+}
+function gMaj(L) { if (GLOBE.api) GLOBE.api.majPoints((L || mVisibles()).map(e => { const [lon, lat] = gLL(e); return { id: e.id, lon, lat, c: COUL[e.family] || "#11110F", n: e.name, w: mDeg(e.id), cours: COURS_IDS.has(e.id) }; })); }
 function gAjuster(L) {   // la vue qui montre ces musiques (ou le globe entier)
   const A = GLOBE.api; if (!A) return;
   if (!L.length) { A.tout(); return; }
@@ -1202,9 +1211,9 @@ function brancherGlobe() {
 async function gDemarrer() {
   const cv = $("#gcv"), msg = $("#gmsg"); if (!cv || GLOBE.api) return;
   try {
-    const [mod, d] = await Promise.all([import("./globe3d.js?v=9e6f4859b1"), GLOBE.donnees || gCharger()]);
+    const [mod, d] = await Promise.all([import("./globe3d.js?v=c87f3d4112"), GLOBE.donnees || gCharger()]);
     if (!$("#gcv") || $("#gcv") !== cv || GLOBE.api) return;   // on a changé de page pendant le chargement
-    const api = mod.monterGlobe(cv, $("#gwrap"), { terres: d.terres, frontieres: d.frontieres, pays: d.pays, auToucher: gToucher, auSurvol: gSurvol });
+    const api = mod.monterGlobe(cv, $("#gwrap"), { terres: d.terres, frontieres: d.frontieres, pays: d.pays, auToucher: gToucher, auSurvol: gSurvol, obstacles: gObstacle });
     if (!api) throw new Error("WebGL");
     GLOBE.api = api; msg.hidden = true; gMaj(); gDecal();
     $("#mmode").scrollIntoView({ block: "start" });   // le globe est la page : on le met sous les yeux
@@ -1232,10 +1241,19 @@ function gVoisines(id) {
   const v = new Map(); [...REL.sort[id].map(r => r.target), ...REL.ent[id].map(r => r.source)].forEach(i => { if (i !== id && E[i] && E[i].geo && !v.has(i)) v.set(i, 1); });
   const ici = gLL(E[id]); return [...v.keys()].sort((a, b) => mDeg(b) - mDeg(a)).slice(0, 8).map(i => [E[i], gKm(ici, gLL(E[i]))]);
 }
+function gClasse(id) {   // la fiche d'écoute du cours : ce qu'on entend, les instruments, les écoutes et la question
+  const L = (D.carteCours || {})[id]; if (!L || !L.length) return "";
+  return `<section class="g-classe" aria-label="Écouter en classe"><p class="g-sous">Écouter en classe</p>${L.map(([c, nom, sorte, lieu, type, texte, instr, ecoutes, question]) => `<div class="g-bloc">
+  <p class="petit">${esc(lieu)}, ${type === "tradition" ? "tradition" : "genre populaire"}${sorte === "plus-large" ? " : une partie de cette musique" : sorte === "partie" ? " : cette musique en fait partie" : ""}</p><p>${esc(texte)}</p>
+  ${instr.length ? `<div class="g-instr">${instr.map(x => `<span>${esc(x)}</span>`).join("")}</div>` : ""}
+  <div class="pastilles">${ecoutes.map(([t, q]) => paire(q, esc(t))).join("")}</div>
+  <p class="g-question"><span>Question d'écoute</span>${esc(question)}</p></div>`).join("")}</section>`;
+}
 function gCorps(e) {
   const vo = gVoisines(e.id);
   return `<div class="g-corps">${gImg(e)}<div class="meta"><span>${esc(e.region)}</span><span>${esc(periode(e))}</span></div><p>${esc(e.description)}</p>
   <div class="pastilles">${COURS_IDS.has(e.id) ? `<a class="pastille" style="--c:#12a07a" href="#e/${e.id}" data-ancre-classe="1">Écouter en classe &#8250;</a>` : ""}<a class="pastille" style="--c:#11110F" href="#e/${e.id}">Comprendre cette musique &#8250;</a>${paire(e.name, "Écouter")}<a class="pastille clair" href="#graphe/${e.id}">Ses influences</a></div>
+  ${gClasse(e.id)}
   ${vo.length ? `<p class="g-sous">Voyager vers une musique liée</p><ul class="g-voisines">${vo.map(([o, km]) => `<li><button type="button" data-voler="${o.id}" style="--c:${coul(o)}"><span>${esc(o.name)}</span><small>${esc(o.region)}, ${gKmTexte(km)}</small></button></li>`).join("")}</ul>` : `<p class="petit g-sous">Aucune musique liée n'a de lieu sur le globe.</p>`}</div>`;
 }
 function gFenetres() {
