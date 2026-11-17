@@ -1,9 +1,9 @@
 // Exécution d'une expérience : compile le programme SONORA, le rend hors ligne avec les réglages demandés (le même noyau que le moteur temps réel),
 // puis mesure le signal obtenu. Sans DOM : tourne dans Node (tests) comme dans le navigateur.
-import { compiler } from "../src/index.js?v=1fe4208838";
-import { rendre } from "../src/rendu.js?v=1fe4208838";
-import { SR } from "./experiences.js?v=1fe4208838";
-import * as A from "./mesure-signal.js?v=1fe4208838";
+import { compiler } from "../src/index.js?v=7e141dd94c";
+import { rendre } from "../src/rendu.js?v=7e141dd94c";
+import { SR } from "./experiences.js?v=7e141dd94c";
+import * as A from "./mesure-signal.js?v=7e141dd94c";
 
 export function preparer(programme) {
   const r = compiler(programme);

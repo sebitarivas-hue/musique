@@ -1,7 +1,7 @@
 // Les quiz de l'Atlas, dans la salle de jeux : cinq jeux sur ce qu'on apprend en classe, tirés au hasard à chaque partie.
 // Les points du cours suivent les règles du site : une étoile gagnée rapporte une seule fois (jamais « une fois par jour »), rien pour une simple visite.
-import { CREER, MANCHES, etoiles } from "./quiz_logique.js?v=1fe4208838";
-import { monterGlobe } from "./globe.js?v=1fe4208838";
+import { CREER, MANCHES, etoiles } from "./quiz_logique.js?v=7e141dd94c";
+import { monterGlobe } from "./globe.js?v=20261117c";
 
 const $ = id => document.getElementById(id), esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const rnd = Math.random, ATLAS = "../../atlas/index.html#e/";
@@ -21,7 +21,7 @@ let Q = null, P = null, G = null;
 /* Le globe : il démarre quand les continents sont chargés ; sans WebGL, le quiz reste tel quel, sans globe. */
 function demarrerGlobe() {
   const lire = f => fetch(f).then(r => r.json()).catch(() => []);
-  return Promise.all([lire("terres.json"), lire("frontieres.json"), lire("pays.json")]).then(([terres, frontieres, pays]) => {
+  return Promise.all([lire("terres.json?v=20261117c"), lire("frontieres.json?v=20261117c"), lire("pays.json?v=20261117c")]).then(([terres, frontieres, pays]) => {
     G = monterGlobe($("globe"), terres, Object.values(Q.geo || {}), { frontieres, pays });
     if (!G) { $("globe").remove(); return; }
     document.body.classList.add("globe-on"); window.GLOBE = G;
@@ -98,5 +98,5 @@ function fin() {
   $("rejouer").onclick = () => lancer(P.jeu, P.niv); if (ouvre) $("niv2").onclick = () => lancer(P.jeu, 2); $("accueil").onclick = accueil;
 }
 
-fetch("quiz_atlas.json").then(r => r.json()).then(d => { Q = d; demarrerGlobe(); const m = /^#(\w+)-([12])$/.exec(location.hash); if (m && m[1] === "mots") { location.replace("index.html#mots"); return; } if (m && CREER[m[1]] && (m[2] === "1" || (lire()[m[1] + ":1"] || 0) >= 2)) lancer(m[1], +m[2]); else accueil(); })
+fetch("quiz_atlas.json?v=20261117c").then(r => r.json()).then(d => { Q = d; demarrerGlobe(); const m = /^#(\w+)-([12])$/.exec(location.hash); if (m && m[1] === "mots") { location.replace("index.html#mots"); return; } if (m && CREER[m[1]] && (m[2] === "1" || (lire()[m[1] + ":1"] || 0) >= 2)) lancer(m[1], +m[2]); else accueil(); })
   .catch(() => { $("jeu").innerHTML = `<p class="chapo">Les quiz n'ont pas pu se charger. Recharge la page.</p>`; });

@@ -1,10 +1,10 @@
 // TIMBRE : la salle de jeux de l'oreille. Sept jeux (le septième, Le mot juste, sur le lexique de l'Atlas), de vrais enregistrements de la banque du site, des questions tirées au hasard à chaque partie
 // (deux élèves côte à côte n'ont jamais la même série). La logique pure est dans jeu_logique.js, testée dans Node.
-import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=1fe4208838";
-import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=1fe4208838";
-import { preparer, mixer } from "../harmonie/echantillons.js?v=1fe4208838";
-import { monter } from "./scene.js?v=1fe4208838";
-import { questionsMots } from "./quiz_logique.js?v=1fe4208838";
+import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=7e141dd94c";
+import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=7e141dd94c";
+import { preparer, mixer } from "../harmonie/echantillons.js?v=7e141dd94c";
+import { monter } from "./scene.js?v=20261117c";
+import { questionsMots } from "./quiz_logique.js?v=7e141dd94c";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -305,7 +305,7 @@ function jeuMemoire() {
 /* ---------- Le mot juste (17/11/2026) : le lexique de l'Atlas, en jeu de TIMBRE. Une définition, quatre mots portés par des lanternes sur la place ;
    trois vies, un chrono qui raccourcit de mot en mot, des séries qui font monter les points. Les mots viennent de quiz_atlas.json (outils/atlas/construire.py). ---------- */
 let MOTS = null;
-const chargerMots = () => MOTS ? Promise.resolve(MOTS) : fetch("quiz_atlas.json").then(r => r.json()).then(d => (MOTS = { mots: d.mots }));
+const chargerMots = () => MOTS ? Promise.resolve(MOTS) : fetch("quiz_atlas.json?v=20261117c").then(r => r.json()).then(d => (MOTS = { mots: d.mots }));
 const MOTS_N = 12, MOTS_COUL = ["#ffd23f", "#22d3ee", "#ff3d7f", "#b8f400"];
 function jeuMots() {
   const m = mode("mots"), moi = ouvrirPartie(m, "Le mot juste"), st = App.st = { n: 0, serie: 0, bonnes: 0, vies: 3, rates: [], serieMax: 0, qs: [] };
