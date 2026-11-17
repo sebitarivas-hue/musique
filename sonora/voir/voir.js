@@ -1,5 +1,5 @@
 // SONORA Voir la musique : un morceau, six vues synchronisées (piano roll, orbite, réseau, spectre, scope, niveau).
-import { MORCEAUX, nomNote, classe, NOMS_CLASSES } from "./morceaux.js?v=c56535eb99";
+import { MORCEAUX, nomNote, classe, NOMS_CLASSES } from "./morceaux.js?v=fd39222a98";
 
 const $ = s => document.querySelector(s);
 const AC = window.AudioContext || window.webkitAudioContext;
