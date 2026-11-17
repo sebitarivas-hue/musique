@@ -1231,7 +1231,7 @@ html.signal .pseq-lieu, html.signal .pseq-chant { border-radius: 0; border: 2px 
 .guide-r .guide-ic { grid-row: span 2; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--navy-soft); color: var(--navy); } .guide-r .guide-ic svg { width: 24px; height: 24px; }
 .guide-et { padding-left: 1.4em; } .guide-et li { margin: 8px 0; } .guide-et span { color: var(--muted); }
 .pj { margin-top: 20px; } .pj-sujets { columns: 2 260px; column-gap: 24px; padding-left: 1.2em; } .pj-sujets li { break-inside: avoid; margin: 0 0 6px; }
-.reso-page .pj-roles div { align-content: start; } .reso-som { padding-left: 1.4em; display: grid; gap: 4px; } .reso-som .reso-partie { list-style: none; margin: 10px 0 2px -1.4em; font: 700 .78rem var(--f-mono, monospace); text-transform: uppercase; letter-spacing: .06em; }
+.reso-chip { background: #11140f; color: #c8ff2e; border-color: #11140f; } .reso-page .pj-roles div { align-content: start; } .reso-som { padding-left: 1.4em; display: grid; gap: 4px; } .reso-som .reso-partie { list-style: none; margin: 10px 0 2px -1.4em; font: 700 .78rem var(--f-mono, monospace); text-transform: uppercase; letter-spacing: .06em; }
 .reso-livre { display: grid; gap: 14px; max-width: 780px; } .reso-livre p { margin: 0; line-height: 1.6; } .reso-livre .blk-t { margin-top: 10px; } .reso-l { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; } .reso-l li::marker { color: var(--acide-fonce, #6b8f00); }
 .reso-info { border-radius: 16px; padding: 14px 18px; background: #11140f; color: #e8ecd8; } .reso-info b { display: block; font: 700 .78rem var(--f-mono, monospace); letter-spacing: .06em; text-transform: uppercase; color: #c8ff2e; } .reso-info p { margin-top: 6px; }
 .reso-ec { display: grid; grid-template-columns: 40px 1fr; gap: 4px 12px; align-items: start; padding: 12px 14px; border-radius: 16px; background: var(--tint, #f4f3ec); } .reso-ec::before { content: ""; grid-row: span 2; width: 40px; height: 40px; border-radius: 50%; background: #11140f url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 7v10l8-5z' fill='%23c8ff2e'/%3E%3C/svg%3E") center / 24px no-repeat; } .reso-ec .label { align-self: end; }
@@ -2368,7 +2368,7 @@ function vueCours(k, seqOuverte) {
   const n = D.niveaux[k], comp = D.competences[n.cycle], cur = semaineEnCours(n.calendrier), mode = role() === "prof" ? get("mode-prof", "prof") : "eleve";
   const dates = {}; n.calendrier.forEach(e => { if (e.type === "seance") dates[e.seq + "-" + e.num] = e.semaine; });
   let h = head(`${role() === "prof" ? "Progression" : "Mes cours"}, ${n.cycle === "cycle3" ? "cycle 3" : "cycle 4"}`, `Classe de ${k}`, n.intro) + levels("cours", k);
-  h += `<p style="margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px"><a class="chip" href="#${role() === "prof" ? "eval" : "reviser"}-${k}">${role() === "prof" ? "Évaluer : grilles, saisie, bilan" : "Réviser : critères, quiz"}</a><a class="chip" href="#fiches">Les ${Object.keys(D.fiches).length} fiches de notions : le programme</a><a class="chip" href="#projets">Projets de l'année : la planche en groupe</a><a class="chip" href="#sortie">La sortie de l'année</a><a class="chip" href="#vocabulaire">Le vocabulaire pour classer</a><a class="chip" href="#fils">Les passerelles : danse, cinéma, littérature, sciences</a></p>`;
+  h += `<p style="margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px"><a class="chip reso-chip" href="#resonancias">La méthode Resonancias</a><a class="chip" href="#${role() === "prof" ? "eval" : "reviser"}-${k}">${role() === "prof" ? "Évaluer : grilles, saisie, bilan" : "Réviser : critères, quiz"}</a><a class="chip" href="#fiches">Les ${Object.keys(D.fiches).length} fiches de notions : le programme</a><a class="chip" href="#projets">Projets de l'année : la planche en groupe</a><a class="chip" href="#sortie">La sortie de l'année</a><a class="chip" href="#vocabulaire">Le vocabulaire pour classer</a><a class="chip" href="#fils">Les passerelles : danse, cinéma, littérature, sciences</a></p>`;
   if (role() === "prof") h += `<div class="seg" role="group" aria-label="Affichage"><button type="button" id="m-eleve" aria-pressed="${mode !== "prof"}">Vue élève : œuvres, chant, partitions, échos</button><button type="button" id="m-prof" aria-pressed="${mode === "prof"}">Vue professeur : déroulés</button></div>`;
   if (mode !== "prof") {
     h += `<section class="edito"><h2>L'année de ${k}, séquence par séquence</h2><ol class="edito-seq">${n.sequences.map((s, i) => `<li><a href="#cours-${k}-${i + 1}"><span class="edito-n" style="background:${D.couleurs[k]}">${i + 1}</span><span><b>${esc(s.titre)}</b><span class="edito-q">${esc(s.question)}</span>${s.accroche ? `<span class="edito-a">${esc(s.accroche)}</span>` : ""}<span class="edito-m">${esc(PER[s.periode])}, ${n.contenus[i].seances.length} séances, un chant : ${esc(s.chant)}</span></span></a></li>`).join("")}</ol></section>
@@ -2383,6 +2383,7 @@ function vueCours(k, seqOuverte) {
         <div><h4 class="blk-t">Les œuvres</h4><div class="listens">${s.oeuvres.map(o => ecoute(o, o)).join("")}</div></div>
         <div><h4 class="blk-t">Le chant</h4><p>${esc(s.chant)}</p></div>
         ${atlasBloc(k, i + 1)}
+        ${resoCourt(k, i + 1)}
         ${((D.imslp[k] || {})[i + 1] || []).length ? `<div><h4 class="blk-t">Partitions complètes (domaine public, IMSLP)</h4>${liensHtml(D.imslp[k][i + 1].map(([l, q]) => [l, "https://imslp.org/index.php?title=Special:Search&search=" + encodeURIComponent(q)]))}</div>` : ""}
         ${echosDe(k, i + 1).length ? `<div><h4 class="blk-t">Échos d'aujourd'hui</h4><div class="stack" style="gap:8px">${echosListe(echosDe(k, i + 1))}</div></div>` : ""}
         <div><h4 class="blk-t">Je dois savoir</h4><div class="chips">${s.vocabulaire.map(v => `<span class="tag">${esc(v)}</span>`).join("")}</div></div>
@@ -2404,6 +2405,7 @@ function vueCours(k, seqOuverte) {
       <div class="chips">${s.competences.map(x => `<span class="tag">${x} ${esc(comp[x])}</span>`).join("")}</div>
       <div><h4 class="blk-t">Accroche</h4><p>${esc(s.accroche || "")}</p></div>
       ${atlasBloc(k, i + 1)}
+      ${resoCourt(k, i + 1)}
       <div class="stack" style="gap:8px"><h4 class="blk-t">Séances</h4>${c.seances.map((se, j) => {
         const now = cur && cur.seq === i + 1 && cur.num === j + 1;
         return `<div class="seance${now ? " now" : ""}"><div class="meta">Séance ${j + 1}, semaine du ${esc(dates[(i + 1) + "-" + (j + 1)] || "")}${now ? ", cette semaine" : ""}</div><h5><a href="#seance-${k}-${i + 1}-${j + 1}">${esc(se.objectif)}</a></h5>
@@ -5987,6 +5989,10 @@ function atlasBloc(k, a) {
 }
 /* La méthode Resonancias (Malbrán, Furnó, Espinosa ; outils/resonancias.py) : une activité par séquence, placée dans une séance.
    resoHtml(k, a, 0) : le bloc de la page de séquence ; resoHtml(k, a, num) : la carte de la séance, seulement si l'activité y est placée. */
+function resoCourt(k, a) {   /* la ligne de la page « Mes cours » : l'activité Resonancias de la séquence, en un clic */
+  const R = D.resonancias, x = R && (R.seq[k] || {})[String(a)]; if (!x) return "";
+  return `<div><h4 class="blk-t">Avec Resonancias</h4><p><a href="#seance-${k}-${a}-${x.seance}">${esc(x.titre)}</a> <span class="small">(séance ${x.seance}, ${x.min} minutes)</span></p></div>`;
+}
 function resoHtml(k, a, num) {
   const R = D.resonancias, x = R && (R.seq[k] || {})[String(a)]; if (!x || (num && x.seance !== num)) return "";
   const d = R.dispositifs[x.d] || ["", ""];
