@@ -720,3 +720,26 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .dock .rl-haut { gap: 4px 8px; } .dock .rl-haut b { font-size: .95rem; margin-right: 2px; }
 .dock .rl-haut button { min-height: 30px; padding: 0 9px; font-size: .75rem; gap: 5px; } .dock .rl-haut select, .dock .rl-haut2 select { min-height: 30px; font-size: .78rem; padding-block: 0; }
 .dock .rl-haut2 { margin-top: 2px; }
+
+/* ---------------------------------------------------------------- Zones fixes sur ordinateur (au moins 901 x 640 px)
+   La page n'est plus une longue page qui défile : c'est un cadre à la hauteur de la fenêtre. Transport et outils en haut, panneaux d'outils sous eux (avec leur propre défilement),
+   l'arrangement prend tout ce qui reste et défile dedans, la règle et les en-têtes de pistes restent en place, l'éditeur est en bas. Plus petit, ou sur téléphone, la page garde son défilement. */
+@media (min-width: 901px) and (min-height: 640px) {
+  html, body { height: 100dvh; overflow: hidden; } body { display: flex; flex-direction: column; padding-bottom: 0; }
+  .bandeau-page { display: none; }
+  #pistes-app { flex: 1 1 0; min-height: 0; padding: 6px 14px 0; }
+  .transport { position: static; }
+  #pistes-app > section:not(.transport):not(.outils) { flex: 0 1 auto; max-height: 34vh; overflow: auto; }
+  #pistes-app > .ligne { flex: 1 1 0; min-height: 150px; height: auto; overflow: hidden; grid-template-rows: minmax(0, 1fr); }
+  .ligne > .entetes { overflow: hidden; min-height: 0; } .ligne > .defile { overflow: auto; min-height: 0; }
+  .ent-regle, .regle { position: sticky; top: 0; z-index: 6; }
+  .curseur, .zone-boucle { bottom: auto; height: var(--h-total, 100%); }
+  .dock { position: static; flex: 0 0 auto; margin-top: 6px; } .dock .auto { position: static; }
+  /* hauteur gagnée sur les bandes du haut : l'arrangement en a besoin */
+  .haut { padding: 3px 14px; } .haut .marque .nom { font-size: 1.05rem; } .haut .marque .sous { font-size: .62rem; } .haut .actions .lien-bouton { min-height: 28px; padding: 0 8px; font-size: .72rem; } .haut .etat { padding: 2px 8px; }
+  .transport { padding: 4px 10px; gap: 6px 8px; } .transport button, .transport .mini input[type=number], .transport .mini select { min-height: 30px; } .transport .position { font-size: 1.05rem; }
+  .outils { gap: 4px 10px; } .outils .grp { padding: 3px 6px; gap: 4px; } .outils .grp-t { display: none; }
+  .outils button, .outils .bouton-fichier, .outils .mini select, .outils .mini input { min-height: 30px; padding-top: 0; padding-bottom: 0; font-size: .76rem; } .outils .ic { font-size: 1.05em; }
+  #message { padding: 3px 12px; font-size: .76rem; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; border-radius: 8px; }
+  .selection { padding: 3px 8px; gap: 4px 8px; } .selection button { min-height: 30px; padding: 0 10px; font-size: .76rem; } .selection .ic { font-size: 1.05em; }
+}

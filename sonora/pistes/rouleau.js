@@ -3,7 +3,7 @@
 // Les notes choisies se déplacent ensemble ; on tire le bord droit pour les allonger, le bord gauche pour les raccourcir par le début. Les barres du bas règlent la vitesse de chaque note.
 // Clavier (le piano roll ayant le focus) : flèches (un pas de grille, un demi-ton), Maj+haut/bas (une octave), + et - (durée), Suppr, Ctrl+A, Ctrl+C, Ctrl+X, Ctrl+V, Ctrl+D, Échap.
 // Tout ce que fait le rouleau passe par des rappels : il ne connaît ni le projet, ni l'audio. Testé dans Chromium (tests/pistes.test.mjs).
-import { nettoyerNotes } from "./notes.js?v=574992f1c3";
+import { nettoyerNotes } from "./notes.js?v=7b45dc2340";
 
 const SVG = "http://www.w3.org/2000/svg", H_RANGEE = 22, PX_BASE = 56, W_CLAVIER = 54, H_REGLE = 20, H_VEL = 56, NOIRES = new Set([1, 3, 6, 8, 10]);
 const NOMS = ["do", "do♯", "ré", "ré♯", "mi", "fa", "fa♯", "sol", "sol♯", "la", "la♯", "si"];
@@ -79,7 +79,7 @@ export class Rouleau {
     defil.addEventListener("scroll", () => { regle.scrollLeft = defil.scrollLeft; vel.scrollLeft = defil.scrollLeft; });
     this.racine.append(regle.parentElement, corps, vel.parentElement);
     this.corps = corps; this.regle = regle; this.vel = vel;
-    if (this.premiere) { const ns = this.notes.map(x => x.n), milieu = this.lignes ? 0 : ns.length ? (Y(Math.max(...ns)) + Y(Math.min(...ns))) / 2 : Y(66); corps.scrollTop = Math.max(0, milieu - 150); this.premiere = false; } else { corps.scrollTop = sy; defil.scrollLeft = sx; regle.scrollLeft = sx; vel.scrollLeft = sx; }
+    if (this.premiere) { const ns = this.notes.map(x => x.n), milieu = this.lignes ? 0 : ns.length ? (Y(Math.max(...ns)) + Y(Math.min(...ns))) / 2 : Y(66); corps.scrollTop = Math.max(0, milieu - (corps.clientHeight || 300) / 2); this.premiere = false; } else { corps.scrollTop = sy; defil.scrollLeft = sx; regle.scrollLeft = sx; vel.scrollLeft = sx; }
     if (avait) svg.focus({ preventScroll: true });
   }
   _dessinerNote(x, Y = n => this.rang(n) * H_RANGEE) {

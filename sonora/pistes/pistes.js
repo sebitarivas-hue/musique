@@ -1,36 +1,36 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=574992f1c3";
-import * as Ed from "./editions.js?v=574992f1c3";
-import * as P from "./projet.js?v=574992f1c3";
-import * as TR from "./transport.js?v=574992f1c3";
-import { Stockage } from "./stockage.js?v=574992f1c3";
-import { creerBouton } from "./bouton.js?v=574992f1c3";
-import * as MI from "./midi.js?v=574992f1c3";
-import * as N from "./notes.js?v=574992f1c3";
-import { Rouleau } from "./rouleau.js?v=574992f1c3";
-import { PanneauPartition } from "./partition/panneau.js?v=574992f1c3";
-import { separer, NOMS_PARTIES } from "./separation.js?v=574992f1c3";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=574992f1c3";
-import * as BM from "./batterie_midi.js?v=574992f1c3";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=574992f1c3";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=574992f1c3";
-import * as INS from "./instruments.js?v=574992f1c3";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=574992f1c3";
-import * as OMR from "./omr.js?v=574992f1c3";
-import { creerConsole } from "./console.js?v=574992f1c3";
-import { creerVueBlocs } from "./blocs-ui.js?v=574992f1c3";
-import { creerMaster } from "./master.js?v=574992f1c3";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=574992f1c3";
-import * as MO from "./moteurs.js?v=574992f1c3";
-import { monterPanneaux } from "./panneaux.js?v=574992f1c3";
-import { monterNotions } from "./notions.js?v=574992f1c3";
-import { DEMOS } from "./demos.js?v=574992f1c3";
-import * as B from "./bibliotheque.js?v=574992f1c3";
-import { encoderWAV } from "../studio/wav.js?v=574992f1c3";
-import { ENTREES } from "../library/catalogue.js?v=574992f1c3";
-import { compiler } from "../src/index.js?v=574992f1c3";
-import { rendre } from "../src/rendu.js?v=574992f1c3";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=7b45dc2340";
+import * as Ed from "./editions.js?v=7b45dc2340";
+import * as P from "./projet.js?v=7b45dc2340";
+import * as TR from "./transport.js?v=7b45dc2340";
+import { Stockage } from "./stockage.js?v=7b45dc2340";
+import { creerBouton } from "./bouton.js?v=7b45dc2340";
+import * as MI from "./midi.js?v=7b45dc2340";
+import * as N from "./notes.js?v=7b45dc2340";
+import { Rouleau } from "./rouleau.js?v=7b45dc2340";
+import { PanneauPartition } from "./partition/panneau.js?v=7b45dc2340";
+import { separer, NOMS_PARTIES } from "./separation.js?v=7b45dc2340";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=7b45dc2340";
+import * as BM from "./batterie_midi.js?v=7b45dc2340";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=7b45dc2340";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=7b45dc2340";
+import * as INS from "./instruments.js?v=7b45dc2340";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=7b45dc2340";
+import * as OMR from "./omr.js?v=7b45dc2340";
+import { creerConsole } from "./console.js?v=7b45dc2340";
+import { creerVueBlocs } from "./blocs-ui.js?v=7b45dc2340";
+import { creerMaster } from "./master.js?v=7b45dc2340";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=7b45dc2340";
+import * as MO from "./moteurs.js?v=7b45dc2340";
+import { monterPanneaux } from "./panneaux.js?v=7b45dc2340";
+import { monterNotions } from "./notions.js?v=7b45dc2340";
+import { DEMOS } from "./demos.js?v=7b45dc2340";
+import * as B from "./bibliotheque.js?v=7b45dc2340";
+import { encoderWAV } from "../studio/wav.js?v=7b45dc2340";
+import { ENTREES } from "../library/catalogue.js?v=7b45dc2340";
+import { compiler } from "../src/index.js?v=7b45dc2340";
+import { rendre } from "../src/rendu.js?v=7b45dc2340";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -67,7 +67,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=574992f1c3"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=7b45dc2340"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -595,15 +595,16 @@ $("rl-instrument").onchange = e => {
 };
 // ---------------------------------------------------------------- le panneau inférieur (éditeur)
 // Il apparaît quand un de ses éditeurs (notes, rythme, courbes) s'ouvre et disparaît quand tous sont fermés. La poignée le redimensionne (souris, doigt ou flèches) ; la hauteur est retenue.
+const bureauFixe = matchMedia("(min-width: 901px) and (min-height: 640px)");   // le cadre à zones fixes : l'arrangement prend ce qui reste de la fenêtre tout seul (css)
 const dock = $("dock"), poignee = $("dock-poignee");
 const poserDock = h => { const max = Math.max(200, Math.round(innerHeight * 0.8)), v = Math.max(160, Math.min(max, Math.round(h))); etat.hDock = v; dock.style.setProperty("--h-dock", v + "px"); poignee.setAttribute("aria-valuenow", String(v)); poignee.setAttribute("aria-valuemax", String(max)); return v; };
 const retenirDock = h => { try { localStorage.setItem("sonora:pistes:dock", String(poserDock(h))); } catch (_) {} ajusterArrangement(); };
-const dockParDefaut = () => Math.max(380, Math.min(560, Math.round(innerHeight * 0.5)));   // la moitié de la fenêtre, comme le partage habituel entre arrangement et éditeur
+const dockParDefaut = () => bureauFixe.matches ? Math.max(300, Math.min(460, Math.round(innerHeight * 0.4))) : Math.max(380, Math.min(560, Math.round(innerHeight * 0.5)));   // la moitié de la fenêtre, comme le partage habituel entre arrangement et éditeur
 { let h = dockParDefaut(); try { h = +localStorage.getItem("sonora:pistes:dock") || h; } catch (_) {} poserDock(h); }
 // L'arrangement garde la place au-dessus du panneau : sa hauteur est ce qui reste de la fenêtre (il défile dedans) et la page le remonte sous la barre de lecture.
 const telephoneEtroit = () => matchMedia("(max-width: 700px)").matches;
 function ajusterArrangement() {
-  const l = $("ligne"); if (dock.hidden || telephoneEtroit()) { l.style.height = ""; l.style.overflowY = ""; return; }
+  const l = $("ligne"); if (dock.hidden || telephoneEtroit() || bureauFixe.matches) { l.style.height = ""; l.style.overflowY = ""; return; }
   const tr = document.querySelector(".transport"), collante = tr && getComputedStyle(tr).position === "sticky", hTr = collante ? tr.getBoundingClientRect().height : 0;
   l.style.height = Math.max(140, innerHeight - dock.getBoundingClientRect().height - hTr - 20) + "px"; l.style.overflowY = "auto";   // hauteur fixe : un redessin des pistes ne fait pas reculer la page
   return hTr;
@@ -611,7 +612,7 @@ function ajusterArrangement() {
 const majDock = () => {
   const avant = dock.hidden; dock.hidden = ![...$("dock-corps").children].some(x => x.tagName === "SECTION" && !x.hidden);
   const hTr = ajusterArrangement();
-  if (avant && !dock.hidden && !telephoneEtroit()) { const haut = $("ligne").getBoundingClientRect().top, bas = innerHeight - dock.getBoundingClientRect().height; if (haut > bas - 160) scrollBy(0, haut - (hTr || 0) - 8); }   // à l'ouverture : si le panneau cache l'arrangement, la page le remonte ; sinon elle ne bouge pas
+  if (avant && !dock.hidden && !telephoneEtroit() && !bureauFixe.matches) { const haut = $("ligne").getBoundingClientRect().top, bas = innerHeight - dock.getBoundingClientRect().height; if (haut > bas - 160) scrollBy(0, haut - (hTr || 0) - 8); }   // à l'ouverture : si le panneau cache l'arrangement, la page le remonte ; sinon elle ne bouge pas
 };
 new MutationObserver(majDock).observe($("dock-corps"), { subtree: true, attributes: true, attributeFilter: ["hidden"] }); majDock();
 poignee.onpointerdown = e => {
@@ -620,6 +621,11 @@ poignee.onpointerdown = e => {
 };
 poignee.onkeydown = e => { const d = e.key === "ArrowUp" ? 24 : e.key === "ArrowDown" ? -24 : 0; if (!d) return; e.preventDefault(); retenirDock(dock.getBoundingClientRect().height + d); };
 addEventListener("resize", () => { poserDock(etat.hDock || dockParDefaut()); ajusterArrangement(); });
+bureauFixe.addEventListener("change", ajusterArrangement);
+// Zones fixes : la hauteur du contenu de l'arrangement (pour le curseur et la zone de boucle), et les en-têtes de pistes qui suivent le défilement vertical des pistes.
+new ResizeObserver(() => $("defile").style.setProperty("--h-total", ($("regle").offsetHeight + $("voies").offsetHeight) + "px")).observe($("voies"));
+$("defile").addEventListener("scroll", () => { $("entetes").scrollTop = $("defile").scrollTop; }, { passive: true });
+$("entetes").addEventListener("wheel", e => { if (bureauFixe.matches) { e.preventDefault(); $("defile").scrollTop += e.deltaY; } }, { passive: false });
 // Après Annuler ou Rétablir, le piano roll ouvert relit les notes du projet.
 function rafraichirRouleau() { if (!rl.son) return; if (P.estMidi(etat.projet.sons[rl.son])) ouvrirRouleau(rl.son); else { $("rouleau").hidden = true; rl.son = null; } }
 function fermerRouleau() { arreterEcouteRouleau(); panneauPartition.fermer(); clearTimeout(rl.minuteur); const id = rl.son; $("rouleau").hidden = true; rl.son = null; if (rl.lecture) { try { rl.lecture.stop(); } catch (_) {} rl.lecture = null; } if (id && P.estMidi(etat.projet.sons[id]) && etat.projet.sons[id].midi.rendu !== etat.projet.tempo) remettreAJourMidi(); }
