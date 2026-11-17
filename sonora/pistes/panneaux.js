@@ -1,6 +1,6 @@
 // Les deux panneaux ajoutés à Pistes : la bibliothèque de sons et de rythmes, et le séquenceur à pas. Ils fabriquent de l'audio (bibliotheque.js) et le placent sur une piste.
 // Rien ne quitte l'appareil. Le son se prépare dans la page ; le clip est ensuite un clip comme les autres (couper, déplacer, effets, export).
-import * as B from "./bibliotheque.js?v=60d7aa4f10";
+import * as B from "./bibliotheque.js?v=335d6d09e3";
 
 export function monterPanneaux({ $, esc, etat, P, ajouterAudio, changer, message }) {
   const els = B.elements(), SR = 44100; let ctx = null, source = null, famille = "batterie", S = null;
