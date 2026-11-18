@@ -1,36 +1,36 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=335d6d09e3";
-import * as Ed from "./editions.js?v=335d6d09e3";
-import * as P from "./projet.js?v=335d6d09e3";
-import * as TR from "./transport.js?v=335d6d09e3";
-import { Stockage } from "./stockage.js?v=335d6d09e3";
-import { creerBouton } from "./bouton.js?v=335d6d09e3";
-import * as MI from "./midi.js?v=335d6d09e3";
-import * as N from "./notes.js?v=335d6d09e3";
-import { Rouleau } from "./rouleau.js?v=335d6d09e3";
-import { PanneauPartition } from "./partition/panneau.js?v=335d6d09e3";
-import { separer, NOMS_PARTIES } from "./separation.js?v=335d6d09e3";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=335d6d09e3";
-import * as BM from "./batterie_midi.js?v=335d6d09e3";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=335d6d09e3";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=335d6d09e3";
-import * as INS from "./instruments.js?v=335d6d09e3";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=335d6d09e3";
-import * as OMR from "./omr.js?v=335d6d09e3";
-import { creerConsole } from "./console.js?v=335d6d09e3";
-import { creerVueBlocs } from "./blocs-ui.js?v=335d6d09e3";
-import { creerMaster } from "./master.js?v=335d6d09e3";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=335d6d09e3";
-import * as MO from "./moteurs.js?v=335d6d09e3";
-import { monterPanneaux } from "./panneaux.js?v=335d6d09e3";
-import { monterNotions } from "./notions.js?v=335d6d09e3";
-import { DEMOS } from "./demos.js?v=335d6d09e3";
-import * as B from "./bibliotheque.js?v=335d6d09e3";
-import { encoderWAV } from "../studio/wav.js?v=335d6d09e3";
-import { ENTREES } from "../library/catalogue.js?v=335d6d09e3";
-import { compiler } from "../src/index.js?v=335d6d09e3";
-import { rendre } from "../src/rendu.js?v=335d6d09e3";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=16f9aef6ef";
+import * as Ed from "./editions.js?v=16f9aef6ef";
+import * as P from "./projet.js?v=16f9aef6ef";
+import * as TR from "./transport.js?v=16f9aef6ef";
+import { Stockage } from "./stockage.js?v=16f9aef6ef";
+import { creerBouton } from "./bouton.js?v=16f9aef6ef";
+import * as MI from "./midi.js?v=16f9aef6ef";
+import * as N from "./notes.js?v=16f9aef6ef";
+import { Rouleau } from "./rouleau.js?v=16f9aef6ef";
+import { PanneauPartition } from "./partition/panneau.js?v=16f9aef6ef";
+import { separer, NOMS_PARTIES } from "./separation.js?v=16f9aef6ef";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=16f9aef6ef";
+import * as BM from "./batterie_midi.js?v=16f9aef6ef";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=16f9aef6ef";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=16f9aef6ef";
+import * as INS from "./instruments.js?v=16f9aef6ef";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=16f9aef6ef";
+import * as OMR from "./omr.js?v=16f9aef6ef";
+import { creerConsole } from "./console.js?v=16f9aef6ef";
+import { creerVueBlocs } from "./blocs-ui.js?v=16f9aef6ef";
+import { creerMaster } from "./master.js?v=16f9aef6ef";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=16f9aef6ef";
+import * as MO from "./moteurs.js?v=16f9aef6ef";
+import { monterPanneaux } from "./panneaux.js?v=16f9aef6ef";
+import { monterNotions } from "./notions.js?v=16f9aef6ef";
+import { DEMOS } from "./demos.js?v=16f9aef6ef";
+import * as B from "./bibliotheque.js?v=16f9aef6ef";
+import { encoderWAV } from "../studio/wav.js?v=16f9aef6ef";
+import { ENTREES } from "../library/catalogue.js?v=16f9aef6ef";
+import { compiler } from "../src/index.js?v=16f9aef6ef";
+import { rendre } from "../src/rendu.js?v=16f9aef6ef";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -69,7 +69,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=335d6d09e3"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=16f9aef6ef"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -162,12 +162,21 @@ function programmerNotes(ctx, projet, e, t0, ch, inst) {
   }
   return voix;
 }
-// Charge (une fois) les instruments dont les clips de notes ont besoin. Un instrument qui ne se charge pas est absent du résultat : ses clips jouent leur audio rendu.
-async function instrumentsProjet(ctx, projet) {
-  const cat = INS.catalogue(), out = {};
-  await Promise.all([...P.instrumentsUtilises(projet)].map(async id => { const e = cat.find(x => x.id === id); if (!e) return; try { out[id] = await INS.charger(e, ctx); } catch (_) { /* repli sur l'audio rendu */ } }));
-  return out;
+// Les instruments des clips de notes se chargent EN ARRIÈRE-PLAN (échantillons de la banque du site : plusieurs secondes sur un téléphone). La lecture ne les attend jamais :
+// un clip dont l'instrument n'est pas encore là joue son audio rendu (s'il en a un), et ses notes prennent le relais dès que l'instrument arrive. Un chargement échoué est retenté 20 s plus tard.
+const instrumentsCharges = {}, instrumentsEchec = {};
+const instrumentsManquants = projet => { const cat = INS.catalogue(); return [...P.instrumentsUtilises(projet)].filter(id => !instrumentsCharges[id] && !(instrumentsEchec[id] > Date.now() - 20000) && cat.some(x => x.id === id)); };
+const instrumentsPrets = projet => { const o = {}; for (const id of P.instrumentsUtilises(projet)) if (instrumentsCharges[id]) o[id] = instrumentsCharges[id]; return o; };
+function chargerInstruments(ctx, projet) {
+  const cat = INS.catalogue(), att = [];
+  for (const id of instrumentsManquants(projet)) { const e = cat.find(x => x.id === id); att.push(INS.charger(e, ctx).then(inst => { instrumentsCharges[id] = inst; }, () => { instrumentsEchec[id] = Date.now(); })); }
+  return Promise.all(att);
 }
+// Pour l'export (hors ligne) : on attend vraiment les instruments.
+async function instrumentsProjet(ctx, projet) { await chargerInstruments(ctx, projet); return instrumentsPrets(projet); }
+// Un clip de notes sans audio rendu ne peut sonner qu'avec son instrument : dans ce cas seulement, la lecture attend (en le disant).
+const sansRendu = (projet, ids) => projet.pistes.some(pi => pi.clips.some(c => { const so = projet.sons[c.son]; return P.estMidi(so) && !etat.buffers[c.son] && ids.includes(P.instrumentDeClip(pi, so)); }));
+const precharger = () => { try { chargerInstruments(contexte(), etat.projet); } catch (_) { /* repli sur l'audio rendu */ } };
 
 // ---------------------------------------------------------------- lecture
 // L'horloge de la lecture en cours (transport.js) : tout ce qui dépend du temps (tête, métronome, tours de boucle, date des notes) en découle.
@@ -181,7 +190,14 @@ async function lire() {
   // Safari ne fait avancer l'horloge audio que si le contexte tourne vraiment : on attend la reprise (appelée dans le geste de l'utilisateur) et on le dit si elle n'a pas lieu.
   try { await Promise.race([ctx.resume(), new Promise(ok => setTimeout(ok, 1500))]); } catch (_) {}
   if (ctx.state !== "running") { etat.prepare = false; message("Le navigateur n'a pas démarré le son. Clique à nouveau sur Lire ; sur Safari, vérifie que le site n'est pas coupé dans Réglages pour ce site, Lecture automatique."); return; }
-  try { chaines = await chainesProjet(ctx, etat.projet, sortieProjet(ctx, etat.projet)); etat.instruments = await instrumentsProjet(ctx, etat.projet); } catch (e) { message("La lecture n'a pas pu démarrer : " + (e && e.message || e)); return; } finally { etat.prepare = false; }
+  try { chaines = await chainesProjet(ctx, etat.projet, sortieProjet(ctx, etat.projet)); const manque = instrumentsManquants(etat.projet);
+    if (manque.length) {
+      const att = chargerInstruments(ctx, etat.projet);
+      if (sansRendu(etat.projet, manque)) { message("Chargement de l'instrument, un instant…"); await Promise.race([att, new Promise(ok => setTimeout(ok, 20000))]); if (ctx.state !== "running") { try { await Promise.race([ctx.resume(), new Promise(ok => setTimeout(ok, 1500))]); } catch (_) {} } }
+      else att.then(() => { if (etat.lecture) replanifierLecture(); });   // on joue l'audio rendu tout de suite, les notes prennent le relais dès que l'instrument est là
+    }
+    etat.instruments = instrumentsPrets(etat.projet);
+  } catch (e) { message("La lecture n'a pas pu démarrer : " + (e && e.message || e)); return; } finally { etat.prepare = false; }
   // Précompte : pour une prise (micro ou notes), la lecture ne commence qu'après une mesure ou deux de clics, la tête attend au départ.
   const dt = P.dureeTemps(etat.projet), mesures = etat.enreg || etat.notes ? precompteMesures() : 0, pre = TR.dureePrecompte(dt, etat.projet.temps, mesures);
   const debutPrecompte = ctx.currentTime + 0.06; etat.debutCtx = debutPrecompte + pre; etat.debutTete = etat.tete; etat.precompte = pre ? { dt, temps: etat.projet.temps * mesures } : null;
@@ -211,7 +227,7 @@ async function replanifierLecture() {
   if (replanOccupe) { replanEnAttente = true; return; }
   replanOccupe = true; const ctx = etat.ctx;
   try {
-    let chaines, instruments; try { chaines = await chainesProjet(ctx, etat.projet, sortieProjet(ctx, etat.projet)); instruments = await instrumentsProjet(ctx, etat.projet); } catch (_) { arreter(); return; }
+    let chaines, instruments; try { chaines = await chainesProjet(ctx, etat.projet, sortieProjet(ctx, etat.projet)); if (instrumentsManquants(etat.projet).length) chargerInstruments(ctx, etat.projet).then(() => { if (etat.lecture) replanifierLecture(); }); instruments = instrumentsPrets(etat.projet); } catch (_) { arreter(); return; }
     if (!etat.lecture) { for (const ch of Object.values(chaines)) { try { ch.vol.disconnect(); (ch.veilles || []).forEach(v => v.stop()); } catch (_) {} } return; }
     const t0 = ctx.currentTime + 0.03, pos = TR.teteDe(horloge(), t0), anciennes = etat.chaines || {}, anciennesSources = etat.sources;
     arreterTours(); const h = { debutCtx: t0, debutTete: pos, boucle: horloge().boucle }, T0 = TR.tour(h, 0);
@@ -804,7 +820,7 @@ function dessinerOnde(cv, son, clip) {
   if (B) { g.fillStyle = "rgba(17,17,15,.55)"; for (let k = 1; k * B * etat.pxs < w; k++) g.fillRect(Math.round(k * B * etat.pxs), 0, 2, h); }   // un trait à chaque répétition du motif
 }
 function afficher() {
-  majAnnuler(); const p = etat.projet, largeur = Math.max(30, P.dureeTotale(p) + 16) * etat.pxs;
+  majAnnuler(); precharger(); const p = etat.projet, largeur = Math.max(30, P.dureeTotale(p) + 16) * etat.pxs;
   $("tempo").value = p.tempo;
   // règle : une marque par mesure
   const dm = P.dureeMesure(p); let r = ""; for (let m = 0; m * dm * etat.pxs < largeur; m++) r += `<span style="left:${m * dm * etat.pxs}px">${m + 1}</span>`;
@@ -1370,7 +1386,7 @@ document.addEventListener("visibilitychange", () => { if (document.hidden && eta
 
 
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (_) {}  // le navigateur est prié de ne pas effacer les projets
-monterPanneaux({ $, esc, etat, P, ajouterAudio, changer, message });  // la bibliothèque et le séquenceur à pas
+monterPanneaux({ $, esc, etat, P, ajouterAudio, changer, message, contexte });  // la bibliothèque et le séquenceur à pas
 
 // ---------------------------------------------------------------- Mes projets : plusieurs projets gardés dans le navigateur
 // Un projet qu'on quitte reste rangé avec ses sons ; « Nouveau projet » n'efface plus rien. La sauvegarde du projet ouvert est continue (changer, ranger).

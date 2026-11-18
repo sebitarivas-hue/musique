@@ -1,10 +1,11 @@
 // Les deux panneaux ajoutés à Pistes : la bibliothèque de sons et de rythmes, et le séquenceur à pas. Ils fabriquent de l'audio (bibliotheque.js) et le placent sur une piste.
 // Rien ne quitte l'appareil. Le son se prépare dans la page ; le clip est ensuite un clip comme les autres (couper, déplacer, effets, export).
-import * as B from "./bibliotheque.js?v=335d6d09e3";
+import * as B from "./bibliotheque.js?v=16f9aef6ef";
 
-export function monterPanneaux({ $, esc, etat, P, ajouterAudio, changer, message }) {
+export function monterPanneaux({ $, esc, etat, P, ajouterAudio, changer, message, contexte: contexteDePistes }) {
   const els = B.elements(), SR = 44100; let ctx = null, source = null, famille = "batterie", S = null;
-  const contexte = () => { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); return ctx; };
+  // Le contexte audio de Pistes est partagé (un seul : un iPhone en gère mal deux) ; il est ouvert dès l'appui, avant toute attente réseau, car iOS n'autorise le son que dans le geste.
+  const contexte = () => { if (contexteDePistes) { ctx = contexteDePistes(); return ctx; } if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); return ctx; };
   const arreter = () => { if (source) { try { source.stop(); } catch (_) {} source = null; } if (S && S.vivant) S.vivant = null; if (S && S.boucle) finBoucle(); };
   const jouer = (canaux, sr, boucle = false) => { arreter(); const c = contexte(), buf = c.createBuffer(canaux.length, canaux[0].length, sr); canaux.forEach((x, i) => buf.copyToChannel(x, i)); const s = c.createBufferSource(); s.buffer = buf; s.loop = boucle; s.connect(c.destination); s.start(); source = s; s.onended = () => { if (source === s) source = null; }; return { debut: c.currentTime, duree: buf.duration }; };
   const placer = (r, msg) => { const pi = P.trouverPiste(etat.projet, etat.arme) || etat.projet.pistes[0], id = ajouterAudio(r.nom, r.canaux, r.sr, r.source), t0 = P.aimanter(etat.projet, etat.tete, +$("aimant").value), d = r.canaux[0].length / r.sr;
@@ -25,7 +26,7 @@ export function monterPanneaux({ $, esc, etat, P, ajouterAudio, changer, message
     $("biblio-liste").innerHTML = L.map(e => `<li data-id="${esc(e.id)}"><span class="bl-n">${esc(e.nom)}</span><span class="petit bl-t">${e.type === "coup" ? "un coup" : e.type === "boucle" ? "rythme, 2 mesures" : e.type === "ech" ? esc(e.groupe) : "son"}</span><span class="lp-act"><button type="button" data-a="ecouter">Écouter</button><button type="button" data-a="ajouter">Ajouter</button>${e.type === "boucle" ? '<button type="button" data-a="modifier">Modifier</button>' : ""}</span></li>`).join("") || "<li>Rien ne correspond.</li>";
   }
   const fab = async e => { if (e.kit) await B.assurerKit(e.kit); if (e.type === "ech") { $("msg-biblio").textContent = "Chargement de l'instrument..."; return B.fabriquerEch(e, { note: $("biblio-note").value === "" ? undefined : +$("biblio-note").value, duree: +$("biblio-duree").value, sr: SR, ctx: contexte() }); } const r = B.fabriquer(e, { tempo: etat.projet.tempo, note: $("biblio-note").value === "" ? undefined : +$("biblio-note").value, duree: +$("biblio-duree").value, sr: SR }); if (e.type === "boucle") r.source = { type: "boucle", el: e.id, rendu: etat.projet.tempo }; return r; };
-  $("biblio-liste").onclick = async e => { const b = e.target.closest("button[data-a]"), li = e.target.closest("li[data-id]"); if (!b || !li) return; const el = els.find(x => x.id === li.dataset.id); if (!el) return;
+  $("biblio-liste").onclick = async e => { contexte(); const b = e.target.closest("button[data-a]"), li = e.target.closest("li[data-id]"); if (!b || !li) return; const el = els.find(x => x.id === li.dataset.id); if (!el) return;
     try { if (b.dataset.a === "ecouter") { const r = await fab(el); jouer(r.canaux, r.sr); $("msg-biblio").textContent = `Écoute : ${r.nom}.`; }
       else if (b.dataset.a === "ajouter") { const r = await fab(el); placer(r); } else if (b.dataset.a === "modifier") { chargerMotif(el); ouvrir("pas"); } } catch (err) { $("msg-biblio").textContent = "Cela n'a pas pu se fabriquer : " + err.message; } };
 
@@ -69,7 +70,7 @@ export function monterPanneaux({ $, esc, etat, P, ajouterAudio, changer, message
     S.minuteur = setTimeout(() => { if (!S.boucle) return; const r = fabGrille(); if (!r) { silence(); $("msg-pas").textContent = "La grille est vide : la boucle continue en silence, allume une case pour la réentendre."; return; } remplacer(r); }, 25);
   }
   $("tempo").addEventListener("input", () => majBoucle()); $("tempo").addEventListener("change", () => majBoucle());
-  $("pas-ecouter").onclick = async () => { if (S.boucle) { arreter(); finBoucle(); return; }
+  $("pas-ecouter").onclick = async () => { contexte(); if (S.boucle) { arreter(); finBoucle(); return; }
     await B.assurerKit(S.kit); const r = fabGrille(); if (!r) { $("msg-pas").textContent = "La grille est vide : allume quelques cases."; return; }
     arreter(); S.duree = 0; S.vivant = null; remplacer(r); S.boucle = true; $("pas-ecouter").textContent = "Arrêter";
     const suivre = () => { if (!S.boucle) return; const dur = 60 / etat.projet.tempo / 4, t = ((((ctx.currentTime - S.debut) % (S.pas * dur)) + S.pas * dur) % (S.pas * dur)), k = Math.floor(t / dur); curseurs(); document.querySelectorAll(`.pas-case[data-i="${k}"]`).forEach(x => x.classList.add("curseur")); S.raf = requestAnimationFrame(suivre); }; suivre(); };
