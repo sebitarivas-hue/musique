@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=867b3bdd02">
-<link rel="stylesheet" href="pistes.css?v=867b3bdd02"><link rel="stylesheet" href="blocs.css?v=867b3bdd02"><link rel="stylesheet" href="console.css?v=867b3bdd02"><link rel="stylesheet" href="notions.css?v=867b3bdd02">
+<link rel="stylesheet" href="../studio/studio.css?v=1e91d5cdde">
+<link rel="stylesheet" href="pistes.css?v=1e91d5cdde"><link rel="stylesheet" href="blocs.css?v=1e91d5cdde"><link rel="stylesheet" href="console.css?v=1e91d5cdde"><link rel="stylesheet" href="notions.css?v=1e91d5cdde">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -105,16 +105,6 @@
     <p class="petit" id="midi-etat" role="status" aria-live="polite">Aucun clavier MIDI branché : utilise le clavier de l'ordinateur ou les touches de l'écran.</p>
     <div class="midi-clavier" id="midi-clavier" role="group" aria-label="Touches de piano"></div>
   </section>
-  <section class="selection" id="selection" aria-label="Clip choisi" hidden>
-    <b id="sel-nom"></b>
-    <button type="button" id="b-modifier-notes" hidden data-tip="Voir les notes de ce clip et les changer : en poser, en déplacer, en enlever"><span class="ic ic-piano" aria-hidden="true"></span> Modifier les notes</button>
-    <button type="button" id="b-partition" hidden data-tip="Voir ces notes en partition et les écrire en texte, comme dans LilyPond"><span class="ic ic-partition" aria-hidden="true"></span> Partition</button>
-    <button type="button" id="b-tempo-trouver" hidden data-tip="Écouter ce son pour trouver son tempo, puis le caler sur la grille du projet"><span class="ic ic-metro" aria-hidden="true"></span> Trouver le tempo</button>
-    <button type="button" id="b-couper" data-tip="Couper le clip en deux, là où est le curseur rouge (touche S)"><span class="ic ic-ciseaux" aria-hidden="true"></span> Couper au curseur</button>
-    <button type="button" id="b-dupliquer" data-tip="Faire une copie du clip juste après lui (touche D)"><span class="ic ic-copie" aria-hidden="true"></span> Dupliquer</button>
-    <button type="button" id="b-supprimer" data-tip="Enlever le clip de la piste (touche Suppr)"><span class="ic ic-corbeille" aria-hidden="true"></span> Supprimer</button>
-    <label class="mini">Gain<input type="range" id="sel-gain" min="0" max="2" step="0.01"></label>
-  </section>
   <section class="tempo-trouve" id="tempo-trouve" aria-label="Tempo du son" hidden>
     <p id="tt-texte" role="status" aria-live="polite"></p>
     <div class="tt-actions"><button type="button" id="tt-caler" class="principal"></button><button type="button" id="tt-projet"></button><button type="button" id="tt-fermer">Fermer</button></div>
@@ -159,6 +149,18 @@
   <button type="button" class="notion" data-notion="enveloppe" aria-label="Comprendre : les courbes">?</button>
   <p class="petit" id="auto-aide" role="status" aria-live="polite"></p>
   </section>
+  <div class="zone-arrange" id="zone-arrange">
+  <section class="selection" id="selection" aria-label="Clip choisi" hidden>
+    <b id="sel-nom"></b>
+    <p class="sel-vide" id="sel-vide">Aucun clip choisi. Touche un clip pour régler son gain, le couper, le dupliquer ou ouvrir ses notes.</p>
+    <button type="button" id="b-modifier-notes" hidden data-tip="Voir les notes de ce clip et les changer : en poser, en déplacer, en enlever"><span class="ic ic-piano" aria-hidden="true"></span> Modifier les notes</button>
+    <button type="button" id="b-partition" hidden data-tip="Voir ces notes en partition et les écrire en texte, comme dans LilyPond"><span class="ic ic-partition" aria-hidden="true"></span> Partition</button>
+    <button type="button" id="b-tempo-trouver" hidden data-tip="Écouter ce son pour trouver son tempo, puis le caler sur la grille du projet"><span class="ic ic-metro" aria-hidden="true"></span> Trouver le tempo</button>
+    <button type="button" id="b-couper" data-tip="Couper le clip en deux, là où est le curseur rouge (touche S)"><span class="ic ic-ciseaux" aria-hidden="true"></span> Couper au curseur</button>
+    <button type="button" id="b-dupliquer" data-tip="Faire une copie du clip juste après lui (touche D)"><span class="ic ic-copie" aria-hidden="true"></span> Dupliquer</button>
+    <button type="button" id="b-supprimer" data-tip="Enlever le clip de la piste (touche Suppr)"><span class="ic ic-corbeille" aria-hidden="true"></span> Supprimer</button>
+    <label class="mini">Gain<input type="range" id="sel-gain" min="0" max="2" step="0.01"></label>
+  </section>
   <div class="ligne" id="ligne">
     <div class="entetes" id="entetes"></div>
     <div class="defile" id="defile"><div class="regle" id="regle" aria-label="Règle : clique pour placer le curseur"></div><div class="voies" id="voies"></div><div class="curseur" id="curseur" aria-hidden="true"></div>
@@ -175,6 +177,7 @@
       <button type="button" data-go="rythme" style="--c:#E8B73A"><span class="ic ic-biblio" aria-hidden="true"></span><b>Choisir un rythme</b><span>Un beat de rap, de rock ou d'ailleurs, déjà prêt : tu l'écoutes puis tu le poses.</span></button>
     </div>
   </section></div>
+  </div>
   </div>
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
@@ -281,8 +284,8 @@
 </section>
   </div>
 </div>
-<script type="module" src="pistes.js?v=867b3bdd02"></script>
-<script src="../barre-cours.js?v=867b3bdd02"></script>
-<script src="../retour.js?v=867b3bdd02"></script>
+<script type="module" src="pistes.js?v=1e91d5cdde"></script>
+<script src="../barre-cours.js?v=1e91d5cdde"></script>
+<script src="../retour.js?v=1e91d5cdde"></script>
 </body>
 </html>

@@ -733,7 +733,16 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
   #pistes-app { flex: 1 1 0; min-height: 0; padding: 6px 14px 0; }
   .transport { position: static; }
   #pistes-app > section:not(.transport):not(.outils) { flex: 0 1 auto; max-height: 34vh; overflow: auto; }
-  #pistes-app > .ligne { flex: 1 1 0; min-height: 150px; height: auto; overflow: hidden; grid-template-rows: minmax(0, 1fr); }
+  .zone-arrange { display: flex; gap: 8px; flex: 1 1 200px; min-height: 150px; }   /* une hauteur minimale réservée : ce sont les panneaux d'outils du haut qui rétrécissent (ils défilent), jamais l'arrangement */
+  #pistes-app:has(> #blocs:not([hidden])) .zone-arrange { flex-basis: 0; min-height: 0; } #pistes-app:has(> #blocs:not([hidden])) .zone-arrange > .ligne { min-height: 0; }   /* en composant par blocs, c'est la vue par blocs qui prend la place */
+  .zone-arrange > .ligne { flex: 1 1 0; min-width: 0; min-height: 150px; height: auto; overflow: hidden; grid-template-rows: minmax(0, 1fr); }
+  /* L'inspecteur : le clip choisi, en colonne à gauche de l'arrangement. Toujours là (un texte d'aide quand rien n'est choisi), pour que l'arrangement ne bouge pas quand on choisit un clip. */
+  .zone-arrange > #selection { flex: 0 0 218px; display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start; gap: 6px; padding: 10px; overflow: auto; max-height: none; border-radius: 10px; }
+  .zone-arrange > #selection[hidden] { display: flex; } .zone-arrange > #selection[hidden] > :not(.sel-vide) { display: none; } .zone-arrange > #selection[hidden] .sel-vide { display: block; }
+  .zone-arrange > #selection #sel-nom { font-size: 1rem; color: var(--acide); overflow-wrap: anywhere; padding-bottom: 6px; border-bottom: 1px solid var(--daw-trait, #3c3c46); margin-bottom: 2px; }
+  .zone-arrange > #selection button { justify-content: flex-start; width: 100%; text-align: left; } .zone-arrange > #selection button[hidden] { display: none; }
+  .zone-arrange > #selection .mini { flex-direction: column; align-items: stretch; gap: 4px; margin-top: 6px; } .zone-arrange > #selection .mini input { width: 100%; }
+  .sel-vide { font-size: .82rem; line-height: 1.35; color: var(--daw-doux, #B9B8AE); margin: 0; }
   .ligne > .entetes { overflow: hidden; min-height: 0; } .ligne > .defile { overflow: auto; min-height: 0; }
   .ent-regle, .regle { position: sticky; top: 0; z-index: 6; }
   .curseur, .zone-boucle { bottom: auto; height: var(--h-total, 100%); }
@@ -781,3 +790,5 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .dock-onglets button[aria-selected="true"] { color: #fff; background: rgba(255, 255, 255, .06); border-bottom-color: var(--acide, #D6FF00); }
 @media (min-width: 701px) { .dock-corps > .dock-masque { display: none !important; } }
 @media (max-width: 700px) { .dock-onglets { display: none; } }
+
+.sel-vide { display: none; }
