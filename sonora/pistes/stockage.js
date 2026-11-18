@@ -16,7 +16,7 @@ function ouvrir() {
 }
 const tx = (db, magasin, mode, f) => new Promise((ok, ko) => { const t = db.transaction(magasin, mode), s = t.objectStore(magasin), r = f(s); t.oncomplete = () => ok(r && r.result); t.onerror = () => ko(t.error); t.onabort = () => ko(t.error); });
 const nouvelId = () => "j" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-const resume = p => { let clips = 0, fin = 0; for (const pi of p.pistes || []) for (const c of pi.clips || []) { clips++; fin = Math.max(fin, c.debut + c.duree); } return { id: p.id, titre: p.titre || "Sans titre", pistes: (p.pistes || []).length, clips, duree: fin, tempo: p.tempo, date: Date.now() }; };
+const resume = p => { let clips = 0, fin = 0; for (const pi of p.pistes || []) for (const c of pi.clips || []) { clips++; fin = Math.max(fin, c.debut + c.duree); } return { id: p.id, enregistre: p.enregistre !== false, titre: p.titre || "Sans titre", pistes: (p.pistes || []).length, clips, duree: fin, tempo: p.tempo, date: Date.now() }; };
 export const Stockage = {
   async lireProjet() { const db = await ouvrir(); return tx(db, "projets", "readonly", s => s.get("courant")); },
   // Le projet courant est écrit sous « courant » (comme avant) et aussi sous « p:<id> » : c'est ce qui permet d'en garder plusieurs. La liste « liste » en garde le résumé.
@@ -68,6 +68,8 @@ export const Stockage = {
     const perdus = Object.keys((p && p.sons) || {}).filter(k => !autres.has(k)); for (const k of perdus) await this.effacerSon(k).catch(() => {});
     return perdus.length;
   },
+  // Les brouillons (projets jamais enregistrés) autres que celui qui est ouvert : ils sont supprimés pour de bon, avec leurs sons. Il n'y en a donc jamais plus d'un.
+  async purgerBrouillons(sauf) { const L = await this.listerProjets(); let n = 0; for (const x of L) if (x.enregistre === false && x.id !== sauf) { await this.supprimerProjet(x.id).catch(() => {}); n++; } return n; },
   async lireSon(id) { const db = await ouvrir(); return tx(db, "sons", "readonly", s => s.get(id)); },
   async ecrireSon(id, donnees) { const db = await ouvrir(); return tx(db, "sons", "readwrite", s => s.put(donnees, id)); },
   async effacerSon(id) { const db = await ouvrir(); return tx(db, "sons", "readwrite", s => s.delete(id)); },

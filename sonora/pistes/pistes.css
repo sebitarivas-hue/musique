@@ -825,3 +825,16 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .audio-boutons { display: flex; flex-wrap: wrap; gap: 6px; }
 .audio-boutons button { min-height: 34px; padding: 0 12px; border: 1px solid var(--daw-trait, #3c3c46); border-radius: 8px; background: var(--daw-piste2, #24242b); color: var(--daw-texte, #ECEBE4); font: 600 .8rem var(--f-body); cursor: pointer; }
 .audio-boutons button:hover:not(:disabled) { border-color: var(--acide, #D6FF00); } .audio-boutons button:disabled { opacity: .4; cursor: default; }
+
+/* La fenêtre « Enregistrer ce projet ? » (et celle de la suppression) */
+.dlg { position: fixed; inset: 0; z-index: 9990; display: grid; place-items: center; padding: 16px; background: rgba(17, 17, 15, .72); }
+.dlg[hidden] { display: none; }
+.dlg-boite { width: min(460px, 100%); padding: 18px 18px 16px; border: 2px solid var(--acide, #D6FF00); border-radius: 16px; background: #24242b; color: #ECEBE4; box-shadow: 0 20px 50px rgba(0, 0, 0, .6); }
+.dlg-boite h2 { margin: 0 0 6px; font: 700 1.15rem var(--f-body); } .dlg-boite p { margin: 0 0 12px; color: #B9B8AE; line-height: 1.4; }
+.dlg-nom { display: grid; gap: 4px; margin-bottom: 14px; font: 600 .85rem var(--f-body); } .dlg-nom[hidden] { display: none; } .dlg-nom input { min-height: 44px; padding: 0 12px; border: 2px solid #55554F; border-radius: 10px; background: #14141a; color: #fff; font: 500 1rem var(--f-body); }
+.dlg-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.dlg-actions button { min-height: 46px; padding: 0 16px; border: 2px solid #55554F; border-radius: 10px; background: transparent; color: #ECEBE4; font: 700 .9rem var(--f-body); cursor: pointer; }
+.dlg-actions .principal { background: var(--acide, #D6FF00); border-color: var(--acide, #D6FF00); color: #14130f; } .dlg-actions .danger { border-color: #FF5638; color: #FF9C88; }
+.dlg-actions button:focus-visible, .dlg-nom input:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+@media (max-width: 700px) { .dlg { place-items: end center; padding: 10px; } .dlg-actions { flex-direction: column-reverse; } .dlg-actions button { width: 100%; } .outils #b-enregistrer { display: none; } }
+#b-enregistrer:disabled { opacity: .6; }

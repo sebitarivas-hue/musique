@@ -4,7 +4,7 @@ let compteur = 0;
 const nouvelId = p => p + Date.now().toString(36) + (compteur++).toString(36);
 
 export function nouveauProjet({ titre = "Sans titre", tempo = 100, temps = 4 } = {}) {
-  return { format: "sonora-pistes", version: 1, id: nouvelId("j"), titre, tempo, temps, pistes: [nouvellePiste("Piste 1"), nouvellePiste("Piste 2")], sons: {} };
+  return { format: "sonora-pistes", version: 1, id: nouvelId("j"), titre, tempo, temps, pistes: [nouvellePiste("Piste 1"), nouvellePiste("Piste 2")], sons: {}, enregistre: false };   // un projet neuf est un brouillon : il ne reste dans « Mes projets » que si on l'enregistre
 }
 export function nouvellePiste(nom) { return { id: nouvelId("p"), nom, volume: 0.8, pan: 0, muet: false, solo: false, clips: [], effets: effetsParDefaut(), rack: [], enveloppe: [], envPan: [] }; }
 // Effets d'une piste : filtre, écho, réverbération. Chacun a un interrupteur et des réglages ; ils s'appliquent à toute la piste, avant le volume.
@@ -224,9 +224,12 @@ export function verifierProjet(o) {
 // Les identifiants des sons d'un projet : c'est ce qui permet de savoir quels sons rangés ne servent plus à personne quand on supprime un projet.
 export const idsSons = p => Object.keys(p.sons || {});
 // Une copie indépendante d'un projet, avec un nouvel identifiant et un nouveau titre. Les sons (leur audio est rangé à part) restent partagés avec l'original.
-export function copierProjet(p, titre) { const c = JSON.parse(JSON.stringify(p)); c.id = nouvelId("j"); c.titre = String(titre || p.titre + " (copie)").slice(0, 80); return c; }
+// Brouillon ou projet enregistré. Un projet écrit avant cette règle n'a pas le champ : il est enregistré (rien n'est jeté par surprise).
+export const estBrouillon = p => !!p && p.enregistre === false;
+export const aDuContenu = p => (p.pistes || []).some(pi => (pi.clips || []).length > 0);
+export function copierProjet(p, titre) { const c = JSON.parse(JSON.stringify(p)); c.enregistre = true; c.id = nouvelId("j"); c.titre = String(titre || p.titre + " (copie)").slice(0, 80); return c; }
 // Le résumé qu'on affiche dans la liste : titre, nombre de pistes et de clips, durée du dernier clip.
-export function resume(p) { let clips = 0, fin = 0; for (const pi of p.pistes || []) for (const c of pi.clips || []) { clips++; fin = Math.max(fin, c.debut + c.duree); } return { id: p.id, titre: p.titre || "Sans titre", pistes: (p.pistes || []).length, clips, duree: fin, tempo: p.tempo }; }
+export function resume(p) { let clips = 0, fin = 0; for (const pi of p.pistes || []) for (const c of pi.clips || []) { clips++; fin = Math.max(fin, c.debut + c.duree); } return { id: p.id, enregistre: p.enregistre !== false, titre: p.titre || "Sans titre", pistes: (p.pistes || []).length, clips, duree: fin, tempo: p.tempo }; }
 export const renommerProjet = (p, titre) => { p.titre = String(titre || "").trim().slice(0, 80) || "Sans titre"; return p.titre; };
 
 // Change le tempo du projet. Les clips de notes suivent le tempo : leur place et leur durée en secondes changent, pas leur place en temps (le clip qui commence au temps 5 y reste).

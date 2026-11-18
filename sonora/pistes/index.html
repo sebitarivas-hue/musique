@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=a37da9efa9">
-<link rel="stylesheet" href="pistes.css?v=a37da9efa9"><link rel="stylesheet" href="blocs.css?v=a37da9efa9"><link rel="stylesheet" href="console.css?v=a37da9efa9"><link rel="stylesheet" href="notions.css?v=a37da9efa9">
+<link rel="stylesheet" href="../studio/studio.css?v=ac38c9fd91">
+<link rel="stylesheet" href="pistes.css?v=ac38c9fd91"><link rel="stylesheet" href="blocs.css?v=ac38c9fd91"><link rel="stylesheet" href="console.css?v=ac38c9fd91"><link rel="stylesheet" href="notions.css?v=ac38c9fd91">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -56,7 +56,7 @@
     <div class="grp" role="group" aria-label="Projet"><span class="grp-t" aria-hidden="true">Projet</span>
       <label class="mini" data-avance data-tip="Le nom de ton projet">Projet <input id="titre-projet" maxlength="80" aria-label="Titre du projet" autocomplete="off"></label>
       <button type="button" id="b-projets" aria-expanded="false" aria-controls="projets" data-tip="Ouvrir un autre projet, ou retrouver un projet supprimé"><span class="ic ic-dossier" aria-hidden="true"></span> Mes projets</button>
-      <button type="button" id="b-nouveau" data-avance data-tip="Commencer un projet vide (l'autre reste dans Mes projets)"><span class="ic ic-nouveau" aria-hidden="true"></span> Nouveau projet</button>
+      <button type="button" id="b-enregistrer" data-tip="Garder ce projet dans Mes projets. Sinon il est supprimé quand tu le quittes (on te le demandera)"><span class="ic ic-export" aria-hidden="true"></span> Enregistrer</button><button type="button" id="b-nouveau" data-avance data-tip="Commencer un projet vide (l'autre reste dans Mes projets)"><span class="ic ic-nouveau" aria-hidden="true"></span> Nouveau projet</button>
       <button type="button" id="b-export-midi" data-avance data-tip="Fabriquer un fichier MIDI avec les notes de tes clips de notes, pour les ouvrir dans un autre logiciel"><span class="ic ic-export" aria-hidden="true"></span> Exporter en MIDI</button>
       <button type="button" id="b-export" data-tip="Fabriquer un fichier WAV avec tout ton projet, pour l'écouter ou le partager"><span class="ic ic-export" aria-hidden="true"></span> Exporter en WAV</button>
       <span class="annuler-groupe" role="group" aria-label="Revenir en arrière"><button type="button" id="b-annuler" data-tip="Annuler la dernière action (Ctrl+Z)" disabled><span class="ic ic-annuler" aria-hidden="true"></span> Annuler</button><button type="button" id="b-refaire" data-tip="Rétablir ce qu'on vient d'annuler (Ctrl+Y)" disabled><span class="ic ic-refaire" aria-hidden="true"></span> Rétablir</button></span>
@@ -174,6 +174,13 @@
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
 </main>
+<div class="dlg" id="dlg-projet" role="alertdialog" aria-modal="true" aria-labelledby="dlg-titre" aria-describedby="dlg-texte" hidden>
+  <div class="dlg-boite">
+    <h2 id="dlg-titre"></h2><p id="dlg-texte"></p>
+    <label class="dlg-nom" id="dlg-nom-l" hidden>Nom du projet<input type="text" id="dlg-nom" maxlength="80" autocomplete="off" placeholder="Sans titre"></label>
+    <div class="dlg-actions" id="dlg-actions"></div>
+  </div>
+</div>
 <div class="dock" id="dock" aria-label="Éditeur : notes, rythme, courbes" hidden>
   <div class="dock-poignee" id="dock-poignee" role="separator" aria-orientation="horizontal" aria-label="Hauteur de l'éditeur (flèches haut et bas, ou tirer)" aria-valuemin="160" aria-valuemax="800" aria-valuenow="340" tabindex="0"><span aria-hidden="true"></span></div>
   <div class="dock-onglets" id="dock-onglets" role="tablist" aria-label="Éditeurs"><button type="button" role="tab" id="dock-t-rouleau" data-cible="rouleau" aria-selected="false">Notes</button><button type="button" role="tab" id="dock-t-pas" data-cible="pas" aria-selected="false">Rythme</button><button type="button" role="tab" id="dock-t-audio" data-cible="audio" aria-selected="false">Audio</button><button type="button" role="tab" id="dock-t-biblio" data-cible="biblio" aria-selected="false">Sons</button></div>
@@ -290,8 +297,8 @@
 </section>
   </div>
 </div>
-<script type="module" src="pistes.js?v=a37da9efa9"></script>
-<script src="../barre-cours.js?v=a37da9efa9"></script>
-<script src="../retour.js?v=a37da9efa9"></script>
+<script type="module" src="pistes.js?v=ac38c9fd91"></script>
+<script src="../barre-cours.js?v=ac38c9fd91"></script>
+<script src="../retour.js?v=ac38c9fd91"></script>
 </body>
 </html>
