@@ -1820,6 +1820,17 @@ html.signal #rch-b + .en-an { margin-left: 8px }
 html.signal body.jeu-nuit .ludo-go { padding: 8px 14px; width: fit-content; }
 .ludo-pills a[aria-pressed="true"] { outline: 2px solid var(--c, #fff); outline-offset: 2px; } .ludo-fam[hidden] { display: none; }
 .ludo-avenir { margin: 12px 0 0; } .ludo-avenir > summary { cursor: pointer; padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,.06); color: inherit; font: 600 .95rem/1.3 inherit; list-style: none; } .ludo-avenir > summary::-webkit-details-marker { display: none; } .ludo-avenir > summary::before { content: "\203A"; display: inline-block; margin-right: 8px; transition: transform .15s; } .ludo-avenir[open] > summary::before { transform: rotate(90deg); } .ludo-avenir .ludo-grille { margin-top: 10px; }
+.hub2 .cat-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 56px 12px; padding-top: 44px; margin-bottom: 14px; }
+.hub2 .cat-carte { min-height: 236px; padding-top: 84px; text-decoration: none; display: flex; flex-direction: column; gap: 6px; padding-left: 14px; padding-right: 14px; padding-bottom: 14px; }
+.hub2 .cat-carte b { font-size: 1.12rem; } .hub2 .cat-carte > span:not(.hub-3d) { font: 400 .85rem/1.3 "Fredoka", sans-serif; opacity: .85; } .hub2 .cat-carte i { margin-top: auto; align-self: flex-start; padding: 6px 12px; font-style: normal; font-size: .82rem; }
+.hub2 .cat-carte .hub-3d { width: 112px; height: 112px; top: -40px; } .hub2 .cat-carte .hub-3d img { width: 100%; height: 100%; object-fit: contain; }
+.hub2 .cat-carte.verrou { filter: saturate(.3) brightness(.7); } .hub2 .cat-carte.verrou:hover { filter: saturate(.6) brightness(.9); }
+.hub2 .cat-fam { margin-top: 8px; } .hub2 .cat-fam .hub-rub { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; } .hub2 .cat-txt { margin: -6px 0 0; opacity: .75; }
+.hub2.cat-page > header, .hub2.cat-page > .top { position: relative; }
+.hub2 .ludo-pills { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px; margin: 0 -16px 8px; padding: 6px 16px 12px; scroll-snap-type: x proximity; scrollbar-width: none; } .hub2 .ludo-pills::-webkit-scrollbar { display: none; }
+.hub2 .ludo-pills a { flex: none; white-space: nowrap; font-size: .8rem; padding: 8px 14px; scroll-snap-align: start; }
+.hub2 .cat-fam .hub-rub span:first-child { font: 600 1.3rem "Fredoka", sans-serif; color: #fff; } .hub2 .cat-fam .hub-rub span:last-child { font-size: .85rem; }
+.hub2 .cat-carte > span:not(.hub-3d) { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; } .hub2 .cat-carte { min-height: 216px; }
 </style>
 </head>
 <body>
@@ -5014,21 +5025,32 @@ function jeuxCatalogue(niv) {
   if (D.sonora_orchestre) X.push({ id: "orchestre", titre: "L'orchestre", consigne: "Le plan, les instruments, une fugue.", famille: "instruments", href: D.sonora_orchestre, source: "SONORA Orchestre", seances: [] });
   return L.concat(X);
 }
+/* Les cartes du catalogue : la même affiche 3D pour tous les jeux (icône 3D qui flotte, relief, couleur de la famille). */
+const ICO_FAM = { rythme: ["pistes", "de", "eclair"], ecoute: ["casque", "diapason", "loupe"], instruments: ["orchestre", "son", "livres"], theorie: ["harmonie", "livres", "etoile"], creation: ["studio", "science", "code"], atlas: ["chemin", "livres", "etoile"] };
+const ICO_SPEC = { "timbre-quiz": "casque", "timbre-survie": "coeur", "timbre-intrus": "intrus", "timbre-hautbas": "hautbas", "timbre-memoire": "memoire", "timbre-paires": "paires", "quiz-cours": "son", "quiz-lieux": "chemin", "quiz-ordre": "barres", "quiz-mots": "etoile", "quiz-trajets": "de", harmonie: "harmonie", orchestre: "orchestre" };
+const ico3dDe = j => ICO_SPEC[j.id] || ICO_FAM[j.famille][[...j.id].reduce((a, c) => a + c.charCodeAt(0), 0) % 3];
+function carte3D(j) {
+  const k = niveauCarte(), f = ludoFam(j.famille), ouvert = !j.moteur || jeuOuvert(j, k), o = !ouvert && ouvertureDe(j, k), verrou = !ouvert && !!o;
+  const et = j.moteur && modeJeu() ? ludoEtoiles(j.id) : 0, niv = j.moteur ? nivMaxOuvert(j.id) + 1 : 0, ico = ico3dDe(j);
+  const pastille = verrou ? `Séance du ${esc(o.date)}` : j.moteur ? (et ? `&#9733; ${et} sur 9, niveau ${niv}` : "Nouveau : jouer") : "Jouer";
+  return `<a class="hub-affiche cat-carte${verrou ? " verrou" : ""}" ${verrou ? `href="#seance-${k}-${o.seq}-${o.num}"` : ludoLien(j)} style="--k:${f[2]};--ktx:${texteSur(f[2])}"${verrou ? ` title="Se débloque à la séance du ${esc(o.date)}"` : ""}>
+    <span class="hub-3d" data-ico3d="${ico}:${f[2]}" aria-hidden="true"></span><b>${insec(j.titre)}</b><span>${insec(j.consigne)}</span><i>${pastille}</i></a>`;
+}
 function catalogueJeux(J, base, niv) {
   const k = niveauCarte(), ouvert = j => !j.moteur || jeuOuvert(j, k);
   return `<div class="ludo-pills" role="group" aria-label="Familles de jeux"><a href="${base}" data-fam-filtre="" role="button" aria-pressed="true" style="--c:#8a8a80">Tous <b>${J.length}</b></a>${D.ludo.familles.map(([id, nom, c]) => `<a href="${base}" data-fam-filtre="${id}" role="button" aria-pressed="false" style="--c:${c}">${famIco(id)}${esc(nom.split(",")[0])} <b>${J.filter(j => j.famille === id).length}</b></a>`).join("")}</div>`
     + D.ludo.familles.map(([id, nom, c, txt]) => { const L = J.filter(j => j.famille === id), O = L.filter(ouvert), F = L.filter(j => !ouvert(j));
-      return `<section class="ludo-fam" id="fam-${id}" data-fam="${id}" style="--c:${c}"><div class="ludo-band"><span class="ludo-bi">${famIco(id)}</span><span><h2>${esc(nom)}</h2><span class="small">${esc(txt)} ${O.length} jeu${O.length > 1 ? "x" : ""} à jouer${F.length ? `, ${F.length} à venir` : ""}.</span></span></div>`
-        + (O.length ? `<div class="ludo-grille">${O.map(ludoCarte).join("")}</div>` : L.length ? `<p class="small">Rien à jouer pour l'instant : les jeux de cette famille s'ouvrent avec les séances.</p>` : `<p class="small">Bientôt${niv ? ` pour la ${niv}` : ""}.</p>`)
-        + (F.length ? `<details class="ludo-avenir"><summary>À venir : ${F.length} jeu${F.length > 1 ? "x" : ""}, débloqué${F.length > 1 ? "s" : ""} avec les séances</summary><div class="ludo-grille">${F.map(ludoCarte).join("")}</div></details>` : "") + `</section>`; }).join("");
+      return `<section class="ludo-fam cat-fam" id="fam-${id}" data-fam="${id}" style="--c:${c}"><h2 class="hub-rub"><span>${nom}</span><span>${O.length} à jouer${F.length ? `, ${F.length} à venir` : ""}</span></h2><p class="small cat-txt">${esc(txt)}</p>`
+        + (O.length ? `<div class="cat-grille">${O.map(carte3D).join("")}</div>` : L.length ? `<p class="small">Rien à jouer pour l'instant : les jeux de cette famille s'ouvrent avec les séances.</p>` : `<p class="small">Bientôt${niv ? ` pour la ${niv}` : ""}.</p>`)
+        + (F.length ? `<details class="ludo-avenir"><summary>À venir : ${F.length} jeu${F.length > 1 ? "x" : ""}, débloqué${F.length > 1 ? "s" : ""} avec les séances</summary><div class="cat-grille">${F.map(carte3D).join("")}</div></details>` : "") + `</section>`; }).join("");
 }
 function vueLudo(niv) {
   NIV_CARTE = niv || "";
   const J = jeuxCatalogue(niv);
-  return head("Jouer", "Tous les jeux", `${J.length} jeux${niv ? ` pour la ${niv}` : ""}, en ${D.ludo.familles.length} familles, tous au même endroit. Ceux du cours sont reliés à une séance : tu les retrouves aussi dans l'étape « S'entraîner ».`)
+  return `<div class="hub hub2 cat-page">` + head("Jouer", "Tous les jeux", `${J.length} jeux${niv ? ` pour la ${niv}` : ""}, en ${D.ludo.familles.length} familles, tous au même endroit. Ceux du cours sont reliés à une séance : tu les retrouves aussi dans l'étape « S'entraîner ».`)
     + `<nav class="levels" aria-label="Niveau"><a href="#ludo" aria-current="${niv ? "false" : "page"}">Tous</a>${NIV.map(n => `<a href="#ludo-${n}" aria-current="${n === niv ? "page" : "false"}">${n}</a>`).join("")}</nav>`
     + catalogueJeux(J, niv ? "#ludo-" + niv : "#ludo", niv)
-    + (modeJeu() ? `<p class="small">Rien n'est noté ni envoyé : les étoiles et les points restent sur cet appareil, dans ton <a href="#parcours">parcours</a> (rubrique Jouer).</p>` : `<p class="small">Rien n'est noté ni envoyé. Pour jouer avec des points et des badges, passe en mode Jouer en haut de la page.</p>`);
+    + (modeJeu() ? `<p class="small">Rien n'est noté ni envoyé : les étoiles et les points restent sur cet appareil, dans ton <a href="#parcours">parcours</a> (rubrique Jouer).</p>` : `<p class="small">Rien n'est noté ni envoyé. Pour jouer avec des points et des badges, passe en mode Jouer en haut de la page.</p>`) + `</div>`;
 }
 /* ---------- Jouer, à la Duolingo : la série, l'objectif du jour, les défis, le coffre et le chemin des jeux ----------
    Les règles du 03/11/2026 tiennent toujours : aucun point pour venir sur le site, aucun badge de série, un jeu ne rapporte qu'une fois.
@@ -6379,7 +6401,7 @@ function rendre() {
   else if (v === "chemin") { app.innerHTML = vueChemin(); tab = "jouer"; app.querySelectorAll("[data-niv]").forEach(a => a.onclick = e => { e.preventDefault(); if (D.eleves && D.codes) return; set("niv", a.dataset.niv); set("classe", a.dataset.niv); rendre(); }); }
   else if (D.nav.carrefours[v]) { app.innerHTML = vueCarrefour(v); if (v === "labo" && app.querySelector(".labo2")) { brancherIcones(); brancherRelief(); app.querySelectorAll("a.labo-t").forEach(a => a.addEventListener("click", () => set("labo-dernier", a.getAttribute("href") + "|" + a.dataset.t))); } }
   else if ((m = v.match(/^ludo(?:-(.+))?$/)) && (!m[1] || NIV.includes(m[1]) || D.ludo.jeux.some(x => x.id === m[1] && x.moteur))) {
-    tab = "pratiquer"; if (m[1] && !NIV.includes(m[1])) { app.innerHTML = vueJeuLudo(m[1]); brancherJeuLudo(m[1]); } else app.innerHTML = vueLudo(m[1] || ""); }
+    tab = "pratiquer"; if (m[1] && !NIV.includes(m[1])) { app.innerHTML = vueJeuLudo(m[1]); brancherJeuLudo(m[1]); } else { app.innerHTML = vueLudo(m[1] || ""); brancherIcones(); brancherRelief(); } }
   else if (v === "faust") { app.innerHTML = vueFaust(); tab = "faust"; }
   else if (v === "faust-matieres") { app.innerHTML = vueMatieres(); tab = "faust"; }
   else if (v === "faust-ateliers") { app.innerHTML = vueAteliers(); tab = "faust"; }
