@@ -1,36 +1,36 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=583258a9e0";
-import * as Ed from "./editions.js?v=583258a9e0";
-import * as P from "./projet.js?v=583258a9e0";
-import * as TR from "./transport.js?v=583258a9e0";
-import { Stockage } from "./stockage.js?v=583258a9e0";
-import { creerBouton } from "./bouton.js?v=583258a9e0";
-import * as MI from "./midi.js?v=583258a9e0";
-import * as N from "./notes.js?v=583258a9e0";
-import { Rouleau } from "./rouleau.js?v=583258a9e0";
-import { PanneauPartition } from "./partition/panneau.js?v=583258a9e0";
-import { separer, NOMS_PARTIES } from "./separation.js?v=583258a9e0";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=583258a9e0";
-import * as BM from "./batterie_midi.js?v=583258a9e0";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=583258a9e0";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=583258a9e0";
-import * as INS from "./instruments.js?v=583258a9e0";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=583258a9e0";
-import * as OMR from "./omr.js?v=583258a9e0";
-import { creerConsole } from "./console.js?v=583258a9e0";
-import { creerVueBlocs } from "./blocs-ui.js?v=583258a9e0";
-import { creerMaster } from "./master.js?v=583258a9e0";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=583258a9e0";
-import * as MO from "./moteurs.js?v=583258a9e0";
-import { monterPanneaux } from "./panneaux.js?v=583258a9e0";
-import { monterNotions } from "./notions.js?v=583258a9e0";
-import { DEMOS } from "./demos.js?v=583258a9e0";
-import * as B from "./bibliotheque.js?v=583258a9e0";
-import { encoderWAV } from "../studio/wav.js?v=583258a9e0";
-import { ENTREES } from "../library/catalogue.js?v=583258a9e0";
-import { compiler } from "../src/index.js?v=583258a9e0";
-import { rendre } from "../src/rendu.js?v=583258a9e0";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=aceeacdfe7";
+import * as Ed from "./editions.js?v=aceeacdfe7";
+import * as P from "./projet.js?v=aceeacdfe7";
+import * as TR from "./transport.js?v=aceeacdfe7";
+import { Stockage } from "./stockage.js?v=aceeacdfe7";
+import { creerBouton } from "./bouton.js?v=aceeacdfe7";
+import * as MI from "./midi.js?v=aceeacdfe7";
+import * as N from "./notes.js?v=aceeacdfe7";
+import { Rouleau } from "./rouleau.js?v=aceeacdfe7";
+import { PanneauPartition } from "./partition/panneau.js?v=aceeacdfe7";
+import { separer, NOMS_PARTIES } from "./separation.js?v=aceeacdfe7";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=aceeacdfe7";
+import * as BM from "./batterie_midi.js?v=aceeacdfe7";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=aceeacdfe7";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=aceeacdfe7";
+import * as INS from "./instruments.js?v=aceeacdfe7";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=aceeacdfe7";
+import * as OMR from "./omr.js?v=aceeacdfe7";
+import { creerConsole } from "./console.js?v=aceeacdfe7";
+import { creerVueBlocs } from "./blocs-ui.js?v=aceeacdfe7";
+import { creerMaster } from "./master.js?v=aceeacdfe7";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=aceeacdfe7";
+import * as MO from "./moteurs.js?v=aceeacdfe7";
+import { monterPanneaux } from "./panneaux.js?v=aceeacdfe7";
+import { monterNotions } from "./notions.js?v=aceeacdfe7";
+import { DEMOS } from "./demos.js?v=aceeacdfe7";
+import * as B from "./bibliotheque.js?v=aceeacdfe7";
+import { encoderWAV } from "../studio/wav.js?v=aceeacdfe7";
+import { ENTREES } from "../library/catalogue.js?v=aceeacdfe7";
+import { compiler } from "../src/index.js?v=aceeacdfe7";
+import { rendre } from "../src/rendu.js?v=aceeacdfe7";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -70,7 +70,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=583258a9e0"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=aceeacdfe7"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -408,7 +408,8 @@ async function finirEnregistrement() {
   const dur = (canaux[0].length - coupe) / sr, d = dur.toFixed(1).replace(".", ",");
   const reste = c.pistes.length > k ? ` Cette entrée n'a que ${k} canal${k > 1 ? "ux" : ""} : seule${k > 1 ? "s" : ""} la première${k > 1 ? "s" : ""} piste${k > 1 ? "s" : ""} armée${k > 1 ? "s ont" : " a"} enregistré (${c.pistes.length} armées).` : "";
   message(`Enregistré : ${d} s sur ${k > 1 ? k + " pistes, un canal par piste" : "la piste"}.${voie === "worklet" ? ` Latence compensée : ${Math.round(lat * 1000)} ms.` : " Ton navigateur a utilisé l'enregistreur de secours (un seul canal, sans compensation de latence) : décale le clip à la main si besoin."}${reste}`);
-  etat.dernierEnreg = { duree: dur, latence: lat, depart: Math.max(0, (c.debutLecture ?? c.t0) - c.t0), voie, canaux: canaux.length, pistes: c.pistes.length, enregistres: k }; etat.aReecouter = (etat.aReecouter || []).concat(ids); changer();
+  etat.tete = c.debut; etat.dernierePrise = { debut: c.debut };   // la tête revient au début de la prise : Lire la réécoute tout de suite ; Annuler puis Enregistrer la refait au même endroit
+  etat.dernierEnreg = { duree: dur, latence: lat, depart: Math.max(0, (c.debutLecture ?? c.t0) - c.t0), voie, canaux: canaux.length, pistes: c.pistes.length, enregistres: k }; etat.aReecouter = (etat.aReecouter || []).concat(ids); etat.dernierePrise.sons = ids; changer();
 }
 
 // ---------------------------------------------------------------- MIDI : jouer un instrument de la Library, enregistrer les notes, les rendre en clip
@@ -543,7 +544,8 @@ function finirNotes() {
     rangerAudio(id, audioDeNotes(p.sons[id], inst, p.tempo)); P.placerClip(p, P.pisteLibre(p, etat.notesPiste, depart, duree), id, depart);
     const n = r.notes.length, cal = calage ? (calage === 1 ? ", calée sur le temps" : calage === 0.5 ? ", calée sur la croche" : ", calée sur la double croche") : "";
     message(`${n} note${n > 1 ? "s" : ""} jouée${n > 1 ? "s" : ""} avec ${e.nom}${cal} : clip de ${temps} temps (${duree.toFixed(1).replace(".", ",")} s). Les notes suivent le tempo : change-le, elles restent sur les mêmes temps.`);
-    etat.dernierMidi = { notes: n, duree, debut: depart, instrument: e.id, temps, detail: r.notes.map(x => ({ note: x.note, t: x.t, fin: x.fin })) }; etat.aReecouter = (etat.aReecouter || []).concat(id); changer();
+    etat.tete = depart; etat.dernierePrise = { debut: depart };   // idem : la tête revient au début de la prise
+    etat.dernierMidi = { notes: n, duree, debut: depart, instrument: e.id, temps, detail: r.notes.map(x => ({ note: x.note, t: x.t, fin: x.fin })) }; etat.aReecouter = (etat.aReecouter || []).concat(id); etat.dernierePrise.sons = [id]; changer();
   } catch (err) { message("Les notes n'ont pas pu être rendues : " + (err && err.message || err)); }
 }
 
@@ -752,7 +754,11 @@ $("fichier-midi").onchange = async e => {
 const histo = { pile: [], refaire: [], snap: null };
 function empiler() { const nouveau = JSON.stringify(etat.projet); if (histo.snap === null) { histo.snap = nouveau; return; } if (nouveau !== histo.snap) { histo.pile.push(histo.snap); if (histo.pile.length > 100) histo.pile.shift(); histo.refaire = []; histo.snap = nouveau; } }
 function restaurer(texte) { histo.snap = texte; etat.projet = P.verifierProjet(JSON.parse(texte)); setTimeout(() => remettreAJourMidi(), 0); if (etat.choisi && !P.trouverClip(etat.projet, etat.choisi)) etat.choisi = null; if (!P.trouverPiste(etat.projet, etat.arme)) etat.arme = etat.projet.pistes[0] && etat.projet.pistes[0].id; if (etat.lecture && !etat.enreg) arreter(); afficher(); clearTimeout(minuteur); minuteur = setTimeout(() => Stockage.ecrireProjet(etat.projet).catch(() => {}), 250); }
-function annuler() { if (!histo.pile.length) { message("Rien à annuler."); return; } histo.refaire.push(histo.snap); restaurer(histo.pile.pop()); rafraichirRouleau(); message("Annulé."); }
+function annuler() {
+  if (!histo.pile.length) { message("Rien à annuler."); return; } histo.refaire.push(histo.snap); restaurer(histo.pile.pop()); rafraichirRouleau();
+  const pr = etat.dernierePrise;   // annuler une prise ramène la tête à son début : Enregistrer la refait au même endroit
+  if (pr && pr.sons && pr.sons.length && pr.sons.every(id => !etat.projet.pistes.some(pi => pi.clips.some(c => c.son === id)))) { etat.tete = pr.debut; etat.dernierePrise = null; message("Prise annulée : la tête est revenue à son début, Enregistrer la refait au même endroit."); } else message("Annulé.");
+}
 function retablir() { if (!histo.refaire.length) { message("Rien à rétablir."); return; } histo.pile.push(histo.snap); restaurer(histo.refaire.pop()); rafraichirRouleau(); message("Rétabli."); }
 window.PISTES_HISTO = histo;
 // ---------------------------------------------------------------- effets sur le clip choisi : ils créent un nouveau son, l'original reste intact
