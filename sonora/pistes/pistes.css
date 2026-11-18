@@ -792,3 +792,22 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 @media (max-width: 700px) { .dock-onglets { display: none; } }
 
 .sel-vide { display: none; }
+
+/* ---------------------------------------------------------------- Téléphone : les panneaux ne se cachent plus derrière les barres du bas
+   Les barres du bas (Lire, Enregistrer, Ajouter, Réglages, plus la rangée des bascules) prennent environ 118 px et la zone de sécurité de l'iPhone. Le séquenceur garde ses boutons d'action visibles
+   (collés au-dessus des barres), le clavier devient une feuille en bas de l'écran : l'arrangement reste visible au-dessus, on voit le clip se faire et la tête avancer. */
+@media (max-width: 700px) {
+  body { padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px)); }
+  body:has(#selection:not([hidden])) { padding-bottom: calc(190px + 70px + env(safe-area-inset-bottom, 0px)); }
+  #pas .midi-rang:has(#pas-ecouter) { flex-wrap: nowrap; gap: 6px; overflow-x: auto; } #pas .midi-rang:has(#pas-ecouter) button { flex: 0 0 auto; padding: 0 10px; min-height: 44px; font-size: .8rem; white-space: nowrap; }
+  #pas .midi-rang:has(#pas-ecouter) { position: sticky; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); z-index: 5; padding: 8px; margin: 8px -4px 0; border-radius: 14px; background: #2a2a33; box-shadow: 0 -8px 16px rgba(0, 0, 0, .45); }
+  #midi:not([hidden]) { position: fixed; left: 6px; right: 6px; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); z-index: 44; margin: 0; max-height: 56vh; overflow: hidden; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; box-shadow: 0 -10px 24px rgba(0, 0, 0, .55); }
+  body:has(#midi:not([hidden])) { padding-bottom: calc(190px + 330px + env(safe-area-inset-bottom, 0px)); }
+  /* la feuille du clavier : Enregistrer les notes d'abord, les réglages sur une rangée qui défile, les touches toujours visibles en dessous */
+  #midi .midi-haut { margin: 0; } #midi > .petit:not(#midi-etat) { display: none; } #midi #midi-etat { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .74rem; }
+  #midi .midi-rang { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 4px; } #midi .midi-rang::-webkit-scrollbar { display: none; } #midi .midi-rang > * { flex: 0 0 auto; }
+  #midi #b-notes { order: -2; min-height: 48px; } #midi .midi-rang > label:first-child { order: -1; }
+  #midi .midi-clavier { flex: 0 0 auto; min-height: 150px; }
+  body:has(#midi:not([hidden])) .transport .bascules { z-index: 46; }
+  #midi .mini.case:has(#midi-ordi), #b-midi-brancher { display: none; }   /* ni clavier d'ordinateur ni MIDI sur un téléphone */
+}
