@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=9d7e1e32bd">
-<link rel="stylesheet" href="pistes.css?v=9d7e1e32bd"><link rel="stylesheet" href="blocs.css?v=9d7e1e32bd"><link rel="stylesheet" href="console.css?v=9d7e1e32bd"><link rel="stylesheet" href="notions.css?v=9d7e1e32bd">
+<link rel="stylesheet" href="../studio/studio.css?v=583258a9e0">
+<link rel="stylesheet" href="pistes.css?v=583258a9e0"><link rel="stylesheet" href="blocs.css?v=583258a9e0"><link rel="stylesheet" href="console.css?v=583258a9e0"><link rel="stylesheet" href="notions.css?v=583258a9e0">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -192,6 +192,7 @@
   <div class="midi-rang"><label class="mini">Longueur<select id="pas-longueur" aria-label="Nombre de pas"></select></label><label class="mini">Jeu de sons<select id="pas-jeu" aria-label="Jeu de sons"></select></label>
     <label class="mini">Swing <output id="pas-sw">0 %</output><input type="range" id="pas-swing" min="0" max="50" value="0" aria-label="Swing"></label>
     <label class="mini">Mesures<select id="pas-mesures" aria-label="Nombre de mesures"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option></select></label></div>
+  <p class="petit pas-astuce" id="pas-astuce">Fais glisser la grille vers la gauche pour voir tous les pas.</p>
   <div class="pas-grille" id="pas-grille" role="group" aria-label="Grille du séquenceur"></div>
   <div class="midi-rang"><button type="button" id="pas-ecouter">Écouter en boucle</button><button type="button" id="pas-ajouter">Ajouter au projet</button><button type="button" id="pas-annuler" disabled>&#8630; Annuler</button><button type="button" id="pas-vider">Vider</button></div><p class="petit" id="msg-pas" role="status"></p>
 </section>
@@ -284,8 +285,8 @@
 </section>
   </div>
 </div>
-<script type="module" src="pistes.js?v=9d7e1e32bd"></script>
-<script src="../barre-cours.js?v=9d7e1e32bd"></script>
-<script src="../retour.js?v=9d7e1e32bd"></script>
+<script type="module" src="pistes.js?v=583258a9e0"></script>
+<script src="../barre-cours.js?v=583258a9e0"></script>
+<script src="../retour.js?v=583258a9e0"></script>
 </body>
 </html>

@@ -811,3 +811,11 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
   body:has(#midi:not([hidden])) .transport .bascules { z-index: 46; }
   #midi .mini.case:has(#midi-ordi), #b-midi-brancher { display: none; }   /* ni clavier d'ordinateur ni MIDI sur un téléphone */
 }
+
+/* Séquenceur sur téléphone : la grille de 16 pas défile ; les noms des lignes restent collés à gauche, un texte le dit. */
+.pas-astuce { display: none; }
+@media (max-width: 700px) {
+  .pas-astuce { display: block; margin: 4px 0 0; }
+  #pas .pas-nom { position: sticky; left: 0; z-index: 2; background: #2a2a33; padding-right: 6px; box-shadow: 8px 0 8px -4px #2a2a33; }
+  #pas .pas-ligne { grid-template-columns: 5.2rem repeat(var(--n, 16), minmax(30px, 1fr)); }
+}
