@@ -82,6 +82,8 @@
     const j = Object.assign({ xp: 0, faits: {}, badges: {}, c: {}, pays: {}, jours: [], serie: 0 }, lire(localStorage, "jeu") || {}); j.faits = j.faits || {}; j.c = j.c || {};
     if (cle && j.faits[cle]) return false;
     if (cle) j.faits[cle] = 1; if (compteur) j.c[compteur] = (j.c[compteur] || 0) + 1; j.xp = (j.xp || 0) + (points || 0);
+    if (points) { const pl = /^(seance|fiche|semaine):/.test(cle || "") ? "cours" : /^(son|part|poly|yt):/.test(cle || "") ? "oeuvres" : /^timbre:|^quiz:mots:/.test(cle || "") ? "timbre" : /^(atlas:|quiz:)/.test(cle || "") ? "atlas" : "labo";  /* même règle que planeteDe() du site */
+      j.src = j.src || {}; j.src[pl] = (j.src[pl] || 0) + points; j.xpj = j.xpj || {}; const dd = new Date(), jr = dd.getFullYear() + "-" + String(dd.getMonth() + 1).padStart(2, "0") + "-" + String(dd.getDate()).padStart(2, "0"); j.xpj[jr] = (j.xpj[jr] || 0) + points; const ks = Object.keys(j.xpj).sort(); while (ks.length > 40) delete j.xpj[ks.shift()]; }
     try { localStorage.setItem("jeu", JSON.stringify(j)); } catch (_) { return false; }
     miroir(j);
     const puce = nav.querySelector(".bc-xp"); if (puce) puce.textContent = j.xp + " XP"; else { const mp = [...nav.querySelectorAll("a")].find(a => /Mon parcours/.test(a.textContent)); if (mp) mp.insertAdjacentHTML("beforeend", ` <span class="bc-xp">${j.xp} XP</span>`); }

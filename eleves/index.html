@@ -1844,6 +1844,24 @@ html.signal body.jeu-nuit .labo-clavier .blanche { border-radius: 0 0 14px 14px;
 html.signal body.jeu-nuit .labo-code, html.signal body.jeu-nuit details.seq { border-radius: 22px; border: 1px solid var(--bord, #2b3322); background: #11150d; color: #fff; }
 html.signal body.jeu-nuit .fnav { border: 0; padding: 6px 0 12px; gap: 8px; } html.signal body.jeu-nuit .fnav a { border-radius: 999px; border: 1px solid var(--bord, #2b3322); background: #151a10; color: #fff !important; font: 600 .95rem "Fredoka", sans-serif; text-transform: none; letter-spacing: 0; padding: 9px 16px; }
 html.signal body.jeu-nuit .fnav a[aria-current="page"] { background: #b8f54a; border-color: #b8f54a; color: #0c1400 !important; }
+/* La galaxie (page Mon parcours) */
+.gal { margin-top: 10px; } .gal-scene { position: relative; aspect-ratio: 1 / 1; max-height: 78vh; width: 100%; border-radius: 28px; overflow: hidden; background: radial-gradient(90% 70% at 50% 45%, #1a2a14 0%, #0b1008 55%, #05070a 100%); border: 1px solid var(--bord, #2b3322); touch-action: pan-y; }
+.gal-scene canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: none; touch-action: none; cursor: grab; } .gal-scene.trois-d canvas { display: block; } .gal-sans3d { position: absolute; inset: auto 16px 16px; margin: 0; } .gal-scene.trois-d .gal-sans3d { display: none; }
+#gal-etiq { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.gal-etiquette { position: absolute; left: 0; top: 0; pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 0; padding: 2px 8px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--k) 70%, transparent); background: rgba(8, 12, 6, .72); color: #fff; font: 600 .64rem/1.15 "Fredoka", sans-serif; cursor: pointer; max-width: 150px; text-align: center; backdrop-filter: blur(4px); }
+.gal-etiquette b { display: none; white-space: nowrap; } .gal-etiquette[aria-pressed="true"] b, .gal-etiquette.terre b { display: block; } @media (min-width: 760px) { .gal-etiquette b { display: block; } }
+.gal-etiquette span { color: var(--v, #b8f54a); font-weight: 600; white-space: nowrap; } .gal-etiquette[aria-pressed="true"] { background: var(--k); color: #0c1400; } .gal-etiquette[aria-pressed="true"] span { color: #0c1400; } .gal-etiquette.terre b { font-size: .78rem; }
+.gal-soleil { position: absolute; left: 14px; top: 12px; pointer-events: none; display: flex; flex-direction: column; font-family: "Fredoka", sans-serif; } .gal-soleil b { font-size: 1.15rem; color: #ffd23f; } .gal-soleil span { font-size: .8rem; color: rgba(255,255,255,.8); }
+.gal-fiche { margin: 12px 0 4px; padding: 16px; border-radius: 24px; border: 1px solid color-mix(in srgb, var(--k, #b8f54a) 55%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--k, #b8f54a) 18%, #11150d), #11150d); color: #fff; } .gal-fiche h3 { margin: 0 0 8px; font: 600 1.35rem "Fredoka", sans-serif; letter-spacing: 0; } .gal-fiche p { margin: 8px 0; }
+.gal-barre { display: block; height: 12px; border-radius: 999px; background: rgba(255,255,255,.12); overflow: hidden; } .gal-barre i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--k, #b8f54a), #b8f54a); }
+.gal-h { margin: 22px 0 10px; font: 600 1.2rem "Fredoka", sans-serif; letter-spacing: 0; }
+.gal-recap { display: grid; gap: 14px; } .gal-tuiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; } .gal-tuile { padding: 12px 10px; border-radius: 18px; background: #151a10; border: 1px solid var(--bord, #2b3322); text-align: center; } .gal-tuile b { display: block; font: 600 1.5rem "Fredoka", sans-serif; color: var(--v, #b8f54a); } .gal-tuile span { font-size: .78rem; opacity: .8; }
+.gal-semaine { list-style: none; margin: 0; padding: 12px 8px 6px; display: flex; justify-content: space-between; align-items: flex-end; gap: 6px; height: 132px; border-radius: 18px; background: #151a10; border: 1px solid var(--bord, #2b3322); } .gal-semaine li { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 3px; height: 100%; font: 600 .75rem "Fredoka", sans-serif; opacity: .85; } .gal-semaine i { display: block; width: 46%; min-height: 8px; border-radius: 6px; background: var(--v, #b8f54a); } .gal-semaine u { display: block; width: 46%; min-height: 4px; border-radius: 6px; background: #ffd23f; text-decoration: none; } .gal-semaine li.auj span { color: var(--v, #b8f54a); }
+.gal-liste { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.gal-carte { width: 100%; text-align: left; display: grid; grid-template-columns: 14px 1fr auto; gap: 6px 10px; align-items: center; padding: 14px; border-radius: 20px; border: 1px solid var(--bord, #2b3322); background: #151a10; color: #fff; cursor: pointer; font-family: "Fredoka", sans-serif; } .gal-carte[aria-pressed="true"] { border-color: var(--k); box-shadow: 0 0 0 2px var(--k); }
+.gal-pastille { width: 14px; height: 14px; border-radius: 50%; background: var(--k); box-shadow: 0 0 10px var(--k); } .gal-nom { font-weight: 600; } .gal-pc { color: var(--v, #b8f54a); font-weight: 600; } .gal-carte .gal-barre { grid-column: 1 / -1; height: 8px; } .gal-txt, .gal-xp { grid-column: 1 / -1; font-size: .85rem; opacity: .85; } .gal-xp { color: #ffd23f; opacity: 1; }
+@media (min-width: 760px) { .gal-scene { aspect-ratio: 16 / 10; } .gal-tuiles { grid-template-columns: repeat(6, 1fr); } .gal-recap { grid-template-columns: 2fr 1fr; align-items: stretch; } }
+@media (prefers-reduced-motion: reduce) { .gal-scene canvas { cursor: default; } }
 </style>
 </head>
 <body>
@@ -4723,7 +4741,7 @@ const SAUV = (() => {
     for (const k of ["faits", "badges", "pays"]) o[k] = Object.assign({}, objet(a[k]), objet(b[k]));
     const cs = Object.assign({}, objet(a.c), objet(b.c)); for (const k in cs) o.c[k] = Math.max(nombre(objet(a.c)[k]), nombre(objet(b.c)[k]));
     o.jours = [...new Set([].concat(Array.isArray(a.jours) ? a.jours : [], Array.isArray(b.jours) ? b.jours : []))].sort();
-    for (const k of ["etoiles", "plafonds"]) { const m = {}, ka = objet(a[k]), kb = objet(b[k]); for (const c of new Set([...Object.keys(ka), ...Object.keys(kb)])) m[c] = Math.max(nombre(ka[c]), nombre(kb[c])); if (Object.keys(m).length) o[k] = m; }
+    for (const k of ["etoiles", "plafonds", "src", "xpj"]) { const m = {}, ka = objet(a[k]), kb = objet(b[k]); for (const c of new Set([...Object.keys(ka), ...Object.keys(kb)])) m[c] = Math.max(nombre(ka[c]), nombre(kb[c])); if (Object.keys(m).length) o[k] = m; }
     const dj = {}; for (const src of [objet(a.dj), objet(b.dj)]) for (const d in src) { const x = objet(src[d]), y = dj[d] || { p: 0, b: 0, f: [] }; dj[d] = { p: Math.max(y.p, nombre(x.p)), b: Math.max(y.b, nombre(x.b)), f: [...new Set([...y.f, ...(Array.isArray(x.f) ? x.f : [])])] }; if (y.coffre || x.coffre) dj[d].coffre = 1; }
     if (Object.keys(dj).length) o.dj = dj; if ([2, 3, 5].includes(b.obj) || [2, 3, 5].includes(a.obj)) o.obj = [2, 3, 5].includes(b.obj) ? b.obj : a.obj;
     return o;
@@ -4767,6 +4785,17 @@ window.addEventListener("pagehide", () => SAUV.copierMaintenant());
 SAUV.restaurer().then(ok => { if (ok) { try { majPuce(); } catch (_) {} if (/^#parcours/.test(location.hash)) rendre(); } });
 /* SONORA et l'Atlas ajoutent aussi des points (sonora/barre-cours.js) : si un autre onglet les change, on relit au lieu d'écraser. */
 window.addEventListener("storage", e => { if (e.key === "jeu") PARC = null; });
+/* D'où viennent les points : la planète de la galaxie (page Mon parcours) à laquelle une action appartient. Même règle dans sonora/barre-cours.js. */
+function planeteDe(cle) {
+  cle = String(cle || ""); let m;
+  if ((m = cle.match(/^(?:ludo|ludo-etoile):([^:]+):/))) { const g = (D.ludo.jeux.find(x => x.id === m[1]) || {}); return g.famille === "atlas" ? "atlas" : (g.famille || "cours"); }
+  if (/^(seance|fiche|semaine|seqval|seqor|q-jeu):?/.test(cle)) return "cours";
+  if (/^(son|part|poly|yt):|^q-(ecoute|son|echo)/.test(cle)) return "oeuvres";
+  if (/^(quizq|quizfin|quizparfait):|^q-quiz/.test(cle)) return "quiz";
+  if (/^timbre:|^quiz:mots:/.test(cle)) return "timbre";
+  if (/^(atlas:|quiz:)/.test(cle)) return "atlas";
+  return "labo";
+}
 const jeuActif = () => role() === "eleve" && modeJeu();
 const niveauDe = xp => { let n = 0; NIVEAUX_JEU.forEach((x, i) => { if (xp >= x[0]) n = i; }); return n; };
 /* RÈGLE DE SÉBASTIEN (02/11/2026) : « on ne peut pas gagner des XP si on n'a pas fait toute la page et si on n'a pas fini d'entendre un son. JAMAIS. »
@@ -4797,6 +4826,7 @@ function gagner(cle, xp, compteur, plus, plafond) {
   else { if (cle && j.faits[cle]) return; if (cle) j.faits[cle] = 1; }
   if (compteur) j.c[compteur] = (j.c[compteur] || 0) + (plus || 1);
   const avant = niveauDe(j.xp); j.xp += xp || 0;
+  if (xp) { j.src = j.src || {}; const pl = planeteDe(cle); j.src[pl] = (j.src[pl] || 0) + xp; j.xpj = j.xpj || {}; const jr = jourLocal(); j.xpj[jr] = (j.xpj[jr] || 0) + xp; const ks = Object.keys(j.xpj).sort(); while (ks.length > 40) delete j.xpj[ks.shift()]; }
   if (xp) { XP_ATTENTE += xp; clearTimeout(XP_T); XP_T = setTimeout(() => { toast(`+${XP_ATTENTE} XP`, "xp"); XP_ATTENTE = 0; }, 300); }
   BADGES.concat(BADGES_SEQ).forEach(([id, nom, , g, test]) => { if (!j.badges[id] && test(j)) { j.badges[id] = Date.now(); setTimeout(() => celebrer("badge", nom, g), 400); } });
   const apres = niveauDe(j.xp);
@@ -5161,6 +5191,7 @@ function mondeSite(on) {
 /* La page Jouer : un écran de jeu, pas une pile de menus. L'état du joueur (flamme, objectif, niveau), un seul grand bouton « Continuer »,
    puis des tuiles de même forme qui mènent chacune à un mode de jeu. Le chemin des jeux de la classe a sa propre page (#chemin). */
 const HUB_ICO = {
+  galaxie: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="7" fill="currentColor"/><ellipse cx="24" cy="24" rx="20" ry="8" fill="none" stroke="currentColor" stroke-width="3" transform="rotate(-25 24 24)"/><circle cx="40" cy="15" r="3" fill="currentColor"/></svg>',
   chemin: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 40c10 0 6-12 14-12s4-12 14-12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 6"/><circle cx="10" cy="40" r="5" fill="currentColor"/><circle cx="24" cy="28" r="5" fill="currentColor"/><circle cx="38" cy="16" r="6" fill="currentColor"/></svg>',
   timbre: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M9 28v-4a15 15 0 0 1 30 0v4" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><rect x="6" y="26" width="9" height="15" rx="4" fill="currentColor"/><rect x="33" y="26" width="9" height="15" rx="4" fill="currentColor"/><rect x="20" y="22" width="3" height="14" rx="1.5" fill="currentColor"/><rect x="26" y="16" width="3" height="26" rx="1.5" fill="currentColor"/></svg>',
   jour: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M26 4 10 26h12l-3 18 19-24H26z" fill="currentColor"/></svg>',
@@ -5186,7 +5217,7 @@ const HUB_SVG = {
   coffre: '<svg viewBox="0 0 48 44" aria-hidden="true"><path d="M6 20V14a8 8 0 0 1 8-8h20a8 8 0 0 1 8 8v6z" fill="currentColor" opacity=".75"/><rect x="6" y="20" width="36" height="20" rx="3" fill="currentColor"/><rect x="21" y="16" width="6" height="10" rx="2" fill="#0b0d0a"/></svg>' };
 // La plus longue série de jours joués, gardée dans les parties du jour (jeu.dj).
 const ICO3D_TIMBRE = { quiz: "casque", survie: "coeur", intrus: "intrus", hautbas: "hautbas", memoire: "memoire", paires: "paires" };
-const ICO3D_COURS = { chemin: "chemin", jour: "eclair", ludo: "de", harmonie: "harmonie", orchestre: "orchestre", son: "son" };
+const ICO3D_COURS = { galaxie: "etoile", chemin: "chemin", jour: "eclair", ludo: "de", harmonie: "harmonie", orchestre: "orchestre", son: "son" };
 function meilleureSerie() { const jours = Object.keys(jeu().dj || {}).filter(d => (jeu().dj[d] || {}).p).sort(); let best = 0, cur = 0, prev = null;
   for (const d of jours) { const t = new Date(d + "T12:00:00"); cur = prev && Math.round((t - prev) / 864e5) === 1 ? cur + 1 : 1; best = Math.max(best, cur); prev = t; } return best; }
 const barreH2 = (n, max, txt) => { const p = Math.round(Math.min(1, n / max) * 100); return `<span class="h2-barre" role="img" aria-label="${n} sur ${max}"><i style="width:${Math.max(p, n ? 14 : 0)}%"></i><b class="${p >= 55 ? "sur" : ""}">${txt || `${n}/${max}`}</b></span>`; };
@@ -5212,6 +5243,7 @@ function vueJouer() {
   } else if (role() === "eleve") h += `<section class="h2-heros"><div class="h2-flamme">${FLAMME_SVG.replace("<svg", '<svg class="h2-flamme-plate"')}</div><p class="h2-sous">En mode Réviser, on joue sans points.</p><p class="h2-texte">Passe en mode Jouer pour la flamme, les défis du jour et ton chemin d'étoiles.</p><button type="button" class="h2-btn plein" data-passer-jouer>Passer en mode Jouer</button></section>`;
   const ligne = o => `<a class="hub-tuile hub-ligne" href="${esc(o.href)}" style="--k:${o.k}"><span class="hub-ico" data-ico3d="${ICO3D_COURS[o.ico]}:${o.k}">${HUB_ICO[o.ico]}</span><span class="hub-t"><b>${o.titre}</b><span>${o.texte}</span></span>${o.badge ? `<i class="hub-badge">${o.badge}</i>` : ""}<span class="hub-fl" aria-hidden="true">&#8250;</span></a>`;
   h += `<h2 class="hub-rub">Les grandes entrées</h2><div class="hub-liste">`
+    + (duo ? ligne({ href: "#parcours", titre: "Ma galaxie", texte: "Tout ce que tu as fait : points, jeux, étoiles. La Terre mène à l'Atlas.", k: "#2f7be8", ico: "galaxie" }) : "")
     + ligne({ href: "#chemin", titre: `Mon chemin en ${esc(k)}`, texte: "Les jeux du cours, séquence par séquence.", k: "#7c5cff", ico: "chemin", badge: duo ? `${valides} / ${total}` : "" })
     + (jj ? ligne({ href: "#ludo-" + jj.id, titre: "Jeu du jour", texte: esc(jj.titre), k: "#ff8a00", ico: "jour" }) : "")
     + (D.sonora_harmonie ? ligne({ href: D.sonora_harmonie, titre: "Harmonie", texte: "Gammes, accords, progressions : jeu d'oreille et composition.", k: "#12b76a", ico: "harmonie" }) : "")
@@ -6059,9 +6091,60 @@ function vueLaboJeu(liste, lien, txt) {
   if (D.sonora_pistes) h += `<p class="hub-pied"><a href="${esc(D.sonora_pistes)}#projets">Mes projets enregistrés</a>${D.sonora_orchestre ? `<a href="${esc(D.sonora_orchestre)}">L'orchestre</a>` : ""}</p>`;
   return h + `</div>`;
 }
+/* ---------- La galaxie : le tableau de bord de l'élève (18/11/2026) ----------
+   Un soleil (son niveau), des planètes (les contenus du site) dont l'anneau se remplit, la Terre qui mène à l'Atlas. Le rendu 3D est dans sonora/timbre/galaxie.js ;
+   tout ce qui se lit ici existe aussi en liste, pour les lecteurs d'écran et quand WebGL manque. Les points sont classés par planète depuis le 18/11/2026 (jeu.src). */
+let GAL = null, GAL_DONNEES = null;
+function galaxieDonnees() {
+  const j = jeu(), k = maClasse() || defautNiv(), F = j.faits, n = niveauDe(j.xp), compte = re => Object.keys(F).filter(x => re.test(x)).length, src = j.src || {}, min1 = x => Math.max(0, Math.min(1, x));
+  const fam = id => { const L = D.ludo.jeux.filter(g => g.moteur && g.famille === id && g.seances.some(s => s[0] === k)), et = L.reduce((a, g) => a + ludoEtoiles(g.id), 0), joues = L.filter(g => ludoEtoiles(g.id) > 0 || F[`ludo:${g.id}:0`]).length;
+    return { progres: L.length ? min1(et / (9 * L.length)) : 0, texte: `${joues} jeu${joues > 1 ? "x" : ""} joué${joues > 1 ? "s" : ""} sur ${L.length}, ${et} étoile${et > 1 ? "s" : ""} sur ${9 * L.length}.`, lien: ["#jouer", "Jouer à cette famille"] }; };
+  const seancesLues = compte(new RegExp(`^seance:${k}-`)), fiches = compte(/^fiche:/), nFiches = Object.keys(D.fiches || {}).length || 29, nSons = Object.keys(D.sons).length, nParts = Object.keys(D.partitions).length;
+  const quizN = (D.quiz[k] || []).filter(q => q.length).length || 5, labo = compte(/^(academy|library|science|pistes|harmonie|studio|faust|code|defi-atelier|myst|jeu):/), parcAtlas = compte(/^atlas:p:/), ficheAtlas = compte(/^atlas:e:/);
+  const P = [
+    { id: "cours", nom: "Cours et séances", couleur: "#0ea5e9", progres: min1(.7 * seancesLues / 24 + .3 * fiches / nFiches), texte: `${seancesLues} séance${seancesLues > 1 ? "s" : ""} lue${seancesLues > 1 ? "s" : ""} sur 24 en ${k}, ${fiches} fiche${fiches > 1 ? "s" : ""} de notions sur ${nFiches}.`, lien: ["#cours", "Ouvrir le cours"] },
+    { id: "oeuvres", nom: "Œuvres et partitions", couleur: "#ff8a00", progres: min1(.5 * (j.c.sons || 0) / nSons + .5 * (j.c.parts || 0) / nParts), texte: `${j.c.sons || 0} son${(j.c.sons || 0) > 1 ? "s" : ""} écouté${(j.c.sons || 0) > 1 ? "s" : ""} sur ${nSons}, ${j.c.parts || 0} partition${(j.c.parts || 0) > 1 ? "s" : ""} suivie${(j.c.parts || 0) > 1 ? "s" : ""} sur ${nParts}.`, lien: ["#ecouter", "Écouter des œuvres"] },
+    { id: "quiz", nom: "Quiz du cours", couleur: "#ff3d7f", progres: min1((j.c.quiz || 0) / quizN), texte: `${j.c.quiz || 0} quiz terminé${(j.c.quiz || 0) > 1 ? "s" : ""} sur ${quizN}, ${j.c.parfaits || 0} sans faute.`, lien: [`#quiz-${k}-1`, "Faire un quiz"] },
+    Object.assign({ id: "rythme", nom: "Rythme et pulsation", couleur: "#ff5a36" }, fam("rythme")), Object.assign({ id: "ecoute", nom: "Écoute et reconnaissance", couleur: "#7c5cff" }, fam("ecoute")),
+    Object.assign({ id: "instruments", nom: "Instruments et timbres", couleur: "#12b76a" }, fam("instruments")), Object.assign({ id: "theorie", nom: "Théorie et formes", couleur: "#b8f400" }, fam("theorie")), Object.assign({ id: "creation", nom: "Création sonore", couleur: "#ffd23f" }, fam("creation")),
+    { id: "timbre", nom: "Salle de jeux TIMBRE", couleur: "#35e0ff", progres: min1(etoilesTimbre() / 27), texte: `${etoilesTimbre()} étoile${etoilesTimbre() > 1 ? "s" : ""} sur 27 au jeu Qui joue ?.`, lien: [D.sonora_timbre || "#jouer", "Entrer dans la salle de jeux"] },
+    { id: "labo", nom: "Laboratoire SONORA", couleur: "#9b6bff", progres: min1(labo / 120), texte: `${labo} action${labo > 1 ? "s" : ""} faite${labo > 1 ? "s" : ""} dans le laboratoire : leçons, expériences, Harmonie, Pistes, Studio.`, lien: ["#labo", "Ouvrir le laboratoire"] },
+    { id: "atlas", nom: "Terre : l'Atlas des musiques", couleur: "#2f7be8", terre: true, progres: min1(.6 * parcAtlas / 67 + .4 * ficheAtlas / 300), texte: `${ficheAtlas} fiche${ficheAtlas > 1 ? "s" : ""} lue${ficheAtlas > 1 ? "s" : ""}, ${parcAtlas} parcours terminé${parcAtlas > 1 ? "s" : ""} sur 67, ${compte(/^quiz:(lieux|ordre|trajets|cours)/)} étoile${compte(/^quiz:(lieux|ordre|trajets|cours)/) > 1 ? "s" : ""} aux quiz.`, lien: [(D.atlas || "#ecouter"), "Partir dans l'Atlas"] },
+  ];
+  P.forEach(p => { p.xp = src[p.id] || 0; });
+  const classes = Object.values(src).reduce((a, b) => a + b, 0), etoiles = Object.values(j.etoiles || {}).reduce((x, y) => x + y, 0) + etoilesTimbre(), jr = jourLocal(), jours = [];
+  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const c = jourLocal(d), a = (j.dj || {})[c] || {}; jours.push({ c, l: ["D", "L", "M", "M", "J", "V", "S"][d.getDay()], p: a.p || 0, b: a.b || 0, xp: (j.xpj || {})[c] || 0 }); }
+  return { j, k, n, P, classes, avant: Math.max(0, j.xp - classes), etoiles, jours, auj: jours[6], soleil: { niveau: n + 1, nom: NIVEAUX_JEU[n][1], xp: j.xp } };
+}
+function vueGalaxie() {
+  const G = GAL_DONNEES = galaxieDonnees(), j = G.j, bas = NIVEAUX_JEU[G.n][0], haut = (NIVEAUX_JEU[G.n + 1] || [bas + 1])[0], maxj = Math.max(1, ...G.jours.map(x => x.p)), maxx = Math.max(1, ...G.jours.map(x => x.xp));
+  const tuile = (v, l) => `<div class="gal-tuile"><b>${v}</b><span>${l}</span></div>`;
+  return `<section class="gal" aria-labelledby="gal-t"><h2 class="sec" id="gal-t">Ma galaxie</h2>
+    <p class="small">Le soleil, c'est toi : plus ton niveau monte, plus il grandit. Chaque planète est un contenu du site, et son anneau se remplit quand tu avances. Touche une planète pour la visiter. La Terre mène à l'Atlas des musiques.</p>
+    <div class="gal-scene"><canvas id="galaxie3d" aria-hidden="true"></canvas><div id="gal-etiq"></div><p class="gal-sans3d small">La galaxie en 3D demande WebGL : la liste en dessous dit la même chose.</p>
+      <div class="gal-soleil"><b>Niveau ${G.soleil.niveau}</b><span>${esc(G.soleil.nom)}, ${j.xp} XP</span></div></div>
+    <div class="gal-fiche" id="gal-fiche" aria-live="polite"></div>
+    <h3 class="gal-h">Aujourd'hui et cette semaine</h3>
+    <div class="gal-recap"><div class="gal-tuiles">${tuile(G.auj.p, "partie" + (G.auj.p > 1 ? "s" : "") + " aujourd'hui")}${tuile(G.auj.b, "avec deux étoiles ou plus")}${tuile("+" + G.auj.xp, "XP aujourd'hui")}${tuile(G.jours.reduce((a, x) => a + x.p, 0), "parties cette semaine")}${tuile(G.jours.reduce((a, x) => a + x.xp, 0), "XP cette semaine")}${tuile(G.etoiles, "étoiles en tout")}</div>
+      <ol class="gal-semaine" aria-label="Les sept derniers jours">${G.jours.map(x => `<li class="${x.c === jourLocal() ? "auj" : ""}"><i style="height:${Math.round(8 + 52 * x.p / maxj)}px" title="${x.p} partie${x.p > 1 ? "s" : ""}"></i><u style="height:${Math.round(4 + 34 * x.xp / maxx)}px" title="${x.xp} XP"></u><span>${x.l}</span></li>`).join("")}</ol><p class="small gal-legende">Barre verte : les parties. Barre jaune : les XP.</p></div>
+    <h3 class="gal-h">Toutes les planètes</h3>
+    <ul class="gal-liste">${G.P.map(p => `<li><button type="button" class="gal-carte" data-gal="${p.id}" style="--k:${p.couleur}"><span class="gal-pastille" aria-hidden="true"></span><span class="gal-nom">${esc(p.nom)}</span><span class="gal-pc">${Math.round(p.progres * 100)} %</span><span class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></span><span class="gal-txt">${esc(p.texte)}</span><span class="gal-xp">${p.xp ? `${p.xp} XP gagnés ici` : "Aucun point ici pour l'instant"}</span></button></li>`).join("")}</ul>
+    <p class="small">${G.avant ? `${G.avant} XP viennent d'avant ce tableau : ils comptent pour ton niveau, mais on ne sait plus d'où ils viennent. ` : ""}Les points sont rangés par planète à partir du 18 novembre 2026.</p></section>`;
+}
+function brancherGalaxie() {
+  const cv = document.getElementById("galaxie3d"), G = GAL_DONNEES; if (!G) return; if (GAL) { try { GAL.arreter(); } catch (_) {} GAL = null; }
+  const fiche = document.getElementById("gal-fiche"), montrer = id => { const p = G.P.find(x => x.id === id); if (!p || !fiche) return;
+    fiche.style.setProperty("--k", p.couleur); fiche.innerHTML = `<h3>${esc(p.nom)}</h3><div class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></div><p>${esc(p.texte)}</p><p class="small">${p.xp ? `${p.xp} XP gagnés ici.` : "Aucun point gagné ici pour l'instant."}</p><a class="btn-main" href="${esc(p.lien[0])}">${esc(p.lien[1])} &#8250;</a>`;
+    document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.gal === id))); };
+  document.querySelectorAll("[data-gal]").forEach(b => b.onclick = () => { montrer(b.dataset.gal); if (GAL) GAL.choisir(b.dataset.gal); document.getElementById("gal-fiche").scrollIntoView({ block: "nearest", behavior: "smooth" }); });
+  montrer("atlas");
+  if (!cv || !D.sonora_timbre) return;
+  import(new URL(D.sonora_timbre.replace(/index\.html$/, "galaxie.js"), location.href).href).then(m => { if (!document.body.contains(cv)) return;
+    const g = m.monterGalaxie(cv, document.getElementById("gal-etiq"), { soleil: G.soleil, planetes: G.P }, { onChoix: montrer, choisi: "atlas" }); if (g) { GAL = g; cv.closest(".gal-scene").classList.add("trois-d"); } }).catch(() => {});
+}
 function vueParcours() {
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], q = quetes();
-  let h = head("Mon parcours", `Niveau ${n + 1} : ${NIVEAUX_JEU[n][1]}`, NIVEAUX_JEU[n][2]);
+  let h = head("Mon parcours", `Niveau ${n + 1} : ${NIVEAUX_JEU[n][1]}`, NIVEAUX_JEU[n][2]) + vueGalaxie();
   h += `<section class="niveau-carte"><div class="nc-n">${n + 1}</div><div class="nc-t"><div class="label">${j.xp} XP${NIVEAUX_JEU[n + 1] ? `, encore ${haut - j.xp} pour le niveau ${n + 2} (${esc(NIVEAUX_JEU[n + 1][1])})` : ", niveau maximum"}</div>
     <div class="nc-b"><span style="width:${Math.min(100, (j.xp - bas) / (haut - bas) * 100)}%"></span></div><div class="nc-s"><span>${medaille("coupe", true)} ${Object.keys(j.badges).length} badge${Object.keys(j.badges).length > 1 ? "s" : ""} sur ${BADGES.length}</span></div></div></section>`;
   h += carteMission();
@@ -6414,7 +6497,7 @@ function rendre() {
   else if (v === "projeter") { app.innerHTML = vueProjeter(); tab = "projeter"; }
   else if (v === "vocabulaire") { app.innerHTML = vueVocabulaire(); tab = "cours"; }
   else if (v === "fils" || (v.startsWith("fils-") && D.fils.defs[v.slice(5)])) { app.innerHTML = vueFils(v.slice(5)); tab = "cours"; }
-  else if (v === "parcours") { app.innerHTML = vueParcours(); tab = "parcours"; }
+  else if (v === "parcours") { app.innerHTML = vueParcours(); tab = "parcours"; brancherGalaxie(); }
   else if (v === "guide") { app.innerHTML = vueGuide(); tab = "semaine"; }
   else if (v === "themes") { app.innerHTML = vueThemes(); tab = "ecouter"; }
   else if (v.startsWith("theme-") && D.parcoursThemes.detail[v.slice(6)]) { app.innerHTML = vueTheme(v.slice(6)); tab = "ecouter"; }
