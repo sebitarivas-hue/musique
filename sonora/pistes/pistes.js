@@ -1,36 +1,36 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=c80d84142e";
-import * as Ed from "./editions.js?v=c80d84142e";
-import * as P from "./projet.js?v=c80d84142e";
-import * as TR from "./transport.js?v=c80d84142e";
-import { Stockage } from "./stockage.js?v=c80d84142e";
-import { creerBouton } from "./bouton.js?v=c80d84142e";
-import * as MI from "./midi.js?v=c80d84142e";
-import * as N from "./notes.js?v=c80d84142e";
-import { Rouleau } from "./rouleau.js?v=c80d84142e";
-import { PanneauPartition } from "./partition/panneau.js?v=c80d84142e";
-import { separer, NOMS_PARTIES } from "./separation.js?v=c80d84142e";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=c80d84142e";
-import * as BM from "./batterie_midi.js?v=c80d84142e";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=c80d84142e";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=c80d84142e";
-import * as INS from "./instruments.js?v=c80d84142e";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=c80d84142e";
-import * as OMR from "./omr.js?v=c80d84142e";
-import { creerConsole } from "./console.js?v=c80d84142e";
-import { creerVueBlocs } from "./blocs-ui.js?v=c80d84142e";
-import { creerMaster } from "./master.js?v=c80d84142e";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=c80d84142e";
-import * as MO from "./moteurs.js?v=c80d84142e";
-import { monterPanneaux } from "./panneaux.js?v=c80d84142e";
-import { monterNotions } from "./notions.js?v=c80d84142e";
-import { DEMOS } from "./demos.js?v=c80d84142e";
-import * as B from "./bibliotheque.js?v=c80d84142e";
-import { encoderWAV } from "../studio/wav.js?v=c80d84142e";
-import { ENTREES } from "../library/catalogue.js?v=c80d84142e";
-import { compiler } from "../src/index.js?v=c80d84142e";
-import { rendre } from "../src/rendu.js?v=c80d84142e";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=867b3bdd02";
+import * as Ed from "./editions.js?v=867b3bdd02";
+import * as P from "./projet.js?v=867b3bdd02";
+import * as TR from "./transport.js?v=867b3bdd02";
+import { Stockage } from "./stockage.js?v=867b3bdd02";
+import { creerBouton } from "./bouton.js?v=867b3bdd02";
+import * as MI from "./midi.js?v=867b3bdd02";
+import * as N from "./notes.js?v=867b3bdd02";
+import { Rouleau } from "./rouleau.js?v=867b3bdd02";
+import { PanneauPartition } from "./partition/panneau.js?v=867b3bdd02";
+import { separer, NOMS_PARTIES } from "./separation.js?v=867b3bdd02";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=867b3bdd02";
+import * as BM from "./batterie_midi.js?v=867b3bdd02";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=867b3bdd02";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=867b3bdd02";
+import * as INS from "./instruments.js?v=867b3bdd02";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=867b3bdd02";
+import * as OMR from "./omr.js?v=867b3bdd02";
+import { creerConsole } from "./console.js?v=867b3bdd02";
+import { creerVueBlocs } from "./blocs-ui.js?v=867b3bdd02";
+import { creerMaster } from "./master.js?v=867b3bdd02";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=867b3bdd02";
+import * as MO from "./moteurs.js?v=867b3bdd02";
+import { monterPanneaux } from "./panneaux.js?v=867b3bdd02";
+import { monterNotions } from "./notions.js?v=867b3bdd02";
+import { DEMOS } from "./demos.js?v=867b3bdd02";
+import * as B from "./bibliotheque.js?v=867b3bdd02";
+import { encoderWAV } from "../studio/wav.js?v=867b3bdd02";
+import { ENTREES } from "../library/catalogue.js?v=867b3bdd02";
+import { compiler } from "../src/index.js?v=867b3bdd02";
+import { rendre } from "../src/rendu.js?v=867b3bdd02";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -70,7 +70,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=c80d84142e"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=867b3bdd02"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -603,7 +603,7 @@ async function ecouterNote(n, v) {
 }
 function ouvrirRouleau(sonId) {
   const s = etat.projet.sons[sonId]; if (!P.estMidi(s)) { message("Ce clip n'est pas un clip de notes : il n'a pas de notes à modifier. Enregistre des notes avec « Jouer un instrument »."); return; }
-  rl.son = sonId; $("rouleau").hidden = false; majDock();   /* le panneau doit être visible avant que le piano roll se centre sur ses notes */ $("rl-titre").textContent = `Notes de « ${s.nom} »`; rouleau.grille = +$("rl-grille").value; const batt = BM.estBatterie(s.midi.instrument);   // une batterie : une ligne par pièce, avec son nom, au lieu du clavier de piano
+  rl.son = sonId; $("rouleau").hidden = false; etat.dockActif = "rouleau"; majDock();   /* le panneau doit être visible avant que le piano roll se centre sur ses notes */ $("rl-titre").textContent = `Notes de « ${s.nom} »`; rouleau.grille = +$("rl-grille").value; const batt = BM.estBatterie(s.midi.instrument);   // une batterie : une ligne par pièce, avec son nom, au lieu du clavier de piano
   rouleau.ouvrir({ notes: s.midi.notes, temps: s.midi.temps, parMesure: etat.projet.temps, nom: s.nom, ...(batt ? { lignes: BM.LIGNES, ligneDe: BM.ligneDe, nomLigne: n => BM.NOMS_LIGNES[n] || n } : {}) }); majRouleauBarre(); majVitesseBarre(); rouleau.reglerGamme($("rl-tonique").value, $("rl-mode").value); remplirInstrumentsRouleau(s); $("rl-zoom").textContent = Math.round(rouleau.zoom * 100) + " %"; afficherOnglet(rl.onglet); $("rouleau").scrollIntoView({ block: "nearest" });
 }
 // Le choix de l'instrument du clip : changer l'instrument refait l'audio ; passer d'un instrument à une batterie (ou l'inverse) change aussi les lignes du piano roll.
@@ -633,10 +633,23 @@ function ajusterArrangement() {
   l.style.height = Math.max(140, innerHeight - dock.getBoundingClientRect().height - hTr - 20) + "px"; l.style.overflowY = "auto";   // hauteur fixe : un redessin des pistes ne fait pas reculer la page
   return hTr;
 }
-const majDock = () => {
-  const avant = dock.hidden; dock.hidden = ![...$("dock-corps").children].some(x => x.tagName === "SECTION" && !x.hidden);
+// Les éditeurs du panneau : un seul est montré à la fois, celui qu'on vient d'ouvrir ; les onglets (Notes, Rythme) passent de l'un à l'autre, ou ouvrent celui qui est fermé.
+const ouvertsDuDock = () => [...$("dock-corps").children].filter(x => x.tagName === "SECTION" && !x.hidden).map(x => x.id);
+function majDock(mutations) {
+  const avant = dock.hidden, ouverts = ouvertsDuDock();
+  for (const m of mutations || []) if (m.type === "attributes" && m.target.parentElement === $("dock-corps") && !m.target.hidden) etat.dockActif = m.target.id;   // le dernier ouvert prend la place
+  if (!ouverts.includes(etat.dockActif)) etat.dockActif = ouverts[ouverts.length - 1] || null;
+  for (const x of $("dock-corps").children) if (x.tagName === "SECTION") x.classList.toggle("dock-masque", x.id !== etat.dockActif);
+  for (const t of $("dock-onglets").children) { t.setAttribute("aria-selected", String(t.dataset.cible === etat.dockActif)); t.classList.toggle("ferme", !ouverts.includes(t.dataset.cible)); }
+  dock.hidden = !ouverts.length;
   const hTr = ajusterArrangement();
   if (avant && !dock.hidden && !telephoneEtroit() && !bureauFixe.matches) { const haut = $("ligne").getBoundingClientRect().top, bas = innerHeight - dock.getBoundingClientRect().height; if (haut > bas - 160) scrollBy(0, haut - (hTr || 0) - 8); }   // à l'ouverture : si le panneau cache l'arrangement, la page le remonte ; sinon elle ne bouge pas
+}
+$("dock-onglets").onclick = e => {
+  const t = e.target.closest("button[data-cible]"); if (!t) return; const id = t.dataset.cible;
+  if (ouvertsDuDock().includes(id)) { etat.dockActif = id; majDock(); return; }
+  if (id === "pas") { $("b-pas").click(); return; }
+  const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r && P.estMidi(etat.projet.sons[r.clip.son])) ouvrirRouleau(r.clip.son); else message("Choisis d'abord un clip de notes : ses notes s'ouvrent ici.");
 };
 new MutationObserver(majDock).observe($("dock-corps"), { subtree: true, attributes: true, attributeFilter: ["hidden"] }); majDock();
 poignee.onpointerdown = e => {

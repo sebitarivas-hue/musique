@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=c80d84142e">
-<link rel="stylesheet" href="pistes.css?v=c80d84142e"><link rel="stylesheet" href="blocs.css?v=c80d84142e"><link rel="stylesheet" href="console.css?v=c80d84142e"><link rel="stylesheet" href="notions.css?v=c80d84142e">
+<link rel="stylesheet" href="../studio/studio.css?v=867b3bdd02">
+<link rel="stylesheet" href="pistes.css?v=867b3bdd02"><link rel="stylesheet" href="blocs.css?v=867b3bdd02"><link rel="stylesheet" href="console.css?v=867b3bdd02"><link rel="stylesheet" href="notions.css?v=867b3bdd02">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -181,6 +181,7 @@
 </main>
 <div class="dock" id="dock" aria-label="Éditeur : notes, rythme, courbes" hidden>
   <div class="dock-poignee" id="dock-poignee" role="separator" aria-orientation="horizontal" aria-label="Hauteur de l'éditeur (flèches haut et bas, ou tirer)" aria-valuemin="160" aria-valuemax="800" aria-valuenow="340" tabindex="0"><span aria-hidden="true"></span></div>
+  <div class="dock-onglets" id="dock-onglets" role="tablist" aria-label="Éditeurs"><button type="button" role="tab" id="dock-t-rouleau" data-cible="rouleau" aria-selected="false">Notes</button><button type="button" role="tab" id="dock-t-pas" data-cible="pas" aria-selected="false">Rythme</button></div>
   <div class="dock-corps" id="dock-corps">
 <section class="midi pas" id="pas" aria-label="Séquenceur à pas" hidden>
   <div class="midi-haut"><h2>Séquenceur à pas</h2><button type="button" class="notion" data-notion="sequenceur" aria-label="Comprendre : le séquenceur à pas">?</button><button type="button" class="croix-b" id="pas-fermer" aria-label="Fermer le séquenceur à pas"><span class="croix" aria-hidden="true"></span></button></div>
@@ -280,8 +281,8 @@
 </section>
   </div>
 </div>
-<script type="module" src="pistes.js?v=c80d84142e"></script>
-<script src="../barre-cours.js?v=c80d84142e"></script>
-<script src="../retour.js?v=c80d84142e"></script>
+<script type="module" src="pistes.js?v=867b3bdd02"></script>
+<script src="../barre-cours.js?v=867b3bdd02"></script>
+<script src="../retour.js?v=867b3bdd02"></script>
 </body>
 </html>

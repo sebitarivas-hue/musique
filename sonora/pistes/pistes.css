@@ -773,3 +773,11 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 
 /* La règle se touche : un appui place la tête, un glissement trace la zone de boucle (sans cela le navigateur prend le glissement pour un défilement). */
 .regle { touch-action: none; }
+
+/* Onglets du panneau inférieur : Notes, Rythme. Un seul éditeur est montré, celui qu'on vient d'ouvrir ; un onglet fermé (estompé) l'ouvre. Pas d'onglets sur téléphone : chaque éditeur y a sa feuille. */
+.dock-onglets { flex: 0 0 auto; display: flex; gap: 4px; padding: 4px 12px 0; background: var(--daw-tete, #1b1b20); }
+.dock-onglets button { min-height: 30px; padding: 0 16px; border: 0; border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0; background: transparent; color: #B9B8AE; font: 600 .8rem var(--f-body); cursor: pointer; }
+.dock-onglets button.ferme { opacity: .55; } .dock-onglets button:hover { color: #fff; }
+.dock-onglets button[aria-selected="true"] { color: #fff; background: rgba(255, 255, 255, .06); border-bottom-color: var(--acide, #D6FF00); }
+@media (min-width: 701px) { .dock-corps > .dock-masque { display: none !important; } }
+@media (max-width: 700px) { .dock-onglets { display: none; } }
