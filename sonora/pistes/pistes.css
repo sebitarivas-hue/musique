@@ -819,3 +819,9 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
   #pas .pas-nom { position: sticky; left: 0; z-index: 2; background: #2a2a33; padding-right: 6px; box-shadow: 8px 0 8px -4px #2a2a33; }
   #pas .pas-ligne { grid-template-columns: 5.2rem repeat(var(--n, 16), minmax(30px, 1fr)); }
 }
+
+/* Onglet Audio : les réglages du clip audio choisi, par familles. */
+.audio-titre { margin: 12px 0 6px; font: 700 .8rem var(--f-body); letter-spacing: .04em; text-transform: uppercase; color: var(--daw-doux, #B9B8AE); }
+.audio-boutons { display: flex; flex-wrap: wrap; gap: 6px; }
+.audio-boutons button { min-height: 34px; padding: 0 12px; border: 1px solid var(--daw-trait, #3c3c46); border-radius: 8px; background: var(--daw-piste2, #24242b); color: var(--daw-texte, #ECEBE4); font: 600 .8rem var(--f-body); cursor: pointer; }
+.audio-boutons button:hover:not(:disabled) { border-color: var(--acide, #D6FF00); } .audio-boutons button:disabled { opacity: .4; cursor: default; }

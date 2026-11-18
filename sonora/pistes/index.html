@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=aceeacdfe7">
-<link rel="stylesheet" href="pistes.css?v=aceeacdfe7"><link rel="stylesheet" href="blocs.css?v=aceeacdfe7"><link rel="stylesheet" href="console.css?v=aceeacdfe7"><link rel="stylesheet" href="notions.css?v=aceeacdfe7">
+<link rel="stylesheet" href="../studio/studio.css?v=a37da9efa9">
+<link rel="stylesheet" href="pistes.css?v=a37da9efa9"><link rel="stylesheet" href="blocs.css?v=a37da9efa9"><link rel="stylesheet" href="console.css?v=a37da9efa9"><link rel="stylesheet" href="notions.css?v=a37da9efa9">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -76,14 +76,6 @@
       <p class="alerte-act"><button type="button" id="f-fx">Effets de la piste</button><button type="button" class="notion" data-notion="effets" aria-label="Comprendre : les effets">?</button><button type="button" id="f-env">Enveloppe de volume</button><button type="button" class="notion" data-notion="enveloppe" aria-label="Comprendre : l'enveloppe de volume">?</button></p>
       <p class="feuille-mots">Comprendre : <button type="button" class="notion-lien" data-notion="muet">Muet</button> <button type="button" class="notion-lien" data-notion="solo">Solo</button> <button type="button" class="notion-lien" data-notion="rec">Rec</button> <button type="button" class="notion-lien" data-notion="piste">Une piste</button> <button type="button" class="notion-lien" data-notion="liste">Tous les mots</button></p></div>
   </div>
-  <section class="midi biblio" id="biblio" aria-label="Bibliothèque de sons et de rythmes" hidden>
-    <div class="midi-haut"><h2>Bibliothèque de sons et de rythmes</h2><button type="button" class="notion" data-notion="bibliotheque" aria-label="Comprendre : la bibliothèque de sons">?</button><button type="button" class="croix-b" id="biblio-fermer" aria-label="Fermer la bibliothèque"><span class="croix" aria-hidden="true"></span></button></div>
-    <p class="petit">Des coups de batterie, des rythmes du monde et des neuf genres d'Harmonie, des sons de synthèse. Écoute, puis ajoute sur la piste choisie, au curseur rouge. Tout est fabriqué dans ta page, rien n'est téléchargé.</p>
-    <div class="biblio-onglets" role="tablist" id="biblio-onglets" aria-label="Familles"></div>
-    <div class="midi-rang"><label class="mini">Chercher<input id="biblio-chercher" type="search" autocomplete="off" aria-label="Chercher dans la bibliothèque"></label>
-      <span id="biblio-reglages" hidden><label class="mini">Note<select id="biblio-note" aria-label="Note"></select></label><label class="mini">Durée<select id="biblio-duree" aria-label="Durée"><option value="0.4">0,4 s</option><option value="0.8">0,8 s</option><option value="1.5" selected>1,5 s</option><option value="3">3 s</option></select></label></span></div>
-    <p class="petit" id="biblio-info"></p><ul class="liste-biblio" id="biblio-liste"></ul><p class="petit" id="msg-biblio" role="status"></p>
-  </section>
   <section class="midi projets" id="projets" aria-label="Mes projets" hidden>
     <div class="midi-haut"><h2>Mes projets</h2><button type="button" class="croix-b" id="projets-fermer" aria-label="Fermer la liste des projets"><span class="croix" aria-hidden="true"></span></button></div>
     <p class="petit">Chaque projet est gardé dans ce navigateur, avec ses sons, jusqu'à ce que tu le supprimes. Ouvre-en un autre sans perdre celui-ci. Pour garder un projet ailleurs ou le passer à un autre appareil, exporte-le dans un fichier.</p>
@@ -184,8 +176,21 @@
 </main>
 <div class="dock" id="dock" aria-label="Éditeur : notes, rythme, courbes" hidden>
   <div class="dock-poignee" id="dock-poignee" role="separator" aria-orientation="horizontal" aria-label="Hauteur de l'éditeur (flèches haut et bas, ou tirer)" aria-valuemin="160" aria-valuemax="800" aria-valuenow="340" tabindex="0"><span aria-hidden="true"></span></div>
-  <div class="dock-onglets" id="dock-onglets" role="tablist" aria-label="Éditeurs"><button type="button" role="tab" id="dock-t-rouleau" data-cible="rouleau" aria-selected="false">Notes</button><button type="button" role="tab" id="dock-t-pas" data-cible="pas" aria-selected="false">Rythme</button></div>
+  <div class="dock-onglets" id="dock-onglets" role="tablist" aria-label="Éditeurs"><button type="button" role="tab" id="dock-t-rouleau" data-cible="rouleau" aria-selected="false">Notes</button><button type="button" role="tab" id="dock-t-pas" data-cible="pas" aria-selected="false">Rythme</button><button type="button" role="tab" id="dock-t-audio" data-cible="audio" aria-selected="false">Audio</button><button type="button" role="tab" id="dock-t-biblio" data-cible="biblio" aria-selected="false">Sons</button></div>
   <div class="dock-corps" id="dock-corps">
+    <section class="midi biblio" id="biblio" aria-label="Bibliothèque de sons et de rythmes" hidden>
+  <div class="midi-haut"><h2>Bibliothèque de sons et de rythmes</h2><button type="button" class="notion" data-notion="bibliotheque" aria-label="Comprendre : la bibliothèque de sons">?</button><button type="button" class="croix-b" id="biblio-fermer" aria-label="Fermer la bibliothèque"><span class="croix" aria-hidden="true"></span></button></div>
+  <p class="petit">Des coups de batterie, des rythmes du monde et des neuf genres d'Harmonie, des sons de synthèse. Écoute, puis ajoute sur la piste choisie, au curseur rouge. Tout est fabriqué dans ta page, rien n'est téléchargé.</p>
+  <div class="biblio-onglets" role="tablist" id="biblio-onglets" aria-label="Familles"></div>
+  <div class="midi-rang"><label class="mini">Chercher<input id="biblio-chercher" type="search" autocomplete="off" aria-label="Chercher dans la bibliothèque"></label>
+    <span id="biblio-reglages" hidden><label class="mini">Note<select id="biblio-note" aria-label="Note"></select></label><label class="mini">Durée<select id="biblio-duree" aria-label="Durée"><option value="0.4">0,4 s</option><option value="0.8">0,8 s</option><option value="1.5" selected>1,5 s</option><option value="3">3 s</option></select></label></span></div>
+  <p class="petit" id="biblio-info"></p><ul class="liste-biblio" id="biblio-liste"></ul><p class="petit" id="msg-biblio" role="status"></p>
+</section>
+  <section class="midi audio" id="audio" aria-label="Réglages audio du clip" hidden>
+    <div class="midi-haut"><h2>Audio du clip</h2><button type="button" class="croix-b" id="audio-fermer" aria-label="Fermer les réglages audio"><span class="croix" aria-hidden="true"></span></button></div>
+    <p class="petit" id="audio-etat" role="status">Choisis un clip audio pour le régler.</p>
+    <div class="audio-groupes" id="audio-groupes"></div>
+  </section>
 <section class="midi pas" id="pas" aria-label="Séquenceur à pas" hidden>
   <div class="midi-haut"><h2>Séquenceur à pas</h2><button type="button" class="notion" data-notion="sequenceur" aria-label="Comprendre : le séquenceur à pas">?</button><button type="button" class="croix-b" id="pas-fermer" aria-label="Fermer le séquenceur à pas"><span class="croix" aria-hidden="true"></span></button></div>
   <p class="petit">Allume des cases pour fabriquer un rythme : un clic pour un coup, deux pour un coup doux, trois pour effacer. Le motif suit le tempo du projet ; « Ajouter au projet » en fait un clip.</p>
@@ -285,8 +290,8 @@
 </section>
   </div>
 </div>
-<script type="module" src="pistes.js?v=aceeacdfe7"></script>
-<script src="../barre-cours.js?v=aceeacdfe7"></script>
-<script src="../retour.js?v=aceeacdfe7"></script>
+<script type="module" src="pistes.js?v=a37da9efa9"></script>
+<script src="../barre-cours.js?v=a37da9efa9"></script>
+<script src="../retour.js?v=a37da9efa9"></script>
 </body>
 </html>

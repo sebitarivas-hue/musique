@@ -1,36 +1,36 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=aceeacdfe7";
-import * as Ed from "./editions.js?v=aceeacdfe7";
-import * as P from "./projet.js?v=aceeacdfe7";
-import * as TR from "./transport.js?v=aceeacdfe7";
-import { Stockage } from "./stockage.js?v=aceeacdfe7";
-import { creerBouton } from "./bouton.js?v=aceeacdfe7";
-import * as MI from "./midi.js?v=aceeacdfe7";
-import * as N from "./notes.js?v=aceeacdfe7";
-import { Rouleau } from "./rouleau.js?v=aceeacdfe7";
-import { PanneauPartition } from "./partition/panneau.js?v=aceeacdfe7";
-import { separer, NOMS_PARTIES } from "./separation.js?v=aceeacdfe7";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=aceeacdfe7";
-import * as BM from "./batterie_midi.js?v=aceeacdfe7";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=aceeacdfe7";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=aceeacdfe7";
-import * as INS from "./instruments.js?v=aceeacdfe7";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=aceeacdfe7";
-import * as OMR from "./omr.js?v=aceeacdfe7";
-import { creerConsole } from "./console.js?v=aceeacdfe7";
-import { creerVueBlocs } from "./blocs-ui.js?v=aceeacdfe7";
-import { creerMaster } from "./master.js?v=aceeacdfe7";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=aceeacdfe7";
-import * as MO from "./moteurs.js?v=aceeacdfe7";
-import { monterPanneaux } from "./panneaux.js?v=aceeacdfe7";
-import { monterNotions } from "./notions.js?v=aceeacdfe7";
-import { DEMOS } from "./demos.js?v=aceeacdfe7";
-import * as B from "./bibliotheque.js?v=aceeacdfe7";
-import { encoderWAV } from "../studio/wav.js?v=aceeacdfe7";
-import { ENTREES } from "../library/catalogue.js?v=aceeacdfe7";
-import { compiler } from "../src/index.js?v=aceeacdfe7";
-import { rendre } from "../src/rendu.js?v=aceeacdfe7";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=a37da9efa9";
+import * as Ed from "./editions.js?v=a37da9efa9";
+import * as P from "./projet.js?v=a37da9efa9";
+import * as TR from "./transport.js?v=a37da9efa9";
+import { Stockage } from "./stockage.js?v=a37da9efa9";
+import { creerBouton } from "./bouton.js?v=a37da9efa9";
+import * as MI from "./midi.js?v=a37da9efa9";
+import * as N from "./notes.js?v=a37da9efa9";
+import { Rouleau } from "./rouleau.js?v=a37da9efa9";
+import { PanneauPartition } from "./partition/panneau.js?v=a37da9efa9";
+import { separer, NOMS_PARTIES } from "./separation.js?v=a37da9efa9";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=a37da9efa9";
+import * as BM from "./batterie_midi.js?v=a37da9efa9";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=a37da9efa9";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=a37da9efa9";
+import * as INS from "./instruments.js?v=a37da9efa9";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=a37da9efa9";
+import * as OMR from "./omr.js?v=a37da9efa9";
+import { creerConsole } from "./console.js?v=a37da9efa9";
+import { creerVueBlocs } from "./blocs-ui.js?v=a37da9efa9";
+import { creerMaster } from "./master.js?v=a37da9efa9";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=a37da9efa9";
+import * as MO from "./moteurs.js?v=a37da9efa9";
+import { monterPanneaux } from "./panneaux.js?v=a37da9efa9";
+import { monterNotions } from "./notions.js?v=a37da9efa9";
+import { DEMOS } from "./demos.js?v=a37da9efa9";
+import * as B from "./bibliotheque.js?v=a37da9efa9";
+import { encoderWAV } from "../studio/wav.js?v=a37da9efa9";
+import { ENTREES } from "../library/catalogue.js?v=a37da9efa9";
+import { compiler } from "../src/index.js?v=a37da9efa9";
+import { rendre } from "../src/rendu.js?v=a37da9efa9";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -70,7 +70,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=aceeacdfe7"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=a37da9efa9"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -619,6 +619,18 @@ $("rl-instrument").onchange = e => {
   if (r) P.definirInstrumentPiste(etat.projet, r.id, e.target.value); else { s.midi.instrument = e.target.value; s.midi.rendu = -1; }
   rl.samp = null; changer(); if (BM.estBatterie(s.midi.instrument) !== avant) ouvrirRouleau(rl.son); remettreAJourMidi();
 };
+// ---------------------------------------------------------------- l'onglet Audio : les réglages du clip audio choisi
+// Ce sont les commandes du menu Effets, présentées par familles ; chaque bouton lance la même commande que le menu ou son raccourci.
+const GROUPES_AUDIO = [["Niveau", ["normaliser", "gain-plus", "gain-moins", "fondu-entree", "fondu-sortie", "reglage-gain", "reglage-fondu", "inverser"]], ["Hauteur et vitesse", ["vitesse-double", "vitesse-moitie", "reglage-transposer"]], ["Couleur et espace", ["reglage-filtre", "reglage-egaliseur", "reglage-echo", "reglage-compresseur"]], ["Voix", ["reglage-vocoder", "reglage-chuchotement", "reglage-robot", "reglage-double-voix", "reglage-harmonies"]], ["Séparer les sons", ["separer-ia", "separer"]]];
+$("audio-groupes").innerHTML = GROUPES_AUDIO.map(([t, ids]) => `<h3 class="audio-titre">${esc(t)}</h3><div class="audio-boutons">${ids.map(id => { const c = COMMANDES.find(x => x.id === id); return c ? `<button type="button" data-audio="${esc(id)}">${esc(c.libelle.replace(/…$/, ""))}</button>` : ""; }).join("")}</div>`).join("");
+$("audio-groupes").onclick = e => { const b = e.target.closest("button[data-audio]"); if (b && !b.disabled) lancer(b.dataset.audio); };
+$("audio-fermer").onclick = () => { $("audio").hidden = true; };
+function majAudio() {
+  const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi), so = r && etat.projet.sons[r.clip.son], notes = !!(so && P.estMidi(so)), ok = !!r && !notes;
+  $("audio-etat").textContent = !r ? "Choisis un clip audio pour le régler : niveau, hauteur, filtres, voix, séparation des sons." : notes ? `« ${so.nom} » est fait de notes : ses réglages sont dans l'onglet Notes.` : `Clip choisi : « ${so ? so.nom : "son"} ». Chaque réglage fabrique un nouveau son : l'original reste intact (Annuler le retire).`;
+  document.querySelectorAll("#audio-groupes button").forEach(b => { const c = COMMANDES.find(x => x.id === b.dataset.audio); b.disabled = !ok || !!(ACTIF[b.dataset.audio] && !ACTIF[b.dataset.audio]()) || !c; });
+}
+
 // ---------------------------------------------------------------- le panneau inférieur (éditeur)
 // Il apparaît quand un de ses éditeurs (notes, rythme, courbes) s'ouvre et disparaît quand tous sont fermés. La poignée le redimensionne (souris, doigt ou flèches) ; la hauteur est retenue.
 const bureauFixe = matchMedia("(min-width: 901px) and (min-height: 820px)");   // le cadre à zones fixes : l'arrangement prend ce qui reste de la fenêtre tout seul (css)
@@ -639,7 +651,7 @@ function ajusterArrangement() {
 const ouvertsDuDock = () => [...$("dock-corps").children].filter(x => x.tagName === "SECTION" && !x.hidden).map(x => x.id);
 function majDock(mutations) {
   const avant = dock.hidden, ouverts = ouvertsDuDock();
-  for (const m of mutations || []) if (m.type === "attributes" && m.target.parentElement === $("dock-corps") && !m.target.hidden) etat.dockActif = m.target.id;   // le dernier ouvert prend la place
+  for (const m of mutations || []) if (m.type === "attributes" && m.target.parentElement === $("dock-corps") && !m.target.hidden) { etat.dockActif = m.target.id; if (telephoneEtroit() && m.target.id !== "rouleau") setTimeout(() => m.target.scrollIntoView({ block: "start", behavior: "smooth" }), 60); }   // le dernier ouvert prend la place ; sur téléphone, il vient à l'écran (il est sous l'arrangement dans la page)
   if (!ouverts.includes(etat.dockActif)) etat.dockActif = ouverts[ouverts.length - 1] || null;
   for (const x of $("dock-corps").children) if (x.tagName === "SECTION") x.classList.toggle("dock-masque", x.id !== etat.dockActif);
   for (const t of $("dock-onglets").children) { t.setAttribute("aria-selected", String(t.dataset.cible === etat.dockActif)); t.classList.toggle("ferme", !ouverts.includes(t.dataset.cible)); }
@@ -651,6 +663,8 @@ $("dock-onglets").onclick = e => {
   const t = e.target.closest("button[data-cible]"); if (!t) return; const id = t.dataset.cible;
   if (ouvertsDuDock().includes(id)) { etat.dockActif = id; majDock(); return; }
   if (id === "pas") { $("b-pas").click(); return; }
+  if (id === "biblio") { $("b-biblio").click(); return; }
+  if (id === "audio") { $("audio").hidden = false; etat.dockActif = "audio"; majAudio(); majDock(); return; }
   const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); if (r && P.estMidi(etat.projet.sons[r.clip.son])) ouvrirRouleau(r.clip.son); else message("Choisis d'abord un clip de notes : ses notes s'ouvrent ici.");
 };
 new MutationObserver(majDock).observe($("dock-corps"), { subtree: true, attributes: true, attributeFilter: ["hidden"] }); majDock();
@@ -952,7 +966,7 @@ $("auto-fin").onclick = () => { etat.env = null; etat.pointSel = null; afficher(
 $("auto-sup").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env), k = etat.courbe || "volume", s = etat.pointSel, q = pi && s && pi[P.COURBES[k].cle][s.i]; if (!q) return; P.supprimerPoint(pi, k, q); etat.pointSel = null; changer(); };
 $("auto-vider").onclick = () => { const pi = P.trouverPiste(etat.projet, etat.env); if (!pi) return; P.viderCourbe(pi, etat.courbe || "volume"); etat.pointSel = null; changer(); };
 function majSelection() {
-  const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); $("selection").hidden = !r; if (!r) return;
+  const r = etat.choisi && P.trouverClip(etat.projet, etat.choisi); $("selection").hidden = !r; majAudio(); if (!r) return;
   if (!$("rouleau").hidden && P.estMidi(etat.projet.sons[r.clip.son]) && rl.son !== r.clip.son) ouvrirRouleau(r.clip.son);   // l'éditeur ouvert suit le clip de notes choisi
   $("sel-nom").textContent = (etat.projet.sons[r.clip.son] || {}).nom || "son"; $("sel-gain").value = r.clip.gain; $("b-modifier-notes").hidden = !P.estMidi(etat.projet.sons[r.clip.son]); $("b-partition").hidden = !P.estMidi(etat.projet.sons[r.clip.son]); $("b-tempo-trouver").hidden = P.suitLeTempo(etat.projet.sons[r.clip.son]);
 }
