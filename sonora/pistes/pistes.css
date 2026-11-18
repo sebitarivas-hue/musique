@@ -767,4 +767,9 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
   .transport .bascules { position: absolute; top: -48px; left: 8px; flex-wrap: nowrap; gap: 4px; background: var(--noir); padding: 3px 4px 0; border-radius: 6px 6px 0 0; }
   .transport .bascules .notion { display: none; } .transport .bascule { min-height: 44px; padding: 0 11px; font-size: .76rem; }
   .transport .signature, .transport .espace { display: none; } .transport .vu { left: 46%; }
+  /* un clip choisi : sa barre d'actions se pose juste au-dessus de la barre du bas ; la rangée des bascules et la position montent d'autant, au lieu d'être cachées dessous */
+  body:has(#selection:not([hidden])) .transport .bascules { top: calc(-48px - 70px); } body:has(#selection:not([hidden])) .transport .affichage { top: calc(-36px - 70px); }
 }
+
+/* La règle se touche : un appui place la tête, un glissement trace la zone de boucle (sans cela le navigateur prend le glissement pour un défilement). */
+.regle { touch-action: none; }

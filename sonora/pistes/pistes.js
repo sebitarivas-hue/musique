@@ -1,42 +1,43 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=faa55d9c2f";
-import * as Ed from "./editions.js?v=faa55d9c2f";
-import * as P from "./projet.js?v=faa55d9c2f";
-import * as TR from "./transport.js?v=faa55d9c2f";
-import { Stockage } from "./stockage.js?v=faa55d9c2f";
-import { creerBouton } from "./bouton.js?v=faa55d9c2f";
-import * as MI from "./midi.js?v=faa55d9c2f";
-import * as N from "./notes.js?v=faa55d9c2f";
-import { Rouleau } from "./rouleau.js?v=faa55d9c2f";
-import { PanneauPartition } from "./partition/panneau.js?v=faa55d9c2f";
-import { separer, NOMS_PARTIES } from "./separation.js?v=faa55d9c2f";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=faa55d9c2f";
-import * as BM from "./batterie_midi.js?v=faa55d9c2f";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=faa55d9c2f";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=faa55d9c2f";
-import * as INS from "./instruments.js?v=faa55d9c2f";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=faa55d9c2f";
-import * as OMR from "./omr.js?v=faa55d9c2f";
-import { creerConsole } from "./console.js?v=faa55d9c2f";
-import { creerVueBlocs } from "./blocs-ui.js?v=faa55d9c2f";
-import { creerMaster } from "./master.js?v=faa55d9c2f";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=faa55d9c2f";
-import * as MO from "./moteurs.js?v=faa55d9c2f";
-import { monterPanneaux } from "./panneaux.js?v=faa55d9c2f";
-import { monterNotions } from "./notions.js?v=faa55d9c2f";
-import { DEMOS } from "./demos.js?v=faa55d9c2f";
-import * as B from "./bibliotheque.js?v=faa55d9c2f";
-import { encoderWAV } from "../studio/wav.js?v=faa55d9c2f";
-import { ENTREES } from "../library/catalogue.js?v=faa55d9c2f";
-import { compiler } from "../src/index.js?v=faa55d9c2f";
-import { rendre } from "../src/rendu.js?v=faa55d9c2f";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=c80d84142e";
+import * as Ed from "./editions.js?v=c80d84142e";
+import * as P from "./projet.js?v=c80d84142e";
+import * as TR from "./transport.js?v=c80d84142e";
+import { Stockage } from "./stockage.js?v=c80d84142e";
+import { creerBouton } from "./bouton.js?v=c80d84142e";
+import * as MI from "./midi.js?v=c80d84142e";
+import * as N from "./notes.js?v=c80d84142e";
+import { Rouleau } from "./rouleau.js?v=c80d84142e";
+import { PanneauPartition } from "./partition/panneau.js?v=c80d84142e";
+import { separer, NOMS_PARTIES } from "./separation.js?v=c80d84142e";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=c80d84142e";
+import * as BM from "./batterie_midi.js?v=c80d84142e";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=c80d84142e";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=c80d84142e";
+import * as INS from "./instruments.js?v=c80d84142e";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=c80d84142e";
+import * as OMR from "./omr.js?v=c80d84142e";
+import { creerConsole } from "./console.js?v=c80d84142e";
+import { creerVueBlocs } from "./blocs-ui.js?v=c80d84142e";
+import { creerMaster } from "./master.js?v=c80d84142e";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=c80d84142e";
+import * as MO from "./moteurs.js?v=c80d84142e";
+import { monterPanneaux } from "./panneaux.js?v=c80d84142e";
+import { monterNotions } from "./notions.js?v=c80d84142e";
+import { DEMOS } from "./demos.js?v=c80d84142e";
+import * as B from "./bibliotheque.js?v=c80d84142e";
+import { encoderWAV } from "../studio/wav.js?v=c80d84142e";
+import { ENTREES } from "../library/catalogue.js?v=c80d84142e";
+import { compiler } from "../src/index.js?v=c80d84142e";
+import { rendre } from "../src/rendu.js?v=c80d84142e";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 let vueBlocs = null, laConsole = null;   // le mode blocs (blocs-ui.js), créé plus bas
-const etat = { projet: null, buffers: {}, ctx: null, lecture: false, enreg: false, tete: 0, debutCtx: 0, debutTete: 0, sources: [], arme: null, pxs: 60, metro: null };
+const PXS_DEFAUT = matchMedia("(max-width: 700px)").matches ? 38 : 60;   // sur téléphone, quatre mesures et demie visibles au lieu de deux
+const etat = { projet: null, buffers: {}, ctx: null, lecture: false, enreg: false, tete: 0, debutCtx: 0, debutTete: 0, sources: [], arme: null, pxs: PXS_DEFAUT, metro: null };
 // La sélection de clips : `choisi` est le clip principal (celui que les réglages de la barre visent), `choisis` tous les clips choisis. Écrire `etat.choisi = id` revient à choisir ce seul clip.
 Object.defineProperty(etat, "choisi", { get() { return this._principal || null; }, set(v) { this._principal = v || null; this.choisis = new Set(v ? [v] : []); }, enumerable: true });
 etat.choisi = null;
@@ -69,7 +70,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=faa55d9c2f"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=c80d84142e"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };
@@ -1290,7 +1291,7 @@ const EXEC = {
   "vue-blocs": () => vueBlocs.basculer(), "vue-console": () => laConsole.basculer(), "piste-ajouter": () => $("b-piste").click(), midi: () => basculerMidi(),
   "piste-haut": () => { const L = etat.projet.pistes, i = Math.max(0, L.findIndex(x => x.id === etat.arme) - 1); etat.arme = L[i].id; afficher(); }, "piste-bas": () => { const L = etat.projet.pistes, i = Math.min(L.length - 1, L.findIndex(x => x.id === etat.arme) + 1); etat.arme = L[i].id; afficher(); },
   "piste-muet": () => { const pi = pisteActive(); if (pi) { pi.muet = !pi.muet; changer(); } }, "piste-solo": () => { const pi = pisteActive(); if (pi) { pi.solo = !pi.solo; changer(); } },
-  "zoom-plus": () => $("b-zoom-plus").click(), "zoom-moins": () => $("b-zoom-moins").click(), "zoom-tout": () => { etat.pxs = 60; afficher(); },
+  "zoom-plus": () => $("b-zoom-plus").click(), "zoom-moins": () => $("b-zoom-moins").click(), "zoom-tout": () => { etat.pxs = PXS_DEFAUT; afficher(); },
   "aide-raccourcis": () => ouvrirAide(),
   "aide-notions": () => notions.ouvrirListe(),
 };

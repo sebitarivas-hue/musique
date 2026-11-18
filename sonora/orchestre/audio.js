@@ -1,7 +1,7 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=faa55d9c2f";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=faa55d9c2f";
+import { nomNote } from "./donnees.js?v=c80d84142e";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=c80d84142e";
 
 let ctx = null, sources = [];
 export function message(t) { const e = document.getElementById("etat"); if (e) e.textContent = t; }
