@@ -1,10 +1,10 @@
 // Le son du jeu d'harmonie : les accords sont joués par des instruments écrits en SONORA, rendus hors ligne (timing exact, boucle sans couture).
 // Sans DOM : testé dans Node (on vérifie les hauteurs entendues par analyse du spectre).
-import { compiler } from "../src/index.js?v=ac38c9fd91";
-import { rendre } from "../src/rendu.js?v=ac38c9fd91";
-import { BANQUE, rendreSuiteEch } from "./echantillons.js?v=ac38c9fd91";
-import { SONS_SYNTHESE } from "./sons_synthese.js?v=ac38c9fd91";
-import { SONS_PERCUSSION } from "./sons_percussion.js?v=ac38c9fd91";
+import { compiler } from "../src/index.js?v=e875b9f234";
+import { rendre } from "../src/rendu.js?v=e875b9f234";
+import { BANQUE, rendreSuiteEch } from "./echantillons.js?v=e875b9f234";
+import { SONS_SYNTHESE } from "./sons_synthese.js?v=e875b9f234";
+import { SONS_PERCUSSION } from "./sons_percussion.js?v=e875b9f234";
 
 export const INSTRUMENTS = {
   piano: { nom: "Piano doux", code: `instrument PianoDoux {

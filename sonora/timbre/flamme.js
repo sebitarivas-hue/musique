@@ -1,6 +1,6 @@
 // La flamme de la série, en 3D : trois flammes vernies emboîtées (vert, jaune, cœur blanc) qui vacillent, des étincelles qui montent, et une lueur.
 // Grise et immobile tant qu'on n'a pas joué aujourd'hui. Sert de héros à la page Jouer du site. Three.js (licence MIT) est dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=ac38c9fd91";
+import * as T from "./vendor/three.module.min.js?v=e875b9f234";
 
 // Un profil de goutte effilée (rayon selon la hauteur), tourné autour de l'axe : une flamme.
 function profil(h, r) { const p = []; for (let i = 0; i <= 32; i++) { const t = i / 32, y = t * h, rr = r * Math.pow(Math.sin(Math.PI * Math.min(1, Math.pow(t, .5) * .98)), .9) * Math.pow(1 - t, .35); p.push(new T.Vector2(Math.max(.001, rr), y)); } return p; }

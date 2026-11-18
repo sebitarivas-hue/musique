@@ -838,3 +838,82 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
 .dlg-actions button:focus-visible, .dlg-nom input:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 @media (max-width: 700px) { .dlg { place-items: end center; padding: 10px; } .dlg-actions { flex-direction: column-reverse; } .dlg-actions button { width: 100%; } .outils #b-enregistrer { display: none; } }
 #b-enregistrer:disabled { opacity: .6; }
+
+/* ---------------------------------------------------------------- Architecture pour tout écran d'au moins 701 px (tablette, portable, paysage)
+   Le transport reste en haut (collant), compact, sur une ligne ; la barre de projet est fine ; les sources (instrument, rythme, voix, sons, audio, MIDI, partition) sont des icônes dans un rail à droite de l'arrangement ;
+   le message est une bulle flottante ; la boucle a des poignées. Rien de tout cela ne prend de hauteur : l'arrangement garde la place. */
+.ic-midi { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M12 3.500a8.500 8.500 0 100 17 8.500 8.500 0 000-17z'/%3E%3Ccircle cx='6.800' cy='11.500' r='1.400'/%3E%3Ccircle cx='8.700' cy='7.800' r='1.400'/%3E%3Ccircle cx='12' cy='6.600' r='1.400'/%3E%3Ccircle cx='15.300' cy='7.800' r='1.400'/%3E%3Ccircle cx='17.200' cy='11.500' r='1.400'/%3E%3C/svg%3E"); }
+.rail { display: none; }
+.poignee-boucle { display: none; }
+@media (min-width: 701px) {
+  .transport { position: sticky; top: 0; z-index: 20; justify-content: flex-start; gap: 6px 10px; padding: 6px 12px; }
+  .transport::after { display: none; }
+  .transport #b-debut, .transport #b-lire, .transport #b-enreg { min-height: 40px; min-width: 0; padding: 0 14px; font-size: .9rem; } .transport #b-lire { min-width: 0; }
+  .transport > *:not(#b-debut):not(#b-lire):not(#b-enreg):not(.position):not(.vu):not(.espace) { order: 0; } .transport .av > * { order: 0; } .transport #b-debut { order: 0; } .transport #b-lire { order: 0; } .transport #b-enreg { order: 0; } .transport .espace { display: block; flex: 1 1 0; }
+  .transport .affichage { order: 0; } .transport .affichage .mesures { font-size: 1.35rem; }
+  #message { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 60; max-width: min(720px, 82vw); margin: 0; padding: 8px 14px; border: 1px solid var(--daw-trait, #3a3a44); border-radius: 12px; background: rgba(21, 21, 24, .95); color: var(--daw-texte, #ECEBE4); box-shadow: 0 8px 24px rgba(0, 0, 0, .5); font-size: .85rem; pointer-events: none; }
+  #message:empty { display: none; }
+  .outils { gap: 4px 8px; padding: 4px 0; } .outils .niveau { margin-left: auto; }
+  .zone-arrange { display: flex; gap: 8px; }
+  .zone-arrange > .ligne { flex: 1 1 0; min-width: 0; }
+  .rail { display: flex; flex: 0 0 76px; flex-direction: column; gap: 6px; padding: 6px 0; position: sticky; top: 64px; align-self: flex-start; max-height: calc(100vh - 80px - var(--dock-pris, 0px)); overflow-y: auto; scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail > button, .rail > label.bouton-fichier { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; min-height: 62px; padding: 6px 2px; margin: 0; border: 1px solid var(--daw-trait, #3a3a44); border-radius: 12px; background: var(--daw-piste2, #23232a); color: var(--daw-texte, #ECEBE4); font-size: 0; line-height: 1; text-align: center; cursor: pointer; }
+  .rail > button .ic, .rail > label.bouton-fichier .ic { font-size: 1.7rem; color: var(--acide, #D6FF00); }
+  .rail > button::after, .rail > label.bouton-fichier::after { content: attr(data-court); font: 600 .68rem var(--f-body); letter-spacing: .01em; }
+  .rail > button:hover, .rail > label.bouton-fichier:hover { border-color: var(--acide, #D6FF00); }
+  .rail > button[aria-expanded="true"], .rail > button[aria-pressed="true"] { background: var(--acide, #D6FF00); color: var(--noir, #11110F); border-color: var(--acide, #D6FF00); } .rail > button[aria-expanded="true"] .ic, .rail > button[aria-pressed="true"] .ic { color: var(--noir, #11110F); }
+  .rail > #b-midi { order: 1; } .rail > #b-pas { order: 2; } .rail > #b-voix { order: 3; } .rail > #b-biblio { order: 4; } .rail > label:has(#fichiers) { order: 5; } .rail > #b-fichier-midi { order: 6; } .rail > label:has(#fichier-midi) { order: 7; }
+  .rail input[type=file] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .poignee-boucle { display: block; position: absolute; top: 0; height: 100%; width: 28px; margin-left: -14px; z-index: 8; touch-action: none; cursor: ew-resize; }
+  .poignee-boucle[hidden] { display: none; }
+  .poignee-boucle::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px; border-radius: 2px; background: var(--acide, #D6FF00); }
+  .poignee-boucle::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 20px; margin: -10px 0 0 -6px; border-radius: 6px; background: var(--acide, #D6FF00); box-shadow: 0 0 0 2px #11110F; }
+  .poignee-boucle.eteinte::before, .poignee-boucle.eteinte::after { background: #8a8a82; }
+}
+@media (min-width: 701px) and (pointer: coarse) { .poignee-boucle { width: 44px; margin-left: -22px; } .poignee-boucle::after { width: 14px; height: 26px; margin: -13px 0 0 -7px; } }
+@media (min-width: 701px) and (max-width: 900px) { .zone-arrange > #selection { order: -1; } .zone-arrange { flex-wrap: wrap; } .zone-arrange > .ligne { flex: 1 1 calc(100% - 90px); } }
+
+/* Transport compact sur écran moyen : pas d'aide « ? », « Début » en icône seule ; la bulle de message n'apparaît que quand il y a quelque chose à dire. */
+@media (min-width: 701px) {
+  #message:not(.visible) { display: none; }
+}
+@media (min-width: 701px) and (max-width: 1250px) {
+  .transport .notion { display: none; }
+  .transport #b-debut { font-size: 0; min-width: 44px; padding: 0; justify-content: center; } .transport #b-debut .ic { font-size: 1.15rem; }
+  .transport .affichage { min-width: 5.4ch; }
+}
+
+/* Les sources ont déménagé dans le rail : leur ancienne bande ne garde que des outils avancés, donc rien à montrer dans l'essentiel. */
+@media (min-width: 701px) { body.simple .outils > .grp[aria-label="Apporter des sons"], body.simple .outils > .grp[aria-label="Pistes"] { display: none; } }
+
+/* L'inspecteur en colonne dès 901 px de large (la hauteur ne compte pas) ; plus étroit, c'est une barre au-dessus de l'arrangement. */
+@media (min-width: 901px) {
+  .zone-arrange > #selection { flex: 0 0 218px; display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start; gap: 6px; padding: 10px; overflow: auto; max-height: none; border-radius: 10px; }
+  .zone-arrange > #selection[hidden] { display: flex; } .zone-arrange > #selection[hidden] > :not(.sel-vide) { display: none; } .zone-arrange > #selection[hidden] .sel-vide { display: block; }
+  .zone-arrange > #selection #sel-nom { font-size: 1rem; color: var(--acide); overflow-wrap: anywhere; padding-bottom: 6px; border-bottom: 1px solid var(--daw-trait, #3c3c46); margin-bottom: 2px; }
+  .zone-arrange > #selection button { justify-content: flex-start; width: 100%; text-align: left; } .zone-arrange > #selection button[hidden] { display: none; }
+  .zone-arrange > #selection .mini { flex-direction: column; align-items: stretch; gap: 4px; margin-top: 6px; } .zone-arrange > #selection .mini input { width: 100%; }
+}
+
+/* Tablette : en-têtes de piste un peu plus étroits (le rail et l'arrangement ont besoin de la largeur). Sur grand écran ils gardent 188 px. */
+@media (min-width: 701px) and (max-width: 1100px) { .ligne { grid-template-columns: 236px minmax(0, 1fr); } }
+/* Le transport collant ne cache pas ce qu'on fait défiler vers le haut de la page. */
+@media (min-width: 701px) { html { scroll-padding-top: 76px; } }
+/* Doigt : les trois touches du transport font au moins 44 px (taille minimale d'une cible tactile). */
+@media (pointer: coarse) and (min-width: 701px) { .transport #b-debut, .transport #b-lire, .transport #b-enreg, .transport .bascule { min-height: 44px; } .transport #b-debut { min-width: 48px; } }
+
+/* Cadre fixe : le rail s'arrête avec la zone d'arrangement (il défile dedans), il ne passe jamais sous le panneau du bas. */
+@media (min-width: 901px) and (min-height: 820px) { .rail { position: static; align-self: stretch; max-height: none; min-height: 0; } }
+
+/* Sous 1200 px de large, le clip choisi est une barre au-dessus de l'arrangement (elle n'est là que s'il y a un clip choisi) : la largeur va à l'arrangement. */
+@media (min-width: 701px) and (max-width: 1199px) {
+  .zone-arrange { flex-wrap: wrap; }
+  .zone-arrange > #selection { order: -1; flex: 0 0 100%; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 4px 10px; overflow: visible; }
+  .zone-arrange > #selection[hidden] { display: none; }
+  .zone-arrange > #selection:not([hidden]) { display: flex; } .zone-arrange > #selection .sel-vide { display: none; }
+  .zone-arrange > #selection #sel-nom { border: 0; padding: 0; margin: 0; font-size: .95rem; }
+  .zone-arrange > #selection button { width: auto; min-height: 36px; justify-content: center; } .zone-arrange > #selection button[hidden] { display: none; }
+  .zone-arrange > #selection .mini { flex-direction: row; align-items: center; margin: 0; } .zone-arrange > #selection .mini input { width: 120px; }
+  .zone-arrange > .ligne { flex: 1 1 calc(100% - 90px); }
+}

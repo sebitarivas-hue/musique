@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Pistes</title>
 <meta name="description" content="Un séquenceur audio dans le navigateur : glisser des sons, enregistrer au micro, les placer sur des pistes, mixer et exporter.">
-<link rel="stylesheet" href="../studio/studio.css?v=ac38c9fd91">
-<link rel="stylesheet" href="pistes.css?v=ac38c9fd91"><link rel="stylesheet" href="blocs.css?v=ac38c9fd91"><link rel="stylesheet" href="console.css?v=ac38c9fd91"><link rel="stylesheet" href="notions.css?v=ac38c9fd91">
+<link rel="stylesheet" href="../studio/studio.css?v=e875b9f234">
+<link rel="stylesheet" href="pistes.css?v=e875b9f234"><link rel="stylesheet" href="blocs.css?v=e875b9f234"><link rel="stylesheet" href="console.css?v=e875b9f234"><link rel="stylesheet" href="notions.css?v=e875b9f234">
 </head>
 <body>
 <a class="saut" href="#ligne">Aller aux pistes</a>
@@ -42,11 +42,11 @@
   <section class="outils" aria-label="Sons et projet">
     <button type="button" id="b-menu-m" class="ico-m" aria-label="Menu : fichier, édition, lecture, piste, effets, affichage, aide" aria-haspopup="dialog" aria-expanded="false"><span class="ic ic-menu" aria-hidden="true"></span></button>
     <div class="grp" role="group" aria-label="Apporter des sons"><span class="grp-t" aria-hidden="true">Sons</span>
-      <label class="bouton-fichier" data-tip="Ouvrir un fichier audio de ton ordinateur (WAV, MP3...) : il arrive sur la piste choisie, au curseur"><span class="ic ic-importer" aria-hidden="true"></span> Importer un son<input type="file" id="fichiers" accept="audio/*,.wav,.mp3,.ogg,.m4a,.flac" multiple></label>
-      <label class="bouton-fichier" data-tip="Ouvrir une partition : MusicXML, .mxl, MIDI, ou PDF et image (lus par le service de lecture de partitions) : chaque instrument devient une piste de notes avec son timbre, que tu peux modifier"><span class="ic ic-importer" aria-hidden="true"></span> Importer une partition<input type="file" id="fichier-midi" accept=".pdf,.png,.jpg,.jpeg,.mxl,.musicxml,.xml,.mid,.midi,audio/midi,audio/x-midi,application/vnd.recordare.musicxml,application/vnd.recordare.musicxml+xml"></label>
-      <button type="button" id="b-biblio" aria-expanded="false" aria-controls="biblio" data-tip="Des batteries, des rythmes du monde, des instruments : écoute puis ajoute sur la piste"><span class="ic ic-biblio" aria-hidden="true"></span> Sons et rythmes</button>
-      <button type="button" id="b-midi" aria-expanded="false" aria-controls="midi" data-tip="Un clavier pour jouer un instrument et enregistrer tes notes sur la piste (clavier MIDI, ordinateur ou écran)"><span class="ic ic-piano" aria-hidden="true"></span> Jouer un instrument</button>
-      <button type="button" id="b-pas" aria-expanded="false" aria-controls="pas" data-tip="Allumer des cases pour fabriquer un rythme de batterie, puis l'ajouter comme un clip"><span class="ic ic-pas" aria-hidden="true"></span> Fabriquer un rythme</button>
+      <label class="bouton-fichier" data-court="Audio" data-tip="Ouvrir un fichier audio de ton ordinateur (WAV, MP3...) : il arrive sur la piste choisie, au curseur"><span class="ic ic-importer" aria-hidden="true"></span> Importer un son<input type="file" id="fichiers" accept="audio/*,.wav,.mp3,.ogg,.m4a,.flac" multiple></label>
+      <label class="bouton-fichier" data-court="Partition" data-tip="Ouvrir une partition : MusicXML, .mxl, MIDI, ou PDF et image (lus par le service de lecture de partitions) : chaque instrument devient une piste de notes avec son timbre, que tu peux modifier"><span class="ic ic-importer" aria-hidden="true"></span> Importer une partition<input type="file" id="fichier-midi" accept=".pdf,.png,.jpg,.jpeg,.mxl,.musicxml,.xml,.mid,.midi,audio/midi,audio/x-midi,application/vnd.recordare.musicxml,application/vnd.recordare.musicxml+xml"></label>
+      <button type="button" data-court="Sons" id="b-biblio" aria-expanded="false" aria-controls="biblio" data-tip="Des batteries, des rythmes du monde, des instruments : écoute puis ajoute sur la piste"><span class="ic ic-biblio" aria-hidden="true"></span> Sons et rythmes</button>
+      <button type="button" data-court="Instrument" id="b-midi" aria-expanded="false" aria-controls="midi" data-tip="Un clavier pour jouer un instrument et enregistrer tes notes sur la piste (clavier MIDI, ordinateur ou écran)"><span class="ic ic-piano" aria-hidden="true"></span> Jouer un instrument</button>
+      <button type="button" data-court="Rythme" id="b-pas" aria-expanded="false" aria-controls="pas" data-tip="Allumer des cases pour fabriquer un rythme de batterie, puis l'ajouter comme un clip"><span class="ic ic-pas" aria-hidden="true"></span> Fabriquer un rythme</button>
       <label class="mini" data-avance data-tip="Un son fabriqué par SONORA : choisis-le dans la liste puis ajoute-le">Son SONORA<select id="choix-sonora"><option value="">Choisir…</option></select></label>
       <button type="button" id="b-ajout-sonora" data-avance data-tip="Ajouter le son SONORA choisi sur la piste"><span class="ic ic-plus" aria-hidden="true"></span> Ajouter</button>
     </div>
@@ -56,7 +56,7 @@
     <div class="grp" role="group" aria-label="Projet"><span class="grp-t" aria-hidden="true">Projet</span>
       <label class="mini" data-avance data-tip="Le nom de ton projet">Projet <input id="titre-projet" maxlength="80" aria-label="Titre du projet" autocomplete="off"></label>
       <button type="button" id="b-projets" aria-expanded="false" aria-controls="projets" data-tip="Ouvrir un autre projet, ou retrouver un projet supprimé"><span class="ic ic-dossier" aria-hidden="true"></span> Mes projets</button>
-      <button type="button" id="b-enregistrer" data-tip="Garder ce projet dans Mes projets. Sinon il est supprimé quand tu le quittes (on te le demandera)"><span class="ic ic-export" aria-hidden="true"></span> Enregistrer</button><button type="button" id="b-nouveau" data-avance data-tip="Commencer un projet vide (l'autre reste dans Mes projets)"><span class="ic ic-nouveau" aria-hidden="true"></span> Nouveau projet</button>
+      <button type="button" id="b-enregistrer" data-tip="Garder ce projet dans Mes projets. Sinon il est supprimé quand tu le quittes (on te le demandera)"><span class="ic ic-nouveau" aria-hidden="true"></span> Sauvegarder</button><button type="button" id="b-nouveau" data-avance data-tip="Commencer un projet vide (l'autre reste dans Mes projets)"><span class="ic ic-nouveau" aria-hidden="true"></span> Nouveau projet</button>
       <button type="button" id="b-export-midi" data-avance data-tip="Fabriquer un fichier MIDI avec les notes de tes clips de notes, pour les ouvrir dans un autre logiciel"><span class="ic ic-export" aria-hidden="true"></span> Exporter en MIDI</button>
       <button type="button" id="b-export" data-tip="Fabriquer un fichier WAV avec tout ton projet, pour l'écouter ou le partager"><span class="ic ic-export" aria-hidden="true"></span> Exporter en WAV</button>
       <span class="annuler-groupe" role="group" aria-label="Revenir en arrière"><button type="button" id="b-annuler" data-tip="Annuler la dernière action (Ctrl+Z)" disabled><span class="ic ic-annuler" aria-hidden="true"></span> Annuler</button><button type="button" id="b-refaire" data-tip="Rétablir ce qu'on vient d'annuler (Ctrl+Y)" disabled><span class="ic ic-refaire" aria-hidden="true"></span> Rétablir</button></span>
@@ -141,7 +141,7 @@
   <button type="button" class="notion" data-notion="enveloppe" aria-label="Comprendre : les courbes">?</button>
   <p class="petit" id="auto-aide" role="status" aria-live="polite"></p>
   </section>
-  <div class="zone-arrange" id="zone-arrange">
+<div class="zone-arrange" id="zone-arrange">
   <section class="selection" id="selection" aria-label="Clip choisi" hidden>
     <b id="sel-nom"></b>
     <p class="sel-vide" id="sel-vide">Aucun clip choisi. Touche un clip pour régler son gain, le couper, le dupliquer ou ouvrir ses notes.</p>
@@ -170,6 +170,10 @@
     </div>
   </section></div>
   </div>
+    <nav class="rail" id="rail" aria-label="Ajouter : instrument, rythme, voix, sons, fichiers">
+    <button type="button" id="b-voix" data-court="Voix" data-tip="Enregistrer ta voix au micro, sur la piste choisie (touche R)"><span class="ic ic-micro" aria-hidden="true"></span> Enregistrer ma voix</button>
+    <button type="button" id="b-fichier-midi" data-court="MIDI" data-tip="Ouvrir un fichier MIDI : chaque instrument devient une piste de notes"><span class="ic ic-midi" aria-hidden="true"></span> Importer un fichier MIDI</button>
+  </nav>
   </div>
   <button type="button" class="b-piste-m" id="b-piste-m">+ Ajouter une piste</button>
   <section class="effets" id="effets" aria-label="Effets de la piste" hidden></section>
@@ -297,8 +301,8 @@
 </section>
   </div>
 </div>
-<script type="module" src="pistes.js?v=ac38c9fd91"></script>
-<script src="../barre-cours.js?v=ac38c9fd91"></script>
-<script src="../retour.js?v=ac38c9fd91"></script>
+<script type="module" src="pistes.js?v=e875b9f234"></script>
+<script src="../barre-cours.js?v=e875b9f234"></script>
+<script src="../retour.js?v=e875b9f234"></script>
 </body>
 </html>
