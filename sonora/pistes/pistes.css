@@ -746,3 +746,25 @@ button.enreg[aria-pressed="true"] .pastille-rec { background: #fff; }
   #message { padding: 3px 12px; font-size: .76rem; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; border-radius: 8px; }
   .selection { padding: 3px 8px; gap: 4px 8px; } .selection button { min-height: 30px; padding: 0 10px; font-size: .76rem; } .selection .ic { font-size: 1.05em; }
 }
+
+/* ---------------------------------------------------------------- Le transport, lisible d'un coup d'oeil
+   Position en mesure.temps.double croche (comme un séquenceur), chiffrage, et trois bascules toujours visibles : métronome, précompte, boucle (allumées en jaune). */
+.transport .affichage { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1.05; min-width: 7.2ch; }
+.transport .affichage .mesures { font: 600 1.45rem var(--f-mono); color: var(--acide); letter-spacing: .02em; }
+.transport .affichage .position { font: 500 .78rem var(--f-mono); color: #B9B8AE; min-width: 0; }
+.transport .signature { font: 600 .9rem var(--f-mono); color: #ECEBE4; border: 1px solid #55554F; border-radius: 6px; padding: 3px 7px; }
+.transport .bascules { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.transport .bascule { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 0 13px; border: 2px solid #5A5A54; border-radius: 999px; background: transparent; color: #ECEBE4; font: 600 .8rem var(--f-body); white-space: nowrap; cursor: pointer; }
+.transport .bascule input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.transport .bascule:hover { border-color: var(--acide); }
+.transport .bascule[aria-pressed="true"], .transport .bascule:has(input:checked) { background: var(--acide); border-color: var(--acide); color: var(--noir); }
+.transport .bascule:has(input:focus-visible), .transport .bascule:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@media (min-width: 701px) and (max-width: 1100px) { .transport .affichage { order: 2; } .transport .bascules { order: 3; } .transport .affichage .mesures { font-size: 1.7rem; } }
+/* Téléphone : la position et les trois bascules sont sur une rangée juste au-dessus de la barre du bas (Lire, Enregistrer, Ajouter, Réglages). */
+@media (max-width: 700px) {
+  .transport .affichage { position: absolute; top: -36px; right: 8px; flex-direction: row; align-items: baseline; gap: 8px; min-width: 0; background: var(--noir); padding: 3px 10px; border-radius: 6px 6px 0 0; }
+  .transport .affichage .mesures { font-size: 1.05rem; } .transport .affichage .position { position: static; top: auto; right: auto; background: none; padding: 0; font-size: .74rem; }
+  .transport .bascules { position: absolute; top: -48px; left: 8px; flex-wrap: nowrap; gap: 4px; background: var(--noir); padding: 3px 4px 0; border-radius: 6px 6px 0 0; }
+  .transport .bascules .notion { display: none; } .transport .bascule { min-height: 44px; padding: 0 11px; font-size: .76rem; }
+  .transport .signature, .transport .espace { display: none; } .transport .vu { left: 46%; }
+}
