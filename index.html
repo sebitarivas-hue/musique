@@ -4937,7 +4937,15 @@ function majHudJeu() {
       <span class="hj-f${auj ? " on" : ""}" title="Jours de suite">${FLAMME_SVG}<b>${serie}</b></span>
       <span class="hj-n"><svg viewBox="0 0 32 32" aria-hidden="true"><circle class="f" cx="16" cy="16" r="13"/><circle class="v" cx="16" cy="16" r="13" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - part)).toFixed(1)}"/></svg><b>${n + 1}</b></span>
       <span class="hj-x"><b>${j.xp}</b> XP</span><span class="hj-e">&#9733; <b>${etoiles}</b></span></a>`; }
-  const e = document.querySelector("header.entete"); el.style.top = e && getComputedStyle(e).position === "sticky" ? e.offsetHeight + "px" : "0px";
+  placerHud();
+}
+/* La barre de jeu se colle juste sous l'en-tête. Sa hauteur est mesurée à chaque rendu, mais l'en-tête change de taille après (polices, nom du professeur sur plusieurs lignes) :
+   mesurée trop tôt (121 px au lieu de 76 ou 89), la barre était repoussée vers le bas et recouvrait le haut de la page, dont les onglets de classe (retour du 19/11/2026,
+   « impossible de cliquer »). On remesure donc chaque fois que l'en-tête change de taille. */
+function placerHud() {
+  const el = document.getElementById("hud-jeu"), e = document.querySelector("header.entete"); if (!el) return;
+  el.style.top = e && getComputedStyle(e).position === "sticky" ? e.offsetHeight + "px" : "0px";
+  if (e && window.ResizeObserver && !window.__hudObs) { window.__hudObs = new ResizeObserver(() => placerHud()); window.__hudObs.observe(e); }
 }
 addEventListener("resize", () => { const el = document.getElementById("hud-jeu"); if (el && !el.hidden) majHudJeu(); });
 function majPuce() {
