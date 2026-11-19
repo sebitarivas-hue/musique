@@ -1901,6 +1901,14 @@ html.signal .fnav { margin: 0 0 8px !important; padding-bottom: 4px !important; 
 .labo { margin-top: 8px !important; padding: 12px !important; gap: 10px !important; } .labo-onde { height: 96px !important; }
 .pager { margin-top: 8px; }
 @media (max-width: 760px) { .barre { padding-top: 4px !important; padding-bottom: 4px !important; } .hud-jeu { padding-top: 2px !important; padding-bottom: 2px !important; } }
+/* Les outils (labo, studio Faust) dans la même DA que la salle de jeux, de jour comme de nuit : écran 3D, bouton en relief, panneau vitré. */
+.onde3d-sous { display: none !important; }
+html.signal .labo-onde.onde3d { height: 150px !important; border: 1px solid rgba(184,245,74,.28); border-radius: 22px; background: radial-gradient(120% 100% at 50% 100%, rgba(184,245,74,.18), transparent 70%), #070a05; box-shadow: inset 0 0 40px rgba(184,245,74,.08), 0 18px 34px -16px rgba(184,245,74,.35); }
+html.signal .labo-tenir { width: 140px; height: 140px; margin-bottom: 18px; border-radius: 50%; color: #0c1400; font: 600 1.1rem/1.2 "Fredoka", sans-serif; background: radial-gradient(circle at 35% 26%, #f6ffc9, #b8f54a 46%, #6fa51c 100%); box-shadow: 0 10px 0 #4d7a10, 0 24px 34px -10px rgba(184,245,74,.6), inset 0 -12px 20px rgba(0,60,0,.35), inset 0 8px 14px rgba(255,255,255,.65); transition: transform .08s, box-shadow .08s; }
+html.signal .labo-tenir.on { transform: translateY(8px); background: radial-gradient(circle at 35% 26%, #ffffff, #d6ff80 50%, #8fc82a 100%); box-shadow: 0 2px 0 #4d7a10, 0 10px 26px -6px rgba(184,245,74,.9), inset 0 -8px 14px rgba(0,60,0,.3); }
+html.signal .labo-jouer { border-radius: 999px; background: linear-gradient(180deg, #d6ff80, #a6e63a); color: #0c1400; font: 600 1.25rem "Fredoka", sans-serif; box-shadow: 0 6px 0 #6fa51c, 0 14px 26px -8px rgba(184,245,74,.55); }
+html.signal .labo-jouer:active { transform: translateY(5px); box-shadow: 0 1px 0 #6fa51c, 0 6px 16px -6px rgba(184,245,74,.6); }
+html.signal .labo { background: linear-gradient(160deg, rgba(36,60,22,.82), rgba(14,24,10,.9)); border: 1px solid rgba(184,245,74,.22); border-radius: 26px; backdrop-filter: blur(6px); box-shadow: 0 24px 48px -24px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.03) inset; }
 </style>
 </head>
 <body>
@@ -4194,7 +4202,7 @@ function brancherAtelier2(id) {
     const cv = document.getElementById("labo-onde"); if (!cv || LABO !== L || !L.an) return;
     const g = cv.getContext("2d"), W = cv.width, H = cv.height, t = new Float32Array(L.an.fftSize), f = new Uint8Array(L.an.frequencyBinCount);
     const coul = getComputedStyle(zone).getPropertyValue("--c").trim() || "#22364d";
-    L.an.getFloatTimeDomainData(t); L.an.getByteFrequencyData(f);
+    L.an.getFloatTimeDomainData(t); L.an.getByteFrequencyData(f); onde3d(cv, t, f);
     g.clearRect(0, 0, W, H);
     const nb = 64; for (let k = 0; k < nb; k++) { const v = f[Math.floor(Math.pow(k / nb, 2) * f.length * .5)] / 255; g.fillStyle = coul + "33"; g.fillRect(k * W / nb, H - v * H, W / nb - 2, v * H); }
     let z = 0; for (let k = 1; k < t.length / 2; k++) if (t[k - 1] < 0 && t[k] >= 0) { z = k; break; }
@@ -4353,7 +4361,7 @@ function brancherStudio() {
     const cv = $("st-onde"); if (!cv || LABO !== L || !L || !L.an) return;
     const g = cv.getContext("2d"), W = cv.width, H = cv.height, t = new Float32Array(L.an.fftSize), f = new Uint8Array(L.an.frequencyBinCount);
     const st = getComputedStyle(zone), coul = st.getPropertyValue("--st-trait").trim() || "#22364d";
-    L.an.getFloatTimeDomainData(t); L.an.getByteFrequencyData(f); g.clearRect(0, 0, W, H);
+    L.an.getFloatTimeDomainData(t); L.an.getByteFrequencyData(f); onde3d(cv, t, f); g.clearRect(0, 0, W, H);
     const nb = 72; for (let k = 0; k < nb; k++) { const v = f[Math.floor(Math.pow(k / nb, 2) * f.length * .6)] / 255; g.fillStyle = coul + "30"; g.fillRect(k * W / nb, H - v * H, W / nb - 2, v * H); }
     let z = 0; for (let k = 1; k < t.length / 2; k++) if (t[k - 1] < 0 && t[k] >= 0) { z = k; break; }
     g.strokeStyle = coul; g.lineWidth = 2.5; g.beginPath(); for (let x = 0; x < W; x++) { const y = H / 2 - t[z + Math.floor(x * 1.4)] * H * 1.2; x ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
@@ -4569,7 +4577,7 @@ function brancherLaboMatieres() {
   function dessiner() {
     const cv = $("lab-onde"), sono = $("lab-sono"); if (!cv || LABO !== L || !L.an) return;
     const g = cv.getContext("2d"), W = cv.width, H = cv.height, t = new Float32Array(L.an.fftSize), f = new Uint8Array(L.an.frequencyBinCount);
-    L.an.getFloatTimeDomainData(t); L.an.getByteFrequencyData(f);
+    L.an.getFloatTimeDomainData(t); L.an.getByteFrequencyData(f); onde3d(cv, t, f);
     g.clearRect(0, 0, W, H);
     const nb = 96; for (let k = 0; k < nb; k++) { const i = Math.floor(Math.pow(k / nb, 2.2) * f.length * .6) + 1, v = f[i] / 255; g.fillStyle = "rgba(214,255,0,.28)"; g.fillRect(k * W / nb, H - v * H, W / nb - 1.5, v * H); }
     let z = 0; for (let k = 1; k < t.length / 2; k++) if (t[k - 1] < 0 && t[k] >= 0) { z = k; break; }
@@ -5308,6 +5316,12 @@ function vueJouer() {
   h += `<h2 class="hub-rub">Tous les jeux<span>${cat.length} pour la ${esc(k)}</span></h2>` + catalogueJeux(cat, "#jouer", k) + `<p class="small"><a href="#chemin">Mon chemin en ${esc(k)}</a> : les jeux du cours, séquence par séquence.${jj ? ` <a href="#ludo-${jj.id}">Jeu du jour : ${esc(jj.titre)}</a>.` : ""}</p>`;
   h += `<p class="hub-pied">${role() === "prof" || !modeJeu() ? "" : `<a href="#parcours">Mon parcours : badges et quêtes de la semaine</a>`}<a href="#ludo">Les ${D.ludo.jeux.length} jeux de toutes les classes</a></p></div>`;
   return h;
+}
+/* L'écran des outils en 3D (sonora/timbre/onde3d.js) : le canvas dessiné à plat reste en dessous, sans WebGL il sert d'écran. */
+function onde3d(cv, t, f) {
+  if (cv.__o3) { cv.__o3.donner(t, f); return; }
+  if (cv.__o3 !== undefined || !D.sonora_timbre) return; cv.__o3 = null;
+  import(new URL(D.sonora_timbre.replace(/index\.html$/, "onde3d.js"), location.href).href).then(m => { cv.__o3 = m.monterOnde3d(cv) || false; }).catch(() => { cv.__o3 = false; });
 }
 /* Les icônes 3D (sonora/timbre/icones3d.js) remplacent les icônes dessinées dès qu'elles sont prêtes ; l'inclinaison des cartes, le reflet, le recul de la flamme au défilement. */
 function brancherIcones() {
@@ -6670,6 +6684,7 @@ new MutationObserver(habillerEntete).observe(document.getElementById("app"), { c
    Certains sites interdisent d'être affichés dans une autre page (YouTube, Google, réseaux sociaux...) : pour ceux-là, une vraie petite fenêtre s'ouvre, qui ne quitte pas le cours. */
 const HOTES_SANS_CADRE = /(^|\.)(youtube\.com|youtu\.be|youtube-nocookie\.com|google\.[a-z.]+|facebook\.com|instagram\.com|x\.com|twitter\.com|spotify\.com|deezer\.com|apple\.com|bandcamp\.com|soundcloud\.com)$/i;
 function ouvrirFenetreExterne(url, titre) {
+  return false;   /* plus de fenêtre par-dessus la page (19/11/2026) : un lien externe s'ouvre dans un onglet */
   let h; try { h = new URL(url, location.href).hostname; } catch (_) { return false; }
   if (HOTES_SANS_CADRE.test(h)) { const f = window.open(url, "externe", "popup=yes,width=1000,height=720"); if (f) { try { f.opener = null; } catch (_) {} return true; } return false; }
   document.getElementById("fenetre-ext")?.remove();
