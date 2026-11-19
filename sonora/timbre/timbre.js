@@ -1,10 +1,10 @@
 // TIMBRE : la salle de jeux de l'oreille. Sept jeux (le septième, Le mot juste, sur le lexique de l'Atlas), de vrais enregistrements de la banque du site, des questions tirées au hasard à chaque partie
 // (deux élèves côte à côte n'ont jamais la même série). La logique pure est dans jeu_logique.js, testée dans Node.
-import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=8cd1732532";
-import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=8cd1732532";
-import { preparer, mixer } from "../harmonie/echantillons.js?v=8cd1732532";
+import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=a07b03bfae";
+import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=a07b03bfae";
+import { preparer, mixer } from "../harmonie/echantillons.js?v=a07b03bfae";
 import { monter } from "./scene.js?v=20261117c";
-import { questionsMots } from "./quiz_logique.js?v=8cd1732532";
+import { questionsMots } from "./quiz_logique.js?v=a07b03bfae";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

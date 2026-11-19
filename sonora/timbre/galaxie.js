@@ -3,7 +3,7 @@
 // la Terre avec ses vrais continents, qui mène à l'Atlas. La caméra vole : entrée en spirale, dérive lente, parallaxe au toucher et à l'inclinaison du téléphone,
 // et un plongeon vers la planète choisie. Les étiquettes sont de vrais boutons HTML posés sur le canevas (clavier, lecteur d'écran). Three.js (licence MIT) est dans vendor/.
 // Les continents de la Terre viennent de terres.json (Natural Earth, domaine public).
-import * as T from "./vendor/three.module.min.js?v=8cd1732532";
+import * as T from "./vendor/three.module.min.js?v=a07b03bfae";
 
 const alea = graine => { let s = graine >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; };
 const hash = t => { let h = 7; for (const c of String(t)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
