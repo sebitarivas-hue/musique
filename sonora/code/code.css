@@ -39,3 +39,6 @@ body { background: #F0EFE8; }
 .defis { display: flex; flex-wrap: wrap; gap: 6px; } .defis button { min-height: 44px; padding: 6px 12px; border: 2px solid #14130f; border-radius: 12px; background: #D6FF00; font: inherit; font-size: .84rem; font-weight: 700; cursor: pointer; color: #14130f; }
 @media (max-width: 900px) { .filtre { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; } .filtre button { flex: 0 0 auto; min-height: 44px; } }
 .zone > *, .cartes-col, .edition { min-width: 0; } .filtre { max-width: 100%; }
+
+/* 19/11/2026 : studio.css bloque le défilement de la page sur ordinateur (body de la hauteur de l'écran, overflow caché, pensé pour l'atelier). Cette page défile : on rend la hauteur et le défilement au corps de la page. */
+@media (min-width: 1101px) { body { height: auto; min-height: 100vh; overflow: visible; } }

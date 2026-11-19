@@ -16,3 +16,6 @@
 @media (max-width: 900px) { .tableau { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .tableau { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .panneau canvas { transition: none; } }
+
+/* 19/11/2026 : studio.css bloque le défilement de la page sur ordinateur (body de la hauteur de l'écran, overflow caché, pensé pour l'atelier). Cette page défile : on rend la hauteur et le défilement au corps de la page. */
+@media (min-width: 1101px) { body { height: auto; min-height: 100vh; overflow: visible; } }

@@ -171,3 +171,6 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
 .plan-fugue { list-style: none; padding: 0; margin: 6px 0 12px; display: grid; gap: 6px; } .plan-fugue li { border-left: 8px solid var(--noir); background: #fff; padding: 6px 10px; font-size: .9rem; line-height: 1.4; } .plan-fugue .sec-pl { font: 700 .78rem var(--f-mono, monospace); text-transform: uppercase; } .plan-fugue .sec-d { font: 600 .75rem var(--f-mono, monospace); color: var(--gris); margin: 0 6px; }
 
 .fugue-britten { margin: 8px 0; } .fugue-britten h4 { margin: 4px 0 6px; } .fugue-britten ol { padding-left: 1.3em; margin: 6px 0; } .fugue-britten li { margin: 6px 0; line-height: 1.45; }
+
+/* 19/11/2026 : studio.css bloque le défilement de la page sur ordinateur (body de la hauteur de l'écran, overflow caché, pensé pour l'atelier). Cette page défile : on rend la hauteur et le défilement au corps de la page. */
+@media (min-width: 1101px) { body { height: auto; min-height: 100vh; overflow: visible; } }
