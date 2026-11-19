@@ -672,6 +672,17 @@ function imageFiche(e) {
   return `<figure class="fig-fiche"><img src="${COMMONS[i[0].slice(0, 2)] + esc(chemin)}" alt="${esc(de ? "Illustration : " + de.name : i[3] ? "Illustration : " + i[3] : e.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="imgRate(this, 1)">
     <figcaption>${de ? `Illustration : <a href="#e/${de.id}">${esc(de.name)}</a>. ` : i[3] ? `Illustration : ${esc(i[3])}. ` : ""}Image : ${esc(i[1])}${i[2] ? ", " + esc(i[2]) : ""}, <a href="${page}" target="_blank" rel="noopener">Wikimedia Commons</a>.</figcaption></figure>`;
 }
+/* Une entrée sans œuvre, sans artiste et sans écoute de fiche gardait une page muette (19/11/2026, retour de Sébastien : « plein de ressources sans lien d'écoute sur YouTube », par exemple Zinli).
+   Elle reçoit des recherches Spotify et YouTube construites sur son nom, son pays et son type : ce sont des recherches externes, pas des enregistrements identifiés. */
+function ecouteParDefaut(e) {
+  if ((e.works || []).length || ((e.artists || []).length && !D.fiches[e.id]) || (D.fiches[e.id] && (D.fiches[e.id].ecoute || []).length)) return "";   // ce qui est déjà affiché ailleurs sur la fiche
+  const pays = (e.region || "").split(",").pop().replace(/\s*\(.*?\)/g, "").trim(), n = e.name;
+  const L = e.type === "instrument" ? [["Écouter le son de cet instrument", `${n} instrument son`], ["Écouter de la musique avec cet instrument", `${n} ${pays} musique`]]
+    : e.type === "tradition" ? [["Écouter des enregistrements", `${n} musique traditionnelle ${pays}`], ["Voir des vidéos et des concerts", `${n} ${pays} concert`]]
+    : e.type === "technique" || e.type === "practice" ? [["Écouter des exemples", `${n} musique exemple`], ["Voir des vidéos", `${n} démonstration`]]
+    : [["Écouter des enregistrements", `${n} musique ${pays}`], ["Voir des vidéos et des concerts", `${n} ${pays} live`]];
+  return `<h2>Écouter</h2><p class="petit">Recherche externe : aucun enregistrement n'est encore identifié pour cette fiche. Chaque écoute a deux liens, une recherche Spotify et une recherche YouTube, dans un nouvel onglet.</p><div class="ecouter">${L.map(([t, q]) => paire(q.replace(/\s+/g, " ").trim(), esc(t))).join("")}</div>`;
+}
 const sourcesFicheHtml = e => (e.sources || []).length ? `<p class="source-fiche">${esc(e.statut_fiche ? e.statut_fiche[0].toUpperCase() + e.statut_fiche.slice(1) : "Sources")} : ${e.sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.nom)}</a>`).join(", ")}${e.sources[0].consulte ? `, consulté le ${esc(e.sources[0].consulte)}` : ""}.</p>` : "";
 function referencesHtml(e) {
   const q = encodeURIComponent(e.name), v = ((D.verifiees || {}).entrees || {})[e.id] || {}, constats = [];
@@ -704,6 +715,7 @@ function vueEntree(id) {
   ${donne.length || enf.length ? `<h2>Ce qu'elle a donné</h2>${listeRel(donne, "sor")}${enf.length ? `<p class="petit">Sous-genres et variantes</p><div class="pastilles">${enf.map(x => `<a class="pastille" style="--c:${coul(E[x])}" href="#e/${x}">${esc(E[x].name)}</a>`).join("")}</div>` : ""}` : ""}
   ${utilisee.length ? `<h2>Elle est utilisée par</h2><div class="pastilles">${utilisee.map(r => `<a class="pastille" style="--c:${coul(E[r.source])}" href="#e/${r.source}">${esc(E[r.source].name)}</a>`).join("")}</div>` : ""}
   ${croise.length ? `<h2>À rapprocher</h2><ul class="liens">${croise.map(r => { const o = r.source === id ? r.target : r.source, t = texteRel(r); return `<li><span class="nat">${TNOM[r.type]}</span><span>${nomLien(o)} ${statutHtml(r)}</span>${t ? `<p>${esc(t)}</p>` : ""}</li>`; }).join("")}</ul>` : ""}
+  ${ecouteParDefaut(e)}
   ${e.artists.length && !D.fiches[id] ? `<h2>Écouter</h2><p class="petit">Recherche externe : aucun enregistrement n'est encore identifié. Chaque écoute a deux liens, une recherche Spotify et une recherche YouTube, dans un nouvel onglet.</p><div class="ecouter">${e.artists.map(a => paire(a + (["artist", "group", "composer"].includes(e.type) ? "" : " " + e.name), esc(a))).join("")}</div>` : ""}
   ${e.archives && e.archives.length ? `<h2>Archives à consulter</h2><ul class="liens">${e.archives.map(([t, u, n]) => `<li><span class="nat">Archive</span><span><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a></span><p>${esc(n)}</p></li>`).join("")}</ul>` : ""}
   ${cours.length ? `<h2>Dans le cours</h2><div class="pastilles">${cours.map(k => `<a class="pastille" style="--c:#11110F" href="../eleves/${D.cours[k][1]}">${esc(D.cours[k][0])}</a>`).join("")}</div>` : ""}
