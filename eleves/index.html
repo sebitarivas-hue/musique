@@ -1909,6 +1909,12 @@ html.signal .labo-tenir.on { transform: translateY(8px); background: radial-grad
 html.signal .labo-jouer { border-radius: 999px; background: linear-gradient(180deg, #d6ff80, #a6e63a); color: #0c1400; font: 600 1.25rem "Fredoka", sans-serif; box-shadow: 0 6px 0 #6fa51c, 0 14px 26px -8px rgba(184,245,74,.55); }
 html.signal .labo-jouer:active { transform: translateY(5px); box-shadow: 0 1px 0 #6fa51c, 0 6px 16px -6px rgba(184,245,74,.6); }
 html.signal .labo { background: linear-gradient(160deg, rgba(36,60,22,.82), rgba(14,24,10,.9)); border: 1px solid rgba(184,245,74,.22); border-radius: 26px; backdrop-filter: blur(6px); box-shadow: 0 24px 48px -24px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.03) inset; }
+.gal-son { position: absolute; top: 12px; right: 12px; z-index: 6; display: inline-flex; align-items: center; gap: 9px; padding: 9px 16px 9px 12px; border: 1px solid rgba(184,245,74,.5); border-radius: 999px; background: rgba(8,14,6,.72); color: #e8ffb0; font: 600 .9rem "Fredoka", sans-serif; cursor: pointer; backdrop-filter: blur(6px); box-shadow: 0 8px 22px -10px rgba(184,245,74,.6); }
+.gal-son .gs-ic { display: inline-flex; align-items: flex-end; gap: 2px; height: 16px; } .gal-son .gs-ic i { width: 3px; height: 5px; border-radius: 2px; background: #b8f54a; }
+.gal-son.on { background: linear-gradient(180deg, #d6ff80, #a6e63a); color: #0c1400; } .gal-son.on .gs-ic i { background: #0c1400; animation: gs-bar 1.1s ease-in-out infinite; }
+.gal-son.on .gs-ic i:nth-child(2) { animation-delay: .2s; } .gal-son.on .gs-ic i:nth-child(3) { animation-delay: .45s; } .gal-son.on .gs-ic i:nth-child(4) { animation-delay: .7s; }
+.gal-son.charge { opacity: .75; } @keyframes gs-bar { 0%, 100% { height: 4px; } 50% { height: 16px; } }
+@media (prefers-reduced-motion: reduce) { .gal-son.on .gs-ic i { animation: none; height: 10px; } }
 </style>
 </head>
 <body>
@@ -2964,7 +2970,7 @@ function reverb(ac) {
 }
 /* Le contexte audio se met en veille après un silence, pour la batterie du téléphone. */
 /* Mise en veille du son quand rien ne joue, pour la batterie. Jamais pendant un atelier Faust : il joue en direct. */
-setInterval(() => { if (AC && AC.state === "running" && !METRO && !LABO && AC.currentTime > FIN_SONS + 4) AC.suspend().catch(() => {}); }, 3000);
+setInterval(() => { if (AC && AC.state === "running" && !METRO && !LABO && !(window.__SG && window.__SG.etat === "marche") && AC.currentTime > FIN_SONS + 4) AC.suspend().catch(() => {}); }, 3000);
 function audio() {
   if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; AC = new C();
     const comp = AC.createDynamicsCompressor(); MASTER = AC.createGain(); MASTER.gain.value = 0.9; MASTER.connect(comp).connect(AC.destination);
@@ -6196,6 +6202,34 @@ function galaxieDonnees() {
   P.forEach(p => { p.corps = CORPS_NOM[p.id] || ""; });
   return { j, k, n, P, classes, avant: Math.max(0, j.xp - classes), etoiles, jours, auj, soleil: { niveau: n + 1, nom: NIVEAUX_JEU[n][1], xp: j.xp, eclat } };
 }
+/* La musique de la galaxie : un programme Faust (outils/faust/stellaire/stellaire.dsp) joué en direct. Un drone, un chœur d'argent, des granulations aiguës, un vent solaire, un pulsar, une grande salle.
+   L'éclat du soleil du jour règle la brillance et la densité des grains ; la planète touchée donne la racine et le mode. Tout est désactivé tant que l'élève n'a pas touché le bouton (le navigateur l'exige aussi). */
+const SON_GAL = { soleil: [55, 0], mercure: [73.42, 4], venus: [61.74, 0], terre: [55, 3], mars: [49, 2], jupiter: [36.71, 5], saturne: [41.2, 1], uranus: [43.65, 4], neptune: [32.7, 3], pluton: [58.27, 2], ceres: [69.3, 5], eris: [77.78, 1], makemake: [51.91, 0], haumea: [46.25, 4], lune: [65.41, 3] };
+const SG = window.__SG = window.__SG || { node: null, etat: "arret", corps: "soleil" };
+function sonEclat() { const j = jeu(), a = (j.dj || {})[jourLocal()] || {}; return eclatSoleil(a.p || 0, (j.xpj || {})[jourLocal()] || 0); }
+function sonRegler(corps) { if (corps) SG.corps = corps; if (!SG.node || !SG.ch) return; const c = SON_GAL[SG.corps] || SON_GAL.soleil; try { SG.node.setParamValue(SG.ch.racine, c[0]); SG.node.setParamValue(SG.ch.mode, c[1]); SG.node.setParamValue(SG.ch.eclat, sonEclat()); } catch (_) {} }
+function sonBouton() { const b = document.getElementById("gal-son"), t = document.getElementById("gal-son-t"); if (!b) return; const on = SG.etat === "marche";
+  b.setAttribute("aria-pressed", String(on)); b.classList.toggle("on", on); b.classList.toggle("charge", SG.etat === "charge"); if (t) t.textContent = SG.etat === "charge" ? "Le son se prépare…" : on ? "Couper le son" : "Écouter la galaxie"; }
+async function sonDemarrer() {
+  if (SG.etat !== "arret") return; SG.etat = "charge"; sonBouton(); deverrouiller(); const ac = audio(); if (!ac) { SG.etat = "arret"; sonBouton(); return; }
+  try {
+    const fw = await chargerFaustwasm(), json = await (await fetch("faust/stellaire/dsp-meta.json")).text();
+    const module = await WebAssembly.compile(await (await fetch("faust/stellaire/dsp-module.wasm")).arrayBuffer());
+    const gen = new fw.FaustMonoDspGenerator(), fac = { module, json, soundfiles: {} }; let node = null;
+    try { node = await gen.createNode(ac, "stellaire", fac); } catch (_) {}
+    if (!node) node = await gen.createNode(ac, "stellaire", fac, true, 1024);   /* repli sans AudioWorklet */
+    if (SG.etat !== "charge") { try { node.destroy && node.destroy(); } catch (_) {} return; }
+    SG.node = node; SG.ch = {}; node.getParams().forEach(p => { SG.ch[p.split("/").pop()] = p; });
+    SG.gain = ac.createGain(); SG.gain.gain.value = 0; SG.an = ac.createAnalyser(); SG.an.fftSize = 1024; node.connect(SG.an); SG.an.connect(SG.gain); SG.gain.connect(ac.destination);   /* sortie directe : la salle est dans le programme */
+    node.setParamValue(SG.ch.marche, 1); node.setParamValue(SG.ch.air, .65); sonRegler(); SG.gain.gain.linearRampToValueAtTime(.9, ac.currentTime + 4); SG.etat = "marche"; sonBouton();
+  } catch (e) { console.warn(e); SG.etat = "arret"; sonBouton(); }
+}
+function sonArreter() {
+  if (SG.etat === "arret") return; const n = SG.node, g = SG.gain; SG.etat = "arret"; SG.node = null; sonBouton();
+  if (g && AC) { try { g.gain.cancelScheduledValues(AC.currentTime); g.gain.setValueAtTime(g.gain.value, AC.currentTime); g.gain.linearRampToValueAtTime(0, AC.currentTime + 2.2); } catch (_) {} }
+  setTimeout(() => { try { n && n.disconnect(); n && n.destroy && n.destroy(); g && g.disconnect(); } catch (_) {} }, 2600);
+}
+addEventListener("hashchange", () => setTimeout(() => { if (SG.etat !== "arret" && !document.getElementById("galaxie3d")) sonArreter(); }, 150));
 function galaxieScene() {
   const G = GAL_DONNEES = galaxieDonnees(), j = G.j;
   return `<section class="gal accueil" aria-labelledby="gal-t"><h2 class="gal-titre" id="gal-t">Ma galaxie</h2>
@@ -6203,6 +6237,7 @@ function galaxieScene() {
     <div class="gal-scene"><canvas id="galaxie3d" aria-hidden="true"></canvas><div id="gal-etiq"></div><p class="gal-sans3d small">La galaxie en 3D demande WebGL : la liste en dessous dit la même chose.</p>
       <div class="gal-soleil"><b>Niveau ${G.soleil.niveau}</b><span>${esc(G.soleil.nom)}, ${j.xp} XP</span><span id="gal-soleil-txt">${esc(texteSoleil(G.soleil.eclat))}</span><span>${duoSerie()} jour${duoSerie() > 1 ? "s" : ""} de suite</span></div>
       <p class="gal-aide" id="gal-aide">Touche une planète pour y entrer. Glisse pour tourner.</p>
+      <button type="button" class="gal-son" id="gal-son" aria-pressed="false"><span class="gs-ic" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="gal-son-t">Écouter la galaxie</span></button>
       <div class="gal-popup" id="gal-popup" role="dialog" aria-label="Planète choisie" hidden></div></div></section>`;
 }
 /* La feuille récapitulative : ce que l'élève a fait aujourd'hui, cette semaine, et planète par planète. */
@@ -6220,8 +6255,11 @@ function galaxieFeuille() {
 function brancherGalaxie() {
   const cv = document.getElementById("galaxie3d"), G = GAL_DONNEES; if (!G) return; if (GAL) { try { GAL.arreter(); } catch (_) {} GAL = null; }
   const pop = document.getElementById("gal-popup"), scene = document.querySelector(".gal-scene");
-  const fermer = () => { if (pop) pop.hidden = true; if (scene) scene.classList.remove("a-popup"); document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", "false")); };
-  const montrer = id => { const p = G.P.find(x => x.id === id); if (!p || !pop) return;
+  const bs = document.getElementById("gal-son"); sonBouton();
+  if (bs) bs.onclick = () => { try { if (SG.etat === "marche") { localStorage.setItem("galaxie-son", "0"); sonArreter(); } else { localStorage.setItem("galaxie-son", "1"); sonDemarrer(); } } catch (_) {} };
+  try { if (localStorage.getItem("galaxie-son") === "1" && SG.etat === "arret") document.addEventListener("pointerdown", () => { if (document.getElementById("galaxie3d")) sonDemarrer(); }, { once: true }); } catch (_) {}
+  const fermer = () => { sonRegler("soleil"); if (pop) pop.hidden = true; if (scene) scene.classList.remove("a-popup"); document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", "false")); };
+  const montrer = id => { const p = G.P.find(x => x.id === id); if (!p || !pop) return; sonRegler(p.corps);
     pop.style.setProperty("--k", p.couleur); pop.innerHTML = `<button type="button" class="gal-x" aria-label="Fermer">&#10005;</button>${p.corps ? `<span class="gal-corps">${esc(p.corps)}</span>` : ""}<h3>${esc(p.nom)}</h3><div class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></div><p>${esc(p.texte)}</p><p class="small">${p.xp ? `${p.xp} XP gagnés ici.` : "Aucun point gagné ici pour l'instant."}</p><a class="btn-main" data-entrer="${p.id}" href="${esc(p.lien[0])}">${esc(p.lien[1])} &#8250;</a>`;
     pop.hidden = false; scene.classList.add("a-popup");
     pop.querySelector(".gal-x").onclick = () => { if (GAL) GAL.retour(); fermer(); };
@@ -6234,7 +6272,7 @@ function brancherGalaxie() {
   import(new URL(D.sonora_timbre.replace(/index\.html$/, "galaxie.js"), location.href).href).then(m => { if (!document.body.contains(cv)) return;
     const g = m.monterGalaxie(cv, document.getElementById("gal-etiq"), { soleil: G.soleil, planetes: G.P }, { onChoix: montrer, onRetour: fermer }); if (g) { GAL = g; cv.closest(".gal-scene").classList.add("trois-d");
       let jourVu = jourLocal(); clearInterval(window.__galMinuit); window.__galMinuit = setInterval(() => { if (!document.getElementById("galaxie3d")) return clearInterval(window.__galMinuit);
-        const j = jeu(), a = (j.dj || {})[jourLocal()] || {}, e = eclatSoleil(a.p || 0, (j.xpj || {})[jourLocal()] || 0); g.eclat(e); const t = document.getElementById("gal-soleil-txt"); if (t) t.textContent = texteSoleil(e); if (jourLocal() !== jourVu) { jourVu = jourLocal(); rendre(); } }, 20000); } }).catch(() => {});
+        const j = jeu(), a = (j.dj || {})[jourLocal()] || {}, e = eclatSoleil(a.p || 0, (j.xpj || {})[jourLocal()] || 0); g.eclat(e); sonRegler(); const t = document.getElementById("gal-soleil-txt"); if (t) t.textContent = texteSoleil(e); if (jourLocal() !== jourVu) { jourVu = jourLocal(); rendre(); } }, 20000); } }).catch(() => {});
 }
 function vueParcours() {
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], q = quetes();
