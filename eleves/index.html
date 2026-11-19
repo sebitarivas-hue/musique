@@ -1872,6 +1872,10 @@ html.signal body.jeu-nuit .fnav a[aria-current="page"] { background: #b8f54a; bo
 .gal-actions { display: grid; gap: 10px; margin: 14px 0 4px; } @media (min-width: 760px) { .gal-actions { grid-template-columns: 1.4fr 1fr 1fr; } }
 .gal-lien { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; margin: 10px 0; padding: 16px 18px; border-radius: 24px; border: 1px solid var(--bord, #2b3322); background: linear-gradient(180deg, #1a1f16, #11150d); color: #fff; text-decoration: none; } .gal-lien b { font: 600 1.2rem "Fredoka", sans-serif; } .gal-lien span { grid-column: 1; font-size: .9rem; opacity: .8; } .gal-lien i { grid-row: 1 / span 2; grid-column: 2; font-size: 1.6rem; font-style: normal; color: var(--v, #b8f54a); }
 @media (min-width: 760px) { .gal.accueil { padding-top: 58px; } }
+.gal-retour { position: absolute; right: 12px; bottom: 12px; z-index: 5000; padding: 9px 16px; border-radius: 999px; border: 0; background: var(--v, #b8f54a); color: #0c1400; font: 600 .9rem "Fredoka", sans-serif; cursor: pointer; box-shadow: 0 6px 0 rgba(111,165,28,.7); } .gal-retour[hidden] { display: none; }
+.gal-h2 { margin: 18px 0 10px; font: 600 1.05rem "Fredoka", sans-serif; letter-spacing: 0; opacity: .9; }
+.gal.feuille { margin-top: 24px; } .gal.feuille .gal-h { margin-top: 0; font-size: 1.5rem; }
+.gal-soleil span { display: block; }
 </style>
 </head>
 <body>
@@ -4815,7 +4819,7 @@ function planeteDe(cle) {
   return "labo";
 }
 const jeuActif = () => role() === "eleve" && modeJeu();
-const accueilHash = () => role() === "eleve" ? "#galaxie" : "#semaine";  /* la première page de l'élève : sa galaxie, qui sert de menu */
+const accueilHash = () => role() === "eleve" ? "#jouer" : "#semaine";  /* la première page de l'élève : sa galaxie, qui sert de menu */
 const niveauDe = xp => { let n = 0; NIVEAUX_JEU.forEach((x, i) => { if (xp >= x[0]) n = i; }); return n; };
 /* RÈGLE DE SÉBASTIEN (02/11/2026) : « on ne peut pas gagner des XP si on n'a pas fait toute la page et si on n'a pas fini d'entendre un son. JAMAIS. »
    Aucun point à l'ouverture d'une page ni au clic. Une page rapporte quand elle a été lue en entier : sa fin a été vue ET le temps passé dessus
@@ -5246,11 +5250,9 @@ function vueJouer() {
   const duo = jeuActif(), cur = duoCourant(k), valides = cur.X.reduce((a, x) => a + x.L.filter(j => etoilesNiv(j.id, 0) >= 2).length, 0), total = cur.X.reduce((a, x) => a + x.n, 0), et = etoilesTimbre();
   let h = `<div class="hub hub2"><h1 class="h2-titre">Jouer <span>${esc(k)}</span></h1>`;
   if (!(D.eleves && D.codes)) h += `<nav class="levels" aria-label="Classe">${NIV.map(c => `<a href="#jouer" data-niv="${c}" aria-current="${c === k ? "page" : "false"}">${c}</a>`).join("")}</nav>`;
+  h += galaxieScene();
   if (duo) {
     const j = jeu(), serie = duoSerie(), a = duoJour(), o = duoObjectif(), fait = a.p > 0, n = niveauDe(j.xp), etoiles = Object.values(j.etoiles || {}).reduce((x, y) => x + y, 0) + et;
-    h += `<section class="h2-heros${fait ? " allume" : ""}" aria-label="Ta flamme"><div class="h2-flamme"><canvas id="flamme3d" aria-hidden="true"></canvas>${FLAMME_SVG.replace("<svg", '<svg class="h2-flamme-plate"')}</div>
-      <p class="h2-nombre">${String(serie).padStart(2, "0")}</p><p class="h2-sous">${serie ? `jour${serie > 1 ? "s" : ""} de suite !` : "Allume ta flamme aujourd'hui"}</p>
-      <ol class="h2-semaine" aria-label="Cette semaine">${duoSemaine().map(d => `<li class="${d.fait ? "fait" : ""}${d.auj ? " auj" : ""}"><span>${d.l}</span><i>${d.fait ? "&#10003;" : ""}</i></li>`).join("")}</ol></section>`;
     h += `<div class="h2-actions">${cur.jeu ? `<a class="duo-go h2-btn plein" href="#ludo-${cur.jeu.id}"><span>Continuer</span><b>${insec(cur.jeu.titre)}</b></a>` : `<a class="duo-go h2-btn plein" href="#chemin"><span>Mon chemin</span><b>${valides === total && total ? "Vise trois étoiles partout" : "Voir mon chemin"}</b></a>`}<a class="h2-btn creux" href="#chemin">Mon chemin en ${esc(k)} <i>${valides}/${total}</i></a></div>`;
     const D_ = duoDefis(), tous = D_.every(x => x.n >= x.max);
     h += `<section class="h2-carte duo-defis"><header><h2>Défis du jour</h2><span class="h2-temps">${HUB_SVG.horloge}jusqu'à ce soir</span></header>
@@ -5259,10 +5261,11 @@ function vueJouer() {
       <div class="h2-coffre${tous ? " ouvert" : ""}">${HUB_SVG.coffre}<p>${tous ? "Coffre ouvert : une musique du monde t'attend." : "Fais les trois défis pour ouvrir le coffre du jour."}</p>${tous && D.atlas ? `<a class="h2-btn mini" href="${esc(D.atlas)}#hasard">Ouvrir</a>` : ""}</div>
       <details class="duo-reglage"><summary>Changer mon objectif du jour</summary><div class="duo-obj" role="group" aria-label="Objectif du jour, en parties">${[[2, "Tranquille"], [3, "Normal"], [5, "Intense"]].map(([kk, t]) => `<button type="button" data-obj="${kk}" aria-pressed="${kk === o}">${t} <i>${kk}</i></button>`).join("")}</div></details></section>`;
     h += `<div class="h2-stats">${[[HUB_SVG.xp, j.xp, "XP au total", "eclair:#ffd23f"], [HUB_SVG.niveau, n + 1, esc(NIVEAUX_JEU[n][1]), "barres:#b8f54a"], [HUB_SVG.etoile, etoiles, "étoiles", "etoile:#ffc400"], [HUB_SVG.record, meilleureSerie(), "meilleure série", "flamme:#ff8a00"]].map(([ic, v, l, i3]) => `<a class="h2-stat" href="#parcours"><span class="ic" data-ico3d="${i3}">${ic}</span><b>${v}</b><span>${l}</span></a>`).join("")}</div>`;
-  } else if (role() === "eleve") h += `<section class="h2-heros"><div class="h2-flamme">${FLAMME_SVG.replace("<svg", '<svg class="h2-flamme-plate"')}</div><p class="h2-sous">En mode Réviser, on joue sans points.</p><p class="h2-texte">Passe en mode Jouer pour la flamme, les défis du jour et ton chemin d'étoiles.</p><button type="button" class="h2-btn plein" data-passer-jouer>Passer en mode Jouer</button></section>`;
+  } else if (role() === "eleve") h += `<section class="h2-heros"><p class="h2-sous">En mode Réviser, on joue sans points.</p><p class="h2-texte">Passe en mode Jouer pour la flamme, les défis du jour et ton chemin d'étoiles.</p><button type="button" class="h2-btn plein" data-passer-jouer>Passer en mode Jouer</button></section>`;
+  h += galaxieFeuille();
   const ligne = o => `<a class="hub-tuile hub-ligne" href="${esc(o.href)}" style="--k:${o.k}"><span class="hub-ico" data-ico3d="${ICO3D_COURS[o.ico]}:${o.k}">${HUB_ICO[o.ico]}</span><span class="hub-t"><b>${o.titre}</b><span>${o.texte}</span></span>${o.badge ? `<i class="hub-badge">${o.badge}</i>` : ""}<span class="hub-fl" aria-hidden="true">&#8250;</span></a>`;
   h += `<h2 class="hub-rub">Les grandes entrées</h2><div class="hub-liste">`
-    + (duo ? ligne({ href: "#galaxie", titre: "Ma galaxie", texte: "Tout ce que tu as fait : points, jeux, étoiles. La Terre mène à l'Atlas.", k: "#2f7be8", ico: "galaxie" }) : "")
+    + (duo ? ligne({ href: "#parcours", titre: "Mes badges et quêtes", texte: "Tes badges, les quêtes de la semaine, tes niveaux.", k: "#2f7be8", ico: "galaxie" }) : "")
     + ligne({ href: "#chemin", titre: `Mon chemin en ${esc(k)}`, texte: "Les jeux du cours, séquence par séquence.", k: "#7c5cff", ico: "chemin", badge: duo ? `${valides} / ${total}` : "" })
     + (jj ? ligne({ href: "#ludo-" + jj.id, titre: "Jeu du jour", texte: esc(jj.titre), k: "#ff8a00", ico: "jour" }) : "")
     + (D.sonora_harmonie ? ligne({ href: D.sonora_harmonie, titre: "Harmonie", texte: "Gammes, accords, progressions : jeu d'oreille et composition.", k: "#12b76a", ico: "harmonie" }) : "")
@@ -5290,7 +5293,7 @@ function brancherRelief() {
 }
 // La flamme en 3D (sonora/timbre/flamme.js), montée après l'affichage. Sans WebGL, la flamme dessinée reste.
 function brancherHeros() {
-  brancherIcones(); brancherRelief();
+  brancherIcones(); brancherRelief(); brancherGalaxie();
   const cv = document.getElementById("flamme3d"); if (!cv || !D.sonora_timbre) return;
   import(new URL(D.sonora_timbre.replace(/index\.html$/, "flamme.js"), location.href).href).then(m => { if (!document.body.contains(cv)) return; const f = m.monterFlamme(cv, { allumee: duoJour().p > 0 }); if (f) cv.closest(".h2-flamme").classList.add("trois-d"); }).catch(() => {});
 }
@@ -6139,19 +6142,23 @@ function galaxieDonnees() {
   for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const c = jourLocal(d), a = (j.dj || {})[c] || {}; jours.push({ c, l: ["D", "L", "M", "M", "J", "V", "S"][d.getDay()], p: a.p || 0, b: a.b || 0, xp: (j.xpj || {})[c] || 0 }); }
   return { j, k, n, P, classes, avant: Math.max(0, j.xp - classes), etoiles, jours, auj: jours[6], soleil: { niveau: n + 1, nom: NIVEAUX_JEU[n][1], xp: j.xp } };
 }
-function vueGalaxie(accueil) {
-  const G = GAL_DONNEES = galaxieDonnees(), j = G.j, bas = NIVEAUX_JEU[G.n][0], haut = (NIVEAUX_JEU[G.n + 1] || [bas + 1])[0], maxj = Math.max(1, ...G.jours.map(x => x.p)), maxx = Math.max(1, ...G.jours.map(x => x.xp));
-  const tuile = (v, l) => `<div class="gal-tuile"><b>${v}</b><span>${l}</span></div>`;
-  const cur = accueil && jeuActif() ? duoCourant(G.k) : null, actions = accueil ? `<div class="gal-actions">${cur && cur.jeu ? `<a class="h2-btn plein" href="#ludo-${cur.jeu.id}"><span>Continuer</span><b>${insec(cur.jeu.titre)}</b></a>` : `<a class="h2-btn plein" href="#semaine"><span>Cette semaine</span><b>Ouvrir la séance</b></a>`}<a class="h2-btn creux" href="#jouer">Tous les jeux</a><a class="h2-btn creux" href="#parcours">Mes badges et quêtes</a></div>${modeJeu() ? "" : `<p class="small">Tu es en mode Réviser : on explore sans points. Passe en mode Jouer, en haut de la page, pour remplir les anneaux.</p>`}` : "";
-  return `<section class="gal${accueil ? " accueil" : ""}" aria-labelledby="gal-t"><h${accueil ? 1 : 2} class="${accueil ? "gal-titre" : "sec"}" id="gal-t">Ma galaxie</h${accueil ? 1 : 2}>
-    <p class="small">Le soleil, c'est toi : plus ton niveau monte, plus il grandit. Chaque planète est un coin du site : touche-la, puis entre. Son anneau se remplit quand tu avances. La Terre mène à l'Atlas des musiques.</p>
+function galaxieScene() {
+  const G = GAL_DONNEES = galaxieDonnees(), j = G.j;
+  return `<section class="gal accueil" aria-labelledby="gal-t"><h2 class="gal-titre" id="gal-t">Ma galaxie</h2>
+    <p class="small">Le soleil, c'est toi : plus ton niveau monte, plus il grandit. Chaque planète est un coin du site : touche-la, puis entre. Ses anneaux et ses lunes apparaissent quand tu avances. La Terre mène à l'Atlas des musiques.</p>
     <div class="gal-scene"><canvas id="galaxie3d" aria-hidden="true"></canvas><div id="gal-etiq"></div><p class="gal-sans3d small">La galaxie en 3D demande WebGL : la liste en dessous dit la même chose.</p>
-      <div class="gal-soleil"><b>Niveau ${G.soleil.niveau}</b><span>${esc(G.soleil.nom)}, ${j.xp} XP</span></div></div>
-    <div class="gal-fiche" id="gal-fiche" aria-live="polite"></div>${actions}
-    <h3 class="gal-h">Aujourd'hui et cette semaine</h3>
+      <div class="gal-soleil"><b>Niveau ${G.soleil.niveau}</b><span>${esc(G.soleil.nom)}, ${j.xp} XP</span><span>${duoSerie()} jour${duoSerie() > 1 ? "s" : ""} de suite</span></div><button type="button" class="gal-retour" id="gal-retour" hidden>Voir toute la galaxie</button></div>
+    <div class="gal-fiche" id="gal-fiche" aria-live="polite"></div></section>`;
+}
+/* La feuille récapitulative : ce que l'élève a fait aujourd'hui, cette semaine, et planète par planète. */
+function galaxieFeuille() {
+  const G = GAL_DONNEES || galaxieDonnees(), j = G.j, maxj = Math.max(1, ...G.jours.map(x => x.p)), maxx = Math.max(1, ...G.jours.map(x => x.xp));
+  const tuile = (v, l) => `<div class="gal-tuile"><b>${v}</b><span>${l}</span></div>`;
+  return `<section class="gal feuille" aria-labelledby="gal-f"><h2 class="gal-h" id="gal-f">Ma feuille de route</h2>
+    <h3 class="gal-h2">Aujourd'hui et cette semaine</h3>
     <div class="gal-recap"><div class="gal-tuiles">${tuile(G.auj.p, "partie" + (G.auj.p > 1 ? "s" : "") + " aujourd'hui")}${tuile(G.auj.b, "avec deux étoiles ou plus")}${tuile("+" + G.auj.xp, "XP aujourd'hui")}${tuile(G.jours.reduce((a, x) => a + x.p, 0), "parties cette semaine")}${tuile(G.jours.reduce((a, x) => a + x.xp, 0), "XP cette semaine")}${tuile(G.etoiles, "étoiles en tout")}</div>
       <ol class="gal-semaine" aria-label="Les sept derniers jours">${G.jours.map(x => `<li class="${x.c === jourLocal() ? "auj" : ""}"><i style="height:${Math.round(8 + 52 * x.p / maxj)}px" title="${x.p} partie${x.p > 1 ? "s" : ""}"></i><u style="height:${Math.round(4 + 34 * x.xp / maxx)}px" title="${x.xp} XP"></u><span>${x.l}</span></li>`).join("")}</ol><p class="small gal-legende">Barre verte : les parties. Barre jaune : les XP.</p></div>
-    <h3 class="gal-h">Toutes les planètes</h3>
+    <h3 class="gal-h2">Planète par planète</h3>
     <ul class="gal-liste">${G.P.map(p => `<li><button type="button" class="gal-carte" data-gal="${p.id}" style="--k:${p.couleur}"><span class="gal-pastille" aria-hidden="true"></span><span class="gal-nom">${esc(p.nom)}</span><span class="gal-pc">${Math.round(p.progres * 100)} %</span><span class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></span><span class="gal-txt">${esc(p.texte)}</span><span class="gal-xp">${p.xp ? `${p.xp} XP gagnés ici` : "Aucun point ici pour l'instant"}</span></button></li>`).join("")}</ul>
     <p class="small">${G.avant ? `${G.avant} XP viennent d'avant ce tableau : ils comptent pour ton niveau, mais on ne sait plus d'où ils viennent. ` : ""}Les points sont rangés par planète à partir du 18 novembre 2026.</p></section>`;
 }
@@ -6159,15 +6166,16 @@ function brancherGalaxie() {
   const cv = document.getElementById("galaxie3d"), G = GAL_DONNEES; if (!G) return; if (GAL) { try { GAL.arreter(); } catch (_) {} GAL = null; }
   const fiche = document.getElementById("gal-fiche"), montrer = id => { const p = G.P.find(x => x.id === id); if (!p || !fiche) return;
     fiche.style.setProperty("--k", p.couleur); fiche.innerHTML = `<h3>${esc(p.nom)}</h3><div class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></div><p>${esc(p.texte)}</p><p class="small">${p.xp ? `${p.xp} XP gagnés ici.` : "Aucun point gagné ici pour l'instant."}</p><a class="btn-main" data-entrer="${p.id}" href="${esc(p.lien[0])}">${esc(p.lien[1])} &#8250;</a>`;
-    const e = fiche.querySelector("[data-entrer]"); if (e) e.onclick = () => { set("jouer-fam", ["rythme", "ecoute", "instruments", "theorie", "creation"].includes(p.id) ? p.id : ""); };
-    document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.gal === id))); };
+    const e = fiche.querySelector("[data-entrer]"); if (e) e.onclick = ev => { const fam = ["rythme", "ecoute", "instruments", "theorie", "creation"].includes(p.id) ? p.id : "";
+      if (fam && (!location.hash || location.hash === "#jouer")) { ev.preventDefault(); const b = document.querySelector(`[data-fam-filtre="${fam}"]`); if (b) { b.click(); document.querySelector(".cat-filtres").scrollIntoView({ block: "start", behavior: "smooth" }); } } else set("jouer-fam", fam); };
+    document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.gal === id))); const rt = document.getElementById("gal-retour"); if (rt) rt.hidden = false; };
   document.querySelectorAll("[data-gal]").forEach(b => b.onclick = () => { montrer(b.dataset.gal); if (GAL) GAL.choisir(b.dataset.gal); document.getElementById("gal-fiche").scrollIntoView({ block: "nearest", behavior: "smooth" }); });
+  const rt = document.getElementById("gal-retour"); if (rt) rt.onclick = () => { if (GAL) GAL.retour(); rt.hidden = true; };
   montrer("atlas");
   if (!cv || !D.sonora_timbre) return;
   import(new URL(D.sonora_timbre.replace(/index\.html$/, "galaxie.js"), location.href).href).then(m => { if (!document.body.contains(cv)) return;
     const g = m.monterGalaxie(cv, document.getElementById("gal-etiq"), { soleil: G.soleil, planetes: G.P }, { onChoix: montrer, choisi: "atlas" }); if (g) { GAL = g; cv.closest(".gal-scene").classList.add("trois-d"); } }).catch(() => {});
 }
-function vueAccueilEleve() { return vueGalaxie(true); }
 function vueParcours() {
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], q = quetes();
   let h = head("Mon parcours", `Niveau ${n + 1} : ${NIVEAUX_JEU[n][1]}`, NIVEAUX_JEU[n][2]) + `<a class="gal-lien" href="#galaxie"><b>Ma galaxie</b><span>Le tableau de bord en 3D : le soleil, les planètes, la Terre qui mène à l'Atlas.</span><i aria-hidden="true">&#8250;</i></a>`;
@@ -6460,7 +6468,7 @@ let FERME_ETAT = null;
 setInterval(() => { const f = fermeEleve(); if (FERME_ETAT !== null && f !== FERME_ETAT) rendre(); }, 30000);
 function rendre() {
   /* La recherche et le lien Tutos n'existent qu'une fois la porte franchie : ni sur le choix de l'espace, ni devant le code de la classe ou du professeur, ni sur l'écran « fermé ». */
-  document.body.classList.remove("sans-recherche"); { const hh = location.hash || accueilHash(), laboJeu = hh === "#labo" && role() !== "prof", nuit = PAGE_JEU.test(hh) || laboJeu || (role() !== "prof" && /^#faust(-.*)?$/.test(hh)), vert = hh === "#jouer" || hh === "#galaxie" || laboJeu; document.body.classList.toggle("jeu-nuit", nuit); document.body.classList.toggle("hub-vert", vert); mondeSite(nuit && !vert); setTimeout(majHudJeu, 0); }
+  document.body.classList.remove("sans-recherche"); { const hh = location.hash || accueilHash(), laboJeu = hh === "#labo" && role() !== "prof", nuit = PAGE_JEU.test(hh) || laboJeu || (role() !== "prof" && /^#faust(-.*)?$/.test(hh)), vert = hh === "#jouer" || laboJeu; document.body.classList.toggle("jeu-nuit", nuit); document.body.classList.toggle("hub-vert", vert); mondeSite(nuit && !vert); setTimeout(majHudJeu, 0); }
   if (fermeEleve()) { document.body.classList.add("sans-recherche"); FERME_ETAT = true; document.body.classList.add("porte"); toutArreter(); barre("semaine"); menu(""); app.innerHTML = vueFerme(); window.scrollTo(0, 0); return; }
   FERME_ETAT = false;
   /* Tant qu'une porte (code de classe ou code du professeur) est fermée, les menus sont cachés : ils ne mèneraient qu'à la porte. */
@@ -6504,6 +6512,7 @@ function rendre() {
   if (["cours", "eval", "pratiquer", "reviser"].includes(v)) v = v + "-" + defaut;
   barre(v);
   let m;
+  if (v === "galaxie" || /^ludo(-(6e|5e|4e|3e))?$/.test(v)) { if (/^ludo-/.test(v)) set("niv", v.slice(5)); location.replace("#jouer"); return; }  /* la galaxie, la ludothèque et Jouer ne font qu'une page */
   if ((m = v.match(/^pratiquer-(\w+)-jeux$/)) && D.niveaux[m[1]]) { set("niv", m[1]); location.replace("#jouer"); return; }
   if ((m = v.match(/^pratiquer-(\w+)-(oeuvres|jeux|partitions|sons|playlist|atelier)$/)) && D.niveaux[m[1]]) { set("niv", m[1]); app.innerHTML = vuePratiquer(m[1], m[2]); tab = "pratiquer"; }
   else if ((m = v.match(/^(saisie|bilan)-(\w+)$/)) && D.niveaux[m[2]] && role() === "prof") { set("niv", m[2]); tab = "eval";
@@ -6524,7 +6533,6 @@ function rendre() {
   else if (v === "vocabulaire") { app.innerHTML = vueVocabulaire(); tab = "cours"; }
   else if (v === "fils" || (v.startsWith("fils-") && D.fils.defs[v.slice(5)])) { app.innerHTML = vueFils(v.slice(5)); tab = "cours"; }
   else if (v === "parcours") { app.innerHTML = vueParcours(); tab = "parcours"; }
-  else if (v === "galaxie" && role() === "eleve") { app.innerHTML = vueAccueilEleve(); tab = "jouer"; brancherGalaxie(); }
   else if (v === "guide") { app.innerHTML = vueGuide(); tab = "semaine"; }
   else if (v === "themes") { app.innerHTML = vueThemes(); tab = "ecouter"; }
   else if (v.startsWith("theme-") && D.parcoursThemes.detail[v.slice(6)]) { app.innerHTML = vueTheme(v.slice(6)); tab = "ecouter"; }
