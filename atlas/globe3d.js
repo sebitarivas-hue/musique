@@ -2,7 +2,7 @@
 // Ce module ne dessine que le globe : la Terre, les points des musiques, la caméra et le vol d'une musique à l'autre.
 // Les fenêtres, les filtres et la recherche sont dans la page de l'Atlas (gabarit.html), qui appelle cette API.
 // Les continents viennent de sonora/timbre/terres.json (Natural Earth, domaine public). Three.js (licence MIT) est dans sonora/timbre/vendor/.
-import * as T from "../sonora/timbre/vendor/three.module.min.js?v=79667e001e";
+import * as T from "../sonora/timbre/vendor/three.module.min.js?v=7a12e44c87";
 
 const R = 10, DEG = Math.PI / 180, DMIN = R * 1.18, DMAX = R * 4.2;
 const vers = (lon, lat, r = R) => new T.Vector3(r * Math.cos(lat * DEG) * Math.sin(lon * DEG), r * Math.sin(lat * DEG), r * Math.cos(lat * DEG) * Math.cos(lon * DEG));
@@ -235,6 +235,7 @@ export function monterGlobe(canvas, zone, { terres, frontieres = [], pays = [], 
     cadrer(lon, lat, dist) { aller(lon, lat, borne(dist, DMIN, DMAX)); },
     decaler(x, y) { decalBut = [x, y]; sale = true; },
     redessiner() { sale = true; },
+    ecran(lon, lat) { cam.updateMatrixWorld(); const q = vers(lon, lat, R + .02).project(cam); return [(q.x + 1) / 2 * canvas.clientWidth, (1 - q.y) / 2 * canvas.clientHeight]; },   // où se trouve ce lieu à l'écran (pour les tests)
     apercuMaintenant() { if (ap) cacher(); prochain = 0; },
     pos: () => ({ ...V }),
   };
