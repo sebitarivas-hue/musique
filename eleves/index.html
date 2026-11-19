@@ -1876,6 +1876,14 @@ html.signal body.jeu-nuit .fnav a[aria-current="page"] { background: #b8f54a; bo
 .gal-h2 { margin: 18px 0 10px; font: 600 1.05rem "Fredoka", sans-serif; letter-spacing: 0; opacity: .9; }
 .gal.feuille { margin-top: 24px; } .gal.feuille .gal-h { margin-top: 0; font-size: 1.5rem; }
 .gal-soleil span { display: block; }
+.gal.accueil .gal-scene { aspect-ratio: auto; height: clamp(440px, 66vh, 720px); max-height: none; } @media (min-width: 760px) { .gal.accueil .gal-scene { height: clamp(520px, 78vh, 800px); } }
+.gal-aide { position: absolute; left: 0; right: 0; bottom: 14px; margin: 0; text-align: center; font: 600 .95rem "Fredoka", sans-serif; color: rgba(255,255,255,.85); text-shadow: 0 2px 8px #000; pointer-events: none; } .gal-scene.a-popup .gal-aide { display: none; }
+.gal-popup { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 6000; padding: 16px 16px 18px; border-radius: 26px; border: 1px solid color-mix(in srgb, var(--k, #b8f54a) 70%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--k, #b8f54a) 22%, rgba(10,14,8,.94)), rgba(10,14,8,.94)); backdrop-filter: blur(10px); color: #fff; box-shadow: 0 -10px 40px -10px color-mix(in srgb, var(--k, #b8f54a) 60%, transparent), 0 20px 40px rgba(0,0,0,.5); animation: gal-pop .28s cubic-bezier(.2,.9,.3,1.2); }
+.gal-popup[hidden] { display: none; } .gal-popup h3 { margin: 0 34px 8px 0; font: 600 1.35rem "Fredoka", sans-serif; letter-spacing: 0; } .gal-popup p { margin: 8px 0; font-size: .95rem; } .gal-popup .btn-main { margin-top: 6px; }
+.gal-x { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: 1rem; cursor: pointer; }
+@keyframes gal-pop { from { opacity: 0; transform: translateY(24px) scale(.96); } }
+@media (min-width: 760px) { .gal-popup { left: auto; right: 16px; bottom: 16px; width: 360px; } }
+@media (prefers-reduced-motion: reduce) { .gal-popup { animation: none; } }
 </style>
 </head>
 <body>
@@ -6145,10 +6153,11 @@ function galaxieDonnees() {
 function galaxieScene() {
   const G = GAL_DONNEES = galaxieDonnees(), j = G.j;
   return `<section class="gal accueil" aria-labelledby="gal-t"><h2 class="gal-titre" id="gal-t">Ma galaxie</h2>
-    <p class="small">Le soleil, c'est toi : plus ton niveau monte, plus il grandit. Chaque planète est un coin du site : touche-la, puis entre. Ses anneaux et ses lunes apparaissent quand tu avances. La Terre mène à l'Atlas des musiques.</p>
+    <p class="small">Le soleil, c'est toi : plus ton niveau monte, plus il grandit. Chaque planète est un coin du site : touche-la, une fenêtre s'ouvre, et tu peux y entrer. Ses anneaux et ses lunes apparaissent quand tu avances. La Terre mène à l'Atlas des musiques.</p>
     <div class="gal-scene"><canvas id="galaxie3d" aria-hidden="true"></canvas><div id="gal-etiq"></div><p class="gal-sans3d small">La galaxie en 3D demande WebGL : la liste en dessous dit la même chose.</p>
-      <div class="gal-soleil"><b>Niveau ${G.soleil.niveau}</b><span>${esc(G.soleil.nom)}, ${j.xp} XP</span><span>${duoSerie()} jour${duoSerie() > 1 ? "s" : ""} de suite</span></div><button type="button" class="gal-retour" id="gal-retour" hidden>Voir toute la galaxie</button></div>
-    <div class="gal-fiche" id="gal-fiche" aria-live="polite"></div></section>`;
+      <div class="gal-soleil"><b>Niveau ${G.soleil.niveau}</b><span>${esc(G.soleil.nom)}, ${j.xp} XP</span><span>${duoSerie()} jour${duoSerie() > 1 ? "s" : ""} de suite</span></div>
+      <p class="gal-aide" id="gal-aide">Touche une planète pour y entrer. Glisse pour tourner.</p>
+      <div class="gal-popup" id="gal-popup" role="dialog" aria-label="Planète choisie" hidden></div></div></section>`;
 }
 /* La feuille récapitulative : ce que l'élève a fait aujourd'hui, cette semaine, et planète par planète. */
 function galaxieFeuille() {
@@ -6164,17 +6173,20 @@ function galaxieFeuille() {
 }
 function brancherGalaxie() {
   const cv = document.getElementById("galaxie3d"), G = GAL_DONNEES; if (!G) return; if (GAL) { try { GAL.arreter(); } catch (_) {} GAL = null; }
-  const fiche = document.getElementById("gal-fiche"), montrer = id => { const p = G.P.find(x => x.id === id); if (!p || !fiche) return;
-    fiche.style.setProperty("--k", p.couleur); fiche.innerHTML = `<h3>${esc(p.nom)}</h3><div class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></div><p>${esc(p.texte)}</p><p class="small">${p.xp ? `${p.xp} XP gagnés ici.` : "Aucun point gagné ici pour l'instant."}</p><a class="btn-main" data-entrer="${p.id}" href="${esc(p.lien[0])}">${esc(p.lien[1])} &#8250;</a>`;
-    const e = fiche.querySelector("[data-entrer]"); if (e) e.onclick = ev => { const fam = ["rythme", "ecoute", "instruments", "theorie", "creation"].includes(p.id) ? p.id : "";
+  const pop = document.getElementById("gal-popup"), scene = document.querySelector(".gal-scene");
+  const fermer = () => { if (pop) pop.hidden = true; if (scene) scene.classList.remove("a-popup"); document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", "false")); };
+  const montrer = id => { const p = G.P.find(x => x.id === id); if (!p || !pop) return;
+    pop.style.setProperty("--k", p.couleur); pop.innerHTML = `<button type="button" class="gal-x" aria-label="Fermer">&#10005;</button><h3>${esc(p.nom)}</h3><div class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></div><p>${esc(p.texte)}</p><p class="small">${p.xp ? `${p.xp} XP gagnés ici.` : "Aucun point gagné ici pour l'instant."}</p><a class="btn-main" data-entrer="${p.id}" href="${esc(p.lien[0])}">${esc(p.lien[1])} &#8250;</a>`;
+    pop.hidden = false; scene.classList.add("a-popup");
+    pop.querySelector(".gal-x").onclick = () => { if (GAL) GAL.retour(); fermer(); };
+    const e = pop.querySelector("[data-entrer]"); e.onclick = ev => { const fam = ["rythme", "ecoute", "instruments", "theorie", "creation"].includes(p.id) ? p.id : "";
       if (fam && (!location.hash || location.hash === "#jouer")) { ev.preventDefault(); const b = document.querySelector(`[data-fam-filtre="${fam}"]`); if (b) { b.click(); document.querySelector(".cat-filtres").scrollIntoView({ block: "start", behavior: "smooth" }); } } else set("jouer-fam", fam); };
-    document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.gal === id))); const rt = document.getElementById("gal-retour"); if (rt) rt.hidden = false; };
-  document.querySelectorAll("[data-gal]").forEach(b => b.onclick = () => { montrer(b.dataset.gal); if (GAL) GAL.choisir(b.dataset.gal); document.getElementById("gal-fiche").scrollIntoView({ block: "nearest", behavior: "smooth" }); });
-  const rt = document.getElementById("gal-retour"); if (rt) rt.onclick = () => { if (GAL) GAL.retour(); rt.hidden = true; };
-  montrer("atlas");
+    document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.gal === id))); try { e.focus({ preventScroll: true }); } catch (_) {} };
+  document.querySelectorAll("[data-gal]").forEach(b => b.onclick = () => { scene.scrollIntoView({ block: "start", behavior: "smooth" }); montrer(b.dataset.gal); if (GAL) GAL.choisir(b.dataset.gal); });
+  if (!window.__galEchap) { window.__galEchap = true; addEventListener("keydown", e => { if (e.key === "Escape" && document.getElementById("gal-popup") && !document.getElementById("gal-popup").hidden) { if (GAL) GAL.retour(); const p = document.getElementById("gal-popup"); p.hidden = true; const s = document.querySelector(".gal-scene"); if (s) s.classList.remove("a-popup"); } }); }
   if (!cv || !D.sonora_timbre) return;
   import(new URL(D.sonora_timbre.replace(/index\.html$/, "galaxie.js"), location.href).href).then(m => { if (!document.body.contains(cv)) return;
-    const g = m.monterGalaxie(cv, document.getElementById("gal-etiq"), { soleil: G.soleil, planetes: G.P }, { onChoix: montrer, choisi: "atlas" }); if (g) { GAL = g; cv.closest(".gal-scene").classList.add("trois-d"); } }).catch(() => {});
+    const g = m.monterGalaxie(cv, document.getElementById("gal-etiq"), { soleil: G.soleil, planetes: G.P }, { onChoix: montrer, onRetour: fermer }); if (g) { GAL = g; cv.closest(".gal-scene").classList.add("trois-d"); } }).catch(() => {});
 }
 function vueParcours() {
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], q = quetes();

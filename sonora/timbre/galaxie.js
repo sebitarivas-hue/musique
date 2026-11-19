@@ -3,7 +3,7 @@
 // la Terre avec ses vrais continents, qui mène à l'Atlas. La caméra vole : entrée en spirale, dérive lente, parallaxe au toucher et à l'inclinaison du téléphone,
 // et un plongeon vers la planète choisie. Les étiquettes sont de vrais boutons HTML posés sur le canevas (clavier, lecteur d'écran). Three.js (licence MIT) est dans vendor/.
 // Les continents de la Terre viennent de terres.json (Natural Earth, domaine public).
-import * as T from "./vendor/three.module.min.js?v=8f3c89d3e7";
+import * as T from "./vendor/three.module.min.js?v=8cd1732532";
 
 const alea = graine => { let s = graine >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; };
 const hash = t => { let h = 7; for (const c of String(t)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
@@ -45,7 +45,7 @@ const atmosphere = (couleur, rayon, force = 1.1) => new T.Mesh(new T.SphereGeome
   vertexShader: "varying vec3 N; varying vec3 V; void main(){ N = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.0); V = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }",
   fragmentShader: "uniform vec3 c; uniform float k; varying vec3 N; varying vec3 V; void main(){ float f = pow(1.0 - max(dot(N, V), 0.0), 2.4); gl_FragColor = vec4(c, f * k); }" }));
 
-export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, choisi = null } = {}) {
+export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, onRetour = () => {} } = {}) {
   let rendu; try { rendu = new T.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "low-power" }); } catch (_) { return null; }
   const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches, scene = new T.Scene(), cam = new T.PerspectiveCamera(52, 1, .1, 400), monde = new T.Group(); scene.add(monde);
   rendu.outputColorSpace = T.SRGBColorSpace; rendu.setClearColor(0x000000, 0); scene.fog = new T.FogExp2(0x03060a, .0085);
@@ -104,15 +104,15 @@ export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, 
   });
 
   // --- la caméra : on vole autour de la cible ---
-  const vu = new T.Vector3(), cibleT = new T.Vector3(); let focus = null, pauseJusqua = 0, raf = 0, glisse = null, depart = null;
-  let D0 = 8 + 1.3 * orbiteMax; const etat = { yaw: .3, pitch: .55, dist: D0 * 2.4, tx: 0, ty: 0, tz: 0 }, but = { yaw: .3, pitch: .55, dist: D0, tx: 0, ty: 0, tz: 0, zoom: 1 }, para = { x: 0, y: 0 };
+  const vu = new T.Vector3(), cibleT = new T.Vector3(); let decal = 0, focus = null, pauseJusqua = 0, raf = 0, glisse = null, depart = null;
+  let D0 = 7 + 1.05 * orbiteMax; const etat = { yaw: .3, pitch: .7, dist: D0 * 2.4, tx: 0, ty: 0, tz: 0 }, but = { yaw: .3, pitch: .7, dist: D0, tx: 0, ty: 0, tz: 0, zoom: 1 }, para = { x: 0, y: 0 };
   let t0 = performance.now(), dernier = t0; if (reduit) Object.assign(etat, but);
   function taille() { const w = canvas.clientWidth || 320, h = canvas.clientHeight || 320; rendu.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); rendu.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
-    D0 = Math.max(8 + 1.3 * orbiteMax, orbiteMax * .95 / (Math.tan(26 * Math.PI / 180) * Math.min(1, cam.aspect))); if (!focus) but.dist = D0 / but.zoom; if (reduit) image(performance.now()); }  // tout le système tient dans l'écran, même en portrait
+    D0 = Math.max(7 + 1.05 * orbiteMax, orbiteMax * .78 / (Math.tan(26 * Math.PI / 180) * Math.min(1, cam.aspect))); if (!focus) but.dist = D0 / but.zoom; if (reduit) image(performance.now()); }  // tout le système tient dans l'écran, même en portrait
   taille(); addEventListener("resize", taille); const suivi = typeof ResizeObserver === "function" ? new ResizeObserver(taille) : null; if (suivi) suivi.observe(canvas);
   const pause = () => { pauseJusqua = performance.now() + 2500; };
   function choisir(id) { focus = id; P.forEach(p => p.bouton.setAttribute("aria-pressed", String(p.d.id === id))); const p = P.find(x => x.d.id === id); if (p) but.dist = p.rayon * 6.5 + 3.2; onChoix(id); if (reduit) image(performance.now()); }
-  function retour() { focus = null; P.forEach(p => p.bouton.setAttribute("aria-pressed", "false")); but.dist = D0 / but.zoom; if (reduit) image(performance.now()); }
+  function retour() { const etait = focus; focus = null; P.forEach(p => p.bouton.setAttribute("aria-pressed", "false")); but.dist = D0 / but.zoom; if (etait) onRetour(); if (reduit) image(performance.now()); }
   // glisser : tourner ; molette ou pincement : zoomer ; toucher une planète : plonger vers elle ; toucher le vide : revenir
   const ray = new T.Raycaster(), ptr = new T.Vector2();
   conteneur.parentElement.addEventListener("pointermove", e => { pause(); const r = canvas.getBoundingClientRect(); para.x = ((e.clientX - r.left) / r.width - .5) * 2; para.y = ((e.clientY - r.top) / r.height - .5) * 2; });
@@ -143,11 +143,11 @@ export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, 
     const W2 = canvas.clientWidth, H2 = canvas.clientHeight;
     P.forEach(p => { p.grp.getWorldPosition(vu); const dist = vu.distanceTo(cam.position); vu.y -= p.rayon * 1.8; vu.project(cam); const x = (vu.x * .5 + .5) * W2, y = (-vu.y * .5 + .5) * H2, ech = bornes(D0 * .85 / dist, .72, 1.25);
       p.bouton.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, 0) scale(${ech.toFixed(2)})`; p.bouton.style.opacity = vu.z < 1 ? String(bornes(1.15 - (dist - D0 * .5) / (D0 * 1.3), .35, 1)) : "0"; p.bouton.style.zIndex = String(Math.round(1000 - dist * 10)); });
+    decal += ((focus ? H2 * .2 : 0) - decal) * k; if (Math.abs(decal) > .5) cam.setViewOffset(W2, H2, 0, decal, W2, H2); else cam.clearViewOffset();  // la planète choisie monte : la fenêtre prend le bas de la scène
     couchesEtoiles.forEach((e, q) => { e.rotation.y = s * .002 * (q + 1); }); rendu.render(scene, cam);
   }
   function boucle(tm) { raf = 0; if (!document.body.contains(canvas)) return arreter(); if (!document.hidden) image(tm); if (!reduit) raf = requestAnimationFrame(boucle); }
   function arreter() { cancelAnimationFrame(raf); removeEventListener("resize", taille); if (suivi) suivi.disconnect(); rendu.dispose(); }
   raf = requestAnimationFrame(boucle); if (reduit) image(performance.now());
-  if (choisi) setTimeout(() => { P.forEach(p => p.bouton.setAttribute("aria-pressed", String(p.d.id === choisi))); onChoix(choisi); }, 300);  // la Terre est mise en avant dans la fiche, sans plonger : on voit d'abord toute la galaxie
   return { choisir, retour, arreter };
 }
