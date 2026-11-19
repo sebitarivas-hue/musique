@@ -1868,7 +1868,7 @@ html.signal body.jeu-nuit .fnav a[aria-current="page"] { background: #b8f54a; bo
 @media (prefers-reduced-motion: reduce) { .gal-scene canvas { cursor: default; } }
 .gal-titre { margin: 4px 0 6px; font: 700 clamp(1.8rem, 7vw, 2.6rem)/1 "Fredoka", sans-serif; letter-spacing: 0; color: #fff; }
 .gal.accueil .gal-scene { aspect-ratio: 4 / 5; max-height: 74vh; } @media (min-width: 760px) { .gal.accueil .gal-scene { aspect-ratio: 16 / 10; max-height: 72vh; } }
-.gal.accueil .gal-etiquette { font-size: .72rem; padding: 3px 9px; } .gal.accueil .gal-etiquette span { font-size: .64rem; }
+.gal.accueil .gal-etiquette { flex-direction: row; align-items: baseline; gap: 5px; font-size: .64rem; padding: 2px 8px; } .gal.accueil .gal-etiquette span { font-size: .6rem; }
 .gal-actions { display: grid; gap: 10px; margin: 14px 0 4px; } @media (min-width: 760px) { .gal-actions { grid-template-columns: 1.4fr 1fr 1fr; } }
 .gal-lien { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; margin: 10px 0; padding: 16px 18px; border-radius: 24px; border: 1px solid var(--bord, #2b3322); background: linear-gradient(180deg, #1a1f16, #11150d); color: #fff; text-decoration: none; } .gal-lien b { font: 600 1.2rem "Fredoka", sans-serif; } .gal-lien span { grid-column: 1; font-size: .9rem; opacity: .8; } .gal-lien i { grid-row: 1 / span 2; grid-column: 2; font-size: 1.6rem; font-style: normal; color: var(--v, #b8f54a); }
 @media (min-width: 760px) { .gal.accueil { padding-top: 58px; } }
@@ -1884,6 +1884,23 @@ html.signal body.jeu-nuit .fnav a[aria-current="page"] { background: #b8f54a; bo
 @keyframes gal-pop { from { opacity: 0; transform: translateY(24px) scale(.96); } }
 @media (min-width: 760px) { .gal-popup { left: auto; right: 16px; bottom: 16px; width: 360px; } }
 @media (prefers-reduced-motion: reduce) { .gal-popup { animation: none; } }
+.gal-corps { display: block; margin: 0 40px 2px 0; font: 600 .75rem "Fredoka", sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--v, #b8f54a); }
+/* Navigation concentrée (19/11/2026) : on voit la page et son outil d'un coup d'œil, sans descendre. L'en-tête de page se réduit à une étiquette, un titre et deux lignes de présentation
+   (un toucher sur la présentation la déploie) ; le fil d'Ariane, la barre du jeu et les onglets se serrent. */
+html.signal .page-head { padding-top: 12px !important; padding-bottom: 10px !important; margin-bottom: 10px !important; }
+html.signal .page-head::before, html.signal .page-head::after { display: none !important; }
+html.signal .page-head .brand { display: none !important; }
+html.signal .page-head .label, html.signal .ph-etiq { font-size: .66rem !important; padding: 3px 9px !important; line-height: 1.25 !important; display: inline-block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 0 6px !important; }
+html.signal .page-head h1, html.signal .ph-titre { font-size: clamp(1.5rem, 5vw, 2.5rem) !important; line-height: 1.04 !important; margin: 2px 0 6px !important; letter-spacing: -.01em !important; }
+html.signal .page-head .lead, html.signal .ph-lead, html.signal .page-head > p { font-size: .9rem !important; line-height: 1.38 !important; margin: 0 !important; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+html.signal .page-head .lead.ouvert, html.signal .ph-lead.ouvert, html.signal .page-head > p.ouvert { -webkit-line-clamp: unset; display: block; }
+html.signal .page-head .fils { margin-top: 8px !important; }
+.barre { min-height: 0 !important; } .hud-jeu { min-height: 46px !important; }
+html.signal body.jeu-nuit .fnav { padding: 0 0 6px !important; gap: 6px !important; } html.signal body.jeu-nuit .fnav a { padding: 7px 14px !important; font-size: .85rem !important; }
+html.signal .fnav { margin: 0 0 8px !important; padding-bottom: 4px !important; } html.signal .fnav a { padding: 8px 12px !important; }
+.labo { margin-top: 8px !important; padding: 12px !important; gap: 10px !important; } .labo-onde { height: 96px !important; }
+.pager { margin-top: 8px; }
+@media (max-width: 760px) { .barre { padding-top: 4px !important; padding-bottom: 4px !important; } .hud-jeu { padding-top: 2px !important; padding-bottom: 2px !important; } }
 </style>
 </head>
 <body>
@@ -5169,7 +5186,7 @@ function duoSemaine() {
   const t = new Date(), dow = (t.getDay() + 6) % 7, auj = jourLocal();
   return ["L", "M", "M", "J", "V", "S", "D"].map((l, i) => { const d = new Date(t); d.setDate(t.getDate() - dow + i); const k = jourLocal(d), a = (jeu().dj || {})[k]; return { l, fait: !!(a && a.p), auj: k === auj }; });
 }
-const FLAMME_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c-4.2 0-7-2.8-7-6.6 0-3.6 2.8-5.6 3.9-9.4 2.8 1.7 3.7 4.3 3.7 6 1-.9 1.6-2.2 1.7-3.6 2.4 1.9 4.7 4.7 4.7 7.5 0 3.7-2.8 6.1-7 6.1z"/><path class="coeur" d="M12 21c-2 0-3.3-1.3-3.3-3 0-1.7 1.3-2.7 1.9-4.4 1.3.8 1.7 2 1.7 2.8.5-.4.8-1 .8-1.7 1.1.9 2.2 2.2 2.2 3.5 0 1.8-1.3 2.8-3.3 2.8z"/></svg>`;
+const FLAMME_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;  /* le soleil a remplacé la flamme (19/11/2026) */
 function panneauDuo() {
   const j = jeu(), serie = duoSerie(), a = duoJour(), o = duoObjectif(), fait = a.p >= 1, pct = Math.min(100, Math.round(Math.min(a.p, o) / o * 100)), n = niveauDe(j.xp), C = +(2 * Math.PI * 34).toFixed(1);
   const reste = o - a.p, msg = a.p >= o ? "Objectif du jour atteint. Bravo, reviens demain." : fait ? `Encore ${reste} partie${reste > 1 ? "s" : ""} pour ton objectif du jour.` : serie ? `Joue une partie aujourd'hui pour garder ta flamme : ${serie} jour${serie > 1 ? "s" : ""} de suite.` : "Termine une partie pour allumer ta flamme.";
@@ -5210,6 +5227,7 @@ function cheminJeux(k) {
         <div class="duo-noeuds">${x.L.map(noeud).join("")}${x.n ? `<span class="duo-n tro${x.valide ? " valide" : ""}" style="--dx:0px"><span class="duo-b">${TROPHEE_SVG}</span><span class="duo-nom">${x.maitrise ? "Maîtrisée" : x.valide ? "Validée" : "Valide la séquence"}</span></span>` : ""}</div></li>`; }).join("")}</ol></section>`;
 }
 document.addEventListener("click", e => {
+  const ld = e.target.closest && e.target.closest(".page-head .lead, .page-head .ph-lead, .page-head > p"); if (ld) ld.classList.toggle("ouvert");
   const ff = e.target.closest && e.target.closest("[data-fam-filtre]");
   if (ff) { e.preventDefault(); const f = ff.dataset.famFiltre; document.querySelectorAll("[data-fam-filtre]").forEach(x => x.setAttribute("aria-pressed", String(x === ff)));
     document.querySelectorAll(".cat-fam[data-fam]").forEach(z => { z.hidden = !!f && z.dataset.fam !== f; }); return; }
@@ -6133,6 +6151,10 @@ function vueLaboJeu(liste, lien, txt) {
    Un soleil (son niveau), des planètes (les contenus du site) dont l'anneau se remplit, la Terre qui mène à l'Atlas. Le rendu 3D est dans sonora/timbre/galaxie.js ;
    tout ce qui se lit ici existe aussi en liste, pour les lecteurs d'écran et quand WebGL manque. Les points sont classés par planète depuis le 18/11/2026 (jeu.src). */
 let GAL = null, GAL_DONNEES = null;
+/* Le soleil est éteint tant qu'on n'a pas joué aujourd'hui, et brille de plus en plus à mesure des parties terminées et des points gagnés ; à minuit le jour change et il redevient éteint. */
+const CORPS_NOM = { atlas: "La Terre", cours: "Jupiter", oeuvres: "Saturne", quiz: "Mars", rythme: "Mercure", ecoute: "Vénus", instruments: "Uranus", theorie: "Neptune", creation: "Pluton", timbre: "Cérès", labo: "Éris", harmonie: "Makémaké", orchestre: "Hauméa" };
+const eclatSoleil = (parties, xp) => Math.max(0, Math.min(1, .72 * Math.min(1, parties / duoObjectif()) + .28 * Math.min(1, xp / 60)));
+const texteSoleil = e => e <= 0 ? "Soleil éteint : termine une partie pour l'allumer." : e < .5 ? `Soleil allumé à ${Math.round(e * 100)} %. Continue, il brille de plus en plus.` : e < 1 ? `Soleil à ${Math.round(e * 100)} %. Encore un peu pour qu'il flamboie.` : "Soleil à pleine puissance aujourd'hui !";
 function galaxieDonnees() {
   const j = jeu(), k = maClasse() || defautNiv(), F = j.faits, n = niveauDe(j.xp), compte = re => Object.keys(F).filter(x => re.test(x)).length, src = j.src || {}, min1 = x => Math.max(0, Math.min(1, x));
   const fam = id => { const L = D.ludo.jeux.filter(g => g.moteur && g.famille === id && g.seances.some(s => s[0] === k)), et = L.reduce((a, g) => a + ludoEtoiles(g.id), 0), joues = L.filter(g => ludoEtoiles(g.id) > 0 || F[`ludo:${g.id}:0`]).length;
@@ -6156,14 +6178,16 @@ function galaxieDonnees() {
   P.forEach(p => { p.xp = src[p.id] || 0; p.court = COURT[p.id] || p.nom; });
   const classes = Object.values(src).reduce((a, b) => a + b, 0), etoiles = Object.values(j.etoiles || {}).reduce((x, y) => x + y, 0) + etoilesTimbre(), jr = jourLocal(), jours = [];
   for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const c = jourLocal(d), a = (j.dj || {})[c] || {}; jours.push({ c, l: ["D", "L", "M", "M", "J", "V", "S"][d.getDay()], p: a.p || 0, b: a.b || 0, xp: (j.xpj || {})[c] || 0 }); }
-  return { j, k, n, P, classes, avant: Math.max(0, j.xp - classes), etoiles, jours, auj: jours[6], soleil: { niveau: n + 1, nom: NIVEAUX_JEU[n][1], xp: j.xp } };
+  const auj = jours[6], eclat = eclatSoleil(auj.p, auj.xp);
+  P.forEach(p => { p.corps = CORPS_NOM[p.id] || ""; });
+  return { j, k, n, P, classes, avant: Math.max(0, j.xp - classes), etoiles, jours, auj, soleil: { niveau: n + 1, nom: NIVEAUX_JEU[n][1], xp: j.xp, eclat } };
 }
 function galaxieScene() {
   const G = GAL_DONNEES = galaxieDonnees(), j = G.j;
   return `<section class="gal accueil" aria-labelledby="gal-t"><h2 class="gal-titre" id="gal-t">Ma galaxie</h2>
     <p class="small">Le soleil, c'est toi : plus ton niveau monte, plus il grandit. Chaque planète est un coin du site : touche-la, une fenêtre s'ouvre, et tu peux y entrer. Ses anneaux et ses lunes apparaissent quand tu avances. La Terre mène à l'Atlas des musiques.</p>
     <div class="gal-scene"><canvas id="galaxie3d" aria-hidden="true"></canvas><div id="gal-etiq"></div><p class="gal-sans3d small">La galaxie en 3D demande WebGL : la liste en dessous dit la même chose.</p>
-      <div class="gal-soleil"><b>Niveau ${G.soleil.niveau}</b><span>${esc(G.soleil.nom)}, ${j.xp} XP</span><span>${duoSerie()} jour${duoSerie() > 1 ? "s" : ""} de suite</span></div>
+      <div class="gal-soleil"><b>Niveau ${G.soleil.niveau}</b><span>${esc(G.soleil.nom)}, ${j.xp} XP</span><span id="gal-soleil-txt">${esc(texteSoleil(G.soleil.eclat))}</span><span>${duoSerie()} jour${duoSerie() > 1 ? "s" : ""} de suite</span></div>
       <p class="gal-aide" id="gal-aide">Touche une planète pour y entrer. Glisse pour tourner.</p>
       <div class="gal-popup" id="gal-popup" role="dialog" aria-label="Planète choisie" hidden></div></div></section>`;
 }
@@ -6184,7 +6208,7 @@ function brancherGalaxie() {
   const pop = document.getElementById("gal-popup"), scene = document.querySelector(".gal-scene");
   const fermer = () => { if (pop) pop.hidden = true; if (scene) scene.classList.remove("a-popup"); document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", "false")); };
   const montrer = id => { const p = G.P.find(x => x.id === id); if (!p || !pop) return;
-    pop.style.setProperty("--k", p.couleur); pop.innerHTML = `<button type="button" class="gal-x" aria-label="Fermer">&#10005;</button><h3>${esc(p.nom)}</h3><div class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></div><p>${esc(p.texte)}</p><p class="small">${p.xp ? `${p.xp} XP gagnés ici.` : "Aucun point gagné ici pour l'instant."}</p><a class="btn-main" data-entrer="${p.id}" href="${esc(p.lien[0])}">${esc(p.lien[1])} &#8250;</a>`;
+    pop.style.setProperty("--k", p.couleur); pop.innerHTML = `<button type="button" class="gal-x" aria-label="Fermer">&#10005;</button>${p.corps ? `<span class="gal-corps">${esc(p.corps)}</span>` : ""}<h3>${esc(p.nom)}</h3><div class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></div><p>${esc(p.texte)}</p><p class="small">${p.xp ? `${p.xp} XP gagnés ici.` : "Aucun point gagné ici pour l'instant."}</p><a class="btn-main" data-entrer="${p.id}" href="${esc(p.lien[0])}">${esc(p.lien[1])} &#8250;</a>`;
     pop.hidden = false; scene.classList.add("a-popup");
     pop.querySelector(".gal-x").onclick = () => { if (GAL) GAL.retour(); fermer(); };
     const e = pop.querySelector("[data-entrer]"); e.onclick = ev => { const fam = ["rythme", "ecoute", "instruments", "theorie", "creation"].includes(p.id) ? p.id : "";
@@ -6194,7 +6218,9 @@ function brancherGalaxie() {
   if (!window.__galEchap) { window.__galEchap = true; addEventListener("keydown", e => { if (e.key === "Escape" && document.getElementById("gal-popup") && !document.getElementById("gal-popup").hidden) { if (GAL) GAL.retour(); const p = document.getElementById("gal-popup"); p.hidden = true; const s = document.querySelector(".gal-scene"); if (s) s.classList.remove("a-popup"); } }); }
   if (!cv || !D.sonora_timbre) return;
   import(new URL(D.sonora_timbre.replace(/index\.html$/, "galaxie.js"), location.href).href).then(m => { if (!document.body.contains(cv)) return;
-    const g = m.monterGalaxie(cv, document.getElementById("gal-etiq"), { soleil: G.soleil, planetes: G.P }, { onChoix: montrer, onRetour: fermer }); if (g) { GAL = g; cv.closest(".gal-scene").classList.add("trois-d"); } }).catch(() => {});
+    const g = m.monterGalaxie(cv, document.getElementById("gal-etiq"), { soleil: G.soleil, planetes: G.P }, { onChoix: montrer, onRetour: fermer }); if (g) { GAL = g; cv.closest(".gal-scene").classList.add("trois-d");
+      let jourVu = jourLocal(); clearInterval(window.__galMinuit); window.__galMinuit = setInterval(() => { if (!document.getElementById("galaxie3d")) return clearInterval(window.__galMinuit);
+        const j = jeu(), a = (j.dj || {})[jourLocal()] || {}, e = eclatSoleil(a.p || 0, (j.xpj || {})[jourLocal()] || 0); g.eclat(e); const t = document.getElementById("gal-soleil-txt"); if (t) t.textContent = texteSoleil(e); if (jourLocal() !== jourVu) { jourVu = jourLocal(); rendre(); } }, 20000); } }).catch(() => {});
 }
 function vueParcours() {
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], q = quetes();

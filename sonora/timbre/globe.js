@@ -2,7 +2,7 @@
 // d'une question à l'autre, un truc super chiadé »). Une Terre de nuit en 3D ; après chaque réponse, un petit avion vole en arc jusqu'au lieu de la musique,
 // la caméra le suit, l'escale s'allume. On part d'Ablon-sur-Seine, la ville du collège.
 // Les continents viennent de terres.json (Natural Earth, domaine public ; outils/monde/terres_globe.py). Three.js (licence MIT) est dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=a07b03bfae";
+import * as T from "./vendor/three.module.min.js?v=2d00a7f8b8";
 
 const R = 10, DEG = Math.PI / 180, ABLON = [2.42, 48.72];
 const vers = (lon, lat, r = R) => new T.Vector3(r * Math.cos(lat * DEG) * Math.sin(lon * DEG), r * Math.sin(lat * DEG), r * Math.cos(lat * DEG) * Math.cos(lon * DEG));
