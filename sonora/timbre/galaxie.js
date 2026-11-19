@@ -2,7 +2,7 @@
 // qui se remplit à mesure qu'on avance, et la Terre, qui mène à l'Atlas. Un geste sur une planète la choisit ; glisser fait tourner la galaxie.
 // Les étiquettes sont de vrais boutons HTML posés au-dessus du canevas (clavier, lecteur d'écran). Three.js (licence MIT) est dans vendor/.
 // Les continents de la Terre viennent de terres.json (Natural Earth, domaine public).
-import * as T from "./vendor/three.module.min.js?v=5d6bbba4e3";
+import * as T from "./vendor/three.module.min.js?v=31c8eac6cd";
 
 const alea = graine => { let s = graine >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; };
 const hash = t => { let h = 7; for (const c of String(t)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
@@ -52,7 +52,7 @@ export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, 
   // les planètes
   const P = [], hits = [], liste = donnees.planetes.slice(), ie = liste.findIndex(p => p.terre); if (ie > 2) liste.splice(2, 0, liste.splice(ie, 1)[0]);  // la Terre sur la troisième orbite : toujours bien en vue
   liste.forEach((d, i) => {
-    const orbite = 3 + i * .82, estTerre = !!d.terre, a0 = estTerre ? Math.PI / 2 - .3 : i * 2.399963 + .6, rayon = estTerre ? 1.2 : .52 + .34 * d.progres, grp = new T.Group();
+    const orbite = 3.2 + i * .68, estTerre = !!d.terre, a0 = estTerre ? Math.PI / 2 - .3 : i * 2.399963 + .6, rayon = estTerre ? 1.2 : .52 + .34 * d.progres, grp = new T.Group();
     const trace = new T.Mesh(new T.RingGeometry(orbite - .012, orbite + .012, 160), new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .09, side: T.DoubleSide })); trace.rotation.x = -Math.PI / 2; monde.add(trace);
     const gris = new T.Color(0x6b6f66), c0 = new T.Color(d.couleur), coul = gris.clone().lerp(c0, .35 + .65 * Math.min(1, d.progres * 3));
     const mat = new T.MeshStandardMaterial({ color: estTerre ? 0xffffff : coul, map: estTerre ? null : surface(d.couleur, hash(d.id)), roughness: .85, metalness: 0, emissive: estTerre ? 0x0a1a3a : c0, emissiveIntensity: estTerre ? .5 : .06 + .3 * d.progres });
@@ -68,7 +68,7 @@ export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, 
     const toucher = new T.Mesh(new T.SphereGeometry(rayon * 2.1, 12, 8), new T.MeshBasicMaterial({ visible: false })); toucher.userData.id = d.id; grp.add(toucher); hits.push(toucher);
     monde.add(grp);
     const bouton = document.createElement("button"); bouton.type = "button"; bouton.className = "gal-etiquette" + (estTerre ? " terre" : ""); bouton.dataset.id = d.id; bouton.style.setProperty("--k", d.couleur);
-    bouton.innerHTML = `<b></b><span></span>`; bouton.querySelector("b").textContent = d.nom; bouton.querySelector("span").textContent = Math.round(d.progres * 100) + " %"; bouton.setAttribute("aria-label", `${d.nom}, ${Math.round(d.progres * 100)} pour cent`);
+    bouton.innerHTML = `<b></b><span></span>`; bouton.querySelector("b").textContent = d.court || d.nom; bouton.querySelector("span").textContent = Math.round(d.progres * 100) + " %"; bouton.setAttribute("aria-label", `${d.nom}, ${Math.round(d.progres * 100)} pour cent`);
     bouton.onclick = () => choisir(d.id); conteneur.appendChild(bouton);
     P.push({ d, grp, corps, anneau, aura, orbite, a: a0, vit: reduit ? 0 : estTerre ? 0 : .05 / Math.sqrt(orbite / 3) * (i % 2 ? 1 : .9), rayon, bouton });
   });
@@ -88,7 +88,7 @@ export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, 
   function image(t) {
     const dt = Math.min(.05, (t - dernier) / 1000); dernier = t; const s = (t - t0) / 1000;
     yaw += (cible.yaw - yaw) * .12; pitch += (cible.pitch - pitch) * .12; zoom += (cible.zoom - zoom) * .12; if (!glisse && !reduit && !focus) cible.yaw += dt * .02;
-    const R = 23 / zoom, w = canvas.clientWidth || 320; cam.position.set(Math.sin(yaw) * Math.cos(pitch) * R, Math.sin(pitch) * R, Math.cos(yaw) * Math.cos(pitch) * R * (w < 500 ? 1.3 : 1)); cam.lookAt(0, 0, 0);
+    const R = (10 + 1.62 * (3.2 + (P.length - 1) * .68)) / zoom, w = canvas.clientWidth || 320; cam.position.set(Math.sin(yaw) * Math.cos(pitch) * R, Math.sin(pitch) * R, Math.cos(yaw) * Math.cos(pitch) * R * (w < 500 ? 1.3 : 1)); cam.lookAt(0, 0, 0);
     soleil.rotation.y = s * .1; halo.material.opacity = .85 + .1 * Math.sin(s * 1.7);
     const enPause = t < pauseJusqua || !!glisse;  // les orbites s'arrêtent tant que le doigt ou la souris est sur la scène : une étiquette est facile à toucher
     P.forEach(p => { if (!enPause) p.a += p.vit * dt; p.grp.position.set(Math.cos(p.a) * p.orbite, 0, Math.sin(p.a) * p.orbite); p.corps.rotation.y += dt * .25; const sel = focus === p.d.id;
