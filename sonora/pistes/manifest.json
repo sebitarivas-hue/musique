@@ -1,0 +1,17 @@
+{
+ "name": "SONORA Pistes",
+ "short_name": "Pistes",
+ "lang": "fr",
+ "id": "pistes",
+ "start_url": "index.html",
+ "scope": "../../",
+ "display": "standalone",
+ "orientation": "any",
+ "background_color": "#22364d",
+ "theme_color": "#22364d",
+ "description": "Un séquenceur audio dans le navigateur : enregistrer, placer des sons sur des pistes, mixer et exporter.",
+ "icons": [
+  {"src": "../../icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+  {"src": "../../icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+ ]
+}
