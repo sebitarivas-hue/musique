@@ -1885,6 +1885,22 @@ html.signal body.jeu-nuit .fnav a[aria-current="page"] { background: #b8f54a; bo
 @media (min-width: 760px) { .gal-popup { left: auto; right: 16px; bottom: 16px; width: 360px; } }
 @media (prefers-reduced-motion: reduce) { .gal-popup { animation: none; } }
 .gal-corps { display: block; margin: 0 40px 2px 0; font: 600 .75rem "Fredoka", sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--v, #b8f54a); }
+/* Jouer (20/11/2026) : la galaxie ouvre la page, pleine largeur et presque pleine hauteur ; dessous, une seule navigation en capsules (la planète et son avancement) qui mène aux jeux. */
+.gal.accueil { margin-top: 0; padding-top: 0 !important; }
+.gal.accueil .gal-scene { height: clamp(420px, calc(100dvh - 230px), 980px) !important; width: 100vw; margin-left: calc(50% - 50vw); border-radius: 0 0 28px 28px; border-left: 0; border-right: 0; }
+@media (min-width: 760px) { .gal.accueil .gal-scene { height: clamp(520px, calc(100dvh - 215px), 1100px) !important; } }
+.gal.accueil .gal-etiquette { font-size: .72rem; } @media (min-width: 1000px) { .gal.accueil .gal-etiquette { font-size: .8rem; padding: 3px 10px; } }
+.gal-sans3d ul { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; } .gal-sans3d a { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--k); color: #fff; text-decoration: none; font: 600 .85rem "Fredoka", sans-serif; } .gal-sans3d a b { color: var(--v, #b8f54a); }
+.pl-bille { --t: 22px; flex: none; display: inline-block; width: var(--t); height: var(--t); border-radius: 50%; vertical-align: middle; background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.85) 0 7%, color-mix(in srgb, var(--k) 70%, #fff) 16%, var(--k) 50%, color-mix(in srgb, var(--k) 45%, #000) 100%); box-shadow: 0 0 12px color-mix(in srgb, var(--k) 55%, transparent), inset -3px -4px 6px rgba(0,0,0,.35); }
+.pl-bille.terre { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.8) 0 7%, #7fd6ff 16%, #2f7be8 50%, #0b2a66 100%); }
+.hub2 .cat-filtres { position: sticky; top: var(--haut-fixe, 132px); z-index: 30; width: 100vw; margin: 0 0 6px calc(50% - 50vw); padding: 10px 16px 12px; justify-content: flex-start; background: linear-gradient(180deg, rgba(8,12,6,.96), rgba(8,12,6,.88)); backdrop-filter: blur(10px); border-bottom: 1px solid var(--bord); }
+.hub2 .cat-filtres a { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 9px; border-color: color-mix(in srgb, var(--k, #b8f54a) 55%, transparent); } .hub2 .cat-filtres a[data-fam-filtre=""] { padding-left: 16px; }
+.hub2 .cat-filtres a b { margin-left: 0; } .hub2 .cat-filtres a[aria-pressed="true"] { background: color-mix(in srgb, var(--k, #b8f54a) 80%, #fff); border-color: var(--k, #b8f54a); } .hub2 .cat-filtres a[data-fam-filtre=""][aria-pressed="true"] { background: var(--v); }
+@media (min-width: 760px) { .hub2 .cat-filtres { gap: 10px; } .hub2 .cat-filtres > a:first-child { margin-left: auto; } .hub2 .cat-filtres > a:last-child { margin-right: auto; } }
+.gal-racs { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; } .gal-rac { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--bord); background: #151a10; color: #fff !important; text-decoration: none; font: 600 .9rem "Fredoka", sans-serif; cursor: pointer; } .gal-rac i { font-style: normal; color: var(--v); } .gal-rac.plein { background: var(--v); border-color: var(--v); color: #0c1400 !important; box-shadow: 0 4px 0 rgba(111,165,28,.7); }
+.hub2 .cat-carte { position: relative; } .hub2 .cat-carte > .pl-bille { position: absolute; top: 14px; right: 14px; z-index: 2; }
+.hub2 .cat-fam .hub-rub .rub-nom { display: inline-flex; align-items: center; gap: 10px; }
+.hub2 .cat-fam { scroll-margin-top: calc(var(--haut-fixe, 132px) + 72px); }
 /* Navigation concentrée (19/11/2026) : on voit la page et son outil d'un coup d'œil, sans descendre. L'en-tête de page se réduit à une étiquette, un titre et deux lignes de présentation
    (un toucher sur la présentation la déploie) ; le fil d'Ariane, la barre du jeu et les onglets se serrent. */
 html.signal .page-head { padding-top: 12px !important; padding-bottom: 10px !important; margin-bottom: 10px !important; }
@@ -5151,13 +5167,24 @@ function carte3D(j) {
   const et = j.moteur && modeJeu() ? ludoEtoiles(j.id) : 0, niv = j.moteur ? nivMaxOuvert(j.id) + 1 : 0, ico = ico3dDe(j), coul = coulDe(j);
   const pastille = verrou ? `Séance du ${esc(o.date)}` : j.moteur ? (et ? `&#9733; ${et} sur 9, niveau ${niv}` : "Jouer") : "Jouer";
   return `<a class="hub-affiche cat-carte${verrou ? " verrou" : ""}" ${verrou ? `href="#seance-${k}-${o.seq}-${o.num}"` : ludoLien(j)} style="--k:${coul};--ktx:${texteSur(coul)}"${verrou ? ` title="Se débloque à la séance du ${esc(o.date)}"` : ""}>
-    <span class="hub-3d" data-ico3d="${ico}:${coul}" aria-hidden="true"></span><b>${insec(j.titre)}</b><span>${insec(j.consigne)}</span><i>${pastille}</i></a>`;
+    ${bille(planetesFam()[j.famille], 20)}<span class="hub-3d" data-ico3d="${ico}:${coul}" aria-hidden="true"></span><b>${insec(j.titre)}</b><span>${insec(j.consigne)}</span><i>${pastille}</i></a>`;
 }
-function catalogueJeux(J, base, niv) {
-  const k = niveauCarte(), ouvert = j => !j.moteur || jeuOuvert(j, k);
-  return `<div class="cat-filtres" role="group" aria-label="Familles de jeux"><a href="${base}" data-fam-filtre="" role="button" aria-pressed="true">Tous <b>${J.length}</b></a>${D.ludo.familles.map(([id, nom]) => `<a href="${base}" data-fam-filtre="${id}" role="button" aria-pressed="false">${esc(nom.split(",")[0])} <b>${J.filter(j => j.famille === id).length}</b></a>`).join("")}</div>`
+/* Une seule navigation (20/11/2026) : les familles de jeux sont les planètes de la galaxie. La capsule d'une planète (sa bille de couleur et son avancement) filtre les jeux,
+   et la même bille marque la famille sur chaque rang et chaque carte. */
+const FAM_PLANETE = ["rythme", "ecoute", "instruments", "theorie", "creation", "atlas"];
+const COURT_FAM = { rythme: "Rythme", ecoute: "Écoute", instruments: "Instruments", theorie: "Théorie", creation: "Création", atlas: "Terre" };
+function planetesFam() { const G = GAL_DONNEES = GAL_DONNEES || galaxieDonnees(), m = {}; G.P.forEach(p => { m[p.id] = p; }); return m; }
+const bille = (p, taille) => `<span class="pl-bille${p && p.terre ? " terre" : ""}" style="--k:${p ? p.couleur : "#b8f54a"}${taille ? `;--t:${taille}px` : ""}" aria-hidden="true"></span>`;
+function filtresJeux(J, base) {
+  const P = planetesFam();
+  return `<div class="cat-filtres" id="jeux" role="group" aria-label="Familles de jeux, une par planète"><a href="${base}" data-fam-filtre="" role="button" aria-pressed="true"><span class="cf-nom">Tous</span> <b>${J.length}</b></a>${D.ludo.familles.map(([id, nom]) => { const p = P[id], pc = p ? Math.round(p.progres * 100) : 0;
+    return `<a href="${base}" data-fam-filtre="${id}" role="button" aria-pressed="false" title="${esc(nom)} : ${J.filter(j => j.famille === id).length} jeux, ${pc} %" style="--k:${p ? p.couleur : "#b8f54a"}">${bille(p)}<span class="cf-nom">${esc(COURT_FAM[id] || nom.split(",")[0])}</span> <b>${pc} %</b></a>`; }).join("")}</div>`;
+}
+function catalogueJeux(J, base, niv, sansFiltres) {
+  const k = niveauCarte(), ouvert = j => !j.moteur || jeuOuvert(j, k), P = planetesFam();
+  return (sansFiltres ? "" : filtresJeux(J, base))
     + D.ludo.familles.map(([id, nom]) => { const L = J.filter(j => j.famille === id).sort((x, y) => ouvert(y) - ouvert(x)); return [id, nom, L, L.filter(ouvert).length]; }).sort((x, y) => y[3] - x[3]).map(([id, nom, L, n]) => {
-      return L.length ? `<section class="cat-fam" data-fam="${id}"><h2 class="hub-rub">${esc(nom)}<span>${n} sur ${L.length}</span></h2><div class="hub-rail">${L.map(carte3D).join("")}</div></section>` : ""; }).join("");
+      return L.length ? `<section class="cat-fam" data-fam="${id}"><h2 class="hub-rub"><span class="rub-nom">${bille(P[id], 26)}${esc(nom)}</span><span>${n} sur ${L.length}</span></h2><div class="hub-rail">${L.map(carte3D).join("")}</div></section>` : ""; }).join("");
 }
 function vueLudo(niv) {
   NIV_CARTE = niv || "";
@@ -5244,7 +5271,8 @@ document.addEventListener("click", e => {
   const ld = e.target.closest && e.target.closest(".page-head .lead, .page-head .ph-lead, .page-head > p"); if (ld) ld.classList.toggle("ouvert");
   const ff = e.target.closest && e.target.closest("[data-fam-filtre]");
   if (ff) { e.preventDefault(); const f = ff.dataset.famFiltre; document.querySelectorAll("[data-fam-filtre]").forEach(x => x.setAttribute("aria-pressed", String(x === ff)));
-    document.querySelectorAll(".cat-fam[data-fam]").forEach(z => { z.hidden = !!f && z.dataset.fam !== f; }); return; }
+    document.querySelectorAll(".cat-fam[data-fam]").forEach(z => { z.hidden = !!f && z.dataset.fam !== f; });
+    const prem = document.querySelector(".cat-fam:not([hidden])"); if (prem && ff.closest(".cat-filtres")) prem.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); return; }
   const b = e.target.closest && e.target.closest("[data-obj]"); if (b && jeuActif()) { const y = scrollY; jeu().obj = +b.dataset.obj; sauverJeu(); rendre(); scrollTo(0, y); return; }
   if (e.target.closest && e.target.closest("[data-passer-jouer]")) { const s = document.querySelector('.mode-sw [data-mode="jouer"]'); if (s) s.click(); }
 });
@@ -5299,28 +5327,15 @@ function vueJouer() {
   let h = `<div class="hub hub2"><h1 class="h2-titre">Jouer <span>${esc(k)}</span></h1>`;
   if (!(D.eleves && D.codes)) h += `<nav class="levels" aria-label="Classe">${NIV.map(c => `<a href="#jouer" data-niv="${c}" aria-current="${c === k ? "page" : "false"}">${c}</a>`).join("")}</nav>`;
   h += galaxieScene();
-  if (duo) {
-    const j = jeu(), serie = duoSerie(), a = duoJour(), o = duoObjectif(), fait = a.p > 0, n = niveauDe(j.xp), etoiles = Object.values(j.etoiles || {}).reduce((x, y) => x + y, 0) + et;
-    h += `<div class="h2-actions">${cur.jeu ? `<a class="duo-go h2-btn plein" href="#ludo-${cur.jeu.id}"><span>Continuer</span><b>${insec(cur.jeu.titre)}</b></a>` : `<a class="duo-go h2-btn plein" href="#chemin"><span>Mon chemin</span><b>${valides === total && total ? "Vise trois étoiles partout" : "Voir mon chemin"}</b></a>`}<a class="h2-btn creux" href="#chemin">Mon chemin en ${esc(k)} <i>${valides}/${total}</i></a></div>`;
-    const D_ = duoDefis(), tous = D_.every(x => x.n >= x.max);
-    h += `<section class="h2-carte duo-defis"><header><h2>Défis du jour</h2><span class="h2-temps">${HUB_SVG.horloge}jusqu'à ce soir</span></header>
-      <p class="h2-obj">${a.p >= o ? "Objectif du jour atteint" : `Objectif du jour : ${o} parties`}</p>${barreH2(Math.min(a.p, o), o)}
-      <ul>${D_.slice(1).map(x => `<li class="${x.n >= x.max ? "fait" : ""}"><span class="duo-dt">${esc(x.t)}</span>${barreH2(x.n, x.max)}</li>`).join("")}</ul>
-      <div class="h2-coffre${tous ? " ouvert" : ""}">${HUB_SVG.coffre}<p>${tous ? "Coffre ouvert : une musique du monde t'attend." : "Fais les trois défis pour ouvrir le coffre du jour."}</p>${tous && D.atlas ? `<a class="h2-btn mini" href="${esc(D.atlas)}#hasard">Ouvrir</a>` : ""}</div>
-      <details class="duo-reglage"><summary>Changer mon objectif du jour</summary><div class="duo-obj" role="group" aria-label="Objectif du jour, en parties">${[[2, "Tranquille"], [3, "Normal"], [5, "Intense"]].map(([kk, t]) => `<button type="button" data-obj="${kk}" aria-pressed="${kk === o}">${t} <i>${kk}</i></button>`).join("")}</div></details></section>`;
-    h += `<div class="h2-stats">${[[HUB_SVG.xp, j.xp, "XP au total", "eclair:#ffd23f"], [HUB_SVG.niveau, n + 1, esc(NIVEAUX_JEU[n][1]), "barres:#b8f54a"], [HUB_SVG.etoile, etoiles, "étoiles", "etoile:#ffc400"], [HUB_SVG.record, meilleureSerie(), "meilleure série", "flamme:#ff8a00"]].map(([ic, v, l, i3]) => `<a class="h2-stat" href="#parcours"><span class="ic" data-ico3d="${i3}">${ic}</span><b>${v}</b><span>${l}</span></a>`).join("")}</div>`;
-  } else if (role() === "eleve") h += `<section class="h2-heros"><p class="h2-sous">En mode Réviser, on joue sans points.</p><p class="h2-texte">Passe en mode Jouer pour la flamme, les défis du jour et ton chemin d'étoiles.</p><button type="button" class="h2-btn plein" data-passer-jouer>Passer en mode Jouer</button></section>`;
-  h += galaxieFeuille();
-  const ligne = o => `<a class="hub-tuile hub-ligne" href="${esc(o.href)}" style="--k:${o.k}"><span class="hub-ico" data-ico3d="${ICO3D_COURS[o.ico]}:${o.k}">${HUB_ICO[o.ico]}</span><span class="hub-t"><b>${o.titre}</b><span>${o.texte}</span></span>${o.badge ? `<i class="hub-badge">${o.badge}</i>` : ""}<span class="hub-fl" aria-hidden="true">&#8250;</span></a>`;
-  h += `<h2 class="hub-rub">Les grandes entrées</h2><div class="hub-liste">`
-    + (duo ? ligne({ href: "#parcours", titre: "Mes badges et quêtes", texte: "Tes badges, les quêtes de la semaine, tes niveaux.", k: "#2f7be8", ico: "galaxie" }) : "")
-    + ligne({ href: "#chemin", titre: `Mon chemin en ${esc(k)}`, texte: "Les jeux du cours, séquence par séquence.", k: "#7c5cff", ico: "chemin", badge: duo ? `${valides} / ${total}` : "" })
-    + (jj ? ligne({ href: "#ludo-" + jj.id, titre: "Jeu du jour", texte: esc(jj.titre), k: "#ff8a00", ico: "jour" }) : "")
-    + (D.sonora_harmonie ? ligne({ href: D.sonora_harmonie, titre: "Harmonie", texte: "Gammes, accords, progressions : jeu d'oreille et composition.", k: "#12b76a", ico: "harmonie" }) : "")
-    + (D.sonora_orchestre ? ligne({ href: D.sonora_orchestre, titre: "Orchestre", texte: "Le plan de l'orchestre, les instruments, une fugue.", k: "#ff3d7f", ico: "orchestre" }) : "") + `</div>`;
-  const cat = jeuxCatalogue(k);
-  h += `<h2 class="hub-rub">Tous les jeux<span>${cat.length} pour la ${esc(k)}</span></h2>` + catalogueJeux(cat, "#jouer", k) + `<p class="small"><a href="#chemin">Mon chemin en ${esc(k)}</a> : les jeux du cours, séquence par séquence.${jj ? ` <a href="#ludo-${jj.id}">Jeu du jour : ${esc(jj.titre)}</a>.` : ""}</p>`;
-  h += `<p class="hub-pied">${role() === "prof" || !modeJeu() ? "" : `<a href="#parcours">Mon parcours : badges et quêtes de la semaine</a>`}<a href="#ludo">Les ${D.ludo.jeux.length} jeux de toutes les classes</a></p></div>`;
+  const cat = jeuxCatalogue(k), cap = (href, t, b, cls) => `<a class="gal-rac${cls ? " " + cls : ""}" href="${esc(href)}"><span>${t}</span>${b ? `<i>${b}</i>` : ""}</a>`;
+  h += filtresJeux(cat, "#jouer");
+  h += `<nav class="gal-racs" aria-label="Raccourcis">`
+    + (duo && cur.jeu ? cap("#ludo-" + cur.jeu.id, `Continuer : ${insec(cur.jeu.titre)}`, "", "plein") : "")
+    + (jj ? cap("#ludo-" + jj.id, "Jeu du jour", "", duo && cur.jeu ? "" : "plein") : "")
+    + cap("#chemin", `Mon chemin en ${esc(k)}`, duo ? `${valides}/${total}` : "")
+    + (duo ? cap("#parcours", "Badges, défis et bilan", "") : role() === "eleve" ? `<button type="button" class="gal-rac" data-passer-jouer><span>Passer en mode Jouer</span></button>` : "") + `</nav>`;
+  h += catalogueJeux(cat, "#jouer", k, true);
+  h += `<p class="hub-pied">${role() === "prof" || !modeJeu() ? "" : `<a href="#parcours">Mon parcours : badges, défis du jour et bilan de la semaine</a>`}<a href="#ludo">Les ${D.ludo.jeux.length} jeux de toutes les classes</a></p></div>`;
   return h;
 }
 /* L'écran des outils en 3D (sonora/timbre/onde3d.js) : le canvas dessiné à plat reste en dessous, sans WebGL il sert d'écran. */
@@ -5346,8 +5361,10 @@ function brancherRelief() {
     addEventListener("scroll", () => { const h = document.querySelector(".hub2"); if (h) h.style.setProperty("--defile", Math.min(1, scrollY / 420).toFixed(3)); }, { passive: true }); }
 }
 // La flamme en 3D (sonora/timbre/flamme.js), montée après l'affichage. Sans WebGL, la flamme dessinée reste.
+function hautFixe() { const r = [".entete", ".hud-jeu"].map(x => document.querySelector(x)).filter(Boolean).map(e => e.getBoundingClientRect()).filter(b => b.height && b.top < 140);
+  document.documentElement.style.setProperty("--haut-fixe", Math.round(Math.max(0, ...r.map(b => b.bottom))) + "px"); }   /* sous l'en-tête collé : la barre des capsules s'y accroche */
 function brancherHeros() {
-  brancherIcones(); brancherRelief(); brancherGalaxie();
+  brancherIcones(); brancherRelief(); brancherGalaxie(); hautFixe(); if (!window.__hautFixe) { window.__hautFixe = true; addEventListener("resize", hautFixe); }
   const cv = document.getElementById("flamme3d"); if (!cv || !D.sonora_timbre) return;
   import(new URL(D.sonora_timbre.replace(/index\.html$/, "flamme.js"), location.href).href).then(m => { if (!document.body.contains(cv)) return; const f = m.monterFlamme(cv, { allumee: duoJour().p > 0 }); if (f) cv.closest(".h2-flamme").classList.add("trois-d"); }).catch(() => {});
 }
@@ -6236,16 +6253,15 @@ function sonArreter() {
 addEventListener("hashchange", () => setTimeout(() => { if (SG.etat !== "arret" && !document.getElementById("galaxie3d")) sonArreter(); }, 150));
 function galaxieScene() {
   const G = GAL_DONNEES = galaxieDonnees(), j = G.j;
-  return `<section class="gal accueil" aria-labelledby="gal-t"><h2 class="gal-titre" id="gal-t">Ma galaxie</h2>
-    <p class="small">Le soleil, c'est toi : plus ton niveau monte, plus il grandit. Chaque planète est un coin du site : touche-la, une fenêtre s'ouvre, et tu peux y entrer. Ses anneaux et ses lunes apparaissent quand tu avances. La Terre mène à l'Atlas des musiques.</p>
-    <div class="gal-scene"><canvas id="galaxie3d" aria-hidden="true"></canvas><div id="gal-etiq"></div><p class="gal-sans3d small">La galaxie en 3D demande WebGL : la liste en dessous dit la même chose.</p>
+  return `<section class="gal accueil" aria-labelledby="gal-t"><h2 class="sr" id="gal-t">Ma galaxie : le soleil, c'est toi, chaque planète est un coin du site</h2>
+    <div class="gal-scene"><canvas id="galaxie3d" aria-hidden="true"></canvas><div id="gal-etiq"></div><div class="gal-sans3d"><p class="small">La galaxie en 3D demande WebGL. Voici les planètes en liste.</p><ul>${G.P.map(p => `<li><a href="${esc(p.lien[0])}" style="--k:${p.couleur}">${bille(p)}${esc(p.court)} <b>${Math.round(p.progres * 100)} %</b></a></li>`).join("")}</ul></div>
       <div class="gal-soleil"><b>Niveau ${G.soleil.niveau}</b><span>${esc(G.soleil.nom)}, ${j.xp} XP</span><span id="gal-soleil-txt">${esc(texteSoleil(G.soleil.eclat))}</span><span>${duoSerie()} jour${duoSerie() > 1 ? "s" : ""} de suite</span></div>
       <p class="gal-aide" id="gal-aide">Touche une planète pour y entrer. Glisse pour tourner.</p>
       <button type="button" class="gal-son" id="gal-son" aria-pressed="false"><span class="gs-ic" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="gal-son-t">Écouter la galaxie</span></button>
       <div class="gal-popup" id="gal-popup" role="dialog" aria-label="Planète choisie" hidden></div></div></section>`;
 }
 /* La feuille récapitulative : ce que l'élève a fait aujourd'hui, cette semaine, et planète par planète. */
-function galaxieFeuille() {
+function galaxieFeuille(liens) {
   const G = GAL_DONNEES || galaxieDonnees(), j = G.j, maxj = Math.max(1, ...G.jours.map(x => x.p)), maxx = Math.max(1, ...G.jours.map(x => x.xp));
   const tuile = (v, l) => `<div class="gal-tuile"><b>${v}</b><span>${l}</span></div>`;
   return `<section class="gal feuille" aria-labelledby="gal-f"><h2 class="gal-h" id="gal-f">Ma feuille de route</h2>
@@ -6253,7 +6269,7 @@ function galaxieFeuille() {
     <div class="gal-recap"><div class="gal-tuiles">${tuile(G.auj.p, "partie" + (G.auj.p > 1 ? "s" : "") + " aujourd'hui")}${tuile(G.auj.b, "avec deux étoiles ou plus")}${tuile("+" + G.auj.xp, "XP aujourd'hui")}${tuile(G.jours.reduce((a, x) => a + x.p, 0), "parties cette semaine")}${tuile(G.jours.reduce((a, x) => a + x.xp, 0), "XP cette semaine")}${tuile(G.etoiles, "étoiles en tout")}</div>
       <ol class="gal-semaine" aria-label="Les sept derniers jours">${G.jours.map(x => `<li class="${x.c === jourLocal() ? "auj" : ""}"><i style="height:${Math.round(8 + 52 * x.p / maxj)}px" title="${x.p} partie${x.p > 1 ? "s" : ""}"></i><u style="height:${Math.round(4 + 34 * x.xp / maxx)}px" title="${x.xp} XP"></u><span>${x.l}</span></li>`).join("")}</ol><p class="small gal-legende">Barre verte : les parties. Barre jaune : les XP.</p></div>
     <h3 class="gal-h2">Planète par planète</h3>
-    <ul class="gal-liste">${G.P.map(p => `<li><button type="button" class="gal-carte" data-gal="${p.id}" style="--k:${p.couleur}"><span class="gal-pastille" aria-hidden="true"></span><span class="gal-nom">${esc(p.nom)}</span><span class="gal-pc">${Math.round(p.progres * 100)} %</span><span class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></span><span class="gal-txt">${esc(p.texte)}</span><span class="gal-xp">${p.xp ? `${p.xp} XP gagnés ici` : "Aucun point ici pour l'instant"}</span></button></li>`).join("")}</ul>
+    <ul class="gal-liste">${G.P.map(p => `<li><${liens ? `a href="${esc(p.lien[0])}"` : `button type="button" data-gal="${p.id}"`} class="gal-carte" style="--k:${p.couleur}"><span class="gal-pastille" aria-hidden="true"></span><span class="gal-nom">${esc(p.nom)}</span><span class="gal-pc">${Math.round(p.progres * 100)} %</span><span class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></span><span class="gal-txt">${esc(p.texte)}</span><span class="gal-xp">${p.xp ? `${p.xp} XP gagnés ici` : "Aucun point ici pour l'instant"}</span></${liens ? "a" : "button"}></li>`).join("")}</ul>
     <p class="small">${G.avant ? `${G.avant} XP viennent d'avant ce tableau : ils comptent pour ton niveau, mais on ne sait plus d'où ils viennent. ` : ""}Les points sont rangés par planète à partir du 18 novembre 2026.</p></section>`;
 }
 function brancherGalaxie() {
@@ -6268,7 +6284,7 @@ function brancherGalaxie() {
     pop.hidden = false; scene.classList.add("a-popup");
     pop.querySelector(".gal-x").onclick = () => { if (GAL) GAL.retour(); fermer(); };
     const e = pop.querySelector("[data-entrer]"); e.onclick = ev => { const fam = ["rythme", "ecoute", "instruments", "theorie", "creation"].includes(p.id) ? p.id : "";
-      if (fam && (!location.hash || location.hash === "#jouer")) { ev.preventDefault(); const b = document.querySelector(`[data-fam-filtre="${fam}"]`); if (b) { b.click(); document.querySelector(".cat-filtres").scrollIntoView({ block: "start", behavior: "smooth" }); } } else set("jouer-fam", fam); };
+      if (fam && (!location.hash || location.hash === "#jouer")) { ev.preventDefault(); const b = document.querySelector(`[data-fam-filtre="${fam}"]`); if (b) b.click(); } else set("jouer-fam", fam); };
     document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.gal === id))); try { e.focus({ preventScroll: true }); } catch (_) {} };
   document.querySelectorAll("[data-gal]").forEach(b => b.onclick = () => { scene.scrollIntoView({ block: "start", behavior: "smooth" }); montrer(b.dataset.gal); if (GAL) GAL.choisir(b.dataset.gal); });
   if (!window.__galEchap) { window.__galEchap = true; addEventListener("keydown", e => { if (e.key === "Escape" && document.getElementById("gal-popup") && !document.getElementById("gal-popup").hidden) { if (GAL) GAL.retour(); const p = document.getElementById("gal-popup"); p.hidden = true; const s = document.querySelector(".gal-scene"); if (s) s.classList.remove("a-popup"); } }); }
@@ -6278,11 +6294,26 @@ function brancherGalaxie() {
       let jourVu = jourLocal(); clearInterval(window.__galMinuit); window.__galMinuit = setInterval(() => { if (!document.getElementById("galaxie3d")) return clearInterval(window.__galMinuit);
         const j = jeu(), a = (j.dj || {})[jourLocal()] || {}, e = eclatSoleil(a.p || 0, (j.xpj || {})[jourLocal()] || 0); g.eclat(e); sonRegler(); const t = document.getElementById("gal-soleil-txt"); if (t) t.textContent = texteSoleil(e); if (jourLocal() !== jourVu) { jourVu = jourLocal(); rendre(); } }, 20000); } }).catch(() => {});
 }
+/* Le bilan, sorti de la page Jouer le 20/11/2026 pour que les jeux soient à un geste de la galaxie : défis du jour, chiffres, feuille de route, planète par planète. */
+function bilanJeu(k) {
+  const j = jeu(), a = duoJour(), o = duoObjectif(), n = niveauDe(j.xp), et = etoilesTimbre(), etoiles = Object.values(j.etoiles || {}).reduce((x, y) => x + y, 0) + et;
+  const D_ = duoDefis(), tous = D_.every(x => x.n >= x.max); let h = "";
+  if (jeuActif()) {
+    h += `<div class="hub2"><section class="h2-carte duo-defis"><header><h2>Défis du jour</h2><span class="h2-temps">${HUB_SVG.horloge}jusqu'à ce soir</span></header>
+      <p class="h2-obj">${a.p >= o ? "Objectif du jour atteint" : `Objectif du jour : ${o} parties`}</p>${barreH2(Math.min(a.p, o), o)}
+      <ul>${D_.slice(1).map(x => `<li class="${x.n >= x.max ? "fait" : ""}"><span class="duo-dt">${esc(x.t)}</span>${barreH2(x.n, x.max)}</li>`).join("")}</ul>
+      <div class="h2-coffre${tous ? " ouvert" : ""}">${HUB_SVG.coffre}<p>${tous ? "Coffre ouvert : une musique du monde t'attend." : "Fais les trois défis pour ouvrir le coffre du jour."}</p>${tous && D.atlas ? `<a class="h2-btn mini" href="${esc(D.atlas)}#hasard">Ouvrir</a>` : ""}</div>
+      <details class="duo-reglage"><summary>Changer mon objectif du jour</summary><div class="duo-obj" role="group" aria-label="Objectif du jour, en parties">${[[2, "Tranquille"], [3, "Normal"], [5, "Intense"]].map(([kk, t]) => `<button type="button" data-obj="${kk}" aria-pressed="${kk === o}">${t} <i>${kk}</i></button>`).join("")}</div></details></section>`;
+    h += `<div class="h2-stats">${[[HUB_SVG.xp, j.xp, "XP au total", "eclair:#ffd23f"], [HUB_SVG.niveau, n + 1, esc(NIVEAUX_JEU[n][1]), "barres:#b8f54a"], [HUB_SVG.etoile, etoiles, "étoiles", "etoile:#ffc400"], [HUB_SVG.record, meilleureSerie(), "meilleure série", "flamme:#ff8a00"]].map(([ic, v, l, i3]) => `<div class="h2-stat"><span class="ic" data-ico3d="${i3}">${ic}</span><b>${v}</b><span>${l}</span></div>`).join("")}</div></div>`;
+  }
+  return h + `<div class="hub2">${galaxieFeuille(true)}</div>`;
+}
 function vueParcours() {
   const j = jeu(), n = niveauDe(j.xp), bas = NIVEAUX_JEU[n][0], haut = (NIVEAUX_JEU[n + 1] || [bas + 1])[0], q = quetes();
   let h = head("Mon parcours", `Niveau ${n + 1} : ${NIVEAUX_JEU[n][1]}`, NIVEAUX_JEU[n][2]) + `<a class="gal-lien" href="#galaxie"><b>Ma galaxie</b><span>Le tableau de bord en 3D : le soleil, les planètes, la Terre qui mène à l'Atlas.</span><i aria-hidden="true">&#8250;</i></a>`;
   h += `<section class="niveau-carte"><div class="nc-n">${n + 1}</div><div class="nc-t"><div class="label">${j.xp} XP${NIVEAUX_JEU[n + 1] ? `, encore ${haut - j.xp} pour le niveau ${n + 2} (${esc(NIVEAUX_JEU[n + 1][1])})` : ", niveau maximum"}</div>
     <div class="nc-b"><span style="width:${Math.min(100, (j.xp - bas) / (haut - bas) * 100)}%"></span></div><div class="nc-s"><span>${medaille("coupe", true)} ${Object.keys(j.badges).length} badge${Object.keys(j.badges).length > 1 ? "s" : ""} sur ${BADGES.length}</span></div></div></section>`;
+  h += bilanJeu(maClasse() || defautNiv());
   h += carteMission();
   if (maClasse()) h += carteProgression(maClasse());
   h += `<h2 class="sec" id="quetes" tabindex="-1">Quêtes de la semaine</h2>`;
@@ -6634,7 +6665,7 @@ function rendre() {
   else if (v === "projeter") { app.innerHTML = vueProjeter(); tab = "projeter"; }
   else if (v === "vocabulaire") { app.innerHTML = vueVocabulaire(); tab = "cours"; }
   else if (v === "fils" || (v.startsWith("fils-") && D.fils.defs[v.slice(5)])) { app.innerHTML = vueFils(v.slice(5)); tab = "cours"; }
-  else if (v === "parcours") { app.innerHTML = vueParcours(); tab = "parcours"; }
+  else if (v === "parcours") { app.innerHTML = vueParcours(); tab = "parcours"; brancherIcones(); }
   else if (v === "guide") { app.innerHTML = vueGuide(); tab = "semaine"; }
   else if (v === "themes") { app.innerHTML = vueThemes(); tab = "ecouter"; }
   else if (v.startsWith("theme-") && D.parcoursThemes.detail[v.slice(6)]) { app.innerHTML = vueTheme(v.slice(6)); tab = "ecouter"; }
