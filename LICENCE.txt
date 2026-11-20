@@ -1,0 +1,13 @@
+Droits d'auteur et conditions d'usage
+
+Copyright 2026 Sebastian Rivas. Tous droits réservés.
+
+Ce qui est de Sebastian Rivas : le code de SONORA (Pistes, Studio, Harmonie, Découvertes et les autres espaces), les textes, les séances, les fiches, les parcours, les exercices, les mises en page et les icônes du site.
+
+Ce que tu peux faire : consulter le site, l'utiliser en classe et à la maison, y travailler avec des élèves, imprimer les fiches pour un usage pédagogique non commercial, installer Pistes sur un appareil.
+
+Ce que tu ne peux pas faire sans accord écrit : copier le code ou le site pour le republier, le vendre, l'intégrer à un autre produit ou à un autre service, en tirer une version modifiée mise en ligne, ou entraîner un système sur ce contenu.
+
+Éléments de tiers : le site utilise des bibliothèques et des contenus qui gardent leur propre licence, indiquée dans leurs dossiers et dans le bloc « Crédits et licences » de l'accueil (par exemple la bibliothèque Faust de GRAME en LGPL 2.1, VexFlow, les polices en licence SIL OFL, les images de Wikimedia Commons, les fonds de carte Natural Earth). Cette licence ne change rien à leurs conditions.
+
+Pour toute demande d'autorisation, écrire à l'auteur par le dépôt public du site (github.com/sebitarivas-hue/musique).
