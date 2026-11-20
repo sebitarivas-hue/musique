@@ -1,7 +1,8 @@
 // SONORA Orchestre, espace 01 « Explorer l'orchestre » : les données (sans DOM, testées dans Node).
 // Hauteurs en numéros MIDI (60 = do4, la4 = 440 Hz, comme dans Découvertes). Les tessitures sont les hauteurs réellement entendues, en usage courant d'orchestre ; elles varient un peu selon les ouvrages.
 // `banque` : l'instrument de la banque d'échantillons du site (outils/faust/banque) qui sert de son ; `echant` : la zone enregistrée dans cette banque (vérifiée contre catalogue.json par les tests).
-// Les percussions sans hauteur et quelques instruments secondaires (piccolo, cor anglais, clarinette basse) n'ont pas d'enregistrement dans la banque : la fiche le dit, sans faux son.
+// `coup` : les percussions sans hauteur, enregistrées (banque, duree d'écoute en s, notes : les coups joués ; do4 = 60). Elles n'ont ni tessiture ni clavier.
+// Les castagnettes, le cor anglais et la clarinette basse n'ont pas d'enregistrement libre dans la banque : la fiche le dit, sans faux son.
 
 export const FAMILLES = {
   cordes: { pale: "#FFE2C2", nom: "Les cordes", court: "Cordes", couleur: "#FF9F43", son: "Une corde vibre, frottée par un archet ou pincée." },
@@ -25,7 +26,7 @@ export const INSTRUMENTS = [
     texte: "Le plus grand et le plus grave des instruments à cordes : il porte la basse de tout l'orchestre. Le musicien joue debout ou sur un haut tabouret." },
   { id: "harpe", effectif: "1 ou 2", visuels: 1, nom: "Harpe", fam: "cordes", rang: 1, g0: -82, g1: -46, banque: "harpe", echant: [35, 93], tess: [24, 103], mode: "cordes pincées",
     texte: "Quarante-sept cordes pincées avec les doigts, et sept pédales qui changent la hauteur des notes. Elle se place à gauche, à part des autres cordes." },
-  { id: "piccolo", effectif: "1", visuels: 1, nom: "Piccolo", fam: "bois", rang: 1, g0: -42, g1: -30, banque: null, tess: [74, 108], mode: "souffle sur un biseau",
+  { id: "piccolo", effectif: "1", visuels: 1, nom: "Piccolo", fam: "bois", rang: 1, g0: -42, g1: -30, banque: "piccolo", echant: [79, 96], tess: [74, 108], mode: "souffle sur un biseau",
     texte: "Une petite flûte qui sonne une octave plus haut que la flûte traversière. Très aigu, très perçant." },
   { id: "flutes", effectif: "2 ou 3", visuels: 2, nom: "Flûtes", fam: "bois", rang: 1, g0: -30, g1: -12, banque: "flutes-ens", echant: [60, 90], tess: [60, 96], mode: "souffle sur un biseau",
     texte: "Un tube de métal tenu en travers : le musicien souffle sur le bord d'un trou, comme sur le goulot d'une bouteille. Son clair, léger." },
@@ -49,27 +50,27 @@ export const INSTRUMENTS = [
     texte: "Le plus grand et le plus grave des cuivres. Un seul tuba, en général, qui double la basse avec la puissance d'un moteur." },
   { id: "timbales", effectif: "1 timbalier, 2 à 5 timbales", visuels: 2, nom: "Timbales", fam: "percussions", rang: 3, g0: -80, g1: -56, banque: "timbale", echant: [42, 49], tess: [38, 53], mode: "peau tendue, hauteur réglable",
     texte: "De grands bols de cuivre recouverts d'une peau. Contrairement à la plupart des tambours, chaque timbale est accordée sur une note, que l'on change avec une pédale." },
-  { id: "caisseClaire", effectif: "1", visuels: 1, nom: "Caisse claire", fam: "percussions", rang: 3, g0: -56, g1: -36, banque: null, tess: null, mode: "peau tendue, avec timbre",
+  { id: "caisseClaire", effectif: "1", visuels: 1, nom: "Caisse claire", fam: "percussions", rang: 3, g0: -56, g1: -36, banque: null, coup: { banque: "caisse-claire", duree: 1.2 }, tess: null, mode: "peau tendue, avec timbre",
     texte: "Un tambour plat dont la peau du dessous est frottée par des fils métalliques, les timbres : d'où ce son sec et crépitant. Sans hauteur précise." },
-  { id: "grosseCaisse", effectif: "1", visuels: 1, nom: "Grosse caisse", fam: "percussions", rang: 3, g0: -36, g1: -16, banque: null, tess: null, mode: "peau tendue",
+  { id: "grosseCaisse", effectif: "1", visuels: 1, nom: "Grosse caisse", fam: "percussions", rang: 3, g0: -36, g1: -16, banque: null, coup: { banque: "grosse-caisse", duree: 2.4 }, tess: null, mode: "peau tendue",
     texte: "Le plus grand tambour de l'orchestre : un coup, et c'est tout le sol qui gronde. Sans hauteur précise." },
-  { id: "cymbales", effectif: "1 ou 2", visuels: 1, nom: "Cymbales", fam: "percussions", rang: 3, g0: -16, g1: 4, banque: null, tess: null, mode: "métal frappé",
+  { id: "cymbales", effectif: "1 ou 2", visuels: 1, nom: "Cymbales", fam: "percussions", rang: 3, g0: -16, g1: 4, banque: null, coup: { banque: "cymbales", duree: 4.0 }, tess: null, mode: "métal frappé",
     texte: "Deux disques de métal que l'on entrechoque, ou une cymbale suspendue que l'on frappe avec une baguette. Sans hauteur précise." },
-  { id: "tamTam", effectif: "1", visuels: 1, nom: "Tam-tam", fam: "percussions", rang: 3, g0: 4, g1: 24, banque: null, tess: null, mode: "métal frappé",
+  { id: "tamTam", effectif: "1", visuels: 1, nom: "Tam-tam", fam: "percussions", rang: 3, g0: 4, g1: 24, banque: null, coup: { banque: "tam-tam", duree: 6.0 }, tess: null, mode: "métal frappé",
     texte: "Un grand gong suspendu. Le son monte lentement et dure : on le garde pour les moments sombres ou solennels. Sans hauteur précise." },
   { id: "xylophone", effectif: "1", visuels: 1, nom: "Xylophone", fam: "percussions", rang: 3, g0: 24, g1: 48, banque: "xylophone", echant: [67, 108], tess: [65, 108], mode: "lames de bois frappées",
     texte: "Des lames de bois de longueurs différentes, frappées avec des baguettes dures. Le son est sec et brillant : il fait penser à des os qui s'entrechoquent." },
   { id: "cloches", effectif: "1", visuels: 1, nom: "Cloches tubulaires", fam: "percussions", rang: 3, g0: 48, g1: 80, banque: "cloche", echant: [60, 78], tess: [60, 77], mode: "tubes de métal frappés",
     texte: "Des tubes de métal suspendus, frappés d'un coup de maillet : ils imitent les cloches d'une église sans avoir besoin de leur poids." },
-  { id: "triangle", effectif: "1", visuels: 1, nom: "Triangle", fam: "percussions", rang: 4, g0: -60, g1: -36, banque: null, tess: null, mode: "métal frappé",
+  { id: "triangle", effectif: "1", visuels: 1, nom: "Triangle", fam: "percussions", rang: 4, g0: -60, g1: -36, banque: null, coup: { banque: "triangle", duree: 3.6 }, tess: null, mode: "métal frappé",
     texte: "Une tige d'acier pliée en triangle, suspendue à un cordon et frappée avec une petite baguette de métal. Un son aigu et clair, qui tinte longtemps si on le laisse vibrer. Sans hauteur précise." },
-  { id: "tambourBasque", effectif: "1", visuels: 1, nom: "Tambour de basque", fam: "percussions", rang: 4, g0: -36, g1: -12, banque: null, tess: null, mode: "peau tendue et cymbalettes",
+  { id: "tambourBasque", effectif: "1", visuels: 1, nom: "Tambour de basque", fam: "percussions", rang: 4, g0: -36, g1: -12, banque: null, coup: { banque: "tambour-basque", duree: 1.2 }, tess: null, mode: "peau tendue et cymbalettes",
     texte: "Un cadre de bois recouvert d'une peau, bordé de petites cymbalettes de métal : on le frappe avec la main ou on le secoue pour faire sonner les cymbalettes. Sans hauteur précise." },
   { id: "castagnettes", effectif: "1", visuels: 1, nom: "Castagnettes", fam: "percussions", rang: 4, g0: -12, g1: 12, banque: null, tess: null, mode: "bois entrechoqués",
     texte: "Deux petites coques de bois dur reliées par un cordon, que l'on fait claquer. Un claquement sec, qui évoque tout de suite l'Espagne. Sans hauteur précise." },
-  { id: "blocsChinois", effectif: "1", visuels: 1, nom: "Blocs chinois", fam: "percussions", rang: 4, g0: 12, g1: 36, banque: null, tess: null, mode: "blocs de bois frappés",
+  { id: "blocsChinois", effectif: "1", visuels: 1, nom: "Blocs chinois", fam: "percussions", rang: 4, g0: 12, g1: 36, banque: null, coup: { banque: "blocs-chinois", duree: 1.0, notes: [60, 67, 72, 77] }, tess: null, mode: "blocs de bois frappés",
     texte: "Des blocs de bois creux, de tailles différentes, alignés sur un support et frappés avec une baguette : un son sec et creux, d'autant plus grave que le bloc est grand. Sans hauteur précise." },
-  { id: "fouet", effectif: "1", visuels: 1, nom: "Fouet", fam: "percussions", rang: 4, g0: 36, g1: 60, banque: null, tess: null, mode: "bois claqués",
+  { id: "fouet", effectif: "1", visuels: 1, nom: "Fouet", fam: "percussions", rang: 4, g0: 36, g1: 60, banque: null, coup: { banque: "fouet", duree: 1.0 }, tess: null, mode: "bois claqués",
     texte: "Deux planchettes de bois articulées que l'on referme d'un coup sec : le claquement imite le bruit d'un fouet. Sans hauteur précise." },
 ];
 

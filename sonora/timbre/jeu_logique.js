@@ -1,5 +1,5 @@
 // TIMBRE : la logique du jeu, sans DOM (testée dans Node) : niveaux, questions, points, étoiles.
-import { alea } from "../orchestre/timbres_logique.js?v=c290510f98";
+import { alea } from "../orchestre/timbres_logique.js?v=8cbf4c1ddb";
 export { alea };
 
 export const MANCHES = 10;
@@ -16,6 +16,7 @@ export function melanger(liste, rnd) { const a = liste.slice(); for (let i = a.l
 
 // Une note jouable par l'instrument, au milieu de sa zone enregistrée (jamais aux extrêmes, où la transposition s'entend).
 export function noteDe(inst, niveau, rnd) {
+  if (inst.sansHauteur) return NOTE_COMMUNE;   // une percussion sans hauteur : jamais transposée
   if (niveau.note === "commune") { if (peut(inst, NOTE_COMMUNE)) return NOTE_COMMUNE; return Math.max(inst.echant[0], Math.min(inst.echant[1], NOTE_COMMUNE)); }
   const lo = Math.max(inst.echant[0] + 2, 40), hi = Math.min(inst.echant[1] - 2, 84), a = Math.min(lo, hi), b = Math.max(lo, hi);
   return a + Math.floor(rnd() * (b - a + 1));

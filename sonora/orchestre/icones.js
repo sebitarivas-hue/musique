@@ -66,12 +66,39 @@ const tambourBasque = () => C(50, 50, 40, BOIS, 2.2) + C(50, 50, 32, PEAU, 1.8) 
 const castagnettes = () => L(50, 8, 36, 40, 1.6) + L(50, 8, 66, 40, 1.6) + E(34, 62, 22, 24, BOIS, 2) + E(68, 66, 20, 22, BOIS2, 2) + C(34, 62, 4, NOIR, 1) + C(68, 66, 4, NOIR, 1);
 const blocsChinois = () => L(12, 24, 88, 24, 3.2) + [0, 1, 2, 3].map(i => E(22 + i * 19, 40, 9, 12 + i * 2, BOIS, 1.8)).join("") + L(50, 30, 38, 94, 2.4) + L(50, 30, 62, 94, 2.4) + L(50, 30, 50, 94, 2.4);
 const fouet = () => P("M10 56 L70 36 L74 46 L16 66 Z", BOIS, 2) + P("M12 70 L74 50 L78 60 L18 80 Z", BOIS2, 2) + C(14, 63, 3, OR2, 1.2);
+
+// Les instruments de TIMBRE qui n'ont pas de photo libre (scène et monde) : même charte que le plan de l'orchestre (20/11/2026).
+const ACIER = "#B9C2CF";
+function guitare(type) {   // tête en haut, corps en bas : électrique pleine, folk à rosace, jazz à ouïes en f, basse plus longue
+  const basse = type === "basse", elec = type === "elec" || basse, f = type === "folk";
+  const corps = elec ? "M50 52 C62 46 72 52 70 64 C69 70 76 74 76 84 C76 96 62 98 50 96 C38 98 24 96 24 84 C24 74 31 70 30 64 C28 52 38 46 50 52 Z" : "M50 46 C64 46 70 54 66 62 C62 68 66 72 72 78 C78 88 70 98 50 98 C30 98 22 88 28 78 C34 72 38 68 34 62 C30 54 36 46 50 46 Z";
+  let g = L(50, 4, 50, 58, basse ? 4.6 : 5.4, NOIR) + P("M44 3 L56 3 L55 14 L45 14 Z", elec ? NOIR : BOIS2, 1.8) + P(corps, elec ? (basse ? NOIR : ROUGE) : (f ? BOIS : BOIS2), 2.4);
+  if (elec) g += R(42, 66, 16, 5, ARGENT, 1) + R(42, 76, 16, 5, ARGENT, 1) + R(40, 88, 20, 3.4, ARGENT, 1);
+  else if (f) g += C(50, 72, 9, NOIR, 1.6) + R(40, 88, 20, 3.4, NOIR, 1);
+  else g += P("M38 70 C36 74 37 80 40 83", "none", 2) + P("M62 70 C64 74 63 80 60 83", "none", 2) + R(40, 88, 20, 3.4, NOIR, 1);
+  for (let i = 0; i < (basse ? 4 : 6); i++) g += L(basse ? 46.5 + i * 2.3 : 46 + i * 1.6, 12, basse ? 46.5 + i * 2.3 : 46 + i * 1.6, 90, 0.6, "#f3e7c6");
+  return g;
+}
+const piano = () => R(10, 14, 80, 34, NOIR, 3) + R(14, 20, 72, 22, "#3a3631", 2) + R(8, 52, 84, 8, NOIR, 2) + R(10, 60, 80, 24, PEAU, 1.5) + [0, 1, 2, 3, 4, 5, 6, 7].map(i => L(20 + i * 10, 60, 20 + i * 10, 84, 1.2)).join("") + [0, 1, 3, 4, 6, 7].map(i => R(16 + i * 10, 60, 7, 14, NOIR, 1)).join("") + L(16, 84, 14, 98, 4) + L(84, 84, 86, 98, 4);
+const clavecin = () => P("M10 44 C34 30 62 28 92 42 L92 62 L10 62 Z", BOIS2, 2.4) + R(10, 62, 82, 10, PEAU, 1.5) + [0, 1, 2, 3, 4, 5, 6, 7].map(i => L(20 + i * 9, 62, 20 + i * 9, 72, 1)).join("") + [1, 2, 4, 5, 7].map(i => R(16 + i * 9, 62, 5, 6, NOIR, 0.8)).join("") + L(16, 72, 14, 96, 4) + L(86, 72, 88, 96, 4) + L(24, 42, 80, 52, 1, "#f3e7c6");
+function orgue() { let s = R(8, 74, 84, 20, BOIS2, 3); for (let i = 0; i < 9; i++) { const h = 62 - Math.abs(4 - i) * 6, x = 11 + i * 9; s += R(x, 74 - h, 7, h, ARGENT, 1.6) + E(x + 3.5, 74 - h + 7, 2, 2.6, NOIR, 0.8); } return s + R(14, 80, 72, 8, PEAU, 1) + [0, 1, 2, 3, 4, 5].map(i => L(26 + i * 10, 80, 26 + i * 10, 88, 1)).join(""); }
+const djembe = () => E(50, 22, 28, 9, PEAU, 2.2) + P("M22 24 C22 46 38 52 38 70 L30 94 L70 94 L62 70 C62 52 78 46 78 24 C70 32 30 32 22 24 Z", BOIS, 2.4) + [0, 1, 2, 3, 4].map(i => L(26 + i * 12, 24, 40 + i * 5, 62, 1.2, ENC)).join("") + L(32, 76, 68, 76, 3.2, BOIS2) + L(34, 84, 66, 84, 3.2, BOIS2);
+function kalimba() { let s = R(22, 8, 56, 86, BOIS, 12) + C(50, 70, 9, NOIR, 1.8) + L(24, 34, 76, 34, 3, ENC); for (let i = 0; i < 7; i++) { const h = 26 + (3 - Math.abs(3 - i)) * 5; s += R(27 + i * 7.3, 34 - h, 4.2, h + 2, ACIER, 1); } return s; }
+const balafon = () => { let s = L(8, 20, 92, 20, 2.6); for (let i = 0; i < 8; i++) { const x = 11 + i * 10; s += C(x + 3.5, 66, 8 - i * 0.6, "#D8A64A", 1.6) + R(x, 22, 7, 38 - i * 2, BOIS, 1.5); } return s + L(8, 94, 92, 94, 2.4); };
+const marimba = () => { let s = ""; for (let i = 0; i < 9; i++) { const x = 9 + i * 9, t = 56 - i * 3.6; s += R(x + 0.5, 46, 6.4, t, "#d9b88f", 3); } for (let i = 0; i < 9; i++) { const x = 9 + i * 9, h = 36 - i * 2; s += R(x, 32 - 0, 7.4, 18 - i * 0.2, BOIS, 1.5) ; } return L(6, 30, 94, 30, 2.4) + s + L(10, 96, 90, 96, 2.4); };
+const vibraphone = () => { let s = ""; for (let i = 0; i < 9; i++) { const x = 9 + i * 9, t = 50 - i * 3; s += R(x + 0.5, 42, 6.4, t, "#d9dde3", 3) + R(x, 28, 7.4, 16, ARGENT, 1.5); } return L(6, 26, 94, 26, 2.4) + s + C(88, 90, 5, OR, 1.4) + L(10, 96, 84, 96, 2.4); };
+const glockenspiel = () => { let s = P("M6 26 L94 26 L84 80 L16 80 Z", "none", 2.6); for (let i = 0; i < 9; i++) { const x = 18 + i * 7.6, h = 44 - i * 2.6; s += R(x, 80 - h - 4, 6, h, ARGENT, 1.4); } return s + L(22, 8, 40, 36, 2.4) + C(21, 7, 3.4, ROUGE, 1.4); };
 const FABRIQUE = {
   violons1: () => cordeFrottee(0.9), violons2: () => cordeFrottee(0.9), altos: () => cordeFrottee(0.97), violoncelles: () => cordeFrottee(1.03, L(50, 94, 50, 100, 2.4)), contrebasses: () => cordeFrottee(1.07, L(50, 94, 50, 100, 2.4)),
   harpe, piccolo: () => flute(true), flutes: () => flute(false), hautbois: () => anche("hautbois"), corAnglais: () => anche("cor"), clarinettes: () => anche("clarinette"), clarinetteBasse: () => anche("basse"), bassons: basson,
   cors: cor, trompettes: trompette, trombones: trombone, tuba, timbales: timbale, caisseClaire, grosseCaisse, cymbales, tamTam: tamtam, xylophone, cloches, triangle, tambourBasque, castagnettes, blocsChinois, fouet
 };
+// Les dessins de TIMBRE (scène et monde) : ils ne sont pas dans le plan de l'orchestre, donc pas dans identifiants().
+const SUPPLEMENT = {
+  "guitare-elec": () => guitare("elec"), "guitare-jazz": () => guitare("jazz"), "guitare-folk": () => guitare("folk"), basse: () => guitare("basse"), piano, clavecin, orgue, djembe, kalimba, balafon, marimba, vibraphone, glockenspiel,
+};
 // Le dessin d'un instrument, à placer dans un <svg viewBox="0 0 100 100"> ou dans un groupe transformé.
-export function dessin(id) { const f = FABRIQUE[id]; return f ? f() : ""; }
+export function dessin(id) { const f = FABRIQUE[id] || SUPPLEMENT[id]; return f ? f() : ""; }
 export const identifiants = () => Object.keys(FABRIQUE);
+export const identifiantsTimbre = () => Object.keys(SUPPLEMENT);
 export const svgIcone = (id, taille, titre) => '<svg class="icone" viewBox="0 0 100 100" width="' + taille + '" height="' + taille + '" role="img" aria-label="' + (titre || id) + '">' + dessin(id) + "</svg>";

@@ -1,14 +1,14 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=c290510f98";
-import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=c290510f98";
-import { monterTimbres } from "./timbres.js?v=c290510f98";
-import { monterFugue } from "./fugue.js?v=c290510f98";
-import { monterBritten } from "./britten.js?v=c290510f98";
-import { monterVariations } from "./variations.js?v=c290510f98";
-import { svgIcone, dessin } from "./icones.js?v=c290510f98";
-import { PHOTOS } from "./photos.js?v=c290510f98";
-import { FICHES } from "./fiches.js?v=c290510f98";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=8cbf4c1ddb";
+import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=8cbf4c1ddb";
+import { monterTimbres } from "./timbres.js?v=8cbf4c1ddb";
+import { monterFugue } from "./fugue.js?v=8cbf4c1ddb";
+import { monterBritten } from "./britten.js?v=8cbf4c1ddb";
+import { monterVariations } from "./variations.js?v=8cbf4c1ddb";
+import { svgIcone, dessin } from "./icones.js?v=8cbf4c1ddb";
+import { PHOTOS } from "./photos.js?v=8cbf4c1ddb";
+import { FICHES } from "./fiches.js?v=8cbf4c1ddb";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -145,9 +145,12 @@ function fiche() {
   let h = '<div class="fiche-tete" style="--c:' + f.couleur + ";--p:" + f.pale + '"><div class="grand-icone">' + visuel(inst.id, 148, inst.nom) + '</div><div><span class="fam" style="--c:' + f.couleur + '">' + esc(f.court.toUpperCase()) + "</span><h3>" + esc(inst.nom) + '</h3><p class="effectif">Dans un grand orchestre : ' + esc(effectif) + "</p></div></div><p>" + esc(inst.texte) + "</p><dl><dt>Le son naît par</dt><dd>" + esc(inst.mode) + "</dd><dt>Tessiture</dt><dd>" + (inst.tess ? nomNote(inst.tess[0]) + " à " + nomNote(inst.tess[1]) : "sans hauteur précise") + "</dd><dt>Sur le plan</dt><dd>" + ["au premier rang, devant le chef", "au deuxième rang", "au troisième rang", "tout au fond", "sur le bord extérieur, avec les petites percussions"][inst.rang] + "</dd></dl>";
   h += sectionsFiche(inst, z);
   if (inst.tess) h += '<div style="--c:' + f.couleur + '">' + clavier(inst) + '</div><p class="legende">' + (z ? "Les touches actives font entendre l'instrument ; les touches grisées sont dans sa tessiture, mais hors de la zone enregistrée." : "") + "</p>";
-  h += '<div class="actions-fiche">' + (z ? '<button type="button" class="principal" id="gamme">Écouter une gamme</button><button type="button" id="stop">Arrêter</button>' : "") + "</div>";
-  if (!z) h += '<p class="sans-son" style="--c:' + f.couleur + '">Pas d\'enregistrement de cet instrument dans la banque du site : on ne le fait pas entendre ici plutôt que d\'imiter son timbre.</p>';
+  const coup = inst.coup;   // une percussion sans hauteur, enregistrée : un coup, ou la suite des blocs
+  h += '<div class="actions-fiche">' + (z ? '<button type="button" class="principal" id="gamme">Écouter une gamme</button><button type="button" id="stop">Arrêter</button>' : coup ? '<button type="button" class="principal" id="coup">Écouter un coup</button>' + (coup.notes ? '<button type="button" id="coups">Écouter les quatre blocs</button>' : "") + '<button type="button" id="stop">Arrêter</button>' : "") + "</div>";
+  if (!z && !coup) h += '<p class="sans-son" style="--c:' + f.couleur + '">Pas d\'enregistrement de cet instrument dans la banque du site : on ne le fait pas entendre ici plutôt que d\'imiter son timbre.</p>';
   el.innerHTML = h; brancherSections(inst, z);
+  if (coup) { const pseudo = { banque: coup.banque, nom: inst.nom, duree: coup.duree }; $("coup").onclick = () => jouer(pseudo, [60]); $("stop").onclick = () => { arreter(); message("prêt"); };
+    if (coup.notes) $("coups").onclick = () => jouer(pseudo, coup.notes, 0.3); return; }
   if (!z) return;
   $("gamme").onclick = () => jouer(inst, gamme(inst), 0.5); $("stop").onclick = () => { arreter(); message("prêt"); };
   const cl = $("clavier"); etat.note = gamme(inst)[0];

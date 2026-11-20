@@ -3,9 +3,9 @@
 // Aucune mélodie connue n'est écrite de mémoire. Les motifs avec hauteur sont écrits en do ; la tonalité choisie les transpose (la batterie n'est pas transposée).
 // Un motif dure une mesure : `temps` dit à combien de temps par mesure il est écrit (4 ou 3). Les notes sont en temps (1 = une noire), comme partout dans Pistes.
 // Sans DOM : testé dans Node (tests/motifs.test.js).
-import * as B from "./blocs.js?v=c290510f98";
-import * as P from "./projet.js?v=c290510f98";
-import { MORCEAUX } from "./compositeur.js?v=c290510f98";
+import * as B from "./blocs.js?v=8cbf4c1ddb";
+import * as P from "./projet.js?v=8cbf4c1ddb";
+import { MORCEAUX } from "./compositeur.js?v=8cbf4c1ddb";
 
 // Les notes de batterie (numéros généraux) : grosse caisse, caisse claire, baguette sur le cadre, charleston fermé et ouvert, claquement, tom, cloche à vache, cymbale
 const K = 36, S = 38, RIM = 37, HF = 42, HO = 46, CLAP = 39, TOM = 41, CRASH = 49;

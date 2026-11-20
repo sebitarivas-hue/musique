@@ -1,10 +1,11 @@
 // TIMBRE : la salle de jeux de l'oreille. Sept jeux (le septième, Le mot juste, sur le lexique de l'Atlas), de vrais enregistrements de la banque du site, des questions tirées au hasard à chaque partie
 // (deux élèves côte à côte n'ont jamais la même série). La logique pure est dans jeu_logique.js, testée dans Node.
-import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=c290510f98";
-import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=c290510f98";
-import { preparer, mixer } from "../harmonie/echantillons.js?v=c290510f98";
+import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=8cbf4c1ddb";
+import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=8cbf4c1ddb";
+import { preparer, mixer } from "../harmonie/echantillons.js?v=8cbf4c1ddb";
 import { monter } from "./scene.js?v=20261117c";
-import { questionsMots } from "./quiz_logique.js?v=c290510f98";
+import { questionsMots } from "./quiz_logique.js?v=8cbf4c1ddb";
+import { dessin } from "../orchestre/icones.js?v=8cbf4c1ddb";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -103,7 +104,11 @@ function ancrer() {
     App.raf3d = requestAnimationFrame(tic); };
   tic();
 }
-const couleurDe = id => parUnivers(TOUS.find(t => t.id === id).univers).couleurs[0], photoUrl = i => i.photo ? "../orchestre/photos/" + i.photo : null;
+const couleurDe = id => parUnivers(TOUS.find(t => t.id === id).univers).couleurs[0];
+/* L'image d'un instrument : sa photo libre si elle existe, sinon son dessin de l'orchestre (les mêmes dessins que sur le plan), jamais une simple lettre. */
+const imageInst = i => { if (i.photo) return "../orchestre/photos/" + i.photo; const d = dessin(i.id); if (!d) return null;
+  return "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="200" height="200">' + d + "</svg>").replace(/[()']/g, c => "%" + c.charCodeAt(0).toString(16)); };
+const photoUrl = imageInst;
 
 /* ---------- L'application ---------- */
 const App = { ecran: "accueil", id: 0, mode: null, etat: "", q: null, score: 0, relance: null, st: null };
@@ -177,7 +182,7 @@ function verdict(ok, titre, corps, bouton, suite) {
   const moi = App.id, aller = () => { clearTimeout(App.auto); if (moi !== App.id) return; v.hidden = true; $("ecran-partie").classList.remove("repondu"); suite(); };
   $("suite").onclick = aller; $("suite").focus({ preventScroll: true }); return aller;
 }
-const photoDe = i => i.photo ? `<img src="../orchestre/photos/${esc(i.photo)}" alt="">` : "";
+const photoDe = i => { const u = imageInst(i); return u ? `<img src="${esc(u)}" alt="">` : ""; };
 
 /* ---------- Jeu 1 et jeu 2 : Qui joue ? et Survie ---------- */
 function jeuQuiz({ survie, univers, niveau }) {
@@ -379,7 +384,7 @@ function terminer({ cle, etoiles = null, cleEtoiles = null, detail, retenir = []
   $("fin-actions").innerHTML = `<button type="button" class="btn plein" id="rejouer">Rejouer</button>${suivant && niveauOuvert(j.etoiles, univers.id, niveau.n + 1) ? '<button type="button" class="btn plein sombre" id="niv-suivant">Niveau suivant</button>' : ""}<button type="button" class="btn plein sombre" id="autre">Un autre jeu</button>`;
   $("rejouer").onclick = () => App.relance(); if ($("niv-suivant")) $("niv-suivant").onclick = suivant; $("autre").onclick = () => accueil(m.id);
   const rates = [...new Set(retenir)].map(inst);
-  $("fin-retenir").innerHTML = rates.length ? `<h3>À retenir</h3>` + rates.map(i => `<div class="retenir">${i.photo ? photoDe(i) : '<div class="ph"></div>'}<div><b>${esc(i.nom)}</b><span>${esc(i.fait)}</span></div></div>`).join("") : "";
+  $("fin-retenir").innerHTML = rates.length ? `<h3>À retenir</h3>` + rates.map(i => `<div class="retenir">${imageInst(i) ? photoDe(i) : '<div class="ph"></div>'}<div><b>${esc(i.nom)}</b><span>${esc(i.fait)}</span></div></div>`).join("") : "";
   montrer("fin"); majJoueur();
   // Le score défile, la barre de niveau avance, et un record ou un niveau gagné déclenche la fête.
   const t0 = performance.now(), el = $("fin-score"), compte = t => { const u = Math.min(1, (t - t0) / 900); el.textContent = Math.round(score * (1 - Math.pow(1 - u, 3))); if (u < 1 && App.ecran === "fin") requestAnimationFrame(compte); else el.textContent = score; }; requestAnimationFrame(compte);
@@ -392,7 +397,7 @@ function collection() {
   teinte("#ffc400"); document.body.classList.add("en-jeu"); const j = lire(), n = TOUS.filter(i => j.vus[i.id]).length, ma = TOUS.filter(i => (j.vus[i.id] || 0) >= MAITRISE).length;
   $("collection-bilan").textContent = `${n} instrument${n > 1 ? "s" : ""} sur ${TOUS.length}, dont ${ma} acquis. Reconnais un instrument dans un jeu pour le faire entrer ici ; cinq fois, et il est acquis.`;
   $("collection").innerHTML = UNIVERS.map(u => u.instruments.map(i => { const v = j.vus[i.id] || 0;
-    return v ? `<div class="fiche${v >= MAITRISE ? " maitre" : ""}"><div class="im"${i.photo ? ` style="background-image:url(../orchestre/photos/${esc(i.photo)})"` : ""}>${i.photo ? "" : esc(i.nom[0])}</div><b>${esc(i.nom)}</b><div class="j" role="img" aria-label="Reconnu ${v} fois"><i style="width:${Math.min(100, v / MAITRISE * 100)}%"></i></div><p>${esc(i.fait)}</p></div>`
+    return v ? `<div class="fiche${v >= MAITRISE ? " maitre" : ""}"><div class="im"${imageInst(i) ? ` style="background-image:url(${esc(imageInst(i))})"` : ""}>${imageInst(i) ? "" : esc(i.nom[0])}</div><b>${esc(i.nom)}</b><div class="j" role="img" aria-label="Reconnu ${v} fois"><i style="width:${Math.min(100, v / MAITRISE * 100)}%"></i></div><p>${esc(i.fait)}</p></div>`
       : `<div class="fiche fermee"><div class="im">?</div><b>À découvrir</b><p>${esc(u.nom)}</p></div>`; }).join("")).join("");
   montrer("collection");
 }

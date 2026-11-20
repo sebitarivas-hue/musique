@@ -1,8 +1,8 @@
 // TIMBRE : les instruments du jeu, rangés en trois univers. Tout est de vrais enregistrements de la banque du site (domaine public, voir outils/banque_*.py) :
 // on ne fait jamais deviner un son qui n'existe pas. Hauteurs en numéros MIDI (60 = do4). `echant` : la zone enregistrée dans la banque (catalogue.json).
 // Le nom du jeu est ici et nulle part ailleurs : un seul endroit à changer.
-import { INSTRUMENTS, FAMILLES } from "../orchestre/donnees.js?v=c290510f98";
-import { PHOTOS } from "../orchestre/photos.js?v=c290510f98";
+import { INSTRUMENTS, FAMILLES } from "../orchestre/donnees.js?v=8cbf4c1ddb";
+import { PHOTOS } from "../orchestre/photos.js?v=8cbf4c1ddb";
 
 export const NOM_JEU = "TIMBRE";
 export const DEVISE = "Écoute. Devine. Monte de niveau.";
@@ -10,9 +10,9 @@ export const DEVISE = "Écoute. Devine. Monte de niveau.";
 const premiereP = t => { const m = /^[^.!?]*[.!?]/.exec(t || ""); return (m ? m[0] : t || "").trim(); };
 const nomOrchestre = i => (i.id === "violons1" ? "Violons" : i.nom);
 
-// Orchestre : tous les instruments du plan qui ont un enregistrement (les seconds violons ont le même son que les premiers).
-const ORCHESTRE = INSTRUMENTS.filter(i => i.banque && i.id !== "violons2").map(i => ({
-  id: i.id, nom: nomOrchestre(i), groupe: i.fam, banque: i.banque, echant: i.echant, photo: PHOTOS[i.id] ? PHOTOS[i.id].f : null,
+// Orchestre : tous les instruments du plan qui ont un enregistrement (les seconds violons ont le même son que les premiers). Les percussions sans hauteur jouent toujours do4, sans transposition (`sansHauteur`).
+const ORCHESTRE = INSTRUMENTS.filter(i => (i.banque || i.coup) && i.id !== "violons2").map(i => ({
+  id: i.id, nom: nomOrchestre(i), groupe: i.fam, banque: i.banque || i.coup.banque, echant: i.echant || [60, 60], sansHauteur: !!i.coup, photo: PHOTOS[i.id] ? PHOTOS[i.id].f : null,
   fait: `${premiereP(i.texte)} ${i.mode ? "On le joue avec : " + i.mode + "." : ""}`.trim() }));
 
 const SCENE = [

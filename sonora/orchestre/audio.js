@@ -1,7 +1,7 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=c290510f98";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=c290510f98";
+import { nomNote } from "./donnees.js?v=8cbf4c1ddb";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=8cbf4c1ddb";
 
 let ctx = null, sources = [];
 export function message(t) { const e = document.getElementById("etat"); if (e) e.textContent = t; }
@@ -12,8 +12,8 @@ export function arreter() { for (const s of sources) { try { s.stop(); } catch (
 export async function rendre(inst, notes, pas) {
   if (!inst.banque || !notes.length) return null;
   const c = contexte(), tampons = await preparer(inst.banque, c); if (!tampons) return null;
-  const ev = notes.map((m, i) => ({ t: i * (pas || 0), duree: pas ? pas * 0.9 : 1.8, notes: [m], vitesse: 0.8 }));
-  const lr = mixer(ev, tampons, { sr: c.sampleRate, instrument: inst.banque, duree: ev[ev.length - 1].t + (pas ? 0.8 : 2.4) });
+  const tenue = inst.duree || 1.8, ev = notes.map((m, i) => ({ t: i * (pas || 0), duree: pas ? pas * 0.9 : tenue, notes: [m], vitesse: 0.8 }));   // inst.duree : un coup de tam-tam sonne plus longtemps qu'une note
+  const lr = mixer(ev, tampons, { sr: c.sampleRate, instrument: inst.banque, duree: ev[ev.length - 1].t + (pas ? 0.8 + (inst.duree || 0) * 0.5 : tenue + 0.6) });
   const buf = c.createBuffer(2, lr[0].length, c.sampleRate); buf.copyToChannel(lr[0], 0); buf.copyToChannel(lr[1], 1); return buf;
 }
 // Les voix d'une fugue : chaque voix est rendue avec son instrument (evenements en secondes), puis les voix sont additionnées dans un seul tampon, sans écrêtage.
