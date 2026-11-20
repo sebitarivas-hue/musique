@@ -2,3 +2,4 @@ Compilateur Pure Data pour le navigateur : WebPd 1.0.0-alpha.14 (https://github.
 Le fichier webpd.js est fabriqué par outils/pd/construire.sh à partir du paquet npm, sans modification du code de WebPd (regroupé en un seul fichier).
 WebPd est en version alpha : il ne gère qu'une partie des objets de Pure Data (osc~, phasor~, noise~, lop~, hip~, vcf~, line~, delwrite~, metro, mtof, expr...).
 Il est chargé seulement quand on utilise Pure Data dans SONORA Pistes (panneau « Faust, Csound et Pure Data »).
+Texte de la LGPL 3 : LICENCE-webpd-LGPL-3.0.txt. LICENCE-webpd.txt est le texte de la GPL 3, que la LGPL 3 incorpore par renvoi (les deux sont fournis, comme dans le dépôt de WebPd : COPYING et COPYING.LESSER).
