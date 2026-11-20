@@ -4,7 +4,7 @@
 // inclinaison d'axe et leur propre orbite elliptique inclinée autour du soleil (excentricité et inclinaison d'après les vraies, les distances sont resserrées).
 // Le soleil remplace la flamme : éteint tant qu'on n'a pas joué aujourd'hui, de plus en plus brillant au fil des parties, remis à zéro à minuit (donnees.soleil.eclat, de 0 à 1).
 // La caméra vole, plonge vers la planète touchée ; les étiquettes sont de vrais boutons HTML (clavier, lecteur d'écran). Three.js (licence MIT) est dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=8cbf4c1ddb";
+import * as T from "./vendor/three.module.min.js?v=f6dfc9df61";
 
 const alea = graine => { let s = graine >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; };
 const bornes = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -146,7 +146,7 @@ export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, 
 
   // ---------- les orbites : une par corps, chacune dans son plan incliné, elliptique, le soleil au foyer ----------
   const liste = donnees.planetes.map(d => ({ d, corps: ATTRIBUTION[d.id] || "mercure" })).sort((a, b) => ORDRE.indexOf(a.corps) - ORDRE.indexOf(b.corps)), P = [], hits = [];
-  const demiAxe = i => 3.7 + i * .9, ecc = k => Math.min(.17, CORPS[k].e * .8), aph = Math.max(...liste.map((x, i) => demiAxe(i) * (1 + ecc(x.corps))));
+  const demiAxe = i => 4 + i * 1.3, ecc = k => Math.min(.17, CORPS[k].e * .8), aph = Math.max(...liste.map((x, i) => demiAxe(i) * (1 + ecc(x.corps))));
   const ceinture = (a, largeur, n, taille, couleur, graine, haut) => { const g = new T.IcosahedronGeometry(taille, 0), im = new T.InstancedMesh(g, new T.MeshStandardMaterial({ color: couleur, roughness: .95 }), n), r = alea(graine), o = new T.Object3D();
     for (let i = 0; i < n; i++) { const an = r() * 6.283, rr = a + (r() - .5) * largeur; o.position.set(Math.cos(an) * rr, (r() - .5) * haut, Math.sin(an) * rr); o.rotation.set(r() * 6, r() * 6, 0); o.scale.setScalar(.5 + r() * 1.5); o.updateMatrix(); im.setMatrixAt(i, o.matrix); } const gr = new T.Group(); gr.add(im); monde.add(gr); return gr; };
   const iCeres = liste.findIndex(x => x.corps === "ceres"), belt = iCeres >= 0 ? ceinture(demiAxe(iCeres), .9, 380, .06, 0x8a8f99, 41, .3) : null, kuiper = ceinture(aph + 1.2, 1.6, 300, .05, 0x7e8ea8, 43, .8);
@@ -184,6 +184,53 @@ export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, 
       if (p.lunes.length) { lunePt = lunePt || tex(PEINTURE.lune(256, 128).cv); p.lunes.forEach(l => { l.mat.map = lunePt; l.mat.needsUpdate = true; }); }
     } catch (_) {} } })();
 
+  // ---------- la navette : elle vole jusqu'à la planète touchée et se pose sur sa face visible ; elle redécolle quand on en sort ----------
+  const _pw = new T.Vector3(), _l = new T.Vector3(), _p0 = new T.Vector3(), _p1 = new T.Vector3(), _o = new T.Object3D();
+  const navette = (() => {
+    const g = new T.Group(), blanc = new T.MeshStandardMaterial({ color: 0xf1f3f7, roughness: .45, metalness: .1 }), gris = new T.MeshStandardMaterial({ color: 0xcfd5de, roughness: .5, side: T.DoubleSide }), noir = new T.MeshStandardMaterial({ color: 0x23262f, roughness: .6 }),
+      vitre = new T.MeshStandardMaterial({ color: 0x4aa8ff, roughness: .15, metalness: .5, emissive: 0x0b3a77, emissiveIntensity: .8 }), rouge = new T.MeshStandardMaterial({ color: 0xff4d3d, roughness: .5 });
+    const tri = (pts, mat) => { const geo = new T.BufferGeometry(); geo.setAttribute("position", new T.BufferAttribute(new Float32Array(pts.flat()), 3)); geo.computeVertexNormals(); return new T.Mesh(geo, mat); };
+    const fus = new T.Mesh(new T.CylinderGeometry(.075, .095, .9, 14), blanc); fus.rotation.x = Math.PI / 2; g.add(fus);
+    const nez = new T.Mesh(new T.ConeGeometry(.075, .34, 14), noir); nez.rotation.x = Math.PI / 2; nez.position.z = .62; g.add(nez);
+    const cab = new T.Mesh(new T.SphereGeometry(.06, 12, 8), vitre); cab.scale.set(1, .7, 1.6); cab.position.set(0, .07, .34); g.add(cab);
+    g.add(tri([[-.07, 0, .26], [-.62, -.02, -.4], [-.07, 0, -.4]], gris), tri([[.07, 0, .26], [.07, 0, -.4], [.62, -.02, -.4]], gris));
+    g.add(tri([[0, .08, -.08], [0, .42, -.44], [0, .08, -.44]], blanc)); const bande = new T.Mesh(new T.BoxGeometry(.012, .05, .3), rouge); bande.position.set(0, .3, -.3); g.add(bande);
+    const flammes = []; for (const [x, y] of [[0, .02], [-.05, -.04], [.05, -.04]]) { const mot = new T.Mesh(new T.CylinderGeometry(.03, .04, .12, 8), noir); mot.rotation.x = Math.PI / 2; mot.position.set(x, y, -.5); g.add(mot);
+      const fl = new T.Mesh(new T.ConeGeometry(.035, .4, 8), new T.MeshBasicMaterial({ color: 0xffa640, transparent: true, opacity: .9, blending: T.AdditiveBlending, depthWrite: false, toneMapped: false })); fl.rotation.x = -Math.PI / 2; fl.position.set(x, y, -.72); g.add(fl); flammes.push(fl); }
+    const halo = lueur(0xffa040, 1.1, .9); halo.position.z = -.8; halo.material.fog = false; g.add(halo);
+    const balise = lueur(0xff3a3a, .35, 1); balise.position.set(0, .46, -.44); balise.material.fog = false; g.add(balise);
+    g.visible = false; scene.add(g); return { g, flammes, halo, balise };
+  })();
+  const nav = { etat: "cache", t: 0, dur: 2.8, cible: null, start: new T.Vector3(), n: new T.Vector3(), side: new T.Vector3(), qFin: new T.Quaternion() };
+  const doux = x => { x = bornes(x, 0, 1); return x * x * (3 - 2 * x); };
+  function navAller(p) {
+    if (nav.cible === p && nav.etat !== "cache" && nav.etat !== "decolle") return;
+    p.grp.getWorldPosition(_pw); const y = but.yaw, c = but.pitch, R = p.rayon;
+    nav.n.set(Math.sin(y) * Math.cos(c), Math.sin(c) + .3, Math.cos(y) * Math.cos(c)).normalize(); nav.side.set(Math.cos(y), 0, -Math.sin(y));
+    if (nav.etat === "cache") nav.start.copy(_pw).addScaledVector(nav.n, R * 7).addScaledVector(nav.side, -R * 6).add(_l.set(0, R * 1.5, 0)); else nav.start.copy(navette.g.position);
+    const yy = nav.n.clone(), z = nav.side.clone().addScaledVector(yy, -nav.side.dot(yy)).normalize(); nav.qFin.setFromRotationMatrix(new T.Matrix4().makeBasis(new T.Vector3().crossVectors(yy, z), yy, z));
+    nav.cible = p; nav.t = reduit ? nav.dur : 0; nav.dur = 2.8; nav.etat = "approche"; navette.g.visible = true;
+  }
+  function navPartir() { if (nav.etat === "cache" || nav.etat === "decolle") return; nav.start.copy(navette.g.position); nav.t = 0; nav.dur = 1.4; nav.etat = reduit ? "cache" : "decolle"; if (reduit) navette.g.visible = false; }
+  function navImage(dt, s) {
+    if (nav.etat === "cache") return; const p = nav.cible, g = navette.g; nav.t += dt; p.grp.getWorldPosition(_pw); const R = p.rayon, taille = bornes(R * .5, .3, .75);
+    const chemin = (e, sortie) => { sortie.lerpVectors(nav.start, _l.copy(_pw).addScaledVector(nav.n, R * 1.14), e); const arc = Math.sin(Math.PI * e); sortie.addScaledVector(nav.side, arc * R * 2.4 * (1 - e * .3)); sortie.y += arc * R * 1.2; return sortie; };
+    if (nav.etat === "approche") {
+      const u = bornes(nav.t / nav.dur, 0, 1), e = doux(u); chemin(e, _p0); chemin(Math.min(1, e + .03), _p1); g.position.copy(_p0);
+      if (_p1.distanceToSquared(_p0) > 1e-8) { _o.position.copy(_p0); _o.lookAt(_p1); g.quaternion.copy(_o.quaternion).slerp(nav.qFin, doux((e - .7) / .3)); } else g.quaternion.copy(nav.qFin);
+      g.scale.setScalar(taille * (1 + 1.4 * (1 - e) * (1 - e))); const vol = u < 1; navette.flammes.forEach((f, i) => { f.visible = vol; f.scale.set(1, 1 + .35 * Math.sin(s * 38 + i * 2), 1); }); navette.halo.visible = vol;
+      if (u >= 1) nav.etat = "pose";
+    } else if (nav.etat === "pose") {
+      g.position.copy(_pw).addScaledVector(nav.n, R * 1.14); g.quaternion.copy(nav.qFin);   // la planète choisie grossit de 10 % : la navette se pose sur sa surface agrandie g.scale.setScalar(taille); navette.flammes.forEach(f => { f.visible = false; }); navette.halo.visible = false;
+    } else {   // décollage : elle s'élève, penche le nez vers le large et rapetisse
+      const u = bornes(nav.t / nav.dur, 0, 1), e = u * u; _p0.copy(nav.start).addScaledVector(nav.n, R * 7 * e).addScaledVector(nav.side, R * 2.2 * e); g.position.copy(_p0);
+      _p1.copy(nav.n).addScaledVector(nav.side, .5 + e).add(_p0); _o.position.copy(_p0); _o.lookAt(_p1); g.quaternion.slerp(_o.quaternion, .15); g.scale.setScalar(taille * (1 - .8 * u));
+      navette.flammes.forEach((f, i) => { f.visible = true; f.scale.set(1, 1.3 + .4 * Math.sin(s * 38 + i * 2), 1); }); navette.halo.visible = true;
+      if (u >= 1) { nav.etat = "cache"; g.visible = false; }
+    }
+    navette.balise.material.opacity = .25 + .75 * Math.max(0, Math.sin(s * 5));
+  }
+
   // ---------- la caméra : on vole autour de la cible ----------
   const vu = new T.Vector3(), cibleT = new T.Vector3(); let decal = 0, focus = null, pauseJusqua = 0, raf = 0, glisse = null, depart = null, D0 = 6 + .9 * aph;
   const etat = { yaw: .3, pitch: .62, dist: D0 * 2.4, tx: 0, ty: 0, tz: 0 }, but = { yaw: .3, pitch: .62, dist: D0, tx: 0, ty: 0, tz: 0, zoom: 1 }, para = { x: 0, y: 0 };
@@ -192,8 +239,8 @@ export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, 
     D0 = Math.max(6 + .9 * aph, aph * .68 / (Math.tan(26 * RAD) * Math.min(1, cam.aspect))); if (!focus) but.dist = D0 / but.zoom; if (reduit) image(performance.now()); }  // tout le système tient dans l'écran, même en portrait
   taille(); addEventListener("resize", taille); const suivi = typeof ResizeObserver === "function" ? new ResizeObserver(taille) : null; if (suivi) suivi.observe(canvas);
   const pause = () => { pauseJusqua = performance.now() + 2500; };
-  function choisir(id) { focus = id; P.forEach(p => p.bouton.setAttribute("aria-pressed", String(p.d.id === id))); const p = P.find(x => x.d.id === id); if (p) but.dist = p.rayon * 6 + 3; onChoix(id); if (reduit) image(performance.now()); }
-  function retour() { const etait = focus; focus = null; P.forEach(p => p.bouton.setAttribute("aria-pressed", "false")); but.dist = D0 / but.zoom; if (etait) onRetour(); if (reduit) image(performance.now()); }
+  function choisir(id) { focus = id; P.forEach(p => p.bouton.setAttribute("aria-pressed", String(p.d.id === id))); const p = P.find(x => x.d.id === id); if (p) { but.dist = p.rayon * 6 + 3; navAller(p); } onChoix(id); if (reduit) image(performance.now()); }
+  function retour() { const etait = focus; focus = null; navPartir(); P.forEach(p => p.bouton.setAttribute("aria-pressed", "false")); but.dist = D0 / but.zoom; if (etait) onRetour(); if (reduit) image(performance.now()); }
   const ray = new T.Raycaster(), ptr = new T.Vector2();
   conteneur.parentElement.addEventListener("pointermove", e => { pause(); const r = canvas.getBoundingClientRect(); para.x = ((e.clientX - r.left) / r.width - .5) * 2; para.y = ((e.clientY - r.top) / r.height - .5) * 2; });
   conteneur.parentElement.addEventListener("pointerdown", pause); conteneur.addEventListener("focusin", pause);
@@ -214,6 +261,7 @@ export function monterGalaxie(canvas, conteneur, donnees, { onChoix = () => {}, 
     cam.position.set(etat.tx + Math.sin(yaw) * Math.cos(pitch) * D, etat.ty + Math.sin(pitch) * D + (reduit || enPause ? 0 : Math.sin(s * .4) * .25), etat.tz + Math.cos(yaw) * Math.cos(pitch) * D); cam.lookAt(etat.tx, etat.ty, etat.tz);
     coeur.rotation.y = s * .05; peau.rotation.y = -s * .08; rayons.quaternion.copy(cam.quaternion); rayons.rotateZ(s * .03);
     if (eclat > .05) halos[0].material.opacity = halos[0].userData.base * (.93 + .07 * Math.sin(s * 1.9));
+    navImage(dt, s);
     if (belt) belt.rotation.y = s * .012; kuiper.rotation.y = s * .004;
     P.forEach(p => { if (!enPause) p.M += p.vit * dt; let E = p.M; for (let q = 0; q < 4; q++) E = p.M + p.e * Math.sin(E); p.grp.position.set(p.a * (Math.cos(E) - p.e), 0, p.b * Math.sin(E));   // plus vite au plus près du soleil
       p.corpsMesh.rotation.y += dt * p.rotation; if (p.nuages) p.nuages.rotation.y += dt * p.rotation * 1.25;
