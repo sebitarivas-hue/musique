@@ -1,4 +1,7 @@
-// Musique stellaire : un drone qui respire, un chœur d'argent, des granulations aiguës, un vent solaire, un pulsar, une grande salle.
+// Musique stellaire : un drone qui respire, un chœur d'argent, des granulations aiguës, un vent solaire, un pulsar, une petite mélodie de boîte à musique, une grande salle.
+// 20/11/2026 (retour de Sébastien : « un peu trop simple, toujours le même, ça monte et ça descend, et ça fait peur à certains élèves ») : tout est plus doux et plus varié.
+// Plus doux : la racine est montée d'une octave (moins de sous-grave), plus de modes sombres ni de septième harmonique, un vent plus rond, un pulsar à attaque douce, des cloches inharmoniques moins fortes.
+// Plus varié : une progression de huit degrés au lieu de quatre, trois parties de soixante secondes qui changent la densité, une petite mélodie à trois voix dans le mode, des gouttes un peu plus nombreuses.
 // La page n'envoie que trois choses : l'éclat du soleil (0 braise, 1 plein feu), la racine et le mode de la planète regardée.
 import("stdfaust.lib");
 
@@ -24,41 +27,44 @@ pulsR = T(1, 2.2, 0.5, 1, 1.4, 0.35, 0.7, 0.45, 0.4, 0.15, 1.8, 0.6, 0.8, 1.2);
 
 // ---------- Harmonie : six modes en rapports justes, sept degrés chacun ----------
 echelle(0) = (1, 9/8, 5/4, 3/2, 15/8, 2, 9/4);      // lydien clair
-echelle(1) = (1, 9/8, 6/5, 3/2, 8/5, 2, 9/4);       // éolien
-echelle(2) = (1, 16/15, 6/5, 3/2, 8/5, 2, 32/15);   // phrygien sombre
+echelle(1) = (1, 9/8, 6/5, 3/2, 5/3, 2, 9/4);       // dorien, doux
+echelle(2) = (1, 9/8, 5/4, 3/2, 5/3, 2, 9/4);       // pentatonique majeur, lumineux
 echelle(3) = (1, 9/8, 4/3, 3/2, 27/16, 2, 9/4);     // pentatonique ouvert, sans tierce
-echelle(4) = (1, 9/8, 5/4, 11/8, 3/2, 7/4, 2);      // acoustique
-echelle(5) = (1, 8/7, 4/3, 3/2, 12/7, 2, 16/7);     // septième harmonique
+echelle(4) = (1, 9/8, 5/4, 3/2, 5/3, 16/9, 2);      // mixolydien, chaleureux
+echelle(5) = (1, 9/8, 5/4, 3/2, 27/16, 15/8, 2);    // lydien ouvert
 choisir(i, m) = ba.selectn(7, i, echelle(m));
 deg(m, i) = ba.selectn(6, m, choisir(i, 0), choisir(i, 1), choisir(i, 2), choisir(i, 3), choisir(i, 4), choisir(i, 5));
 
-// l'accord de fond se déplace très lentement : quatre degrés tenus environ 38 s chacun, glissant de l'un à l'autre en sept secondes
-mouv = os.lf_sawpos(1 / 152) * 4 : int;
-degres = ba.selectn(4, mouv, 0, 3, 1, 4);
-rac = racine * (deg(mode, degres) : si.smooth(ba.tau2pole(7)));
+// le fond se déplace lentement : huit degrés tenus environ 30 s chacun, glissant de l'un à l'autre en cinq secondes ; la racine est d'une octave plus haut qu'avant
+mouv = os.lf_sawpos(1 / 240) * 8 : int;
+degres = ba.selectn(8, mouv, 0, 2, 4, 1, 3, 5, 2, 4);
+rac = racine * 2 * (deg(mode, degres) : si.smooth(ba.tau2pole(5)));
+// trois parties de soixante secondes : une calme, une moyenne, une plus animée ; elles règlent la densité des gouttes et de la mélodie
+partie = os.lf_sawpos(1 / 180) * 3 : int;
+vie = ba.selectn(3, partie, .55, 1, 1.5) : si.smooth(ba.tau2pole(6));
 
 // ---------- 1. Le drone : trois couches ----------
-sous = subG * (os.osc(rac * .5) * .55 + os.osc(rac) * .35) * (.8 + .2 * os.osc(.05));
+sous = subG * (os.osc(rac * .5) * .16 + os.osc(rac) * .4) * (.8 + .2 * os.osc(.05));
 dents(f, i) = os.sawtooth(f * (1 + large * ba.take(i + 1, (-.0042, -.0021, -.0008, 0, .0011, .0023, .0044))));
 corps(f) = par(i, 7, dents(f, i)) :> /(7);
 coupure = (180 + 1700 * eclat + 400 * (no.lfnoise(.09) * .5 + .5)) * bril;
-couche(f) = corps(f) : fi.resonlp(min(coupure, 9000), .9, 1);
-cor = (couche(rac) * .5 + couche(rac * 1.5) * .3 + couche(rac * 2) * .22) : fi.lowpass(2, 5000);
+couche(f) = corps(f) : fi.resonlp(min(coupure, 6000), .5, 1);
+cor = (couche(rac) * .4 + couche(rac * 1.5) * .26 + couche(rac * 2) * .2) : fi.lowpass(2, 3200);
 // l'orgue : douze partiels, chacun avec sa respiration (périodes de 17 à 61 s) ; le soleil en ouvre de plus en plus
 ouvert(k) = max(0, min(1, 3 + 9 * eclat - k));
 partiel(k) = os.osc(rac * (k + 1) * (1 + .0007 * no.lfnoise(.07 + k * .003))) * (1 / ((k + 1) ^ 1.05))
-   * (.5 + .5 * os.osc(1 / (17 + 2.9 * k))) * ouvert(k);
+   * (.68 + .32 * os.osc(1 / (17 + 2.9 * k))) * ouvert(k);
 orgue = par(k, 12, partiel(k)) :> *(.46);
-drone = (sous + cor * .9 + orgue) * (.55 + .45 * eclat) * .26;
+drone = (sous + cor * .7 + orgue) * (.55 + .45 * eclat) * .27;
 
 // ---------- 2. Le chœur d'argent : trois sinus qui battent, deux octaves plus haut ----------
 voixArgent(i) = (os.osc(f) + os.osc(f * (1 + .0021 * large)) * .8 + os.osc(f * (1 - .0022 * large)) * .8) / 2.6 * (.5 + .5 * os.osc(.031 + .007 * i))
-   with { f = rac * ba.take(i + 1, (1, 3/2, 2, 3, 4, 6)) * 4; };
+   with { f = rac * ba.take(i + 1, (1, 3/2, 2, 3, 4, 6)) * 2; };
 argent = par(i, 6, voixArgent(i)) :> *(.1 * (.15 + .85 * eclat));
 
 // ---------- 3. Le vent solaire : bruit rose en bande étroite qui glisse ----------
-vent = no.pink_noise : fi.resonbp(min(12000, (300 + 2800 * (no.lfnoise(.13) * .5 + .5) * (.4 + eclat)) * ventF), 6, 1)
-   * (.5 + .5 * no.lfnoise(.2)) * (.3 + 1.2 * eclat) * ventG;
+vent = no.pink_noise : fi.resonbp(min(9000, (260 + 1800 * (no.lfnoise(.13) * .5 + .5) * (.4 + eclat)) * ventF), 1.6, 1)
+   * (.6 + .4 * no.lfnoise(.2)) * (.25 + .6 * eclat) * ventG * .55;
 
 // ---------- 4. La granulation ----------
 // (a) des gouttes : un grain de sinus (enveloppe en cloche) sur un partiel aigu de l'accord, tiré au hasard, posé au hasard dans l'espace
@@ -68,10 +74,10 @@ NG = 7;
 alea(n, j) = no.noises(4 * n, j) * .5 + .5;
 grain(i) = os.osc(fg) * env * env * (.4 + .6 * tire(2)) <: (*(1 - p), *(p))
  with {
-   taux = (.4 + 9 * eclat * eclat + 2 * eclat) * (.6 + .8 * (no.lfnoise(.05) * .5 + .5)) * dens;
+   taux = (.5 + 9 * eclat * eclat + 2.5 * eclat) * (.6 + .8 * (no.lfnoise(.05) * .5 + .5)) * dens * vie;
    dec = abs(no.noises(4 * NG, 4 * i + 3)) < (taux / ma.SR);
    tire(j) = ba.sAndH(dec, alea(NG, 4 * i + j));
-   fg = rac * ba.selectn(7, int(tire(0) * 6.99), degAll) * (2 ^ int(3 + 2 * tire(1) * .999)) * 2 * reg : min(15000);
+   fg = rac * ba.selectn(7, int(tire(0) * 6.99), degAll) * (2 ^ int(2 + 2 * tire(1) * .999)) * 2 * min(reg, 1.8) : min(9000);
    env = en.ar(.012 + .06 * tire(2), .15 + .9 * tire(1), dec);
    p = tire(3);
  };
@@ -94,8 +100,8 @@ frag(i) = de.fdelay(131072, pos) : *(fen * (.3 + .7 * tire(2))) <: (*(1 - tire(3
 poussiere = _ <: par(i, NH, frag(i)) :> (_, _);
 
 // ---------- 5. Le pulsar : une note aiguë qui revient toutes les 2,6 s, perdue dans des échos ----------
-note = rac * 8 * deg(mode, 4);
-puls = os.osc(min(14000, note * reg)) * en.ar(.008, 1.6, os.lf_imptrain(pulsR / 2.6)) * (.12 * (.3 + .7 * eclat));
+note = rac * 2 * deg(mode, 4);
+puls = os.osc(min(9000, note * min(reg, 1.6))) * en.ar(.04, 1.8, os.lf_imptrain(pulsR / 3.4)) * (.075 * (.3 + .7 * eclat));
 pulsStereo = puls <: (ef.echo(1, .38, .55), ef.echo(1, .57, .5));
 
 
@@ -121,27 +127,40 @@ pick(t, k) = ba.selectn(14, portee(k), t);
 banque(k) = (modes(1), modes(1.0016)) : (*(g), *(g))
  with {
    g = actif(k) : si.smooth(ba.tau2pole(.9)) : *(pick(modGT, k) * .5);
-   frappe = (((abs(no.noises(8, 5 + k)) < (pick(modRateT, k) * (.6 + .8 * eclat) / ma.SR)) | chg2) * actif(k)) > 0;
-   amp = ba.sAndH(frappe, no.noises(8, 6 + k) * .5 + .5) * .6 + .4;
+   frappe = (((abs(no.noises(8, 5 + k)) < (pick(modRateT, k) * .7 * (.6 + .8 * eclat) / ma.SR)) | chg2) * actif(k)) > 0;
+   amp = ba.sAndH(frappe, no.noises(8, 6 + k) * .5 + .5) * .35 + .3;
    fb = ba.sAndH(chg2 * actif(k) + (n == 0), rac * 4 * pick(modRegT, k));      // accordé une seule fois, quand le banc devient actif
    dec = pick(modDecT, k);
    temps = ba.countup(1048576, frappe) / ma.SR;
-   env(i) = exp(0 - temps / (dec / 6.9 / (1 + .5 * i))) * min(1, temps / .002);
+   env(i) = exp(0 - temps / (dec / 6.9 / (1 + .5 * i))) * min(1, temps / .015);
    // chaque mode est une sinusoïde dont l'enveloppe retombe en exponentielle depuis le coup (les aigus plus vite) : jamais d'énergie cachée dans un filtre
    mode_(i, r, d, w) = os.osc(min(15000, fb * r * d)) * w * amp * env(i);
    modes(d) = (mode_(0, pick(rat0T, k), d, 1), mode_(1, pick(rat1T, k), d, .7), mode_(2, pick(rat2T, k), d, .5), mode_(3, pick(rat3T, k), d, .35), mode_(4, pick(rat4T, k), d, .25)) :> _;
  };
 instrument = (banque(0), banque(1)) :> (_, _);
 
+// ---------- 7. La mélodie : une petite boîte à musique à trois voix, qui se promène dans les degrés du mode ----------
+// Chaque voix tire au hasard, à des moments irréguliers (plus souvent dans la partie animée), un degré du mode et une octave ; le son est une cloche douce (fondamentale, octave, un peu de quinte) qui retombe en deux secondes.
+NM = 3;
+cloche(i) = (os.osc(fm) + .35 * os.osc(fm * 2) * en.ar(.003, .7, tm) + .12 * os.osc(fm * 3)) * en.ar(.006, 2.2, tm) * .4 <: (*(1 - pm), *(pm))
+ with {
+   taux = (.07 + .2 * eclat) * vie * (.6 + .8 * (no.lfnoise(.03) * .5 + .5));
+   tm = abs(no.noises(4 * NM, 4 * i + 7)) < (taux / ma.SR);
+   tir(j) = ba.sAndH(tm, alea(NM, 4 * i + j));
+   fm = rac * ba.selectn(7, int(tir(0) * 6.99), degAll) * (2 ^ int(1 + 2 * tir(1) * .999)) : min(4000);
+   pm = .2 + .6 * tir(2);
+ };
+melodie = par(i, NM, cloche(i)) :> (*(.16 * (.4 + .6 * eclat)), *(.16 * (.4 + .6 * eclat)));
+
 // la houle d'arrivée : quand on change de planète, un souffle monte puis se fond dans le nouveau timbre
 houle = en.ar(1.4, 3.6, chg2);
-arrivee = (no.pink_noise : fi.resonbp(260 + 6000 * houle * houle, 3, 1) * houle * .22), (no.noises(8, 3) : fi.resonbp(300 + 5200 * houle * houle, 3, 1) * houle * .22);
+arrivee = (no.pink_noise : fi.resonbp(260 + 3500 * houle * houle, 1.4, 1) * houle * .12), (no.noises(8, 3) : fi.resonbp(300 + 3200 * houle * houle, 1.4, 1) * houle * .12);
 
 // ---------- Mélange et salle ----------
 brut = drone + vent;
 matiere = brut + argent;
-dessus = (matiere * .8) : poussiere;
-somme = ((matiere <: _, _), gouttes, dessus, pulsStereo, instrument, arrivee) :> (_, _);
+dessus = (matiere * .4) : poussiere;
+somme = ((matiere <: _, _), gouttes, dessus, pulsStereo, instrument, arrivee, melodie) :> (_, _);
 salle = _, _ <: (*(1 - .5 * air), *(1 - .5 * air), (re.zita_rev1_stereo(60, 200, 6000, 7 + 4 * air, 8 + 4 * air, 48000) : (*(.9 * air), *(.9 * air)))) :> (_, _);
 fin = (fi.dcblocker, fi.dcblocker) : (ma.tanh, ma.tanh);
 process = somme : salle : fin : (*(1.2 * marche), *(1.2 * marche));
