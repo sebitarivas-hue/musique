@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b08">
+<title>SONORA — essai anticollision (galaxie originale)</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#060907;font-family:system-ui,-apple-system,sans-serif}
+#site{position:absolute;inset:0;width:100%;height:100%;border:0;background:#060907}
+#tools{position:fixed;z-index:100;left:10px;bottom:calc(92px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:7px;max-width:calc(100vw - 20px);padding:7px;border:1px solid rgba(183,244,74,.65);border-radius:16px;background:rgba(8,14,9,.93);color:#fff;box-shadow:0 4px 24px #0009;font:600 12px/1.2 system-ui,-apple-system,sans-serif}
+#toggle{border:0;border-radius:11px;padding:10px 12px;font:700 12px system-ui;background:#b8f54a;color:#0e1609;cursor:pointer}
+#toggle[aria-pressed=false]{background:#333e2d;color:white;border:1px solid #b8f54a}
+#count{min-width:55px;font-size:10px;color:#cdd6c4}
+#help{color:#eee;background:transparent;border:1px solid #88947c;border-radius:10px;padding:9px;cursor:pointer;font:600 12px system-ui}
+#info{display:none;position:fixed;left:10px;right:10px;bottom:calc(148px + env(safe-area-inset-bottom));z-index:101;max-width:380px;padding:12px 14px;border-radius:12px;border:1px solid #789441;background:#0e160e;color:#eaf4dc;font:13px/1.5 system-ui}
+#info.on{display:block}#info p{margin:0 0 7px}#info p:last-child{margin:0}
+</style>
+</head>
+<body>
+<iframe id="site" src="../eleves/#jouer" title="SONORA, galaxie réelle — comparaison anticollision" allow="autoplay"></iframe>
+<div id="tools" role="group" aria-label="Comparer la disposition des étiquettes">
+<button id="toggle" aria-pressed="true">Anticollision : ON</button>
+<span id="count" aria-live="polite">Chargement…</span>
+<button id="help" aria-label="À propos du test" aria-expanded="false">?</button>
+</div>
+<div id="info" role="note"><p><strong>Prototype non destructif.</strong> La vraie page SONORA tourne dans le cadre, avec son moteur Three.js, ses planètes, son audio et sa navigation.</p><p>Le bouton active uniquement la répartition des étiquettes en coordonnées écran. Il ne modifie pas la position réelle des planètes ni leurs orbites. La page d'origine reste inchangée.</p></div>
+<script>
+(()=>{
+const frame=document.getElementById("site"), toggle=document.getElementById("toggle"), count=document.getElementById("count"), help=document.getElementById("help"), info=document.getElementById("info");
+let enabled=true, child=null, active=false, raf=0, last=0, offsets=new WeakMap();
+toggle.addEventListener("click",()=>{
+ enabled=!enabled;toggle.setAttribute("aria-pressed",String(enabled));toggle.textContent="Anticollision : "+(enabled?"ON":"OFF");
+ if(!enabled&&child){child.querySelectorAll(".gal-etiquette").forEach(el=>{el.style.translate="0px 0px";offsets.set(el,{x:0,y:0});});count.textContent="Original";}
+});
+help.addEventListener("click",()=>{const open=info.classList.toggle("on");help.setAttribute("aria-expanded",String(open));});
+frame.addEventListener("load",()=>{try{child=frame.contentDocument;active=true;count.textContent="Galaxie chargée";}catch(e){count.textContent="Accès impossible";}});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function tick(time){
+ raf=requestAnimationFrame(tick);
+ if(time-last<35)return;last=time;
+ if(!active||!child||!enabled)return;
+ const scene=child.querySelector(".gal-scene"), labels=[...child.querySelectorAll(".gal-etiquette")];
+ if(!scene||labels.length<2){count.textContent="En attente 3D";return;}
+ const area=scene.getBoundingClientRect();
+ if(area.width<100||area.height<100)return;
+ const P=6, top=area.top+Math.min(132,area.height*.18), bottom=area.bottom-44;
+ let nodes=[];
+ for(const el of labels){
+  const r=el.getBoundingClientRect(), old=offsets.get(el)||{x:0,y:0};
+  const base={x:r.left-old.x,y:r.top-old.y,w:r.width,h:r.height};
+  if(r.width<12||r.height<8||getComputedStyle(el).visibility==="hidden"||getComputedStyle(el).opacity==="0")continue;
+  if(base.x+base.w<area.left-60||base.x>area.right+60||base.y+base.h<area.top-60||base.y>area.bottom+60)continue;
+  nodes.push({el,base,dx:old.x,dy:old.y,old});
+ }
+ // Séparation en coordonnées écran uniquement. Pas de déplacement des meshes 3D.
+ nodes.sort((a,b)=>a.base.y-b.base.y||a.base.x-b.base.x);
+ for(let iter=0;iter<14;iter++){
+  for(const n of nodes){
+   const b=n.base;
+   n.dx=clamp(n.dx,area.left+P-b.x,area.right-P-b.x-b.w);
+   n.dy=clamp(n.dy,top-b.y,bottom-b.y-b.h);
+  }
+  let moved=false;
+  for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+    const a=nodes[i],b=nodes[j];
+    const ax=a.base.x+a.dx,ay=a.base.y+a.dy,bx=b.base.x+b.dx,by=b.base.y+b.dy;
+    const ox=Math.min(ax+a.base.w,bx+b.base.w)-Math.max(ax,bx)+P;
+    const oy=Math.min(ay+a.base.h,by+b.base.h)-Math.max(ay,by)+P;
+    if(ox<=0||oy<=0)continue;
+    moved=true;
+    // Décalage minimal par paires ; vertical favorisé sur écran étroit.
+    if(oy<=ox*1.35){
+      const d=oy*.55*(ay+a.base.h/2<=by+b.base.h/2?-1:1);
+      a.dy+=d;b.dy-=d;
+    }else{
+      const d=ox*.55*(ax+a.base.w/2<=bx+b.base.w/2?-1:1);
+      a.dx+=d;b.dx-=d;
+    }
+  }
+  if(!moved)break;
+ }
+ let overlaps=0;
+ for(const n of nodes){
+  n.dx=clamp(n.dx,area.left+P-n.base.x,area.right-P-n.base.x-n.base.w);
+  n.dy=clamp(n.dy,top-n.base.y,bottom-n.base.y-n.base.h);
+  // Translation indépendante du transform calculé par Three.js.
+  n.el.style.translate=n.dx.toFixed(1)+"px "+n.dy.toFixed(1)+"px";
+  offsets.set(n.el,{x:n.dx,y:n.dy});
+ }
+ for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+  const a=nodes[i],b=nodes[j];
+  if(a.base.x+a.dx < b.base.x+b.dx+b.base.w+2&&a.base.x+a.dx+a.base.w+2>b.base.x+b.dx&&a.base.y+a.dy<b.base.y+b.dy+b.base.h+2&&a.base.y+a.dy+a.base.h+2>b.base.y+b.dy)overlaps++;
+ }
+ count.textContent=overlaps?overlaps+" conflit(s)":"Étiquettes espacées";
+}
+raf=requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
