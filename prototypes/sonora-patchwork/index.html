@@ -146,8 +146,25 @@ body{background:#0b1018;color:#ecf3f5}
 #rack .module{z-index:3}
 #rack .module:focus-within{z-index:4}
 @media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){#rack .module .rotary-cell .dial{width:52px!important;height:52px!important}}
+</style><style id="sonora-navigation-ux-v9">
+.viewport{position:relative}
+.rack-toolbar{position:sticky!important;top:0;left:0;z-index:35!important;max-width:100%;min-width:0!important;width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;white-space:nowrap;background:#111c2af5!important;backdrop-filter:blur(12px);border-bottom:1px solid #3e5268}
+.rack-toolbar button,.rack-toolbar select{flex-shrink:0}
+#patchOverview,#patchFit{background:#21374b;color:#e0f6ff;border:1px solid #567d93;font-weight:700}
+#patchOverview[aria-expanded="true"]{background:#346477}
+.patch-map{position:fixed;right:clamp(12px,2vw,28px);bottom:calc(24px + env(safe-area-inset-bottom));z-index:70;width:min(340px,calc(100vw - 24px));padding:13px;background:#0e1b2aef;border:1px solid #547087;border-radius:12px;box-shadow:0 15px 45px #000b;color:#e8f4fa;backdrop-filter:blur(16px)}
+.patch-map[hidden]{display:none!important}
+.patch-map-head{display:flex;align-items:center;justify-content:space-between;font-size:11px;letter-spacing:.12em;margin-bottom:8px}
+.patch-map-head button{padding:3px 9px}
+#patchMapCanvas{width:100%;height:auto;display:block;cursor:crosshair;background:#08121c;border:1px solid #38536b;border-radius:5px;touch-action:none}
+.patch-map p{font-size:11px;line-height:1.35;color:#a9c0d0;margin:8px 0 0}
+@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){
+.rack-toolbar{min-width:0!important;overflow-x:auto!important;scroll-snap-type:x proximity}
+.rack-toolbar>*{scroll-snap-align:start}
+.patch-map{right:8px;bottom:calc(64px + env(safe-area-inset-bottom));width:min(290px,calc(100vw - 16px))}
+}
 </style></head><body><header><div class="brand"><span class="brand-icon">∿</span><div><strong>SONORA</strong><small>Synthèse · Modulation · Analyse · Création</small></div></div><nav class="main-tabs" aria-label="Navigation SONORA"><button data-tab="instrument">▥ Instrument</button><button class="active" data-tab="modular">⬡ Modular</button><button data-tab="pistes">☷ Pistes</button><button data-tab="laboratoire">▦ Laboratoire</button><button data-tab="code">⌘ Code</button></nav><span class="grow"></span><button id="start">▶ Activer l'audio</button><button id="play">▶ Séquenceur</button><button id="stop">■ STOP / PANIC</button><button id="undo">↶</button><button id="redo">↷</button><button id="save">Exporter</button><button id="load">Importer</button><input id="file" type="file" accept=".json" hidden><button id="doctor">Patch Doctor</button><button id="reset">Patch initial</button></header>
-<div class="workspace"><aside class="sidebar"><h2>⌄ Modules</h2><input id="moduleSearch" type="search" placeholder="⌕ Rechercher un module…" aria-label="Rechercher un module"><div id="catalog"></div><div class="panel"><strong>Mode d'emploi</strong><p>Ajoute des modules, déplace-les par leur titre et relie les prises en tirant un câble. Clique sur un câble pour le débrancher.</p><p>Les connexions audio sont calculées par le moteur Web Audio. Les liaisons de modulation sont indiquées séparément.</p></div></aside><main class="viewport" id="viewport"><div class="rack-toolbar"><button id="patchBack" aria-label="Recentrer">‹</button><span class="patch-title">Mon instrument <span class="pencil">✎</span></span><button id="patchForward" aria-label="Voir les modules suivants">›</button><select id="patchPreset" aria-label="Choisir un patch"><option value="subtractive">Synthé soustractif</option><option value="ambient">Texture ambient</option><option value="rhythm">Séquence rythmique</option></select><button id="shortcutHelp" type="button" title="Afficher les raccourcis clavier" aria-keyshortcuts="?">⌨ Raccourcis</button><button id="tidyPatch" type="button" title="Réorganiser les modules sans modifier le son">▦ Ranger</button><button id="focusPrev" type="button" title="Module précédent">◀</button><select id="focusModule" aria-label="Aller à un module"><option value="">⌖ Naviguer</option></select><button id="focusNext" type="button" title="Module suivant">▶</button><button id="toggleBrowser" type="button" aria-expanded="false" title="Afficher ou masquer les modules">☷ Modules</button><span class="rack-toolbar-spacer"></span><span class="tempo-chip">◀ <span id="toolbarBpm">120</span> BPM</span><span class="poly-chip">Polyphonie <b>16</b></span><span class="cpu-chip">● Audio</span></div><div class="rack" id="rack"><svg class="wires" id="wires"></svg></div></main><aside class="inspector"><div class="inspector-tabs"><button class="active" data-inspector="module">Module</button><button data-inspector="params">Paramètres</button><button data-inspector="assign">Affectations</button></div><h2>Instrument</h2><div class="panel"><strong>Clavier</strong><div class="keys" id="keys"></div></div><h2>Séquenceur global</h2><div class="panel"><label>Tempo <output id="bpmText">120</output> BPM</label><input type="range" min="40" max="240" value="120" id="bpm" style="width:100%"><div class="steps" id="steps"></div><p class="hint">16 pas, une note par pas ; le module SEQ active aussi le séquenceur global.</p></div><h2>Analyse</h2><div class="panel"><canvas id="scope" width="230" height="90"></canvas><div class="meter"><div id="meter"></div></div></div><h2>Inspecteur</h2><div class="panel" id="inspector">Sélectionne un module. Chaque paramètre possède une fiche « ? ».</div><h2>Diagnostic</h2><div class="panel" id="diagnostics"><p class="hint">Utilise « Patch Doctor » pour analyser les connexions et les sources silencieuses.</p></div><h2>État</h2><div class="panel"><div class="status" id="status">Prêt — active l'audio pour jouer.</div><p class="hint">Moteur Web Audio autonome. Plusieurs familles de modules sont disponibles ; certaines topologies avancées nécessitent encore un moteur de modulation généralisé.</p></div></aside></div><div id="mobileDockControls" role="toolbar" aria-label="Afficher les outils"><button type="button" data-dock="performance" aria-expanded="false">⌨ Clavier</button><button type="button" data-dock="analysisStrip" aria-expanded="false">◉ Analyse</button><button type="button" data-dock="macroPanel" aria-expanded="false">◈ Macros</button><button type="button" id="hideDock">✕ Fermer</button></div><div id="analysisStrip"><div class="analysis-card"><h4>Oscilloscope</h4><div id="scopeSlot"></div></div><div class="analysis-card"><h4>Analyse spectrale</h4><canvas id="spectrum" width="270" height="103"></canvas></div><div class="analysis-card"><h4>Spectrogramme</h4><canvas id="spectrogram" width="270" height="103"></canvas></div><div class="analysis-card"><h4>Corrélogramme</h4><canvas id="correlation" width="270" height="103"></canvas></div></div><div id="performance"><h4>⌨ Clavier &nbsp; · &nbsp; Séquenceur &nbsp; · &nbsp; Macros</h4><div id="keyboardSlot"></div></div><div id="macroPanel"><h4>Macros</h4><div class="macros"><button data-macro="bright">Brillance</button><button data-macro="soft">Douceur</button><button data-macro="motion">Mouvement</button><button data-macro="space">Espace</button></div></div><section class="lesson" id="lesson"><button id="close">✕</button><h2 id="lt"></h2><p id="ld"></p><h3>Écoute et expérimente</h3><p id="le"></p><h3>Notion</h3><p id="ln"></p></section>
+<div class="workspace"><aside class="sidebar"><h2>⌄ Modules</h2><input id="moduleSearch" type="search" placeholder="⌕ Rechercher un module…" aria-label="Rechercher un module"><div id="catalog"></div><div class="panel"><strong>Mode d'emploi</strong><p>Ajoute des modules, déplace-les par leur titre et relie les prises en tirant un câble. Clique sur un câble pour le débrancher.</p><p>Les connexions audio sont calculées par le moteur Web Audio. Les liaisons de modulation sont indiquées séparément.</p></div></aside><main class="viewport" id="viewport"><div class="rack-toolbar"><button id="patchBack" aria-label="Recentrer">‹</button><span class="patch-title">Mon instrument <span class="pencil">✎</span></span><button id="patchForward" aria-label="Voir les modules suivants">›</button><select id="patchPreset" aria-label="Choisir un patch"><option value="subtractive">Synthé soustractif</option><option value="ambient">Texture ambient</option><option value="rhythm">Séquence rythmique</option></select><button id="shortcutHelp" type="button" title="Afficher les raccourcis clavier" aria-keyshortcuts="?">⌨ Raccourcis</button><button id="patchOverview" type="button" title="Afficher le plan du patch" aria-expanded="false">▤ Plan</button><button id="patchFit" type="button" title="Recentrer sur la chaîne audio">◎ Chaîne</button><button id="tidyPatch" type="button" title="Réorganiser les modules sans modifier le son">▦ Ranger</button><button id="focusPrev" type="button" title="Module précédent">◀</button><select id="focusModule" aria-label="Aller à un module"><option value="">⌖ Naviguer</option></select><button id="focusNext" type="button" title="Module suivant">▶</button><button id="toggleBrowser" type="button" aria-expanded="false" title="Afficher ou masquer les modules">☷ Modules</button><span class="rack-toolbar-spacer"></span><span class="tempo-chip">◀ <span id="toolbarBpm">120</span> BPM</span><span class="poly-chip">Polyphonie <b>16</b></span><span class="cpu-chip">● Audio</span></div><aside id="patchMap" class="patch-map" aria-label="Plan interactif du patch" hidden><div class="patch-map-head"><strong>PLAN DU PATCH</strong><button id="patchMapClose" aria-label="Fermer le plan">×</button></div><canvas id="patchMapCanvas" width="440" height="260" aria-label="Vue d’ensemble des modules"></canvas><p>Clique dans le plan pour naviguer. Le cadre indique la zone visible.</p></aside><div class="rack" id="rack"><svg class="wires" id="wires"></svg></div></main><aside class="inspector"><div class="inspector-tabs"><button class="active" data-inspector="module">Module</button><button data-inspector="params">Paramètres</button><button data-inspector="assign">Affectations</button></div><h2>Instrument</h2><div class="panel"><strong>Clavier</strong><div class="keys" id="keys"></div></div><h2>Séquenceur global</h2><div class="panel"><label>Tempo <output id="bpmText">120</output> BPM</label><input type="range" min="40" max="240" value="120" id="bpm" style="width:100%"><div class="steps" id="steps"></div><p class="hint">16 pas, une note par pas ; le module SEQ active aussi le séquenceur global.</p></div><h2>Analyse</h2><div class="panel"><canvas id="scope" width="230" height="90"></canvas><div class="meter"><div id="meter"></div></div></div><h2>Inspecteur</h2><div class="panel" id="inspector">Sélectionne un module. Chaque paramètre possède une fiche « ? ».</div><h2>Diagnostic</h2><div class="panel" id="diagnostics"><p class="hint">Utilise « Patch Doctor » pour analyser les connexions et les sources silencieuses.</p></div><h2>État</h2><div class="panel"><div class="status" id="status">Prêt — active l'audio pour jouer.</div><p class="hint">Moteur Web Audio autonome. Plusieurs familles de modules sont disponibles ; certaines topologies avancées nécessitent encore un moteur de modulation généralisé.</p></div></aside></div><div id="mobileDockControls" role="toolbar" aria-label="Afficher les outils"><button type="button" data-dock="performance" aria-expanded="false">⌨ Clavier</button><button type="button" data-dock="analysisStrip" aria-expanded="false">◉ Analyse</button><button type="button" data-dock="macroPanel" aria-expanded="false">◈ Macros</button><button type="button" id="hideDock">✕ Fermer</button></div><div id="analysisStrip"><div class="analysis-card"><h4>Oscilloscope</h4><div id="scopeSlot"></div></div><div class="analysis-card"><h4>Analyse spectrale</h4><canvas id="spectrum" width="270" height="103"></canvas></div><div class="analysis-card"><h4>Spectrogramme</h4><canvas id="spectrogram" width="270" height="103"></canvas></div><div class="analysis-card"><h4>Corrélogramme</h4><canvas id="correlation" width="270" height="103"></canvas></div></div><div id="performance"><h4>⌨ Clavier &nbsp; · &nbsp; Séquenceur &nbsp; · &nbsp; Macros</h4><div id="keyboardSlot"></div></div><div id="macroPanel"><h4>Macros</h4><div class="macros"><button data-macro="bright">Brillance</button><button data-macro="soft">Douceur</button><button data-macro="motion">Mouvement</button><button data-macro="space">Espace</button></div></div><section class="lesson" id="lesson"><button id="close">✕</button><h2 id="lt"></h2><p id="ld"></p><h3>Écoute et expérimente</h3><p id="le"></p><h3>Notion</h3><p id="ln"></p></section>
 <script>
 const $=q=>document.querySelector(q),catalog={
 osc:{group:"Sources",name:"VCO · Oscillateur",kind:"source",theme:"gold",params:{wave:["forme","select",["sine","triangle","sawtooth","square"]],detune:["cents",-1200,1200,1],gain:["niveau",0,1,.01]}},
@@ -367,5 +384,62 @@ window.addEventListener("resize",()=>requestAnimationFrame(drawWires));
   if(e.key==="?"&&!mod){intercept();dialog.classList.add("open");return}
   if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)&&getSelected()&&!mod){intercept();const n=getSelected();checkpoint();const step=e.shiftKey?1:12;n.x=Math.max(0,n.x+(e.key==="ArrowLeft"?-step:e.key==="ArrowRight"?step:0));n.y=Math.max(0,n.y+(e.key==="ArrowUp"?-step:e.key==="ArrowDown"?step:0));const el=[...$("#rack").querySelectorAll(".module")].find(m=>m.dataset.id===n.id);if(el){el.style.left=n.x+"px";el.style.top=n.y+"px"}drawWires();return}
  },true);
+})();
+
+// Spatial navigation: interactive overview of real module positions, not a decorative diagram.
+(function(){
+ const viewport=$("#viewport"),rack=$("#rack"),panel=$("#patchMap"),canvas=$("#patchMapCanvas");
+ const toggle=$("#patchOverview"),close=$("#patchMapClose"),fit=$("#patchFit");
+ if(!viewport||!rack||!canvas)return;
+ const g=canvas.getContext("2d");let scheduled=false,transform=null;
+ const modules=()=>[...rack.querySelectorAll(".module")];
+ function bounds(){
+  const els=modules();let right=viewport.clientWidth,bottom=viewport.clientHeight;
+  for(const el of els){right=Math.max(right,el.offsetLeft+el.offsetWidth+40);bottom=Math.max(bottom,el.offsetTop+el.offsetHeight+40)}
+  return {w:Math.max(right,rack.scrollWidth),h:Math.max(bottom,rack.scrollHeight)};
+ }
+ function paint(){
+  scheduled=false;if(panel.hidden)return;
+  const {w,h}=bounds(),cw=canvas.width,ch=canvas.height,pad=12;
+  const scale=Math.min((cw-pad*2)/w,(ch-pad*2)/h);
+  const ox=(cw-w*scale)/2,oy=(ch-h*scale)/2;transform={scale,ox,oy,w,h};
+  g.clearRect(0,0,cw,ch);g.fillStyle="#08121c";g.fillRect(0,0,cw,ch);
+  g.strokeStyle="#21394c";g.lineWidth=1;
+  for(let x=0;x<w;x+=240){const px=ox+x*scale;g.beginPath();g.moveTo(px,oy);g.lineTo(px,oy+h*scale);g.stroke()}
+  for(let y=0;y<h;y+=240){const py=oy+y*scale;g.beginPath();g.moveTo(ox,py);g.lineTo(ox+w*scale,py);g.stroke()}
+  for(const el of modules()){
+   const n=nodes.find(n=>n.id===el.dataset.id);if(!n)continue;
+   const x=ox+el.offsetLeft*scale,y=oy+el.offsetTop*scale;
+   const width=Math.max(5,el.offsetWidth*scale),height=Math.max(5,el.offsetHeight*scale);
+   const accent=getComputedStyle(el).getPropertyValue("--accent").trim()||"#79d8dc";
+   g.fillStyle=accent;g.globalAlpha=.72;g.fillRect(x,y,width,height);g.globalAlpha=1;
+   if(n.id===selected){g.strokeStyle="#fff";g.lineWidth=2;g.strokeRect(x-2,y-2,width+4,height+4)}
+  }
+  const vx=ox+viewport.scrollLeft*scale,vy=oy+viewport.scrollTop*scale;
+  g.fillStyle="#b7f6ff13";g.fillRect(vx,vy,viewport.clientWidth*scale,viewport.clientHeight*scale);
+  g.strokeStyle="#d9faff";g.lineWidth=2;g.strokeRect(vx,vy,viewport.clientWidth*scale,viewport.clientHeight*scale);
+ }
+ function schedule(){if(!scheduled){scheduled=true;requestAnimationFrame(paint)}}
+ function setOpen(open){panel.hidden=!open;toggle.setAttribute("aria-expanded",String(open));if(open)schedule()}
+ toggle.onclick=()=>setOpen(panel.hidden);close.onclick=()=>setOpen(false);
+ canvas.addEventListener("pointerdown",e=>{
+  if(!transform)return;const rect=canvas.getBoundingClientRect();
+  const x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;
+  const px=(x-transform.ox)/transform.scale-viewport.clientWidth/2;
+  const py=(y-transform.oy)/transform.scale-viewport.clientHeight/2;
+  viewport.scrollTo({left:Math.max(0,px),top:Math.max(0,py),behavior:"smooth"});
+ });
+ fit.onclick=()=>{
+  const chain=nodes.filter(n=>!["adsr","lfo","seq","clock","scope","meter"].includes(n.type));
+  if(!chain.length)return;
+  const x=Math.min(...chain.map(n=>n.x)),y=Math.min(...chain.map(n=>n.y));
+  viewport.scrollTo({left:Math.max(0,x-25),top:Math.max(0,y-60),behavior:"smooth"});
+  status("Chaîne audio recentrée");
+ };
+ viewport.addEventListener("scroll",schedule,{passive:true});
+ window.addEventListener("resize",schedule);
+ new ResizeObserver(schedule).observe(rack);
+ new MutationObserver(schedule).observe(rack,{childList:true});
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!panel.hidden)setOpen(false)});
 })();
 </script></body></html>
