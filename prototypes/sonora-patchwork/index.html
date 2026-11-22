@@ -317,7 +317,7 @@ function tidyPatch(record=true){
  rack.style.width=Math.ceil(maxRight+100)+"px";rack.style.height=Math.ceil(maxBottom+150)+"px";
  const svg=$("#wires");svg.setAttribute("width",Math.ceil(maxRight+100));svg.setAttribute("height",Math.ceil(maxBottom+150));svg.style.width=Math.ceil(maxRight+100)+"px";svg.style.height=Math.ceil(maxBottom+150)+"px";
  drawWires();
- if(record){status("Patch rangé : modules séparés, câbles recalculés");try{localStorage.setItem("sonora-patchwork-autosave",JSON.stringify({nodes,edges,next}))}catch(e){}}
+ if(record){status("Patch rangé : modules séparés, câbles recalculés");try{localStorage.setItem("sonora-patchwork-autosave",snap())}catch(e){}}
 }
 $("#tidyPatch").onclick=()=>tidyPatch(true);
 window.addEventListener("resize",()=>requestAnimationFrame(drawWires));
