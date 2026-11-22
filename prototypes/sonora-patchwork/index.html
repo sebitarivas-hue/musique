@@ -77,137 +77,6 @@ header>button{flex:0 0 auto;font-size:10px;padding:5px}
 .module h3,.module .dial,.port{touch-action:none}
 .lesson{z-index:70;max-height:65dvh;overflow:auto;bottom:calc(53px + env(safe-area-inset-bottom))}
 }
-</style><style id="club-hardware-design">
-/* SONORA Club Hardware: individual Eurorack identities on a dark DJ performance desk. */
-:root{--desk:#050712;--deskline:#243049;--ink:#f3f6ff}
-body{background:#050712;color:var(--ink)}
-header{background:linear-gradient(95deg,#090a18,#111027 55%,#071725);border-bottom:1px solid #38305d;box-shadow:0 3px 22px #0009}
-.brand-icon{border-color:#7443e8;background:linear-gradient(145deg,#201142,#090f29);color:#7cf6ff;text-shadow:0 0 15px #2ff0ff}
-.brand strong{font-weight:900;font-style:italic;letter-spacing:-.07em}
-.main-tabs{background:#0a0d1e;border-color:#34304f}
-.main-tabs button.active{background:linear-gradient(125deg,#6e23d6,#af30f0);box-shadow:inset 0 -3px #68f8ff}
-.workspace{background:#050712}
-.sidebar,.inspector{background:linear-gradient(180deg,#111328,#090d1b);border-color:#292b48}
-.sidebar .category{background:#181731;border-color:#38345d;letter-spacing:.08em;text-transform:uppercase;font-size:10px;color:#cbb5ff}
-.sidebar .add:hover{border-left-color:#ff49c9;background:#231638;color:#fff}
-.viewport{background:#070917;border-color:#282748}
-.rack{background-color:#080a18;background-image:linear-gradient(#15182b66 1px,transparent 1px),linear-gradient(90deg,#15182b66 1px,transparent 1px),radial-gradient(circle,#5b568b55 .7px,transparent 1px);background-size:86px 86px,86px 86px,14px 14px}
-.rack-toolbar{background:linear-gradient(90deg,#101025,#11142c);border-bottom-color:#383054}
-.rack-toolbar .patch-title{background:#090c1b;border-color:#383358}
-#analysisStrip .analysis-card,#performance,#macroPanel{background:linear-gradient(155deg,#11152b,#080d1c);border-color:#343454;box-shadow:inset 0 1px #ffffff0b}
-#analysisStrip .analysis-card h4,#performance h4,#macroPanel h4{color:#d5c7ff;letter-spacing:.04em}
-.module,.module.dark,.module.gold{--accent:#56efff;--surface1:#112c42;--surface2:#091422;--rim:#315d77;--shape:12px;width:235px;min-height:190px;border:1px solid var(--rim)!important;border-radius:var(--shape)!important;background:linear-gradient(155deg,var(--surface1),var(--surface2) 74%)!important;color:#eff5ff;box-shadow:inset 0 1px #ffffff35,inset 3px 0 var(--accent),0 11px 25px #000b,0 0 18px color-mix(in srgb,var(--accent) 13%,transparent);overflow:visible}
-.module h3{position:relative;color:var(--accent);font-size:13px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;text-shadow:0 0 9px color-mix(in srgb,var(--accent) 32%,transparent);border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent);padding-bottom:10px}
-.module h3:before{color:var(--accent)!important}
-.module:after{content:attr(data-model);display:block!important;position:absolute;top:12px;right:12px;color:var(--accent);font-size:8px;letter-spacing:.12em;font-weight:800;opacity:.75;pointer-events:none}
-.module:before{content:"";display:block!important;position:absolute;inset:4px;border:1px solid #ffffff0c;border-radius:calc(var(--shape) - 4px);pointer-events:none}
-.module .mini-graph{background:#050a16;border-color:color-mix(in srgb,var(--accent) 42%,#1c2444);box-shadow:inset 0 2px 8px #0009,0 0 12px color-mix(in srgb,var(--accent) 9%,transparent)}
-.module .mini-graph path{stroke:var(--accent)!important;filter:drop-shadow(0 0 2px var(--accent))}
-.module .rotary-cell .dial{border-color:color-mix(in srgb,var(--accent) 55%,#69718d)!important;background:radial-gradient(circle at 32% 25%,#8890a6,#343a50 34%,#090e20 72%);box-shadow:inset 0 0 0 3px #141b2d,0 0 0 1px #fff2,0 3px 9px #000b}
-.module .rotary-cell .dial:after{background:var(--accent);box-shadow:0 0 6px var(--accent)}
-.module .rotary-cell output{color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 18%,transparent)}
-.module .port{border-color:var(--accent);box-shadow:0 0 8px color-mix(in srgb,var(--accent) 55%,transparent)}
-.module.selected{outline:2px solid #fff9;outline-offset:3px}
-.module[data-family="oscillator"]{--accent:#52f4ff;--surface1:#0b4055;--surface2:#07172b;--rim:#297c92;--shape:8px 8px 20px 8px}
-.module[data-family="oscillator"] .mini-graph{height:55px}
-.module[data-family="noise"]{--accent:#f8ed5d;--surface1:#454022;--surface2:#191b18;--rim:#8d8045;--shape:5px}
-.module[data-family="filter"]{--accent:#ffe64c;--surface1:#413a15;--surface2:#191b16;--rim:#9e8930;--shape:5px 20px 5px 20px}
-.module[data-family="filter"] .mini-graph{height:62px}
-.module[data-family="envelope"]{--accent:#e787ff;--surface1:#3a174e;--surface2:#190d29;--rim:#8655a8;--shape:18px 5px 18px 5px}
-.module[data-family="envelope"] .mini-graph{height:68px}
-.module[data-family="lfo"]{--accent:#ff7bd6;--surface1:#401d41;--surface2:#1b0c29;--rim:#a34d91;--shape:24px}
-.module[data-family="lfo"] .mini-graph{height:55px}
-.module[data-family="mixer"]{--accent:#6dffbc;--surface1:#1a3933;--surface2:#0b1d20;--rim:#4a8b72;--shape:4px}
-.module[data-family="vca"]{--accent:#ff607f;--surface1:#481c30;--surface2:#220e1d;--rim:#a74762;--shape:5px 5px 28px 5px}
-.module[data-family="output"]{--accent:#6fa7ff;--surface1:#173a70;--surface2:#0a1735;--rim:#4872bd;--shape:8px}
-.module[data-family="sequencer"]{--accent:#ff9a5b;--surface1:#4b281b;--surface2:#231519;--rim:#a96742;--shape:6px}
-.module[data-family="effect"]{--accent:#b09bff;--surface1:#282449;--surface2:#12152a;--rim:#6860a1;--shape:12px}
-.module[data-family="effect"] .mini-graph{height:35px}
-.module[data-family="analysis"]{--accent:#69e9d3;--surface1:#173c3a;--surface2:#091b25;--rim:#4a9389;--shape:4px 18px}
-.module .learn{border-color:color-mix(in srgb,var(--accent) 55%,#333);color:var(--accent);background:#070b1a}
-@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){
-#mobileDockControls{background:linear-gradient(90deg,#16102e,#0b1828);border-color:#59488b}
-#mobileDockControls button[aria-expanded="true"]{background:linear-gradient(125deg,#6e23d6,#b32cf2);border-color:#b68bff}
-}
-</style><style id="hardware-faceplates-v4">
-/* Independent faceplate construction: graphics, meters and controls vary by hardware family. */
-.module{isolation:isolate;padding:12px 13px 27px!important;min-height:205px;transition:box-shadow .16s,border-color .16s;contain:layout style}
-.module h3{padding:12px 0 7px!important;margin:0 0 7px!important;white-space:normal;max-width:100%;line-height:1.12}
-.module:after{top:6px!important;right:12px!important;font-size:7px!important}
-.hardware-face{position:relative;height:16px;display:flex;align-items:center;justify-content:center;margin:-5px 0 0;pointer-events:none}
-.face-brand{font-size:8px;letter-spacing:.21em;color:var(--accent);font-weight:900;opacity:.8}
-.screw{position:absolute;top:1px;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#b6bdc8,#465066 60%,#0c1221 80%);border:1px solid #1e2434;box-shadow:0 1px 3px #000}
-.screw:after{content:"";position:absolute;left:2px;top:4px;width:5px;height:1px;background:#202a3b;transform:rotate(-35deg)}
-.screw-a{left:0}.screw-b{right:0}
-.status-led{position:absolute;right:18px;top:3px;width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent),0 0 14px color-mix(in srgb,var(--accent) 45%,transparent)}
-.module .mini-graph{height:55px;margin:4px 0 5px;border-radius:3px}
-.hardware-meter{display:flex;gap:3px;justify-content:center;align-items:center;height:11px;margin:0 0 10px}
-.hardware-meter i{display:block;flex:1;height:4px;max-width:13px;background:color-mix(in srgb,var(--accent) 13%,#07101d);border-radius:1px}
-.hardware-meter i:nth-child(-n+7){background:color-mix(in srgb,var(--accent) 75%,#fff);box-shadow:0 0 4px color-mix(in srgb,var(--accent) 40%,transparent)}
-.hardware-meter i:nth-child(8),.hardware-meter i:nth-child(9){background:color-mix(in srgb,var(--accent) 35%,#08111b)}
-.module .rotary{margin-top:7px;gap:11px 8px!important}
-.module .rotary-cell .dial{width:43px;height:43px;z-index:0}
-.module .rotary-cell label{letter-spacing:.04em;text-transform:uppercase;font-weight:700}
-.module .rotary-cell output{font-variant-numeric:tabular-nums;letter-spacing:.04em}
-.control-number{position:absolute;right:8px;top:0;font-size:8px;color:var(--accent);opacity:.6;font-weight:900}
-.module[data-family="oscillator"]{width:252px!important;border-top:4px solid var(--accent)!important}
-.module[data-family="oscillator"] .mini-graph{height:64px;border-radius:3px}
-.module[data-family="oscillator"] .rotary{grid-template-columns:repeat(2,1fr)}
-.module[data-family="oscillator"] .dial{border-radius:48% 48% 46% 46%}
-.module[data-family="filter"]{width:238px!important;border-left:6px solid var(--accent)!important}
-.module[data-family="filter"] .mini-graph{height:66px;background:linear-gradient(180deg,#151b0d,#050a10)}
-.module[data-family="filter"] .rotary{grid-template-columns:repeat(2,1fr)}
-.module[data-family="filter"] .dial{width:50px;height:50px;border-width:3px!important}
-.module[data-family="envelope"]{width:284px!important;border-top:5px double var(--accent)!important}
-.module[data-family="envelope"] .mini-graph{height:79px;border-radius:8px}
-.module[data-family="envelope"] .rotary{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:3px!important}
-.module[data-family="envelope"] .rotary-cell .dial{width:39px;height:39px}
-.module[data-family="envelope"] .rotary-cell input[type=range]{width:39px}
-.module[data-family="envelope"] .rotary-cell label{font-size:9px}
-.module[data-family="envelope"] .rotary-cell output{font-size:9px;padding:2px 3px}
-.module[data-family="envelope"] .control-number{display:none}
-.module[data-family="lfo"]{width:230px!important;border-radius:24px 24px 8px 8px!important}
-.module[data-family="lfo"] .mini-graph{border-radius:25px;height:51px}
-.module[data-family="mixer"]{width:160px!important;border-top:3px solid #7bffd0!important}
-.module[data-family="mixer"] .rotary{grid-template-columns:1fr!important}
-.module[data-family="mixer"] .mini-graph{height:29px}
-.module[data-family="vca"]{width:168px!important;border-right:5px solid var(--accent)!important}
-.module[data-family="vca"] .rotary{grid-template-columns:1fr!important}
-.module[data-family="vca"] .mini-graph{height:34px}
-.module[data-family="output"]{width:166px!important;border-top:4px solid #82b6ff!important}
-.module[data-family="output"] .rotary{grid-template-columns:1fr!important}
-.module[data-family="output"] .mini-graph{height:35px}
-.hardware-vu{display:grid;grid-template-columns:15px 1fr;gap:3px 5px;align-items:center;color:#b8ceff;font-size:9px;margin:8px 0}
-.vu-bars{height:9px;background:repeating-linear-gradient(90deg,#64ffa5 0 7px,#0d2030 7px 10px);border:1px solid #315d77}
-.module[data-family="sequencer"]{width:310px!important;border-bottom:5px solid var(--accent)!important}
-.module[data-family="sequencer"] .rotary{grid-template-columns:repeat(3,1fr)}
-.hardware-steps{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;margin:10px 0}
-.hardware-steps span{height:14px;border:1px solid #9b5d35;background:#1a1521;border-radius:2px}
-.hardware-steps .downbeat{background:#ef8348;box-shadow:0 0 5px #ff8d5d}
-.module[data-family="effect"]{width:252px!important;border-left:4px solid var(--accent)!important}
-.module[data-family="effect"] .mini-graph{height:32px}
-.module[data-family="noise"]{width:225px!important;border-top:4px dotted var(--accent)!important}
-.module[data-family="analysis"]{width:245px!important}
-@media (prefers-reduced-motion:reduce){.module{transition:none}}
-</style><style id="readability-layout-v5">
-/* Keep the rack and cable canvas in the same coordinate space. */
-#rack{position:relative;min-width:1700px;min-height:1000px;overflow:visible}
-#wires{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
-#wires .cable{pointer-events:stroke}
-.module{box-sizing:border-box;z-index:3}
-.module h3{min-height:30px}
-.module .hardware-face{flex-shrink:0}
-.module .rotary-cell{min-height:93px}
-.module .rotary-cell label{line-height:1.2;max-width:100%;overflow-wrap:anywhere}
-.module .rotary-cell output{max-width:100%;overflow:hidden;text-overflow:ellipsis}
-.module .port{z-index:4}
-.module .portlabel{z-index:4}
-#tidyPatch{background:#222048;border:1px solid #7b5df1;color:#f4eaff;font-weight:800;white-space:nowrap}
-#tidyPatch:hover{background:#4a2c8d}
-@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){
-#rack{min-width:1700px!important;min-height:1000px}
-#tidyPatch{position:sticky;left:0;z-index:25}
-}
 </style><style id="mobile-navigation-v6">
 #focusModule{max-width:180px;min-width:110px;background:#13162e;color:#f0e9ff;border:1px solid #60548e;border-radius:6px;padding:6px}
 #focusPrev,#focusNext{min-width:29px;background:#221a3e;border:1px solid #53417b;color:#e8d8ff}
@@ -223,45 +92,6 @@ header{background:linear-gradient(95deg,#090a18,#111027 55%,#071725);border-bott
 .rack-toolbar{display:flex;align-items:center;gap:4px;min-width:700px}
 #analysisStrip.dock-open,#performance.dock-open,#macroPanel.dock-open{z-index:59!important}
 }
-</style><style id="sonora-legibility-v7">
-/* Visual hierarchy and interaction repair: controls are never hidden under invisible inputs. */
-.module .rotary-cell{position:relative;display:flex!important;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;min-width:0;min-height:105px!important;padding:8px 2px 4px!important}
-.module .rotary-cell input[type=range]{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important;left:0!important;top:0!important}
-.module .rotary-cell .dial{position:relative;display:block;flex:0 0 auto;touch-action:none!important;cursor:ns-resize;z-index:2!important;outline-offset:4px}
-.module .rotary-cell .dial:focus-visible{outline:2px solid #fff}
-.module .rotary-cell label{position:relative;display:flex!important;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;margin:0!important;line-height:1.25!important;text-align:center;white-space:normal!important;word-break:normal;overflow-wrap:break-word;font-size:10px!important;min-height:25px;max-width:100%}
-.module .rotary-cell label output{display:block;float:none!important;flex:0 0 auto;max-width:100%;font-size:10px!important}
-.module .rotary-cell label .learn{display:inline-flex;align-items:center;justify-content:center;min-width:17px;min-height:17px;flex:0 0 17px}
-.module .rotary{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 6px!important;align-items:start;min-width:0}
-.module .rotary-cell .control-number{position:absolute;top:0;right:3px}
-.module select{background:#0b1022!important;color:#fff!important;border:1px solid color-mix(in srgb,var(--accent) 45%,#39415b)!important;border-radius:5px!important;padding:7px!important;font-size:12px!important;max-width:100%}
-.module p{line-height:1.4;color:#d1d9ef}
-.module .port{cursor:crosshair}
-.module .mini-graph{min-width:0;overflow:hidden}
-.module .mini-graph svg{width:100%;height:100%}
-.module .hardware-meter{flex-shrink:0}
-.module[data-family="envelope"] .rotary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-.module[data-family="envelope"] .rotary-cell{min-height:101px!important}
-.module[data-family="envelope"] .rotary-cell label{font-size:10px!important}
-.module[data-family="sequencer"] .rotary{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-.module[data-family="mixer"] .rotary,.module[data-family="vca"] .rotary,.module[data-family="output"] .rotary{grid-template-columns:1fr!important}
-.module[data-family="mixer"],.module[data-family="vca"],.module[data-family="output"]{width:190px!important}
-.module[data-family="mixer"] .rotary-cell,.module[data-family="vca"] .rotary-cell,.module[data-family="output"] .rotary-cell{min-height:105px!important}
-.module h3{font-size:12px!important;line-height:1.3!important;overflow-wrap:anywhere}
-.module .face-brand{font-size:7px;letter-spacing:.13em}
-#rack .module{height:auto!important;max-height:none!important;overflow:visible!important}
-#rack .module:focus-within{z-index:5}
-#wires{z-index:1!important}
-#wires .cable{stroke-width:4px;opacity:.75}
-#wires .shine{opacity:.22}
-#focusModule{font-size:11px}
-@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){
-.module .rotary-cell .dial{width:48px!important;height:48px!important}
-.module .rotary-cell{min-height:112px!important}
-.module .port{min-width:25px;min-height:25px}
-#focusModule{max-width:120px!important}
-#tidyPatch,#focusPrev,#focusNext,#toggleBrowser{min-height:34px}
-}
 </style><style id="keyboard-workflow-v8">
 #shortcutHelp{background:#17283d;color:#d5efff;border:1px solid #426b8b;white-space:nowrap}
 #shortcutHelp:hover{background:#264b68}
@@ -274,6 +104,48 @@ header{background:linear-gradient(95deg,#090a18,#111027 55%,#071725);border-bott
 #shortcutDialog button{margin-top:14px}
 #rack .module.selected{outline:3px solid #e7f9ff!important;outline-offset:5px!important;box-shadow:0 0 0 8px #64e5ff24,0 13px 27px #000b!important}
 @media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){#shortcutHelp{min-height:34px}}
+</style><style id="sonora-coherent-rack">
+/* One consistent instrument design, not stacked visual themes. */
+:root{--panel:#101923;--panel-line:#324456;--signal:#7ce0db}
+body{background:#0b1018;color:#ecf3f5}
+.workspace{background:#101721}
+.sidebar,.inspector{background:#121d28;border-color:#2c4051}
+.viewport{background:#0d1621}
+#rack{background-color:#101b28;background-image:repeating-linear-gradient(90deg,transparent 0,transparent 19px,#ffffff08 20px,transparent 21px),repeating-linear-gradient(0deg,transparent 0,transparent 19px,#ffffff06 20px,transparent 21px)!important}
+#rack .module{box-sizing:border-box;width:238px!important;min-height:0!important;height:auto!important;padding:13px 15px 36px!important;border:2px solid #38495a!important;border-top:5px solid var(--accent,#79d7db)!important;border-radius:7px!important;background:linear-gradient(180deg,#1c2938,#121c2b)!important;color:#e7f2f6!important;box-shadow:0 8px 18px #0007!important;overflow:visible!important;isolation:isolate}
+#rack .module h3{padding:6px 0 10px!important;margin:0 0 10px!important;font-size:13px!important;line-height:1.3!important;font-weight:800;letter-spacing:.045em;min-height:28px;border-bottom:1px solid #526172!important;color:#f4f8fa!important;overflow-wrap:anywhere}
+#rack .module .hardware-face{display:flex;position:relative;align-items:center;justify-content:center;height:20px;margin:0 0 6px;pointer-events:none}
+#rack .module .face-brand{font-size:8px;letter-spacing:.13em;color:var(--accent,#91d7e0);font-weight:800}
+#rack .module .screw{display:none}
+#rack .module .status-led{width:6px;height:6px;position:absolute;right:0;top:6px;background:#76f4c8;border-radius:50%;box-shadow:0 0 7px #76f4c8}
+#rack .module .mini-graph{display:block;height:55px!important;min-height:55px;margin:4px 0 11px!important;padding:4px;border:1px solid #38596b!important;border-radius:4px!important;background:#07141c!important;overflow:hidden}
+#rack .module .mini-graph svg{width:100%;height:100%}
+#rack .module .hardware-meter{display:none}
+#rack .module .rotary{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px 8px!important;margin:10px 0!important;align-items:start}
+#rack .module .rotary-cell{display:flex!important;flex-direction:column;align-items:center;gap:7px;position:relative;min-width:0;min-height:106px!important;padding:4px 1px!important}
+#rack .module .rotary-cell input[type=range]{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+#rack .module .rotary-cell .dial{position:relative!important;z-index:3!important;width:48px!important;height:48px!important;flex:none;cursor:ns-resize;touch-action:none}
+#rack .module .rotary-cell .dial:focus-visible{outline:2px solid #fff;outline-offset:3px}
+#rack .module .rotary-cell label{display:flex!important;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px;margin:0!important;font-size:10px!important;line-height:1.35!important;text-align:center;overflow-wrap:anywhere;max-width:100%}
+#rack .module .rotary-cell output{float:none!important;font:10px ui-monospace,monospace!important;color:#9ef0ed}
+#rack .module .rotary-cell .control-number{display:none}
+#rack .module select{width:100%;max-width:100%;padding:7px;background:#0d1823;color:#f3f9fa;border:1px solid #476072;border-radius:4px}
+#rack .module .port{z-index:5}
+#rack .module .portlabel{z-index:5}
+#rack .module.selected{outline:3px solid #b6f7ed!important;outline-offset:3px!important}
+#rack .module[data-family="envelope"]{width:260px!important}
+#rack .module[data-family="sequencer"]{width:270px!important}
+#rack .module[data-family="mixer"],#rack .module[data-family="vca"],#rack .module[data-family="output"]{width:210px!important}
+#rack .module .hardware-steps{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:2px;margin:9px 0}
+#rack .module .hardware-steps span{height:10px;border:1px solid #51667b;background:#182a37}
+#rack .module .hardware-steps .downbeat{background:#f0a66b}
+#rack .module .hardware-vu{display:grid;grid-template-columns:14px 1fr;gap:4px;margin:8px 0}
+#rack .module .vu-bars{height:9px;background:repeating-linear-gradient(90deg,#67d7b1 0 6px,#152937 6px 9px)}
+#wires{z-index:1!important;pointer-events:none}
+#wires .cable{pointer-events:stroke;stroke-width:4;opacity:.8}
+#rack .module{z-index:3}
+#rack .module:focus-within{z-index:4}
+@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){#rack .module .rotary-cell .dial{width:52px!important;height:52px!important}}
 </style></head><body><header><div class="brand"><span class="brand-icon">∿</span><div><strong>SONORA</strong><small>Synthèse · Modulation · Analyse · Création</small></div></div><nav class="main-tabs" aria-label="Navigation SONORA"><button data-tab="instrument">▥ Instrument</button><button class="active" data-tab="modular">⬡ Modular</button><button data-tab="pistes">☷ Pistes</button><button data-tab="laboratoire">▦ Laboratoire</button><button data-tab="code">⌘ Code</button></nav><span class="grow"></span><button id="start">▶ Activer l'audio</button><button id="play">▶ Séquenceur</button><button id="stop">■ STOP / PANIC</button><button id="undo">↶</button><button id="redo">↷</button><button id="save">Exporter</button><button id="load">Importer</button><input id="file" type="file" accept=".json" hidden><button id="doctor">Patch Doctor</button><button id="reset">Patch initial</button></header>
 <div class="workspace"><aside class="sidebar"><h2>⌄ Modules</h2><input id="moduleSearch" type="search" placeholder="⌕ Rechercher un module…" aria-label="Rechercher un module"><div id="catalog"></div><div class="panel"><strong>Mode d'emploi</strong><p>Ajoute des modules, déplace-les par leur titre et relie les prises en tirant un câble. Clique sur un câble pour le débrancher.</p><p>Les connexions audio sont calculées par le moteur Web Audio. Les liaisons de modulation sont indiquées séparément.</p></div></aside><main class="viewport" id="viewport"><div class="rack-toolbar"><button id="patchBack" aria-label="Recentrer">‹</button><span class="patch-title">Mon instrument <span class="pencil">✎</span></span><button id="patchForward" aria-label="Voir les modules suivants">›</button><select id="patchPreset" aria-label="Choisir un patch"><option value="subtractive">Synthé soustractif</option><option value="ambient">Texture ambient</option><option value="rhythm">Séquence rythmique</option></select><button id="shortcutHelp" type="button" title="Afficher les raccourcis clavier" aria-keyshortcuts="?">⌨ Raccourcis</button><button id="tidyPatch" type="button" title="Réorganiser les modules sans modifier le son">▦ Ranger</button><button id="focusPrev" type="button" title="Module précédent">◀</button><select id="focusModule" aria-label="Aller à un module"><option value="">⌖ Naviguer</option></select><button id="focusNext" type="button" title="Module suivant">▶</button><button id="toggleBrowser" type="button" aria-expanded="false" title="Afficher ou masquer les modules">☷ Modules</button><span class="rack-toolbar-spacer"></span><span class="tempo-chip">◀ <span id="toolbarBpm">120</span> BPM</span><span class="poly-chip">Polyphonie <b>16</b></span><span class="cpu-chip">● Audio</span></div><div class="rack" id="rack"><svg class="wires" id="wires"></svg></div></main><aside class="inspector"><div class="inspector-tabs"><button class="active" data-inspector="module">Module</button><button data-inspector="params">Paramètres</button><button data-inspector="assign">Affectations</button></div><h2>Instrument</h2><div class="panel"><strong>Clavier</strong><div class="keys" id="keys"></div></div><h2>Séquenceur global</h2><div class="panel"><label>Tempo <output id="bpmText">120</output> BPM</label><input type="range" min="40" max="240" value="120" id="bpm" style="width:100%"><div class="steps" id="steps"></div><p class="hint">16 pas, une note par pas ; le module SEQ active aussi le séquenceur global.</p></div><h2>Analyse</h2><div class="panel"><canvas id="scope" width="230" height="90"></canvas><div class="meter"><div id="meter"></div></div></div><h2>Inspecteur</h2><div class="panel" id="inspector">Sélectionne un module. Chaque paramètre possède une fiche « ? ».</div><h2>Diagnostic</h2><div class="panel" id="diagnostics"><p class="hint">Utilise « Patch Doctor » pour analyser les connexions et les sources silencieuses.</p></div><h2>État</h2><div class="panel"><div class="status" id="status">Prêt — active l'audio pour jouer.</div><p class="hint">Moteur Web Audio autonome. Plusieurs familles de modules sont disponibles ; certaines topologies avancées nécessitent encore un moteur de modulation généralisé.</p></div></aside></div><div id="mobileDockControls" role="toolbar" aria-label="Afficher les outils"><button type="button" data-dock="performance" aria-expanded="false">⌨ Clavier</button><button type="button" data-dock="analysisStrip" aria-expanded="false">◉ Analyse</button><button type="button" data-dock="macroPanel" aria-expanded="false">◈ Macros</button><button type="button" id="hideDock">✕ Fermer</button></div><div id="analysisStrip"><div class="analysis-card"><h4>Oscilloscope</h4><div id="scopeSlot"></div></div><div class="analysis-card"><h4>Analyse spectrale</h4><canvas id="spectrum" width="270" height="103"></canvas></div><div class="analysis-card"><h4>Spectrogramme</h4><canvas id="spectrogram" width="270" height="103"></canvas></div><div class="analysis-card"><h4>Corrélogramme</h4><canvas id="correlation" width="270" height="103"></canvas></div></div><div id="performance"><h4>⌨ Clavier &nbsp; · &nbsp; Séquenceur &nbsp; · &nbsp; Macros</h4><div id="keyboardSlot"></div></div><div id="macroPanel"><h4>Macros</h4><div class="macros"><button data-macro="bright">Brillance</button><button data-macro="soft">Douceur</button><button data-macro="motion">Mouvement</button><button data-macro="space">Espace</button></div></div><section class="lesson" id="lesson"><button id="close">✕</button><h2 id="lt"></h2><p id="ld"></p><h3>Écoute et expérimente</h3><p id="le"></p><h3>Notion</h3><p id="ln"></p></section>
 <script>
@@ -360,7 +232,7 @@ function tidyPatch(record=true){
  if(!nodes.length)return;
  if(record)checkpoint();
  const rack=$("#rack"),viewport=$("#viewport");
- const gapX=42,gapY=58,left=30,top=70;
+ const gapX=64,gapY=92,left=36,top=90;
  const columns=[
   nodes.filter(n=>["osc","sampler","noise"].includes(n.type)),
   nodes.filter(n=>["mixer","pan"].includes(n.type)),
