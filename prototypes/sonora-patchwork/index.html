@@ -163,6 +163,32 @@ body{background:#0b1018;color:#ecf3f5}
 .rack-toolbar>*{scroll-snap-align:start}
 .patch-map{right:8px;bottom:calc(64px + env(safe-area-inset-bottom));width:min(290px,calc(100vw - 16px))}
 }
+</style><style id="single-screen-instrument-v10">
+/* One screen is the default; no map, panning workflow, or second screen. */
+#patchOverview,#patchFit,#focusPrev,#focusNext,#focusModule,#patchForward,#patchBack{display:none!important}
+#patchMap{display:none!important}
+.workspace{height:calc(100dvh - 64px)!important;min-height:0!important;overflow:hidden}
+.viewport{height:100%!important;min-height:0!important;overflow:hidden!important;display:flex;flex-direction:column}
+.rack-toolbar{position:relative!important;flex:0 0 auto;min-height:44px;max-height:48px;overflow-x:auto;overflow-y:hidden;padding:4px 8px!important}
+#rack{flex:0 0 auto;min-width:0!important;min-height:0!important;transform-origin:top left;overflow:visible}
+#rack:before{display:none}
+#rack .module{box-shadow:0 3px 10px #0008!important}
+#rack .module .hardware-face{height:13px;margin-bottom:0}
+#rack .module h3{margin-bottom:5px!important;padding:4px 0 6px!important}
+#rack .module .mini-graph{height:36px!important;min-height:36px!important;margin:2px 0 5px!important}
+#rack .module .rotary{gap:4px 5px!important;margin:4px 0!important}
+#rack .module .rotary-cell{min-height:78px!important;gap:3px!important;padding:1px!important}
+#rack .module .rotary-cell .dial{width:38px!important;height:38px!important}
+#rack .module .rotary-cell label{font-size:9px!important;line-height:1.15!important;min-height:0}
+#rack .module .hardware-steps{margin:3px 0}
+#rack .module{padding:8px 10px 28px!important}
+#rack .module .port{bottom:4px}
+#rack .module .portlabel{bottom:4px}
+@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){
+.workspace{height:calc(100dvh - 54px)!important}
+.rack-toolbar{min-height:38px;max-height:42px}
+#rack .module .rotary-cell .dial{width:38px!important;height:38px!important}
+}
 </style></head><body><header><div class="brand"><span class="brand-icon">∿</span><div><strong>SONORA</strong><small>Synthèse · Modulation · Analyse · Création</small></div></div><nav class="main-tabs" aria-label="Navigation SONORA"><button data-tab="instrument">▥ Instrument</button><button class="active" data-tab="modular">⬡ Modular</button><button data-tab="pistes">☷ Pistes</button><button data-tab="laboratoire">▦ Laboratoire</button><button data-tab="code">⌘ Code</button></nav><span class="grow"></span><button id="start">▶ Activer l'audio</button><button id="play">▶ Séquenceur</button><button id="stop">■ STOP / PANIC</button><button id="undo">↶</button><button id="redo">↷</button><button id="save">Exporter</button><button id="load">Importer</button><input id="file" type="file" accept=".json" hidden><button id="doctor">Patch Doctor</button><button id="reset">Patch initial</button></header>
 <div class="workspace"><aside class="sidebar"><h2>⌄ Modules</h2><input id="moduleSearch" type="search" placeholder="⌕ Rechercher un module…" aria-label="Rechercher un module"><div id="catalog"></div><div class="panel"><strong>Mode d'emploi</strong><p>Ajoute des modules, déplace-les par leur titre et relie les prises en tirant un câble. Clique sur un câble pour le débrancher.</p><p>Les connexions audio sont calculées par le moteur Web Audio. Les liaisons de modulation sont indiquées séparément.</p></div></aside><main class="viewport" id="viewport"><div class="rack-toolbar"><button id="patchBack" aria-label="Recentrer">‹</button><span class="patch-title">Mon instrument <span class="pencil">✎</span></span><button id="patchForward" aria-label="Voir les modules suivants">›</button><select id="patchPreset" aria-label="Choisir un patch"><option value="subtractive">Synthé soustractif</option><option value="ambient">Texture ambient</option><option value="rhythm">Séquence rythmique</option></select><button id="shortcutHelp" type="button" title="Afficher les raccourcis clavier" aria-keyshortcuts="?">⌨ Raccourcis</button><button id="patchOverview" type="button" title="Afficher le plan du patch" aria-expanded="false">▤ Plan</button><button id="patchFit" type="button" title="Recentrer sur la chaîne audio">◎ Chaîne</button><button id="tidyPatch" type="button" title="Réorganiser les modules sans modifier le son">▦ Ranger</button><button id="focusPrev" type="button" title="Module précédent">◀</button><select id="focusModule" aria-label="Aller à un module"><option value="">⌖ Naviguer</option></select><button id="focusNext" type="button" title="Module suivant">▶</button><button id="toggleBrowser" type="button" aria-expanded="false" title="Afficher ou masquer les modules">☷ Modules</button><span class="rack-toolbar-spacer"></span><span class="tempo-chip">◀ <span id="toolbarBpm">120</span> BPM</span><span class="poly-chip">Polyphonie <b>16</b></span><span class="cpu-chip">● Audio</span></div><aside id="patchMap" class="patch-map" aria-label="Plan interactif du patch" hidden><div class="patch-map-head"><strong>PLAN DU PATCH</strong><button id="patchMapClose" aria-label="Fermer le plan">×</button></div><canvas id="patchMapCanvas" width="440" height="260" aria-label="Vue d’ensemble des modules"></canvas><p>Clique dans le plan pour naviguer. Le cadre indique la zone visible.</p></aside><div class="rack" id="rack"><svg class="wires" id="wires"></svg></div></main><aside class="inspector"><div class="inspector-tabs"><button class="active" data-inspector="module">Module</button><button data-inspector="params">Paramètres</button><button data-inspector="assign">Affectations</button></div><h2>Instrument</h2><div class="panel"><strong>Clavier</strong><div class="keys" id="keys"></div></div><h2>Séquenceur global</h2><div class="panel"><label>Tempo <output id="bpmText">120</output> BPM</label><input type="range" min="40" max="240" value="120" id="bpm" style="width:100%"><div class="steps" id="steps"></div><p class="hint">16 pas, une note par pas ; le module SEQ active aussi le séquenceur global.</p></div><h2>Analyse</h2><div class="panel"><canvas id="scope" width="230" height="90"></canvas><div class="meter"><div id="meter"></div></div></div><h2>Inspecteur</h2><div class="panel" id="inspector">Sélectionne un module. Chaque paramètre possède une fiche « ? ».</div><h2>Diagnostic</h2><div class="panel" id="diagnostics"><p class="hint">Utilise « Patch Doctor » pour analyser les connexions et les sources silencieuses.</p></div><h2>État</h2><div class="panel"><div class="status" id="status">Prêt — active l'audio pour jouer.</div><p class="hint">Moteur Web Audio autonome. Plusieurs familles de modules sont disponibles ; certaines topologies avancées nécessitent encore un moteur de modulation généralisé.</p></div></aside></div><div id="mobileDockControls" role="toolbar" aria-label="Afficher les outils"><button type="button" data-dock="performance" aria-expanded="false">⌨ Clavier</button><button type="button" data-dock="analysisStrip" aria-expanded="false">◉ Analyse</button><button type="button" data-dock="macroPanel" aria-expanded="false">◈ Macros</button><button type="button" id="hideDock">✕ Fermer</button></div><div id="analysisStrip"><div class="analysis-card"><h4>Oscilloscope</h4><div id="scopeSlot"></div></div><div class="analysis-card"><h4>Analyse spectrale</h4><canvas id="spectrum" width="270" height="103"></canvas></div><div class="analysis-card"><h4>Spectrogramme</h4><canvas id="spectrogram" width="270" height="103"></canvas></div><div class="analysis-card"><h4>Corrélogramme</h4><canvas id="correlation" width="270" height="103"></canvas></div></div><div id="performance"><h4>⌨ Clavier &nbsp; · &nbsp; Séquenceur &nbsp; · &nbsp; Macros</h4><div id="keyboardSlot"></div></div><div id="macroPanel"><h4>Macros</h4><div class="macros"><button data-macro="bright">Brillance</button><button data-macro="soft">Douceur</button><button data-macro="motion">Mouvement</button><button data-macro="space">Espace</button></div></div><section class="lesson" id="lesson"><button id="close">✕</button><h2 id="lt"></h2><p id="ld"></p><h3>Écoute et expérimente</h3><p id="le"></p><h3>Notion</h3><p id="ln"></p></section>
 <script>
@@ -441,5 +467,68 @@ window.addEventListener("resize",()=>requestAnimationFrame(drawWires));
  new ResizeObserver(schedule).observe(rack);
  new MutationObserver(schedule).observe(rack,{childList:true});
  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!panel.hidden)setOpen(false)});
+})();
+
+// Single-screen instrument: compact measured grid, auto-fit without scrolling.
+// CSS zoom preserves DOM hit-testing and cable coordinates; drag movement is zoom-corrected.
+(function(){
+ const rack=$("#rack"),viewport=$("#viewport");if(!rack||!viewport)return;
+ let busy=false,scale=1,originalDrag=null;
+ const isControl=n=>["adsr","lfo","seq","clock","scope","meter"].includes(n.type);
+ function fitAll(){
+  if(busy||!nodes.length)return;busy=true;
+  try{
+   rack.style.zoom="1";rack.style.transform="none";
+   const cards=[...rack.querySelectorAll(".module")];
+   const sizes=new Map(cards.map(el=>[el.dataset.id,{w:el.offsetWidth,h:el.offsetHeight,el}]));
+   const controls=nodes.filter(isControl),audio=nodes.filter(n=>!isControl(n));
+   const availableW=Math.max(320,viewport.clientWidth-18);
+   const availableH=Math.max(240,viewport.clientHeight-(viewport.querySelector(".rack-toolbar")?.offsetHeight||45)-12);
+   // Search compact column counts: maximize scale while keeping each module fully visible.
+   let best=null;
+   for(let cols=1;cols<=Math.min(12,nodes.length);cols++){
+    const gapX=18,gapY=22,pad=16;
+    const rows=[];const sorted=[...audio,...controls];
+    for(let i=0;i<sorted.length;i+=cols)rows.push(sorted.slice(i,i+cols));
+    const colWidths=Array(cols).fill(0),rowHeights=rows.map(row=>Math.max(...row.map(n=>sizes.get(n.id)?.h||250)));
+    rows.forEach(row=>row.forEach((n,c)=>{colWidths[c]=Math.max(colWidths[c],sizes.get(n.id)?.w||240)}));
+    const width=pad*2+colWidths.reduce((a,b)=>a+b,0)+(cols-1)*gapX;
+    const height=pad*2+rowHeights.reduce((a,b)=>a+b,0)+(rows.length-1)*gapY;
+    const candidateScale=Math.min(1,availableW/width,availableH/height);
+    if(!best||candidateScale>best.scale){best={cols,rows,colWidths,rowHeights,width,height,scale:candidateScale,gapX,gapY,pad}}
+   }
+   if(!best)return;
+   let y=best.pad;
+   best.rows.forEach((row,r)=>{
+    let x=best.pad;
+    row.forEach((n,c)=>{const z=sizes.get(n.id);n.x=x;n.y=y;if(z){z.el.style.left=x+"px";z.el.style.top=y+"px"}x+=best.colWidths[c]+best.gapX});
+    y+=best.rowHeights[r]+best.gapY;
+   });
+   rack.style.width=best.width+"px";rack.style.height=best.height+"px";
+   const svg=$("#wires");svg.setAttribute("width",best.width);svg.setAttribute("height",best.height);svg.style.width=best.width+"px";svg.style.height=best.height+"px";
+   scale=Math.max(.12,best.scale);rack.style.zoom=String(scale);
+   viewport.scrollLeft=0;viewport.scrollTop=0;drawWires();
+   const warning=scale<.55?" · commandes petites sur cet écran":"";
+   status("Vue intégrale · "+nodes.length+" modules · "+Math.round(scale*100)+" %"+warning);
+  }finally{busy=false}
+ }
+ const previousRender=render;
+ render=function(){previousRender();requestAnimationFrame(fitAll)};
+ // The old header drag uses raw pointer pixels. Correct delta for zoom.
+ function repairDragging(){
+  rack.addEventListener("pointerdown",e=>{
+   const h=e.target.closest(".module h3");if(!h)return;
+   const el=h.closest(".module"),n=nodes.find(n=>n.id===el.dataset.id);if(!n)return;
+   const x=e.clientX,y=e.clientY,ox=n.x,oy=n.y;
+   const move=ev=>{if(!h.hasPointerCapture(ev.pointerId))return;n.x=Math.max(0,ox+(ev.clientX-x)/scale);n.y=Math.max(0,oy+(ev.clientY-y)/scale);el.style.left=n.x+"px";el.style.top=n.y+"px";drawWires()};
+   // Capture listener runs before the old header listener; override its move callback after pointerdown.
+   requestAnimationFrame(()=>{if(h.hasPointerCapture(e.pointerId))h.onpointermove=move});
+  },true);
+ }
+ repairDragging();
+ const tidy=$("#tidyPatch");if(tidy)tidy.addEventListener("click",()=>requestAnimationFrame(fitAll));
+ const ro=new ResizeObserver(()=>requestAnimationFrame(fitAll));ro.observe(viewport);
+ window.addEventListener("orientationchange",()=>setTimeout(fitAll,120));
+ requestAnimationFrame(fitAll);
 })();
 </script></body></html>
