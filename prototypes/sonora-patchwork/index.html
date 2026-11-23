@@ -38,6 +38,12 @@ button.danger{border-color:#6b2f2f;color:#ffb0b0}
 #openCatalog{display:none}
 
 .workspace{display:grid;grid-template-columns:230px minmax(0,1fr) 290px;min-height:0}
+.sidebar{grid-column:1;grid-row:1}.center{grid-column:2;grid-row:1}.panel{grid-column:3;grid-row:1}
+.workspace.no-side{grid-template-columns:0 minmax(0,1fr) 290px}
+.workspace.no-panel{grid-template-columns:230px minmax(0,1fr) 0}
+.workspace.no-side.no-panel{grid-template-columns:0 minmax(0,1fr) 0}
+.no-side .sidebar,.no-panel .panel{display:none}
+button.toggle[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 .sidebar,.panel{background:var(--bg2);padding:14px;overflow:auto;min-height:0}
 .sidebar{border-right:1px solid var(--line)}
 .panel{border-left:1px solid var(--line)}
@@ -49,6 +55,7 @@ button.danger{border-color:#6b2f2f;color:#ffb0b0}
 .toolbar{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .toolbar .title{font-weight:500;margin-right:6px}
 #status{margin-left:auto;color:var(--mute);font-size:12px;min-width:0}
+.toolbar .toggle{min-height:30px;padding:4px 10px;font-size:13px}
 
 /* Catalogue */
 #moduleSearch{width:100%;margin-bottom:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--text);min-height:36px}
@@ -63,7 +70,8 @@ details.cat[open] summary::before{content:"▾ "}
 
 /* Rack */
 .rack-scroll{overflow:auto;position:relative;background:var(--bg);min-height:0}
-#rack{user-select:none;-webkit-user-select:none;position:relative;background-image:radial-gradient(#252b38 1px,transparent 1.2px);background-size:24px 24px}
+#zoomBox{position:relative}
+#rack{transform-origin:0 0;user-select:none;-webkit-user-select:none;position:relative;background-image:radial-gradient(#252b38 1px,transparent 1.2px);background-size:24px 24px}
 #wires{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:5}
 #wires .hit{fill:none;stroke:transparent;stroke-width:16;pointer-events:stroke;cursor:pointer}
 #wires .shadow{fill:none;stroke:#000;stroke-opacity:.45;stroke-width:7;stroke-linecap:round;transform:translate(0,3px)}
@@ -146,6 +154,9 @@ kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2)
   body{display:block}
   .workspace{display:block}
   #openCatalog{display:inline-flex}
+  #togSide{display:none}
+  .sidebar,.center,.panel{grid-column:auto;grid-row:auto}
+  .workspace.no-side,.workspace.no-panel,.workspace.no-side.no-panel{display:block}
   .sidebar{position:fixed;left:0;top:0;bottom:0;width:min(300px,86vw);z-index:30;transform:translateX(-100%);transition:transform .2s;box-shadow:8px 0 30px #000a}
   .sidebar.open{transform:none}
   .center{display:block}
@@ -207,9 +218,12 @@ kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2)
         <option value="rhythm">Séquence rythmique</option>
       </select>
       <button id="tidy" type="button" title="Réorganiser les modules sans modifier le son">Ranger</button>
+      <button id="togSide" class="toggle" type="button" aria-pressed="true" title="Afficher ou masquer le catalogue de modules">Catalogue</button>
+      <button id="togPanel" class="toggle" type="button" aria-pressed="true" title="Afficher ou masquer l'analyse, la fiche et le diagnostic">Analyse</button>
+      <button id="togFit" class="toggle" type="button" aria-pressed="false" title="Réduire le rack pour voir tout le patch d'un coup">Voir tout</button>
       <span id="status" role="status" aria-live="polite">Prêt</span>
     </div>
-    <div class="rack-scroll" id="scroller"><div id="rack"><svg id="wires" aria-hidden="false"></svg></div></div>
+    <div class="rack-scroll" id="scroller"><div id="zoomBox"><div id="rack"><svg id="wires" aria-hidden="false"></svg></div></div></div>
     <div class="dock">
       <div class="seq-row">
         <label>Tempo <input id="bpm" type="range" min="40" max="240" value="120"><span id="bpmText">120</span> BPM</label>
@@ -724,19 +738,25 @@ function render(doLayout=false){
   inspect(find(selected));
 }
 function size(n){const el=$("#rack").querySelector('.module[data-id="'+n.id+'"]');return el?{w:el.offsetWidth,h:el.offsetHeight}:{w:W,h:260}}
+let zoom=1,fitMode=false;
 function fitRack(){
   let mw=0,mh=0;for(const n of nodes){const s=size(n);mw=Math.max(mw,n.x+s.w);mh=Math.max(mh,n.y+s.h)}
-  const r=$("#rack"),sc=$("#scroller");
-  r.style.width=Math.max(mw+120,sc.clientWidth)+"px";r.style.height=Math.max(mh+120,sc.clientHeight)+"px";
+  const r=$("#rack"),sc=$("#scroller"),box=$("#zoomBox"),cw=sc.clientWidth-2,ch=sc.clientHeight-2;
+  /* « Voir tout » : le rack est réduit pour tenir dans la zone ; sinon il garde sa taille et défile */
+  zoom=fitMode&&nodes.length?Math.max(.2,Math.min(1,cw/(mw+32),ch/(mh+32))):1;
+  const w=fitMode?mw+32:Math.max(mw+120,cw),h=fitMode?mh+32:Math.max(mh+120,ch);
+  r.style.transform=zoom===1?"":"scale("+zoom+")";r.style.width=w+"px";r.style.height=h+"px";
+  box.style.width=Math.floor(w*zoom)+"px";box.style.height=Math.floor(h*zoom)+"px";
 }
 function placeVisible(n){
   const sc=$("#scroller"),s=size(n),others=nodes.filter(o=>o!==n);
   const moveTo=(x,y)=>{n.x=x;n.y=y;const e=$("#rack").querySelector('.module[data-id="'+n.id+'"]');e.style.left=x+"px";e.style.top=y+"px"};
-  for(let y=sc.scrollTop+16;y+s.h<sc.scrollTop+sc.clientHeight;y+=24)for(let x=sc.scrollLeft+16;x+s.w<sc.scrollLeft+sc.clientWidth;x+=24){
+  const sl=sc.scrollLeft/zoom,st=sc.scrollTop/zoom,vw=sc.clientWidth/zoom,vh=sc.clientHeight/zoom;
+  for(let y=st+16;y+s.h<st+vh;y+=24)for(let x=sl+16;x+s.w<sl+vw;x+=24){
     moveTo(x,y);if(!others.some(o=>overlaps(n,o))){fitRack();return}
   }
-  moveTo(Math.round((sc.scrollLeft+16)/8)*8,Math.round((sc.scrollTop+16)/8)*8);resolveOverlap(n);
-  sc.scrollTo({left:Math.max(0,n.x-24),top:Math.max(0,n.y-24),behavior:"smooth"});
+  moveTo(Math.round((sl+16)/8)*8,Math.round((st+16)/8)*8);resolveOverlap(n);fitRack();
+  sc.scrollTo({left:Math.max(0,(n.x-24)*zoom),top:Math.max(0,(n.y-24)*zoom),behavior:"smooth"});
 }
 
 /* Rangement : colonnes selon le chemin du signal, sans chevauchement */
@@ -774,7 +794,7 @@ function startDrag(e,n,el,h){
   const move=ev=>{
     if(!moved&&Math.hypot(ev.clientX-x0,ev.clientY-y0)>4){checkpoint();moved=true;el.classList.add("dragging")}
     if(!moved)return;
-    n.x=Math.max(0,Math.round((ox+ev.clientX-x0)/8)*8);n.y=Math.max(0,Math.round((oy+ev.clientY-y0)/8)*8);
+    n.x=Math.max(0,Math.round((ox+(ev.clientX-x0)/zoom)/8)*8);n.y=Math.max(0,Math.round((oy+(ev.clientY-y0)/zoom)/8)*8);
     el.style.left=n.x+"px";el.style.top=n.y+"px";drawWires();
   };
   const up=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",up);h.removeEventListener("pointercancel",up);el.classList.remove("dragging");if(moved){resolveOverlap(n);drawWires()}};
@@ -784,7 +804,7 @@ function startDrag(e,n,el,h){
 /* ---------- Câbles ---------- */
 const SVGNS="http://www.w3.org/2000/svg";
 const jackEl=(id,side,kind)=>$("#rack").querySelector('.jack[data-node="'+id+'"][data-side="'+side+'"][data-kind="'+kind+'"]');
-function jackPos(j){const r=$("#rack").getBoundingClientRect(),b=j.getBoundingClientRect();return {x:b.left+b.width/2-r.left,y:b.top+b.height/2-r.top}}
+function jackPos(j){const r=$("#rack").getBoundingClientRect(),b=j.getBoundingClientRect();return {x:(b.left+b.width/2-r.left)/zoom,y:(b.top+b.height/2-r.top)/zoom}}
 function sagOf(a,b){return Math.min(90,26+Math.hypot(b.x-a.x,b.y-a.y)*.16)}
 function curve(a,b){
   const dx=b.x-a.x;
@@ -845,7 +865,7 @@ function startLink(e,j){
   linking={el:j,side:j.dataset.side,tap:true};markTargets(true);
   const x0=e.clientX,y0=e.clientY;
   const move=ev=>{
-    mouse={x:ev.clientX-$("#rack").getBoundingClientRect().left,y:ev.clientY-$("#rack").getBoundingClientRect().top};
+    const rr=$("#rack").getBoundingClientRect();mouse={x:(ev.clientX-rr.left)/zoom,y:(ev.clientY-rr.top)/zoom};
     if(Math.hypot(ev.clientX-x0,ev.clientY-y0)>6&&linking)linking.tap=false;drawWires();
   };
   const up=ev=>{
@@ -861,6 +881,23 @@ function startLink(e,j){
 $("#rack").addEventListener("pointerdown",e=>{if(e.target.closest(".module,.jack,.del"))return;let ch=false;if(selectedEdge){selectedEdge=null;ch=true}if(linking){endLink();return}if(ch)drawWires()});
 $("#scroller").addEventListener("scroll",()=>{if(linking)drawWires()});
 window.addEventListener("resize",()=>{fitRack();drawWires()});
+
+/* ---------- Panneaux repliables : le patch peut occuper toute la largeur ---------- */
+{
+  const ws=document.querySelector(".workspace"),KEY="sonora-synthe-panneaux";
+  let st={side:true,panel:true};
+  try{st={...st,...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch(e){}
+  const apply=()=>{
+    ws.classList.toggle("no-side",!st.side);ws.classList.toggle("no-panel",!st.panel);
+    $("#togSide").setAttribute("aria-pressed",String(st.side));$("#togPanel").setAttribute("aria-pressed",String(st.panel));
+    try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
+    fitRack();drawWires();
+  };
+  $("#togSide").onclick=()=>{st.side=!st.side;apply()};
+  $("#togPanel").onclick=()=>{st.panel=!st.panel;apply()};
+  $("#togFit").onclick=()=>{fitMode=!fitMode;$("#togFit").setAttribute("aria-pressed",String(fitMode));if(fitMode)$("#scroller").scrollTo(0,0);fitRack();drawWires();status(fitMode?"Patch entier affiché. Touche « Voir tout » de nouveau pour revenir à la taille normale.":"Taille normale")};
+  window.applyPanneaux=apply;
+}
 
 /* ---------- Catalogue ---------- */
 const groups=[...new Set(Object.values(catalog).map(c=>c.group))];
@@ -992,6 +1029,7 @@ buildCatalog();renderSteps();frame();
   try{const raw=localStorage.getItem("sonora-synthe-autosave");if(raw){const d=JSON.parse(raw);if(validPatch(d)){restore(raw);loaded=true;tidy(false)}}}catch(e){}
   if(!loaded)loadPreset("subtractive",false);
   history=[];future=[];historyUI();
+  applyPanneaux();
 }
 </script>
 </body>
