@@ -568,12 +568,45 @@ function initAudio(){if(ctx){ctx.resume();return}ctx=new (window.AudioContext||w
 function waveshape(amount){const n=4096,curve=new Float32Array(n),k=Math.max(0,amount)*2;for(let i=0;i<n;i++){const x=i*2/(n-1)-1;curve[i]=k===0?x:(1+k)*x/(1+k*Math.abs(x))}return curve}
 function processor(n,created,stoppables){const p=n.params;let input,output;const track=x=>{created.push(x);return x};if(["filter","highpass","bandpass"].includes(n.type)){input=track(ctx.createBiquadFilter());input.type=n.type==="filter"?"lowpass":n.type;input.frequency.value=p.cutoff;input.Q.value=p.q;output=input}else if(["vca","mixer","out"].includes(n.type)){input=track(ctx.createGain());input.gain.value=p.gain;output=input}else if(n.type==="pan"){input=track(ctx.createStereoPanner());input.pan.value=p.pan;output=input}else if(n.type==="drive"){input=track(ctx.createWaveShaper());input.curve=waveshape(p.drive);input.oversample="2x";output=input}else if(n.type==="delay"){input=track(ctx.createGain());const delay=track(ctx.createDelay(2)),fb=track(ctx.createGain()),sum=track(ctx.createGain());delay.delayTime.value=p.time;fb.gain.value=p.feedback;input.connect(sum);input.connect(delay);delay.connect(fb);fb.connect(delay);delay.connect(sum);output=sum}else if(n.type==="chorus"){input=track(ctx.createGain());const delay=track(ctx.createDelay(.1)),mix=track(ctx.createGain()),lfo=track(ctx.createOscillator()),depth=track(ctx.createGain());delay.delayTime.value=.02;depth.gain.value=p.depth;lfo.frequency.value=p.rate;lfo.connect(depth);depth.connect(delay.delayTime);lfo.start();stoppables.push(lfo);input.connect(mix);input.connect(delay);delay.connect(mix);output=mix}else if(n.type==="tremolo"){input=track(ctx.createGain());const amp=track(ctx.createGain()),osc=track(ctx.createOscillator()),depth=track(ctx.createGain());amp.gain.value=1-p.depth/2;depth.gain.value=p.depth/2;osc.frequency.value=p.rate;osc.connect(depth);depth.connect(amp.gain);osc.start();stoppables.push(osc);input.connect(amp);output=amp}else if(n.type==="compressor"){input=track(ctx.createDynamicsCompressor());input.threshold.value=p.threshold;input.ratio.value=p.ratio;output=input}return {input,output}}
 let lastSeqNote=null,gateTimer=null;
+const MAX_VOIX=16;
+/* Voix et effets : ce qui est en amont d'un oscillateur, d'un filtre ou d'un VCA est refait pour chaque note (une voix).
+   Ce qui ne mène ensuite qu'à la sortie (délai, chorus, trémolo, compresseur, panoramique, mélangeur final, OUTPUT)
+   est construit une seule fois et partagé : un écho continue après la fin de la note, et dix notes ne font pas dix échos. */
+const VOIX_TYPES=new Set(["osc","noise","sampler","filter","highpass","bandpass","vca"]);
+function sharedSet(){
+  const memo=new Map();
+  const voix=id=>{if(memo.has(id))return memo.get(id);memo.set(id,false);const n=find(id),r=VOIX_TYPES.has(n?.type)||edges.some(([a,b])=>a===id&&voix(b));memo.set(id,r);return r};
+  return new Set(nodes.filter(n=>{const k=catalog[n.type].kind;return (k==="processor"||k==="output")&&!voix(n.id)}).map(n=>n.id));
+}
+let shared=null;
+function getShared(){
+  const S=sharedSet();
+  const sig=JSON.stringify([...S].map(id=>{const n=find(id);return [id,n.type,n.params]}))+JSON.stringify(edges.filter(([a,b])=>S.has(a)&&S.has(b)));
+  if(shared&&shared.sig===sig)return shared;
+  if(shared)retireShared(shared);
+  const created=[],stoppables=[],map=new Map();
+  for(const id of S)map.set(id,processor(find(id),created,stoppables));
+  for(const [a,b] of edges){if(S.has(a)&&S.has(b)){const A=map.get(a),B=map.get(b);if(A?.output&&B?.input)A.output.connect(B.input)}}
+  for(const id of S)if(find(id).type==="out")map.get(id).output.connect(master);
+  shared={sig,S,nodes:map,created,stoppables};
+  return shared;
+}
+/* Un réglage change : le nouveau graphe sert aux prochaines notes. L'ancien reste tant qu'une note le nourrit, puis le temps de laisser finir ses échos. */
+function retireShared(s){
+  const attendre=()=>{
+    if([...active.values()].some(v=>v.shared===s)){setTimeout(attendre,1000);return}
+    setTimeout(()=>{for(const o of s.stoppables){try{o.stop()}catch(e){}}for(const n of s.created){try{n.disconnect()}catch(e){}}},4000);
+  };
+  attendre();
+}
 function noteOn(midi,from="key"){
   if(!ctx)initAudio();
   const key=from+midi;
   if(active.has(key))releaseVoice(key);
+  while(active.size>=MAX_VOIX)releaseVoice(active.keys().next().value);   // la plus ancienne cède la place
   const created=[],sources=[],stoppables=[],audioNodes=new Map(),reachable=new Set(),t0=ctx.currentTime;
-  for(const n of nodes){const k=catalog[n.type].kind;if(k==="processor"||k==="output")audioNodes.set(n.id,processor(n,created,stoppables))}
+  const sh=getShared();
+  for(const n of nodes){const k=catalog[n.type].kind;if((k==="processor"||k==="output")&&!sh.S.has(n.id))audioNodes.set(n.id,processor(n,created,stoppables))}
   const toOut=id=>{if(reachable.has(id))return false;reachable.add(id);if(find(id)?.type==="out")return true;return edges.some(([a,b])=>a===id&&toOut(b))};
   for(const n of nodes.filter(x=>catalog[x.type].kind==="source")){
     reachable.clear();if(!toOut(n.id))continue;
@@ -583,7 +616,14 @@ function noteOn(midi,from="key"){
     const g=ctx.createGain();g.gain.value=n.params.gain;src.connect(g);created.push(src,g);sources.push(src);
     audioNodes.set(n.id,{output:g,detune:n.type==="noise"?null:src.detune});src.start();
   }
-  for(const [a,b] of edges){const A=audioNodes.get(a),B=audioNodes.get(b);if(A?.output&&B?.input)A.output.connect(B.input)}
+  const gate=ctx.createGain();gate.gain.setValueAtTime(0,t0);gate.gain.linearRampToValueAtTime(1,t0+.006);created.push(gate);
+  const entrees=new Set();
+  for(const [a,b] of edges){
+    const A=audioNodes.get(a);if(!A?.output)continue;
+    if(sh.S.has(b)){const B=sh.nodes.get(b);if(B?.input){A.output.connect(gate);entrees.add(B.input)}}
+    else{const B=audioNodes.get(b);if(B?.input)A.output.connect(B.input)}
+  }
+  for(const inp of entrees)gate.connect(inp);
   if(!sources.length){
     for(const n of stoppables){try{n.stop()}catch(e){}}
     for(const n of created){try{n.disconnect()}catch(e){}}
@@ -614,11 +654,8 @@ function noteOn(midi,from="key"){
   }
   /* Sans ADSR branché sur un module, la première enveloppe libre façonne le volume global */
   const legacy=env.length?undefined:nodes.find(n=>n.type==="adsr"&&!edges.some(e=>e[0]===n.id)&&(!gatedBySeq(n.id)||from==="seq"))?.params;
-  const gate=ctx.createGain();gate.gain.setValueAtTime(0,t0);gate.gain.linearRampToValueAtTime(1,t0+.006);
-  for(const n of nodes.filter(x=>x.type==="out"))audioNodes.get(n.id)?.output.connect(gate);
-  gate.connect(master);created.push(gate);
   if(legacy){const a=Math.max(.005,legacy.attack);gate.gain.cancelScheduledValues(t0);gate.gain.setValueAtTime(0,t0);gate.gain.linearRampToValueAtTime(1,t0+a);gate.gain.linearRampToValueAtTime(legacy.sustain,t0+a+legacy.decay)}
-  active.set(key,{created,sources,stoppables,gate,legacy,env});
+  active.set(key,{created,sources,stoppables,gate,legacy,env,shared:sh});
   played++;if(from==="seq")playedSeq++;checkSoon();
   status((from==="seq"?"Pas":"Note")+" "+midi+", "+sources.length+" source(s)"+(env.length?", "+env.length+" enveloppe(s) câblée(s)":""));
 }
@@ -1131,7 +1168,7 @@ document.addEventListener("pointerdown",e=>{const sb=$("#sidebar");if(sb.classLi
 /* ---------- Patches prédéfinis ---------- */
 const PRESETS={
   subtractive:{nodes:[["osc"],["osc",{wave:"square",detune:7}],["mixer"],["filter"],["vca"],["out"],["adsr"],["lfo",{rate:.4,depth:250}],["seq"]],edges:[[0,2],[1,2],[2,3],[3,4],[4,5],[7,3],[6,4]]},
-  ambient:{nodes:[["osc",{wave:"sine",gain:.3}],["osc",{wave:"triangle",detune:5,gain:.25}],["noise",{gain:.04}],["mixer"],["filter",{cutoff:900,q:.7}],["chorus"],["delay",{time:.45,feedback:.5}],["vca"],["out"],["adsr",{attack:.8,decay:.6,sustain:.8,release:2.5}],["lfo",{rate:.15,depth:300}]],edges:[[0,3],[1,3],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[10,4],[9,7]]},
+  ambient:{nodes:[["osc",{wave:"sine",gain:.3}],["osc",{wave:"triangle",detune:5,gain:.25}],["noise",{gain:.04}],["mixer"],["filter",{cutoff:900,q:.7}],["chorus"],["delay",{time:.45,feedback:.5}],["vca"],["out"],["adsr",{attack:.8,decay:.6,sustain:.8,release:2.5}],["lfo",{rate:.15,depth:300}]],edges:[[0,3],[1,3],[2,3],[3,4],[4,7],[7,5],[5,6],[6,8],[10,4],[9,7]]},
   rhythm:{nodes:[["osc",{wave:"square",gain:.3}],["sampler"],["mixer"],["drive",{drive:30}],["filter",{cutoff:1400,q:4}],["vca"],["out"],["adsr",{attack:.005,decay:.12,sustain:.15,release:.1}],["lfo",{rate:4,depth:600}],["seq",{gate:.4}]],edges:[[0,2],[1,2],[2,3],[3,4],[4,5],[5,6],[8,4],[7,5],[7,4],[9,7]]}
 };
 function loadPreset(name,record=true){
