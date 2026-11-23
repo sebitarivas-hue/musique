@@ -154,6 +154,22 @@ kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2)
 
 /* Écrans moyens et téléphones : pas de défilement de page horizontal */
 .top{min-width:0}
+#fichePro{display:none}
+@page{size:A4 landscape;margin:12mm}
+@media print{
+  html.print-pro,html.print-pro body{background:#fff!important;color:#000}
+  body.print-pro{display:block;height:auto}
+  body.print-pro>:not(#fichePro){display:none!important}
+  body.print-pro #fichePro{display:block;font:11px/1.4 system-ui,sans-serif;color:#000}
+  #fichePro h1{font-size:18px;font-weight:500;margin:0 0 6px}
+  #fichePro h1,#fichePro h2{color:#000;text-transform:none;letter-spacing:0}
+  #fichePro h2{font-size:13px;font-weight:500;margin:14px 0 4px}
+  #fichePro p{margin:3px 0}
+  #fichePro table{border-collapse:collapse;width:100%;margin-top:6px}
+  #fichePro th,#fichePro td{border:1px solid #888;padding:4px 6px;vertical-align:top;text-align:left;font-weight:400}
+  #fichePro th{background:#eee}
+  #fichePro tr{break-inside:avoid}
+}
 #defiBar{padding:10px 14px 12px;border-bottom:1px solid var(--line);background:var(--panel);max-height:40vh;overflow:auto}
 #defiBar .meta{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
 #defiBar .dt{font-size:15px;font-weight:500;margin:2px 0}
@@ -295,11 +311,12 @@ dialog h2{margin-bottom:4px}
 </div>
 </div>
 
+<section id="fichePro" aria-label="Fiche professeur"></section>
 <dialog id="defiList" aria-label="Liste des défis">
   <h2>Défis</h2>
   <p id="defiScore"></p>
   <div id="defiItems"></div>
-  <div class="btn-row"><button type="button" id="defiReset">Effacer ma progression</button><button type="button" id="defiClose">Fermer</button></div>
+  <div class="btn-row"><button type="button" id="defiPrint">Fiche professeur (imprimer)</button><button type="button" id="defiReset">Effacer ma progression</button><button type="button" id="defiClose">Fermer</button></div>
 </dialog>
 <script>
 const $=q=>document.querySelector(q),catalog={
@@ -320,12 +337,13 @@ compressor:{group:"Effets",name:"COMP : Dynamique",kind:"processor",theme:"dark"
 out:{group:"Sortie",name:"OUTPUT : Master",kind:"output",theme:"dark",params:{gain:["niveau",0,1,.01]}},
 adsr:{group:"Modulation",name:"ADSR : Enveloppe",kind:"control",theme:"gold",params:{attack:["attaque s",.005,2,.005],decay:["decay s",.01,2,.01],sustain:["maintien",0,1,.01],release:["release s",.01,4,.01]}},
 lfo:{group:"Modulation",name:"LFO : Oscillation",kind:"control",params:{rate:["fréquence",.1,20,.1],depth:["profondeur",0,3000,10]}},
+fm:{group:"Modulation",name:"FM : Modulateur",kind:"control",params:{ratio:["rapport",.5,8,.5],index:["indice",0,10,.1]}},
 seq:{group:"Séquenceurs",name:"SEQ : 16 pas",kind:"control",theme:"dark",params:{transpose:["transposition",-24,24,1],length:["pas",1,16,1],gate:["durée",.1,1,.05]}},
 clock:{group:"Séquenceurs",name:"CLOCK : Tempo",kind:"control",params:{bpm:["tempo",40,240,1]}},
 scope:{group:"Analyse",name:"SCOPE : Oscilloscope",kind:"control",theme:"dark",params:{}},
 meter:{group:"Analyse",name:"METER : Niveau",kind:"control",params:{}}
 };
-const defaults={osc:{wave:"sawtooth",detune:0,gain:.35},sampler:{wave:"square",detune:-1200,gain:.18},noise:{gain:.15},filter:{cutoff:1800,q:1},highpass:{cutoff:150,q:1},bandpass:{cutoff:1200,q:2},vca:{gain:.7},mixer:{gain:.7},pan:{pan:0},drive:{drive:15},delay:{time:.3,feedback:.28},chorus:{rate:1.3,depth:.004},tremolo:{rate:5,depth:.45},compressor:{threshold:-20,ratio:4},out:{gain:.7},adsr:{attack:.02,decay:.2,sustain:.7,release:.35},lfo:{rate:2,depth:500},seq:{transpose:0,length:16,gate:.9},clock:{bpm:120},scope:{},meter:{}};
+const defaults={osc:{wave:"sawtooth",detune:0,gain:.35},sampler:{wave:"square",detune:-1200,gain:.18},noise:{gain:.15},filter:{cutoff:1800,q:1},highpass:{cutoff:150,q:1},bandpass:{cutoff:1200,q:2},vca:{gain:.7},mixer:{gain:.7},pan:{pan:0},drive:{drive:15},delay:{time:.3,feedback:.28},chorus:{rate:1.3,depth:.004},tremolo:{rate:5,depth:.45},compressor:{threshold:-20,ratio:4},out:{gain:.7},adsr:{attack:.02,decay:.2,sustain:.7,release:.35},lfo:{rate:2,depth:500},fm:{ratio:2,index:2},seq:{transpose:0,length:16,gate:.9},clock:{bpm:120},scope:{},meter:{}};
 const notions={wave:["Forme d'onde","La sinusoïde ne possède qu'une fréquence ; les formes carrée et en dent de scie contiennent des harmoniques.","Change la forme en maintenant une note et écoute le timbre.","Analyse de Fourier : un son complexe peut se décomposer en sinusoïdes."],detune:["Désaccordage","Le cent est un centième de demi-ton.","Essaie 7 cents puis 1200 cents.","f₂ = f₁ × 2^(cents / 1200)"],gain:["Amplitude","Le gain multiplie l'amplitude du signal.","Réduis le niveau avant d'ajouter une saturation.","Une multiplication par deux correspond à environ +6 dB."],cutoff:["Fréquence de coupure","La coupure détermine la zone de fréquences transmise ou atténuée.","Fais varier de 300 Hz à 5000 Hz sur une dent de scie.","La fréquence est mesurée en hertz : cycles par seconde."],q:["Résonance","Q décrit l'accentuation et la sélectivité autour de la fréquence de coupure.","Augmente Q lentement avec le filtre.","Un Q élevé crée un pic spectral."],attack:["Attaque","Durée de montée de l'enveloppe.","Compare 0,01 s et 1 s.","Phase A de ADSR."],decay:["Décroissance","Temps de descente vers le niveau de maintien.","Compare 0,05 s et 1 s.","Phase D de ADSR."],sustain:["Maintien","Niveau conservé tant que la note est tenue.","Compare 0,2 et 0,9.","Contrairement aux autres paramètres ADSR, c'est un niveau."],release:["Relâchement","Temps d'extinction après Note Off.","Compare 0,05 s et 2 s.","Phase R de ADSR."],rate:["Fréquence de modulation","Nombre de cycles de modulation par seconde.","Compare 0,5 et 8 Hz.","T = 1/f."],depth:["Profondeur","Intensité d'un effet ou d'une modulation.","Commence à zéro puis augmente progressivement.","Modulation = signal de commande × profondeur."],time:["Temps de retard","Durée entre un son et son écho.","Essaie 0,15 puis 0,5 seconde.","Distance temporelle entre signal direct et retardé."],feedback:["Rétroaction","Part du signal retardé renvoyée dans le délai.","Augmente progressivement, sans dépasser le niveau prudent.","Une boucle de rétroaction prolonge les répétitions."],drive:["Distorsion","Une fonction non linéaire ajoute des harmoniques.","Compare 0 et 70 sur une sinusoïde.","La saturation modifie le spectre du signal."],bpm:["Tempo","Nombre de battements par minute.","Compare 60 et 180 BPM.","Durée d'un battement = 60/BPM secondes."],pan:["Panoramique","Répartition entre canaux gauche et droit.","Passe de -1 à +1 au casque, à faible volume.","Spatialisation stéréophonique."],threshold:["Seuil","Niveau au-delà duquel la compression intervient.","Abaisse le seuil et observe la dynamique.","Niveau exprimé en dBFS."],ratio:["Ratio","Rapport de réduction de dynamique au-delà du seuil.","Compare 2:1 et 10:1.","Une compression 4:1 réduit 4 dB au-dessus du seuil à 1 dB."],transpose:["Transposition","Déplacement de la hauteur musicale en demi-tons.","Compare +12 et -12.","12 demi-tons = une octave."]};
 /* Fiches pédagogiques : une par type de module.
    role : ce que fait le module. branche : où brancher. essayer : une expérience à faire.
@@ -333,7 +351,7 @@ const notions={wave:["Forme d'onde","La sinusoïde ne possède qu'une fréquence
 const FICHES={
 osc:{
   role:"Produit le son de départ : une onde qui se répète. Sa forme décide du timbre, la note jouée décide de la hauteur.",
-  branche:"Sortie OUT vers un mélangeur, un filtre ou OUTPUT. Entrée MOD : un LFO y fait varier la hauteur (vibrato).",
+  branche:"Sortie OUT vers un mélangeur, un filtre ou OUTPUT. Entrée MOD : un LFO y fait varier la hauteur (vibrato), un modulateur FM en change le timbre.",
   essayer:"Joue une note en changeant la forme : la sinusoïde est douce, le triangle un peu plus clair, la dent de scie et le carré sont riches en harmoniques. Puis règle le second VCO à 7 cents : les deux sons battent doucement et le timbre s'épaissit.",
   retenir:"La hauteur est la fréquence de l'onde. Le timbre vient de sa forme, donc de ses harmoniques.",
   repere:"VCO veut dire Voltage Controlled Oscillator, oscillateur commandé en tension. Sur les synthétiseurs modulaires des années 1960, la hauteur dépendait d'une tension électrique."},
@@ -433,6 +451,12 @@ lfo:{
   essayer:"Relie-le à un oscillateur avec une fréquence de 5 Hz : vibrato. Puis au filtre : wah. Puis au VCA : trémolo. C'est le même module pour trois effets.",
   retenir:"Un LFO ne s'entend pas lui-même : on l'entend par ce qu'il modifie. La profondeur règle l'ampleur du changement.",
   repere:"En dessous d'environ 20 Hz, on entend des battements séparés plutôt qu'une hauteur."},
+fm:{
+  role:"Modulateur FM : un oscillateur très rapide qui fait varier la fréquence d'un autre oscillateur, au lieu de produire un son seul.",
+  branche:"Sortie FM vers l'entrée MOD d'un VCO. Le modulateur suit la note jouée : sa fréquence vaut celle de la note multipliée par le rapport.",
+  essayer:"Relie FM à un VCO en sinusoïde. Avec un rapport entier (1, 2, 3), monte l'indice : des harmoniques apparaissent et le son reste juste. Avec un rapport comme 3,5, le son devient métallique, comme une cloche.",
+  retenir:"Le rapport décide de la famille du timbre (harmonique ou non). L'indice décide de sa richesse.",
+  repere:"John Chowning a découvert la synthèse FM à l'université Stanford en 1967 et l'a publiée en 1973. Yamaha en a fait le synthétiseur DX7, sorti en 1983."},
 seq:{
   role:"Séquenceur de 16 pas : joue une mélodie à chaque pas, au tempo réglé dans la barre du bas.",
   branche:"Sortie GATE vers GATE d'une enveloppe : elle se déclenche alors sur chaque pas du séquenceur seulement, le clavier ne la déclenche plus.",
@@ -459,6 +483,8 @@ meter:{
   repere:"Les vumètres des studios ont longtemps été des aiguilles, lentes, plus proches de ce que perçoit l'oreille."}
 };
 Object.assign(notions,{
+  ratio:["Rapport de la FM","Le modulateur oscille à la fréquence de la note multipliée par ce rapport.","Compare 1, 2, 3 (entiers) puis 3,5 : le timbre passe de juste à métallique.","Rapport entier : harmoniques. Rapport non entier : partiels inharmoniques, comme une cloche."],
+  index:["Indice de la FM","Il règle l'amplitude de la modulation : plus il est grand, plus le timbre contient d'harmoniques.","Passe l'indice de 0 à 6 en tenant une note.","Indice 0 : aucune modulation, on entend la sinusoïde seule."],
   length:["Longueur de la boucle","Nombre de pas joués avant de revenir au début. Les pas au-delà sont grisés.","Passe de 16 à 12 pas : la boucle raccourcit et change de caractère.","Une boucle plus courte que la mesure crée un décalage qu'on appelle polymétrie."],
   gate:["Durée de la note","Part du pas pendant laquelle la note est tenue. Le reste du pas est du silence.","Compare 0,2 (staccato) et 1 (legato).","Ce moment où la note est tenue s'appelle le gate."]
 });
@@ -473,92 +499,106 @@ const reachesOut=id=>{const seen=new Set();const v=x=>{if(seen.has(x))return fal
 const soundOK=()=>N("osc").some(o=>reachesOut(o.id));
 const adsrTo=t=>N("adsr").filter(a=>edges.some(([x,y])=>x===a.id&&find(y)?.type===t));
 const lfoTo=ts=>N("lfo").filter(l=>edges.some(([x,y])=>x===l.id&&ts.includes(find(y)?.type)));
-const NIVEAUX_DEFIS=["Premiers pas","Sculpter le son","Composer avec le patch"];
+const NIVEAUX_DEFIS=["Premiers pas","Sculpter le son","Composer avec le patch","Synthèse FM"];
 const DEFIS=[
-{id:"premier-son",niveau:0,titre:"Entendre un premier son",
+{id:"premier-son",critere:"Un VCO relié à OUTPUT, puis une note jouée.",niveau:0,titre:"Entendre un premier son",
  but:"Faire sonner un oscillateur.",
  depart:{nodes:[["out"]],edges:[]},
  consigne:["Ajoute un VCO depuis le catalogue, dans Sources.","Tire un câble de sa prise OUT vers la prise IN de OUTPUT.","Active l'audio, puis joue une note avec le clavier ou les touches A, S, D, F."],
  indice:"Quand tu tires un câble, les prises qui peuvent le recevoir s'allument.",
  verifier:()=>soundOK(),ecoute:"note",
  bilan:"Un patch est un chemin : une source, puis la sortie. Sans câble jusqu'à OUTPUT, aucun son ne sort."},
-{id:"timbre",niveau:0,titre:"Changer de timbre",
+{id:"timbre",critere:"Un VCO en forme sine relié à la sortie, puis une note jouée.",niveau:0,titre:"Changer de timbre",
  but:"Obtenir le son le plus doux : une sinusoïde.",
  depart:{nodes:[["osc"],["out"]],edges:[[0,1]]},
  consigne:["Sur le VCO, choisis la forme sine.","Joue une note. Essaie aussi square et sawtooth, puis reviens à sine : écoute la différence."],
  indice:"La forme se change dans la liste du VCO, sous le dessin de l'onde.",
  verifier:()=>N("osc").some(o=>reachesOut(o.id)&&o.params.wave==="sine"),ecoute:"note",
  bilan:"La sinusoïde ne contient qu'une seule fréquence. Les autres formes ajoutent des harmoniques : leur timbre est plus brillant."},
-{id:"filtre",niveau:0,titre:"Assombrir avec un filtre",
+{id:"filtre",critere:"Un VCF passe-bas entre le VCO et la sortie, coupure à 800 Hz ou moins, sans câble direct du VCO à OUTPUT.",niveau:0,titre:"Assombrir avec un filtre",
  but:"Retirer les aigus d'un son brillant.",
  depart:{nodes:[["osc"],["out"]],edges:[[0,1]]},
  consigne:["Ajoute un VCF passe-bas, dans Filtres.","Place-le entre le VCO et OUTPUT : supprime le câble direct (clique dessus, puis sur la croix), puis relie le VCO au VCF et le VCF à OUTPUT.","Baisse la coupure à 800 Hz ou moins, puis joue."],
  indice:"Le câble direct du VCO vers OUTPUT doit disparaître, sinon le son passe sans être filtré.",
  verifier:()=>N("filter").some(f=>f.params.cutoff<=800&&reachesOut(f.id)&&N("osc").some(o=>hasPath(o.id,f.id)))&&!E("osc","out"),ecoute:"note",
  bilan:"Le filtre passe-bas laisse passer les graves et retire les aigus. On part d'un son riche et on enlève : c'est la synthèse soustractive."},
-{id:"nappe",niveau:0,titre:"Une nappe qui monte doucement",
+{id:"nappe",critere:"ENV de l'ADSR relié au VCA, attaque de 0,8 s ou plus, relâchement de 1,5 s ou plus.",niveau:0,titre:"Une nappe qui monte doucement",
  but:"Donner au son une attaque lente et une fin longue.",
  depart:{nodes:[["osc"],["vca"],["out"],["adsr"]],edges:[[0,1],[1,2]]},
  consigne:["Relie la prise ENV de l'ADSR à la prise MOD du VCA.","Règle l'attaque à 0,8 s ou plus, et le relâchement à 1,5 s ou plus.","Joue une note et tiens-la, puis lâche-la."],
  indice:"ENV est en bas à droite de l'ADSR. MOD est en bas du VCA, à côté de IN.",
  verifier:()=>adsrTo("vca").some(a=>a.params.attack>=.8&&a.params.release>=1.5)&&soundOK(),ecoute:"note",
  bilan:"Attack et Release sont des durées. Elles dessinent la forme du son dans le temps, de l'appui à l'extinction."},
-{id:"pince",niveau:1,titre:"Un son pincé",
+{id:"pince",critere:"ENV de l'ADSR relié au VCA, attaque de 0,01 s ou moins, decay de 0,25 s ou moins, maintien de 0,2 ou moins.",niveau:1,titre:"Un son pincé",
  but:"Faire un son qui retombe vite, comme une corde pincée.",
  depart:{nodes:[["osc"],["vca"],["out"],["adsr",{attack:.3,decay:.8,sustain:.7}]],edges:[[0,1],[1,2]]},
  consigne:["Relie ENV de l'ADSR à MOD du VCA.","Attaque à 0,01 s ou moins, decay à 0,25 s ou moins, maintien à 0,2 ou moins.","Joue plusieurs notes courtes."],
  indice:"Un son pincé monte tout de suite et ne se maintient presque pas.",
  verifier:()=>adsrTo("vca").some(a=>a.params.attack<=.01&&a.params.decay<=.25&&a.params.sustain<=.2)&&soundOK(),ecoute:"note",
  bilan:"Une attaque brève et un maintien bas donnent un son percussif. Attack, Decay et Release sont des durées ; Sustain est un niveau."},
-{id:"wah",niveau:1,titre:"L'effet wah",
+{id:"wah",critere:"MOD du LFO relié au filtre, fréquence de 1 à 6 Hz, profondeur de 400 ou plus.",niveau:1,titre:"L'effet wah",
  but:"Faire bouger la coupure du filtre avec un LFO.",
  depart:{nodes:[["osc"],["filter",{cutoff:1500,q:4}],["out"],["lfo",{rate:.4,depth:100}]],edges:[[0,1],[1,2]]},
  consigne:["Relie la prise MOD du LFO à l'entrée MOD du filtre.","Règle le LFO entre 1 et 6 Hz, avec une profondeur de 400 ou plus.","Tiens une note : le son s'ouvre et se ferme en boucle."],
  indice:"Les deux prises MOD sont roses. Le câble de modulation est en pointillés.",
  verifier:()=>lfoTo(FILTERS).some(l=>l.params.rate>=1&&l.params.rate<=6&&l.params.depth>=400)&&soundOK(),ecoute:"note",
  bilan:"Un LFO ne s'entend pas lui-même : on l'entend par ce qu'il modifie. Ici, la coupure du filtre varie lentement et régulièrement."},
-{id:"vibrato",niveau:1,titre:"Un vibrato",
+{id:"vibrato",critere:"MOD du LFO relié au VCO, fréquence de 4 à 7 Hz, profondeur de 100 à 1000.",niveau:1,titre:"Un vibrato",
  but:"Faire osciller légèrement la hauteur.",
  depart:{nodes:[["osc",{wave:"sine"}],["out"],["lfo",{rate:.4,depth:100}]],edges:[[0,1]]},
  consigne:["Relie la prise MOD du LFO à l'entrée MOD du VCO.","Règle une fréquence entre 4 et 7 Hz et une profondeur entre 100 et 1000.","Tiens une note : la hauteur ondule."],
  indice:"Le vibrato des chanteurs et des violonistes tourne autour de 5 à 6 oscillations par seconde.",
  verifier:()=>lfoTo(["osc"]).some(l=>l.params.rate>=4&&l.params.rate<=7&&l.params.depth>=100&&l.params.depth<=1000)&&soundOK(),ecoute:"note",
  bilan:"Vibrato : la hauteur varie. Trémolo : le volume varie. Le même LFO fait les deux selon ce qu'on lui branche."},
-{id:"epais",niveau:1,titre:"Épaissir avec deux oscillateurs",
+{id:"epais",critere:"Deux VCO reliés à la sortie, le désaccordage de l'un entre 3 et 15 cents.",niveau:1,titre:"Épaissir avec deux oscillateurs",
  but:"Obtenir un son large avec deux VCO à peine désaccordés.",
  depart:{nodes:[["osc"],["osc"],["mixer"],["out"]],edges:[[0,2],[2,3]]},
  consigne:["Relie le second VCO au mélangeur.","Règle le désaccordage de l'un des deux entre 3 et 15 cents.","Tiens une note : tu entends un léger battement."],
  indice:"Un cent vaut un centième de demi-ton : le désaccord est très faible.",
  verifier:()=>N("osc").filter(o=>reachesOut(o.id)).length>=2&&N("osc").some(o=>Math.abs(o.params.detune)>=3&&Math.abs(o.params.detune)<=15),ecoute:"note",
  bilan:"Deux sons de fréquences très proches battent : leur somme gonfle et se creuse régulièrement. C'est ce qui épaissit le timbre."},
-{id:"echo",niveau:2,titre:"Ajouter un écho",
+{id:"echo",critere:"DELAY entre le VCA et la sortie, temps de 0,2 à 0,6 s, retour de 0,3 ou plus, sans câble direct du VCA à OUTPUT.",niveau:2,titre:"Ajouter un écho",
  but:"Faire répéter le son après un délai.",
  depart:{nodes:[["osc"],["vca"],["delay",{time:.1,feedback:.1}],["out"],["adsr",{attack:.005,decay:.15,sustain:.3,release:.2}]],edges:[[0,1],[1,3],[4,1]]},
  consigne:["Place le DELAY entre le VCA et OUTPUT : supprime le câble direct, puis relie le VCA au DELAY et le DELAY à OUTPUT.","Règle le temps entre 0,2 et 0,6 s, et le retour à 0,3 ou plus.","Joue une note courte et écoute les échos s'éteindre."],
  indice:"Le retour (feedback) renvoie une partie du son à l'entrée du délai : plus il est haut, plus il y a d'échos.",
  verifier:()=>N("delay").some(d=>d.params.time>=.2&&d.params.time<=.6&&d.params.feedback>=.3&&reachesOut(d.id)&&N("vca").some(v=>hasPath(v.id,d.id)))&&!E("vca","out"),ecoute:"note",
  bilan:"Un écho est une copie retardée du son. Le retour la renvoie dans le délai : à chaque passage, elle perd de la force."},
-{id:"enveloppe-filtre",niveau:2,titre:"Une enveloppe pour le filtre aussi",
+{id:"enveloppe-filtre",critere:"ENV de l'ADSR relié à la fois au filtre et au VCA, decay de 0,4 s ou plus.",niveau:2,titre:"Une enveloppe pour le filtre aussi",
  but:"Faire s'ouvrir le filtre à chaque note, en plus du volume.",
  depart:{nodes:[["osc"],["filter",{cutoff:500}],["vca"],["out"],["adsr",{attack:.005,decay:.15,sustain:.4,release:.3}]],edges:[[0,1],[1,2],[2,3],[4,2]]},
  consigne:["Relie aussi ENV de l'ADSR à l'entrée MOD du filtre.","Allonge le decay à 0,4 s ou plus.","Joue une note : le son s'ouvre vite, puis se referme."],
  indice:"Une prise ENV peut recevoir plusieurs câbles : la même enveloppe commande le volume et la couleur.",
  verifier:()=>N("adsr").some(a=>edges.some(([x,y])=>x===a.id&&FILTERS.includes(find(y)?.type))&&edges.some(([x,y])=>x===a.id&&find(y)?.type==="vca")&&a.params.decay>=.4)&&soundOK(),ecoute:"note",
  bilan:"Une enveloppe peut piloter plusieurs réglages. Quand la coupure suit l'enveloppe, le timbre change au fil de la note, comme sur un vrai instrument."},
-{id:"sequenceur",niveau:2,titre:"Faire jouer le séquenceur",
+{id:"sequenceur",critere:"GATE du SEQ relié à GATE de l'ADSR, durée de 0,5 ou moins, au moins quatre pas écoutés.",niveau:2,titre:"Faire jouer le séquenceur",
  but:"Déclencher l'enveloppe à chaque pas du séquenceur.",
  depart:{nodes:[["osc"],["vca"],["out"],["adsr",{attack:.005,decay:.1,sustain:.2,release:.1}],["seq",{gate:.9}]],edges:[[0,1],[1,2],[3,1]]},
  consigne:["Relie la prise GATE du SEQ à l'entrée GATE de l'ADSR.","Règle la durée du SEQ à 0,5 ou moins : les notes seront détachées.","Lance le séquenceur (bouton en haut) et écoute au moins quatre pas."],
  indice:"Les tirets gris sont le câble de déclenchement. Le clavier ne déclenche plus cette enveloppe, seul le séquenceur le fait.",
  verifier:()=>N("seq").some(s=>s.params.gate<=.5&&edges.some(([x,y])=>x===s.id&&find(y)?.type==="adsr"))&&soundOK(),ecoute:"seq",
  bilan:"Le séquenceur envoie un signal GATE à chaque pas : l'enveloppe se déclenche, la note est jouée, puis relâchée. Un pas vaut une double croche."},
-{id:"instrument",niveau:2,titre:"Construire ton instrument",
+{id:"instrument",critere:"Au moins deux VCO reliés à la sortie, un filtre dans la chaîne, un VCA piloté par l'ADSR, un LFO branché.",niveau:2,titre:"Construire ton instrument",
  but:"Assembler un synthétiseur soustractif complet.",
  depart:null,
  consigne:["Garde au moins deux VCO reliés à la sortie.","Passe par un filtre, puis un VCA piloté par l'ADSR (câble ENV vers MOD).","Branche un LFO sur un module, puis joue."],
  indice:"Tu peux repartir du patch « Synthé soustractif » dans la liste de la barre d'outils.",
  verifier:()=>N("osc").filter(o=>reachesOut(o.id)).length>=2&&N("filter").some(f=>reachesOut(f.id)&&N("osc").some(o=>hasPath(o.id,f.id)))&&adsrTo("vca").length>0&&N("lfo").some(l=>edges.some(e=>e[0]===l.id)),ecoute:"note",
- bilan:"Tu as construit un synthétiseur soustractif : des sources, un filtre qui sculpte, un amplificateur piloté par une enveloppe, une modulation lente."}
+ bilan:"Tu as construit un synthétiseur soustractif : des sources, un filtre qui sculpte, un amplificateur piloté par une enveloppe, une modulation lente."},
+{id:"fm-harmonique",critere:"FM relié au VCO, rapport entier de 1 à 4, indice de 1 à 5, puis une note jouée.",niveau:3,titre:"Enrichir un timbre par la FM",
+ but:"Faire vibrer la fréquence d'un oscillateur par un autre, très vite.",
+ depart:{nodes:[["osc",{wave:"sine",gain:.5}],["vca"],["out"],["adsr",{attack:.005,decay:.4,sustain:.4,release:.3}],["fm",{ratio:1.5,index:.5}]],edges:[[0,1],[1,2],[3,1]]},
+ consigne:["Relie la prise FM du modulateur à l'entrée MOD du VCO.","Règle le rapport sur un nombre entier entre 1 et 4, et l'indice entre 1 et 5.","Joue une note, puis fais varier l'indice de 0 à 5 : le son s'enrichit."],
+ indice:"Le VCO reste une simple sinusoïde. Tout ce qui s'ajoute vient de la modulation.",
+ verifier:()=>N("fm").some(f=>edges.some(([a,b])=>a===f.id&&find(b)?.type==="osc")&&Number.isInteger(f.params.ratio)&&f.params.ratio>=1&&f.params.ratio<=4&&f.params.index>=1&&f.params.index<=5)&&soundOK(),ecoute:"note",
+ bilan:"En synthèse FM, un oscillateur fait varier très vite la fréquence d'un autre. L'indice règle la quantité d'harmoniques ajoutés. Avec un rapport entier, ils tombent sur la série harmonique : le timbre est riche et reste juste."},
+{id:"fm-cloche",critere:"FM relié au VCO, rapport non entier, indice de 3 ou plus ; ENV relié au VCA avec attaque de 0,01 s ou moins, decay de 0,8 s ou plus, maintien de 0,1 ou moins, relâchement de 1 s ou plus.",niveau:3,titre:"Une cloche",
+ but:"Fabriquer un son de cloche avec une modulation inharmonique.",
+ depart:{nodes:[["osc",{wave:"sine",gain:.5}],["vca"],["out"],["adsr",{attack:.3,decay:.3,sustain:.7,release:.3}],["fm",{ratio:2,index:1}]],edges:[[0,1],[1,2]]},
+ consigne:["Relie FM à l'entrée MOD du VCO, et ENV de l'ADSR à MOD du VCA.","Choisis un rapport qui n'est pas un nombre entier (3,5 par exemple) et un indice de 3 ou plus.","Règle l'enveloppe : attaque 0,01 s ou moins, decay 0,8 s ou plus, maintien 0,1 ou moins, relâchement 1 s ou plus."],
+ indice:"Une cloche est frappée d'un coup, puis résonne longtemps sans qu'on la tienne : l'attaque est brève et le maintien presque nul.",
+ verifier:()=>N("fm").some(f=>edges.some(([a,b])=>a===f.id&&find(b)?.type==="osc")&&!Number.isInteger(f.params.ratio)&&f.params.index>=3)&&adsrTo("vca").some(a=>a.params.attack<=.01&&a.params.decay>=.8&&a.params.sustain<=.1&&a.params.release>=1)&&soundOK(),ecoute:"note",
+ bilan:"Un rapport non entier crée des partiels qui ne sont pas multiples de la fondamentale : l'oreille n'entend plus de hauteur nette, comme pour une cloche ou un gong. L'enveloppe longue, sans maintien, laisse le son résonner puis s'éteindre."}
 ];
 
 let played=0,playedSeq=0;
@@ -620,7 +660,7 @@ function noteOn(midi,from="key"){
     if(n.type==="noise"){const buf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;src=ctx.createBufferSource();src.buffer=buf;src.loop=true}
     else{src=ctx.createOscillator();src.type=n.params.wave;src.frequency.value=440*Math.pow(2,(midi-69)/12);src.detune.value=n.params.detune}
     const g=ctx.createGain();g.gain.value=n.params.gain;src.connect(g);created.push(src,g);sources.push(src);
-    audioNodes.set(n.id,{output:g,detune:n.type==="noise"?null:src.detune});src.start();
+    audioNodes.set(n.id,{output:g,detune:n.type==="noise"?null:src.detune,freq:n.type==="noise"?null:src.frequency});src.start();
   }
   const gate=ctx.createGain();gate.gain.setValueAtTime(0,t0);gate.gain.linearRampToValueAtTime(1,t0+.006);created.push(gate);
   const entrees=new Set();
@@ -648,6 +688,12 @@ function noteOn(midi,from="key"){
       const scale=filt?1:T.type==="vca"?T.params.gain/3000:.1;
       const o=ctx.createOscillator(),d=ctx.createGain();o.frequency.value=M.params.rate;d.gain.value=M.params.depth*scale;
       o.connect(d);d.connect(param);o.start();created.push(o,d);stoppables.push(o);
+    }else if(M.type==="fm"){
+      /* FM : le modulateur oscille à (fréquence de la note x rapport) ; son amplitude vaut indice x sa fréquence, en hertz, ajoutée à la fréquence du porteur */
+      if(!node.freq)continue;
+      const fmod=440*Math.pow(2,(midi-69)/12)*M.params.ratio,o=ctx.createOscillator(),d=ctx.createGain();
+      o.type="sine";o.frequency.value=fmod;d.gain.value=M.params.index*fmod;
+      o.connect(d);d.connect(node.freq);o.start();created.push(o,d);stoppables.push(o);
     }else if(M.type==="adsr"){
       if(gatedBySeq(M.id)&&from!=="seq")continue;
       if(filt&&node.input)env.push({p:node.input.frequency,rest:T.params.cutoff,peak:Math.min(18000,T.params.cutoff*4),sus:Math.min(18000,T.params.cutoff*(1+3*M.params.sustain)),e:M.params});
@@ -720,7 +766,7 @@ $("#undo").onclick=undo;$("#redo").onclick=redo;
 
 
 /* ---------- Famille, état, historique ---------- */
-const FAMILY={osc:"source",sampler:"source",noise:"source",filter:"filter",highpass:"filter",bandpass:"filter",vca:"amp",mixer:"amp",pan:"amp",drive:"fx",delay:"fx",chorus:"fx",tremolo:"fx",compressor:"fx",adsr:"mod",lfo:"mod",seq:"seq",clock:"seq",out:"out",scope:"tool",meter:"tool"};
+const FAMILY={osc:"source",sampler:"source",noise:"source",filter:"filter",highpass:"filter",bandpass:"filter",vca:"amp",mixer:"amp",pan:"amp",drive:"fx",delay:"fx",chorus:"fx",tremolo:"fx",compressor:"fx",adsr:"mod",lfo:"mod",fm:"mod",seq:"seq",clock:"seq",out:"out",scope:"tool",meter:"tool"};
 const family=t=>FAMILY[t]||"tool";
 function snap(){return JSON.stringify({nodes,edges,next,selected,pattern,bpm})}
 function checkpoint(){try{localStorage.setItem("sonora-synthe-autosave",snap())}catch(e){}history.push(snap());if(history.length>60)history.shift();future=[];historyUI()}
@@ -735,7 +781,7 @@ function validPatch(d){
 }
 
 /* ---------- Règles de branchement ---------- */
-const isCvSrc=n=>n.type==="lfo"||n.type==="adsr";
+const isCvSrc=n=>n.type==="lfo"||n.type==="adsr"||n.type==="fm";
 const isModSrc=n=>isCvSrc(n)||n.type==="seq";
 const kindOf=n=>n.type==="seq"?"gate":isCvSrc(n)?"cv":"audio";
 const hasOut=n=>{const k=catalog[n.type].kind;return k==="source"||k==="processor"||isModSrc(n)};
@@ -747,6 +793,7 @@ function canConnect(a,b){
   const A=find(a),B=find(b);
   if(!A||!B||a===b||!hasOut(A)||edges.some(e=>e[0]===a&&e[1]===b))return false;
   if(A.type==="seq")return B.type==="adsr";
+  if(A.type==="fm")return B.type==="osc"||B.type==="sampler";
   if(isCvSrc(A))return A.type==="adsr"?(FILTERS.includes(B.type)||B.type==="vca"):hasCv(B);
   return hasIn(B)&&!hasPath(b,a);
 }
@@ -786,6 +833,7 @@ function graphPath(n){
   }
   if(t==="adsr"){const a=6+p.attack/2*40,d=a+6+p.decay/2*40,s=34-p.sustain*26,rl=Math.min(158,d+30+p.release/4*30);return "M0 34 L"+a+" 6 L"+d+" "+s+" H"+(d+28)+" L"+rl+" 34"}
   if(t==="lfo")return "M0 20 Q20 -4 40 20 T80 20 T120 20 T160 20";
+  if(t==="fm"){let d="M0 20";for(let i=1;i<=32;i++)d+=" L"+i*5+" "+(20-14*Math.sin(i*(.5+p.ratio*.35))*Math.min(1,.25+p.index/6));return d}
   if(t==="drive")return "M0 33 C40 33 50 7 80 7 S120 7 160 7";
   if(t==="out"||t==="vca")return "M0 34 L160 6";
   return "M0 20 H160";
@@ -849,7 +897,7 @@ function buildModule(n){
   }
   if(c.kind==="control"&&n.type!=="lfo"){
     const p=document.createElement("p");p.className="note";
-    p.textContent={adsr:gatedBySeq(n.id)?"Déclenchée par le séquenceur. Les notes du clavier ignorent cette enveloppe.":edges.some(e=>e[0]===n.id)?"Façonne les modules reliés à sa prise ENV.":"Non branchée : façonne le volume global. Relie ENV à un VCA ou à un filtre.",seq:edges.some(e=>e[0]===n.id)?"Déclenche l'enveloppe reliée à GATE à chaque pas.":"Relie GATE à une enveloppe pour la déclencher à chaque pas. Les pas se règlent dans la barre du bas.",clock:"Horloge globale, sans prise."}[n.type]||"Module global, sans prise.";
+    p.textContent={adsr:gatedBySeq(n.id)?"Déclenchée par le séquenceur. Les notes du clavier ignorent cette enveloppe.":edges.some(e=>e[0]===n.id)?"Façonne les modules reliés à sa prise ENV.":"Non branchée : façonne le volume global. Relie ENV à un VCA ou à un filtre.",seq:edges.some(e=>e[0]===n.id)?"Déclenche l'enveloppe reliée à GATE à chaque pas.":"Relie GATE à une enveloppe pour la déclencher à chaque pas. Les pas se règlent dans la barre du bas.",clock:"Horloge globale, sans prise.",fm:edges.some(e=>e[0]===n.id)?"Module la fréquence du VCO relié. La fréquence du modulateur suit la note.":"Relie FM à l'entrée MOD d'un VCO."}[n.type]||"Module global, sans prise.";
     if(entries.length||n.type==="adsr"||n.type==="seq"||n.type==="clock")el.append(p);
   }
   const jacks=document.createElement("div");jacks.className="jacks";
@@ -858,7 +906,7 @@ function buildModule(n){
   if(hasGateIn(n))left.append(jackGroup("GATE",jack(n,"gate","in")));
   if(hasCv(n))left.append(jackGroup("MOD",jack(n,"cv","in")));
   const right=document.createElement("div");
-  if(hasOut(n))right.append(jackGroup(n.type==="adsr"?"ENV":n.type==="lfo"?"MOD":n.type==="seq"?"GATE":"OUT",jack(n,kindOf(n),"out")));
+  if(hasOut(n))right.append(jackGroup(n.type==="adsr"?"ENV":n.type==="lfo"?"MOD":n.type==="fm"?"FM":n.type==="seq"?"GATE":"OUT",jack(n,kindOf(n),"out")));
   if(left.children.length||right.children.length){jacks.append(left,right);el.append(jacks)}
   el.addEventListener("pointerdown",()=>{if(selected!==n.id)selectNode(n.id,false)});
   return el;
@@ -1143,6 +1191,25 @@ function openDefiList(){
 }
 const closeDefiList=()=>{const dlg=$("#defiList");if(dlg.close)dlg.close();else dlg.removeAttribute("open")};
 $("#defiClose").onclick=closeDefiList;
+/* Fiche professeur : générée à partir des défis eux-mêmes, donc toujours à jour. Impression (ou enregistrement en PDF) par le navigateur. */
+function buildFichePro(){
+  const box=$("#fichePro");box.replaceChildren();
+  const add=(tag,txt,parent=box)=>{const e=document.createElement(tag);e.textContent=txt;parent.append(e);return e};
+  add("h1","SONORA Synthé : fiche professeur");
+  add("p","Le synthé modulaire de SONORA propose "+DEFIS.length+" défis guidés en "+NIVEAUX_DEFIS.length+" niveaux. L'élève construit un patch en reliant des modules par des câbles. La page vérifie le patch à chaque modification : câbles, valeurs des réglages et chemin du signal.");
+  add("p","Pour valider un défi, l'élève doit aussi jouer une note, ou quatre pas du séquenceur : il écoute ce qu'il a construit. Un casque est recommandé.");
+  add("p","Chaque défi propose un patch de départ prêt, qui remplace le patch en cours (Ctrl+Z le rétablit). Les seuils indiqués sont des points de départ. La progression est enregistrée dans le navigateur de l'appareil utilisé : elle ne remonte pas vers le professeur et ne passe pas d'un poste à l'autre.");
+  NIVEAUX_DEFIS.forEach((nom,n)=>{
+    add("h2","Niveau "+(n+1)+" : "+nom);
+    const tb=document.createElement("table"),hd=document.createElement("tr");
+    for(const h of ["N°","Défi","But","Ce que la page vérifie","Indice donné","À retenir"])add("th",h,hd);
+    tb.append(hd);
+    DEFIS.forEach((d,i)=>{if(d.niveau!==n)return;const r=document.createElement("tr");for(const c of [String(i+1),d.titre,d.but,d.critere,d.indice,d.bilan])add("td",c,r);tb.append(r)});
+    box.append(tb);
+  });
+}
+$("#defiPrint").onclick=()=>{closeDefiList();buildFichePro();document.body.classList.add("print-pro");document.documentElement.classList.add("print-pro");window.print()};
+window.addEventListener("afterprint",()=>{document.body.classList.remove("print-pro");document.documentElement.classList.remove("print-pro")});
 $("#defiReset").onclick=()=>{dsave.done={};dWrite();openDefiList();if(dRun)dRun.ok=false;renderDefiBar();status("Progression effacée")};
 $("#togDefis").onclick=()=>{
   if(!$("#defiBar").hidden){showDefiBar(false);return}
@@ -1206,7 +1273,7 @@ function diagnose(){
   }
   for(const n of outs)if(n.params.gain===0)issues.push(n.id+" : volume de sortie à zéro.");
   for(const n of nodes.filter(x=>FILTERS.includes(x.type)))if(n.params.cutoff<100)issues.push(n.id+" : coupure très basse, risque de son faible.");
-  for(const n of nodes.filter(isCvSrc))if(!edges.some(e=>e[0]===n.id))issues.push(n.type==="lfo"?n.id+" : LFO non branché, il ne modifie rien. Relie sa prise MOD à l'entrée MOD d'un filtre, d'un VCA ou d'un oscillateur.":n.id+" : ADSR non branché, il façonne seulement le volume global. Relie sa prise ENV à un VCA ou à un filtre.");
+  for(const n of nodes.filter(isCvSrc))if(!edges.some(e=>e[0]===n.id))issues.push(n.type==="lfo"?n.id+" : LFO non branché, il ne modifie rien. Relie sa prise MOD à l'entrée MOD d'un filtre, d'un VCA ou d'un oscillateur.":n.type==="fm"?n.id+" : modulateur FM non branché, il ne modifie rien. Relie sa prise FM à l'entrée MOD d'un VCO.":n.id+" : ADSR non branché, il façonne seulement le volume global. Relie sa prise ENV à un VCA ou à un filtre.");
   if(!edges.length)issues.push("Aucun câble branché.");
   const box=$("#diagnostics");box.replaceChildren();
   const t=document.createElement("strong");t.className=issues.length?"bad":"ok";t.textContent=issues.length?issues.length+" point(s) à vérifier":"Patch cohérent";box.append(t);
@@ -1283,6 +1350,6 @@ buildCatalog();renderSteps();frame();
   applyPanneaux();
 }
 </script>
-<script src="../barre-cours.js?v=762595a70f"></script>
+<script src="../barre-cours.js?v=0b0be8cefc"></script>
 </body>
 </html>
