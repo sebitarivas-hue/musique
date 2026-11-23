@@ -1,534 +1,734 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SONORA PATCHWORK — Modular Studio</title><style>
-:root{font:13px system-ui,sans-serif;color:#e9e5dc;background:#111314}*{box-sizing:border-box}body{margin:0}button,select,input{font:inherit}button{background:#33393a;color:#eee8d8;border:1px solid #5a6260;border-radius:3px;padding:8px;cursor:pointer}button:hover{background:#4b5554}button:focus-visible{outline:2px solid #e7b35e}header{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:10px 15px;background:#25292a;border-bottom:3px solid #090b0b}header strong{font-size:19px;letter-spacing:.16em;color:#edc184}header small{color:#aeb4af}header .grow{flex:1}.workspace{display:grid;grid-template-columns:195px minmax(0,1fr) 245px;height:calc(100vh - 62px);min-height:600px}.sidebar,.inspector{background:#222728;overflow:auto;padding:12px;border-right:2px solid #0a0d0d}.inspector{border-left:2px solid #0a0d0d;border-right:0}h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#e0b476;margin:12px 0}.category{font-size:10px;color:#a9afa9;text-transform:uppercase;margin-top:15px;border-bottom:1px solid #49504e;padding-bottom:5px}.add{width:100%;text-align:left;margin:3px 0;padding:7px;background:#303737;border-left:3px solid #d1a260}.viewport{position:relative;overflow:auto;background:#111415}.rack{position:relative;width:2600px;height:1600px;background:repeating-linear-gradient(0deg,#161a1a 0,#161a1a 255px,#090b0c 257px,#404746 262px,#0b0d0d 268px,#161a1a 273px);box-shadow:inset 0 0 40px #000}.rack:before{content:"SONORA  •  PATCHWORK  /  MODULAR INSTRUMENT";position:absolute;top:8px;left:20px;letter-spacing:.25em;font-size:10px;color:#666f69}.module{position:absolute;width:176px;min-height:215px;padding:11px 10px 32px;color:#202525;background:linear-gradient(90deg,#b8bcb8,#e4e4dd 10%,#d8d9d3 90%,#9da5a1);border:3px solid #0a0e0f;box-shadow:2px 4px 7px #0009;z-index:2;user-select:none}.module.dark{background:linear-gradient(90deg,#393e3e,#606a68 12%,#444b49 88%,#2c3332);color:#f3efe4}.module.gold{background:linear-gradient(90deg,#a89370,#e4d3aa 12%,#c9b98d 88%,#98805c)}.module.selected{outline:2px solid #f0b761;outline-offset:2px}.module:before,.module:after{content:"";position:absolute;left:6px;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#929998,#333,#101515);border:1px solid #222}.module:before{top:5px}.module:after{bottom:5px}.module h3{font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid currentColor;padding:5px 0 9px 14px;margin:0 0 12px;cursor:grab}.module h3:active{cursor:grabbing}.module label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;margin:9px 0}.module input[type=range]{width:100%;accent-color:#bc7f34;height:9px}.module select{width:100%;background:#d5d5cf;color:#222;padding:4px}.module output{float:right;font:10px ui-monospace,monospace}.port{position:absolute;bottom:7px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle,#050708 35%,#313b3c 42%,#090d0e 65%);border:3px solid #252c2d;box-shadow:0 0 0 2px #c5a66e;cursor:crosshair;z-index:9;touch-action:none}.port.in{left:19px}.port.out{right:19px}.port.pending{box-shadow:0 0 0 3px #ffdc7a,0 0 15px #f7c865}.portlabel{position:absolute;bottom:31px;font-size:9px;font-weight:800}.portlabel.in{left:14px}.portlabel.out{right:13px}svg.wires{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;overflow:visible}.cable{stroke-width:6;fill:none;pointer-events:stroke;cursor:pointer;filter:drop-shadow(2px 3px 2px #000)}.shadow{stroke:#000;stroke-width:10;opacity:.6;fill:none;filter:blur(2px)}.shine{stroke:#fff;stroke-width:1;opacity:.25;fill:none;pointer-events:none}.panel{padding:10px;background:#171c1c;border:1px solid #4b5451;margin:9px 0}.panel p{font-size:12px;line-height:1.5;color:#c5cbc6}.panel strong{color:#f1c78d}.keys{display:flex;gap:2px;flex-wrap:wrap}.keys button{width:31px;height:60px;padding:3px;background:#e8e4d8;color:#161b1b;border:1px solid #7b817d}.keys button.black{background:#343b3c;color:white;height:43px}.keys button:active,.keys button.on{background:#dba95d}.steps{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}.steps button{padding:7px 1px;font-size:10px}.steps button.on{background:#ad7e3d;color:white}.steps button.playing{outline:2px solid #fff1b8}.learn{font-size:10px;float:right;padding:1px 5px;color:#fff;background:#475e5a}.status{font:11px ui-monospace,monospace;color:#b6d7bf}.meter{height:12px;background:#0a0f0d;border:1px solid #4d5852}.meter div{height:100%;width:0;background:linear-gradient(90deg,#4ca978,#d9bc65,#d36d53)}canvas{width:100%;height:90px;background:#08120f;border:1px solid #45544a}.lesson{position:fixed;right:18px;bottom:18px;width:min(400px,calc(100vw - 36px));background:#eae4d6;color:#252a29;padding:18px;border:4px solid #282d2c;box-shadow:0 14px 60px #000c;z-index:20;display:none}.lesson.open{display:block}.lesson h2{color:#68491d;font-size:17px}.lesson p{line-height:1.55}.lesson button{float:right}.hint{font-size:11px;color:#b7c2bb;line-height:1.5}@media(max-width:1050px){.workspace{grid-template-columns:135px minmax(0,1fr)}.inspector{grid-column:1/-1;max-height:260px}.sidebar{padding:7px}.add{font-size:10px}.viewport{min-height:520px}header strong{font-size:14px}}
-</style><style id="sonora-reference-design">
-:root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#e7eafd;background:#060b19}body{background:#070d1b}button{background:#111c32;color:#e1e8ff;border:1px solid #203350;border-radius:8px;transition:background .15s,border-color .15s}button:hover{background:#202e50;border-color:#506ca5}button:focus-visible{outline:2px solid #49d8ff}header{height:56px;gap:10px;background:linear-gradient(180deg,#0b1428,#070d1b);border-bottom:1px solid #1b3154;padding:7px 13px}header strong{color:#fff;font-size:21px;letter-spacing:-.04em}header small{color:#9aaecb;font-size:11px}header #start{background:linear-gradient(110deg,#085d52,#129875);border-color:#15775c;color:#d7fff3}header #play{background:#113d36;color:#7effc3}header #stop{color:#ff7b90}.workspace{grid-template-columns:238px minmax(0,1fr) 255px;height:calc(100vh - 56px);min-height:720px;gap:7px;padding:7px;background:#070c19}.sidebar,.inspector{background:linear-gradient(155deg,#101a30,#0a1122);border:1px solid #1c2c4a;border-radius:12px;padding:12px;box-shadow:none}.inspector{grid-column:3;grid-row:1;overflow:auto}.sidebar{grid-column:1;grid-row:1}.viewport{grid-column:2;grid-row:1;min-width:0;border-radius:12px;border:1px solid #1a2b48;background:#060b18;overflow:auto}.rack{width:2200px;height:1160px;background-color:#080f21;background-image:radial-gradient(#1e3150 1px,transparent 1px);background-size:18px 18px;box-shadow:none}.rack:before{content:"MON INSTRUMENT     /     SYNTHÉ SOUSTRACTIF";color:#7992bc;letter-spacing:.12em;top:12px;left:20px}.module,.module.dark,.module.gold{width:228px;min-height:166px;padding:12px 13px 35px;border-radius:13px;background:linear-gradient(150deg,#112743,#0a1529);color:#d6e8ff;border:2px solid #11c6ff;box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #0006,0 12px 24px #0009}.module.dark{background:linear-gradient(145deg,#2a1d45,#121229);border-color:#b46cff;color:#e6d8ff}.module.gold{background:linear-gradient(145deg,#3c3210,#1b1c12);border-color:#f8cc1b;color:#fff0a3}.module[data-id^="out"]{border-color:#348cff;background:linear-gradient(140deg,#10244c,#0a1632)}.module[data-id^="vca"]{border-color:#ff5475;background:linear-gradient(140deg,#381726,#1c1426)}.module[data-id^="filter"],.module[data-id^="highpass"],.module[data-id^="bandpass"]{border-color:#ffdc18;background:linear-gradient(140deg,#3b3210,#191d19)}.module[data-id^="adsr"],.module[data-id^="lfo"]{border-color:#c268ff;background:linear-gradient(140deg,#321c4e,#19122b)}.module.selected{outline:1px solid #fff8;outline-offset:3px}.module:before,.module:after{display:none}.module h3{font-size:13px;color:inherit;border-bottom:1px solid #ffffff26;margin:0 0 10px;padding:3px 0 10px;letter-spacing:.01em}.module label{color:#b5c8e3;font-size:10px;margin:7px 0 4px}.module input[type=range]{accent-color:#48d5ff;height:11px}.module select{background:#0a1428;color:#f3f6ff;border:1px solid #30466c;border-radius:6px;padding:6px}.module output{color:#fff}.module .learn{background:#422d70;color:#f5ddff;border:1px solid #6b4da1}.port{width:19px;height:19px;background:radial-gradient(circle,#030a17 40%,#4b6578 55%,#0a1327 70%);border:2px solid #57f6b7;box-shadow:0 0 0 2px #10283d;bottom:9px}.port.in{left:13px}.port.out{right:13px}.portlabel{bottom:30px;color:#9db8dc}.portlabel.in{left:13px}.portlabel.out{right:12px}svg.wires{z-index:5}.cable{stroke-width:4.5;filter:drop-shadow(0 0 2px currentColor)}.shadow{stroke-width:7}.sidebar h2,.inspector h2{font-size:12px;color:#d5e5ff;letter-spacing:0;text-transform:none}.category{background:#14213a;border:1px solid #1d3052;border-radius:8px;color:#d5e4ff;padding:9px 10px;margin-top:9px;font-size:11px}.add{border:0;border-left:2px solid #4b78b7;background:transparent;color:#c5d5f5;padding:7px 9px;border-radius:4px;margin:1px 0}.add:hover{background:#26355c}.panel{background:#0d172c;border:1px solid #223557;border-radius:11px}.panel strong{color:#e6eaff}.panel p,.hint{color:#9faecb}.keys{flex-wrap:nowrap;overflow-x:auto;gap:1px}.keys button{flex:0 0 25px;height:95px;border-radius:0 0 5px 5px;background:linear-gradient(#fff,#cdd9ed);color:#263248;border:1px solid #8898b7}.keys button.black{height:60px;background:linear-gradient(#293654,#0a1122);color:#e9efff}.keys button.on{background:#50b5ff}.steps button.on{background:#6625ac;border-color:#a65bff}.steps button.playing{outline:2px solid #61f9d0}.meter div{background:linear-gradient(90deg,#12e7ae,#8fffb1)}canvas{background:#061023;border-color:#1e4061}.lesson{background:#101a32;color:#e7eaff;border:2px solid #8352df;border-radius:14px}.lesson h2{color:#d5b4ff}.lesson p{color:#c4d0ec}#analysisStrip{position:absolute;left:246px;right:270px;bottom:154px;height:148px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;z-index:9;pointer-events:none}#analysisStrip .analysis-card{background:#0b1429;border:1px solid #203655;border-radius:12px;padding:9px;min-width:0;overflow:hidden}#analysisStrip .analysis-card h4{font-size:12px;margin:0 0 6px;color:#e8eeff}#analysisStrip canvas{display:block;width:100%;height:103px}#performance{position:absolute;bottom:8px;left:246px;right:270px;height:140px;background:#0d162c;border:1px solid #203456;border-radius:12px;z-index:10;padding:9px;overflow:hidden}#performance h4{font-size:12px;margin:0 0 6px}#performance .keys button{height:93px;flex-basis:28px}#performance .keys button.black{height:55px}#performance .panel{padding:0;border:0;background:transparent}#performance .panel strong{display:none}#performance .keys{max-width:100%}#macroPanel{position:absolute;bottom:8px;right:8px;width:255px;height:140px;background:#0e182e;border:1px solid #203456;border-radius:12px;z-index:11;padding:11px}#macroPanel h4{margin:0 0 10px}#macroPanel .macros{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}#macroPanel button{font-size:11px;padding:7px}#macroPanel button.active{border-color:#7a5ef9;background:#31246b}#viewport{padding-bottom:0}#analysisStrip,#performance,#macroPanel{position:fixed}@media(max-width:1200px){.workspace{grid-template-columns:185px minmax(0,1fr) 215px}#analysisStrip{left:193px;right:230px}#performance{left:193px;right:230px}#macroPanel{width:215px}}@media(max-width:800px){.workspace{grid-template-columns:150px minmax(0,1fr);height:auto;min-height:100vh}.sidebar{grid-column:1}.viewport{grid-column:2;min-height:650px}.inspector{grid-column:1/-1;grid-row:2;min-height:250px}#analysisStrip,#performance,#macroPanel{position:relative;left:auto;right:auto;bottom:auto;width:auto;height:auto;grid-column:1/-1}#analysisStrip{grid-template-columns:repeat(2,1fr)}}
-</style><style id="reference-v2">
-:root{font-family:Inter,"Segoe UI",system-ui,sans-serif;color:#eaf0ff;background:#060b19}*{box-sizing:border-box}body{margin:0;background:#070c1b;color:#e9efff}button,input,select{font:inherit}button{border:1px solid #233655;border-radius:7px;background:#101b31;color:#d9e4fa;cursor:pointer;padding:7px 10px}button:hover{background:#1c2e50}button:focus-visible{outline:2px solid #57d9ff}header{height:58px;display:flex;align-items:center;gap:8px;padding:7px 12px;background:#080f20;border-bottom:1px solid #203052;overflow:hidden}header strong{font-size:23px;letter-spacing:-.06em;color:#f6f8ff;white-space:nowrap}header small{font-size:11px;color:#9baeca;white-space:nowrap;margin-right:12px}header .grow{flex:1}header button{font-size:11px;white-space:nowrap}#start{background:#083d3a;color:#73ffd3}#play{background:#065c4b;color:#9bffe0}#stop{color:#ff758c}.workspace{display:grid;grid-template-columns:228px minmax(0,1fr) 247px;gap:8px;padding:8px;height:calc(100vh - 58px);min-height:660px;background:#070c1b}.sidebar,.inspector{border:1px solid #1b2a49;border-radius:11px;background:linear-gradient(180deg,#111a30,#0a1225);overflow:auto;padding:10px}.sidebar{grid-column:1;grid-row:1}.inspector{grid-column:3;grid-row:1}.viewport{grid-column:2;grid-row:1;position:relative;overflow:auto;border:1px solid #172744;border-radius:10px;background:#080e1d}.rack{position:relative;width:2200px;height:1250px;background-color:#080e1d;background-image:radial-gradient(circle,#1e2b48 .8px,transparent 1px);background-size:17px 17px;box-shadow:none}.rack:before{content:"MON INSTRUMENT   /   SYNTHÉ SOUSTRACTIF";position:absolute;top:11px;left:16px;color:#8497bc;font-size:11px;letter-spacing:.04em}h2{font-size:12px;color:#dbe8ff;letter-spacing:0;text-transform:none;margin:9px 0 13px}.category{padding:9px 10px;border:1px solid #253758;border-radius:7px;background:#17233c;color:#e5edff;font-size:12px;font-weight:650;text-transform:none;margin:7px 0 3px}.add{display:block;width:100%;text-align:left;padding:7px 12px;margin:1px 0;border:0;border-radius:5px;border-left:2px solid transparent;background:transparent;color:#c3d1e9;font-size:12px}.add:hover{background:#253456;border-left-color:#9d64ff}.panel{padding:11px;border:1px solid #1d3051;border-radius:9px;background:#0c162b;margin:9px 0}.panel p,.hint{font-size:11px;line-height:1.5;color:#a7b6d2}.panel strong{color:#e5eafa}.module,.module.dark,.module.gold{position:absolute;width:235px;min-height:174px;padding:11px 13px 36px;border:2px solid #20b9ff;border-radius:12px;background:linear-gradient(145deg,#0d2c4c,#0b1b35 58%,#081629);color:#e4f4ff;box-shadow:0 8px 23px #0009,inset 0 1px #ffffff20;z-index:2;user-select:none}.module:before,.module:after{display:none}.module.dark{border-color:#a96cff;background:linear-gradient(145deg,#302048,#1b1531 60%,#151128);color:#f2e2ff}.module.gold{border-color:#ffdb24;background:linear-gradient(145deg,#42390f,#26220f 60%,#171b15);color:#fff0b0}.module[data-id^="osc"],.module[data-id^="sampler"],.module[data-id^="noise"]{border-color:#12c7ff;background:linear-gradient(145deg,#0b3153,#0b1b35 62%,#081629)}.module[data-id^="adsr"],.module[data-id^="lfo"],.module[data-id^="seq"]{border-color:#bd6bff;background:linear-gradient(145deg,#39234e,#211734 62%,#171129)}.module[data-id^="filter"],.module[data-id^="highpass"],.module[data-id^="bandpass"]{border-color:#ffdc16;background:linear-gradient(145deg,#443b11,#272412 62%,#191c14)}.module[data-id^="vca"]{border-color:#ff597c;background:linear-gradient(145deg,#4b1d30,#281727 62%,#1c1424)}.module[data-id^="out"]{border-color:#3b94ff;background:linear-gradient(145deg,#183c72,#0d2449 62%,#0a1937)}.module.selected{outline:1px solid #fff9;outline-offset:2px}.module h3{font-size:13px;letter-spacing:.005em;font-weight:750;border:0;border-bottom:1px solid #ffffff2a;margin:0 0 10px;padding:3px 0 9px;cursor:grab;color:inherit}.module label{display:block;color:#c6d3ed;font-size:10px;font-weight:600;text-transform:none;margin:7px 0 4px}.module output{float:right;color:#fff;font:11px ui-monospace,monospace}.module input[type=range]{width:100%;accent-color:#9e6fff;height:11px}.module select{width:100%;border:1px solid #31496d;border-radius:6px;background:#0b1428;color:#f2f6ff;padding:6px}.module .learn{float:right;padding:1px 5px;background:#43306c;color:#eedaff;border:1px solid #7250a8;font-size:10px}.port{position:absolute;bottom:8px;width:20px;height:20px;border-radius:50%;border:3px solid #52ffab;background:radial-gradient(circle,#020713 38%,#273c50 45%,#09111f 70%);box-shadow:0 0 0 2px #0c1c32;z-index:8;cursor:crosshair;touch-action:none}.port.in{left:14px}.port.out{right:14px}.port.pending{box-shadow:0 0 0 3px #f4d67a,0 0 13px #f2d476}.portlabel{position:absolute;bottom:32px;font-size:9px;color:#bdcdeb;font-weight:700}.portlabel.in{left:15px}.portlabel.out{right:14px}svg.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:visible}.cable{stroke-width:4;fill:none;pointer-events:stroke;cursor:pointer;filter:drop-shadow(0 0 2px currentColor)}.shadow{stroke:#000;stroke-width:7;opacity:.7;fill:none}.shine{stroke:#fff;stroke-width:1;opacity:.24;fill:none;pointer-events:none}.keys{display:flex;gap:1px;flex-wrap:nowrap;overflow-x:auto}.keys button{flex:0 0 27px;height:88px;padding:2px;border-radius:0 0 5px 5px;background:linear-gradient(#fff,#cfd9e9);border:1px solid #8697b6;color:#26334c}.keys button.black{height:55px;background:linear-gradient(#303d59,#0b1427);color:#f5f8ff}.keys button.on{background:#65b6ff}.steps{display:grid;grid-template-columns:repeat(8,1fr);gap:3px}.steps button{font-size:9px;padding:6px 1px}.steps button.on{background:#6c2bb2;color:#fff}.steps button.playing{outline:2px solid #61ffc5}.meter{height:10px;background:#07121b;border:1px solid #244056}.meter div{height:100%;background:#36e2a3}canvas{background:#071225;border:1px solid #1d3452}.status{color:#8ff1ce;font-size:11px}.lesson{position:fixed;right:20px;bottom:20px;z-index:40;width:min(400px,calc(100vw - 40px));padding:18px;background:#101b32;color:#e5edff;border:2px solid #945cf0;border-radius:12px;box-shadow:0 20px 70px #000c;display:none}.lesson.open{display:block}.lesson h2{font-size:18px;color:#d7b8ff}.lesson p{line-height:1.5;color:#c6d4ee}.lesson button{float:right}#analysisStrip{position:fixed;left:244px;right:263px;bottom:156px;height:152px;display:grid;grid-template-columns:1.15fr 1.15fr 1.15fr .7fr;gap:7px;z-index:10;pointer-events:none}#analysisStrip .analysis-card{min-width:0;overflow:hidden;padding:9px;border:1px solid #223556;border-radius:11px;background:#0a1429}#analysisStrip .analysis-card h4{margin:0 0 5px;font-size:12px;font-weight:650;color:#e8efff}#analysisStrip canvas{display:block;width:100%;height:107px}#performance{position:fixed;bottom:8px;left:244px;right:263px;height:141px;overflow:hidden;padding:10px;background:#0d172e;border:1px solid #24385c;border-radius:11px;z-index:11}#performance h4{font-size:12px;margin:0 0 8px;color:#d9c2ff}#performance .keys button{height:92px;flex-basis:29px}#performance .keys button.black{height:56px}#macroPanel{position:fixed;bottom:8px;right:8px;width:247px;height:141px;background:#0d172e;border:1px solid #24385c;border-radius:11px;padding:11px;z-index:12}#macroPanel h4{font-size:12px;margin:0 0 10px}#macroPanel .macros{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}#macroPanel button{font-size:11px;padding:7px}#macroPanel button.active{background:#372675;border-color:#a074ff}@media(max-width:1050px){.workspace{grid-template-columns:175px minmax(0,1fr) 210px}#analysisStrip,#performance{left:191px;right:226px}#macroPanel{width:210px}header small{display:none}}@media(max-width:760px){header{height:auto;min-height:58px;flex-wrap:wrap}.workspace{grid-template-columns:140px minmax(0,1fr);height:auto;min-height:850px}.sidebar{grid-column:1}.viewport{grid-column:2;min-height:650px}.inspector{grid-column:1/-1;grid-row:2}#analysisStrip,#performance,#macroPanel{position:relative;left:auto;right:auto;bottom:auto;width:auto;height:auto;grid-column:1/-1}#analysisStrip{grid-template-columns:repeat(2,minmax(0,1fr))}}
-</style><style id="module-precision">
-.module{min-height:195px}.module h3:before{content:"◉";color:#40d8ff;margin-right:6px}.module[data-id^="adsr"] h3:before,.module[data-id^="lfo"] h3:before{color:#db6aff}.module[data-id^="filter"] h3:before{color:#ffe24d}.module .mini-graph{height:46px;background:#080f22;border:1px solid #253756;border-radius:7px;margin:2px 0 10px;overflow:hidden}.module .mini-graph svg{width:100%;height:100%}.module .mini-graph path{fill:none;stroke:#38d7ff;stroke-width:2.4;stroke-linejoin:round}.module[data-id^="adsr"] .mini-graph path,.module[data-id^="lfo"] .mini-graph path{stroke:#e265ff}.module[data-id^="filter"] .mini-graph path{stroke:#ffda32}.module .rotary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 9px;margin-bottom:8px}.module .rotary-cell{position:relative;display:flex;flex-direction:column;align-items:center;min-width:0}.module .rotary-cell label{order:2;text-align:center;margin:3px 0 0}.module .rotary-cell output{float:none;display:block;background:#081123;border-radius:8px;font:10px ui-monospace,monospace;padding:2px 7px;margin:3px auto 0}.module .rotary-cell .dial{order:1;width:42px;height:42px;border-radius:50%;border:2px solid #6077a5;background:radial-gradient(circle at 35% 28%,#6b7596,#313d60 40%,#11182d 75%);box-shadow:inset 0 0 0 3px #182139,0 3px 7px #0009;position:relative}.module .rotary-cell .dial:after{content:"";position:absolute;width:3px;height:13px;border-radius:3px;top:6px;left:calc(50% - 1.5px);background:#ecf8ff;transform-origin:1.5px 14px;transform:rotate(var(--angle,-135deg))}.module .rotary-cell input[type=range]{position:absolute;top:0;left:calc(50% - 22px);width:44px;height:44px;opacity:0;z-index:2;cursor:ns-resize}.module .rotary-cell input[type=range]:focus-visible{opacity:.3}.module .rotary-cell label .learn{font-size:9px;padding:0 3px}.module .rotary-cell label{font-size:10px}.module[data-id^="filter"] .dial{border-color:#b99a40}.module[data-id^="adsr"] .dial{border-color:#a05ccf}.module[data-id^="vca"] .dial{border-color:#c55d78}
-</style><style id="layout-fidelity-v3">
-header{justify-content:space-between}header .brand{display:flex;align-items:center;gap:10px;min-width:265px}.brand-icon{width:44px;height:42px;border:1px solid #2d557a;border-radius:9px;display:grid;place-items:center;font-size:31px;font-weight:300;color:#48cfff;background:#081d32;text-shadow:0 0 9px #3cdcff}.brand strong{font-size:23px;display:block;line-height:1.05}.brand small{display:block;font-size:10px;letter-spacing:0;color:#d1d9ec;margin:3px 0 0}.main-tabs{display:flex;align-items:center;border:1px solid #21334d;border-radius:10px;overflow:hidden;height:40px;flex:1;max-width:780px}.main-tabs button{flex:1;border:0;border-right:1px solid #26364c;border-radius:0;background:transparent;color:#d5e0f5;font-size:13px;font-weight:600;height:100%;padding:7px}.main-tabs button:last-child{border-right:0}.main-tabs button.active{background:linear-gradient(125deg,#5b20a6,#682bb0);color:#fff}.main-tabs button:hover:not(.active){background:#192945}header .grow{flex:.1}header>button{padding:7px 9px}.sidebar #moduleSearch{width:100%;padding:9px 10px;background:#0e172b;border:1px solid #29395b;border-radius:8px;color:#f1f5ff;margin:0 0 10px;font-size:11px}.sidebar #moduleSearch::placeholder{color:#8195b6}#catalog .add[hidden],#catalog .category[hidden]{display:none}.rack-toolbar{position:sticky;top:0;left:0;z-index:15;width:min(100%,1400px);height:53px;display:flex;align-items:center;gap:8px;padding:7px 9px;background:#0d172b;border-bottom:1px solid #203556;box-shadow:0 5px 15px #0005}.rack-toolbar button{font-size:17px;padding:6px 12px}.patch-title{padding:9px 12px;background:#0a1222;border:1px solid #1b2c4a;border-radius:7px;min-width:160px;font-weight:650;white-space:nowrap}.pencil{float:right;color:#a8bddc}.rack-toolbar select{border:1px solid #253859;background:#15223d;color:#d9e6fa;border-radius:8px;padding:8px;min-width:170px}.rack-toolbar-spacer{flex:1}.tempo-chip,.poly-chip,.cpu-chip{padding:8px;color:#d7e3f8;background:#101c33;border-radius:7px;white-space:nowrap;font-size:11px}.cpu-chip{color:#58f1b2}.inspector-tabs{display:flex;border-bottom:1px solid #263758;margin:-2px -3px 12px}.inspector-tabs button{flex:1;padding:11px 4px;border:0;border-radius:8px 8px 0 0;background:transparent;font-size:11px}.inspector-tabs button.active{background:#57299e;color:white}.rack{margin-top:0}.module{z-index:2}.module .mini-graph{margin-top:0}.module .rotary-cell{padding-top:3px}.module .rotary-cell .dial{box-shadow:inset 0 0 0 3px #182139,0 0 0 1px #6683b066,0 3px 7px #0009}.module .rotary-cell label{color:#c7d3ed}.module[data-id^="adsr"] .mini-graph{height:58px}.module[data-id^="filter"] .mini-graph{height:36px}#analysisStrip{bottom:156px}#performance{bottom:8px}#macroPanel{bottom:8px}@media(max-width:1250px){header .brand{min-width:175px}header .brand small{display:none}.main-tabs button{font-size:11px;padding:4px}header>button{font-size:10px;padding:5px}}@media(max-width:760px){.main-tabs{order:3;flex-basis:100%;max-width:none}.rack-toolbar{width:100%;overflow-x:auto}.rack-toolbar .poly-chip,.rack-toolbar .cpu-chip{display:none}}
-</style><style id="iphone-dock-fix">
-#mobileDockControls{display:none}
-@media(max-width:760px){
-html,body{max-width:100%;overflow-x:hidden}
-header{position:relative;z-index:30}
-.workspace{display:grid;grid-template-columns:116px minmax(0,1fr);gap:5px;padding:5px;height:calc(100dvh - 110px);min-height:440px;overflow:hidden}
-.sidebar{grid-column:1;grid-row:1;min-width:0;overflow-y:auto;padding:6px}
-.sidebar .add{font-size:10px;padding:7px 3px}
-.sidebar .category{font-size:10px;padding:7px 3px}
-.viewport{grid-column:2;grid-row:1;min-width:0;min-height:0;height:100%;overflow:auto;touch-action:pan-x pan-y;overscroll-behavior:contain}
-.inspector{display:none}
-#mobileDockControls{display:flex;position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 6px);left:6px;right:6px;z-index:55;gap:4px;align-items:center;background:#0b162a;border:1px solid #2a4064;border-radius:12px;padding:6px;box-shadow:0 5px 24px #0009}
-#mobileDockControls button{flex:1;min-width:0;font-size:11px;padding:9px 3px;white-space:nowrap}
-#mobileDockControls button[aria-expanded="true"]{background:#542c9e;border-color:#9561f5}
-#mobileDockControls #hideDock{flex:0 0 auto;color:#ffb4c0;padding:9px 8px}
-#analysisStrip,#performance,#macroPanel{display:none!important;position:fixed!important;left:6px!important;right:6px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 57px)!important;width:auto!important;height:auto!important;max-height:min(42dvh,290px);overflow:auto;z-index:54!important;grid-column:auto!important;grid-row:auto!important;border:1px solid #30486f;border-radius:12px;background:#0b152b;box-shadow:0 12px 32px #000d;pointer-events:auto}
-#analysisStrip.dock-open{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));padding:7px}
-#performance.dock-open,#macroPanel.dock-open{display:block!important;padding:10px}
-#analysisStrip .analysis-card{min-width:0;padding:6px}
-#analysisStrip canvas{height:74px}
-#performance .keys{justify-content:flex-start;overflow-x:auto}
-#performance .keys button{flex:0 0 26px}
-#performance .keys button.black{flex:0 0 19px}
-#macroPanel .macros{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
-.rack-toolbar{position:sticky;top:0;min-width:540px;height:45px}
-.rack{min-width:1800px}
-.module{touch-action:pan-x pan-y}
-.module h3,.port,.module .dial{touch-action:none}
-.lesson{bottom:calc(env(safe-area-inset-bottom,0px) + 65px);max-height:70dvh;overflow:auto;z-index:65}
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SONORA Synthé modulaire</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0c0e13;--bg2:#12151c;--panel:#181c25;--panel2:#1f2430;--line:#2a303d;--line2:#3a4252;
+  --text:#e9ecf3;--mute:#8d95a7;--accent:#f0b04a;--ok:#6fd08c;--bad:#ef6a6a;
+  --c-source:#f0b04a;--c-filter:#4cc9d9;--c-amp:#6fd08c;--c-fx:#a98bf0;--c-mod:#ee7aa4;--c-seq:#9aa3b8;--c-out:#e9ecf3;--c-tool:#9aa3b8;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --W:216px;
 }
-@media(min-width:761px){#mobileDockControls{display:none}#analysisStrip,#performance,#macroPanel{display:grid}}
-</style><style id="landscape-iphone-navigation">
-/* Landscape iPhone widths exceed 760px: use a height- and touch-aware mobile layout. */
-@media (orientation:landscape) and (max-height:600px) and (pointer:coarse){
-html,body{height:100%;height:100dvh;width:100%;overflow:hidden!important;overscroll-behavior:none}
-body{display:flex;flex-direction:column;min-height:0}
-header{height:45px!important;min-height:45px!important;flex:0 0 45px;display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;overflow-y:hidden;gap:5px;padding:4px max(7px,env(safe-area-inset-right)) 4px max(7px,env(safe-area-inset-left));scrollbar-width:none}
-header::-webkit-scrollbar{display:none}
-header .brand{min-width:112px!important;flex:0 0 112px;gap:4px}
-header .brand-icon{height:32px;width:32px;font-size:22px}
-header .brand strong{font-size:16px}
-header .brand small{display:none}
-header .main-tabs{order:0!important;flex:0 0 290px!important;max-width:290px;height:34px}
-header .main-tabs button{font-size:10px;padding:4px 2px}
-header .grow{display:none}
-header>button{flex:0 0 auto;font-size:10px;padding:5px}
-.workspace{flex:1 1 auto;display:grid!important;grid-template-columns:116px minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;gap:5px;padding:4px max(5px,env(safe-area-inset-right)) calc(52px + env(safe-area-inset-bottom)) max(5px,env(safe-area-inset-left));height:auto!important;min-height:0!important;overflow:hidden!important}
-.sidebar{grid-column:1!important;grid-row:1!important;display:block!important;min-width:0;min-height:0;padding:5px;overflow-y:auto}
-.sidebar h2{font-size:11px;margin:5px 0}.sidebar #moduleSearch{padding:6px 4px;font-size:10px}.sidebar .category{padding:5px 3px;font-size:10px}.sidebar .add{font-size:10px;padding:6px 3px}.sidebar .panel{display:none}
-.viewport{grid-column:2!important;grid-row:1!important;min-width:0;min-height:0!important;height:100%!important;overflow:auto!important;overscroll-behavior:contain;touch-action:pan-x pan-y}
-.inspector{display:none!important}
-.rack-toolbar{height:39px!important;min-width:490px;width:max-content;position:sticky;top:0;left:0;z-index:20;padding:3px 6px}
-.rack-toolbar button{padding:3px 6px}.rack-toolbar select{min-width:140px;padding:5px}.rack-toolbar .patch-title{padding:5px;min-width:125px}.rack-toolbar .poly-chip,.rack-toolbar .cpu-chip{display:none}
-.rack{min-width:1800px!important}
-#mobileDockControls{display:flex!important;position:fixed!important;left:max(5px,env(safe-area-inset-left))!important;right:max(5px,env(safe-area-inset-right))!important;bottom:calc(4px + env(safe-area-inset-bottom))!important;height:43px!important;z-index:60!important;padding:4px;gap:5px;background:#09162b;border:1px solid #304b72;border-radius:9px}
-#mobileDockControls button{font-size:11px;padding:5px;flex:1}
-#analysisStrip,#performance,#macroPanel{display:none!important;position:fixed!important;left:max(5px,env(safe-area-inset-left))!important;right:max(5px,env(safe-area-inset-right))!important;bottom:calc(52px + env(safe-area-inset-bottom))!important;top:auto!important;width:auto!important;height:auto!important;max-height:min(48dvh,185px)!important;min-height:0!important;overflow:auto!important;z-index:59!important;grid-column:auto!important;grid-row:auto!important;border:1px solid #37547b;background:#0a162b;border-radius:10px;box-shadow:0 10px 25px #000c;pointer-events:auto!important}
-#analysisStrip.dock-open{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px;padding:5px}
-#performance.dock-open,#macroPanel.dock-open{display:block!important;padding:7px}
-#analysisStrip .analysis-card{padding:4px;min-width:0}
-#analysisStrip .analysis-card h4{font-size:10px;margin:0 0 3px}
-#analysisStrip canvas{height:85px}
-#performance .keys{justify-content:flex-start;overflow-x:auto}
-#performance .keys button{flex:0 0 26px;height:80px}
-#performance .keys button.black{flex:0 0 17px;height:50px}
-#macroPanel .macros{grid-template-columns:repeat(4,minmax(0,1fr))}
-.module h3,.module .dial,.port{touch-action:none}
-.lesson{z-index:70;max-height:65dvh;overflow:auto;bottom:calc(53px + env(safe-area-inset-bottom))}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 var(--sans)}
+button,select{font:inherit;color:inherit}
+button{cursor:pointer;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;min-height:34px}
+button:hover{border-color:var(--line2)}
+button:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.4;cursor:default}
+select{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;min-height:34px}
+h2{margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:500}
+
+/* Disposition générale */
+body{display:grid;grid-template-rows:auto 1fr;min-height:100vh}
+header{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:8px;color:var(--text);text-decoration:none}
+.brand-mark{width:34px;height:34px;border-radius:9px;border:1px solid var(--line2);display:grid;place-items:center;color:var(--accent);font-size:20px}
+.brand strong{display:block;font-weight:500;letter-spacing:.2em;font-size:15px}
+.brand small{display:block;color:var(--mute);font-size:11px}
+header .grow{flex:1}
+header .group{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+button.primary{background:var(--accent);color:#1a1205;border-color:var(--accent);font-weight:500}
+button.danger{border-color:#6b2f2f;color:#ffb0b0}
+#openCatalog{display:none}
+
+.workspace{display:grid;grid-template-columns:230px minmax(0,1fr) 290px;min-height:0}
+.sidebar,.panel{background:var(--bg2);padding:14px;overflow:auto;min-height:0}
+.sidebar{border-right:1px solid var(--line)}
+.panel{border-left:1px solid var(--line)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+.card p{margin:6px 0 0;color:var(--mute);font-size:13px}
+.card strong{font-size:13px;font-weight:500}
+.center{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-width:0;min-height:0}
+.toolbar{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.toolbar .title{font-weight:500;margin-right:6px}
+#status{margin-left:auto;color:var(--mute);font-size:12px;min-width:0}
+
+/* Catalogue */
+#moduleSearch{width:100%;margin-bottom:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--text);min-height:36px}
+details.cat{margin-bottom:6px}
+details.cat summary{cursor:pointer;padding:7px 8px;border-radius:7px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);list-style:none}
+details.cat summary::-webkit-details-marker{display:none}
+details.cat summary::before{content:"▸ "}
+details.cat[open] summary::before{content:"▾ "}
+.add{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:1px solid transparent;margin:1px 0;padding:6px 8px;min-height:32px;font-size:13px}
+.add::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--fam,var(--mute));flex:none}
+.add:hover{background:var(--panel);border-color:var(--line)}
+
+/* Rack */
+.rack-scroll{overflow:auto;position:relative;background:var(--bg);min-height:0}
+#rack{user-select:none;-webkit-user-select:none;position:relative;background-image:radial-gradient(#252b38 1px,transparent 1.2px);background-size:24px 24px}
+#wires{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:5}
+#wires .hit{fill:none;stroke:transparent;stroke-width:16;pointer-events:stroke;cursor:pointer}
+#wires .shadow{fill:none;stroke:#000;stroke-opacity:.45;stroke-width:7;stroke-linecap:round;transform:translate(0,3px)}
+#wires .cable{fill:none;stroke-width:4.5;stroke-linecap:round;opacity:.95}
+#wires .cable.cv{stroke-dasharray:1 7;stroke-width:5}
+#wires .cable.sel{stroke-width:6.5;filter:drop-shadow(0 0 5px currentColor)}
+#wires .live{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-dasharray:7 6;stroke-linecap:round}
+#wires .del{pointer-events:all;cursor:pointer}
+#wires .del circle{fill:var(--bad);stroke:#000;stroke-width:1.5}
+#wires .del text{fill:#fff;font:700 13px var(--sans);text-anchor:middle;dominant-baseline:central}
+
+.module{position:absolute;width:var(--W);background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-top:3px solid var(--fam);border-radius:10px;box-shadow:0 6px 18px #0008;z-index:2;--fam:var(--c-tool)}
+.module[data-family=source]{--fam:var(--c-source)}.module[data-family=filter]{--fam:var(--c-filter)}.module[data-family=amp]{--fam:var(--c-amp)}
+.module[data-family=fx]{--fam:var(--c-fx)}.module[data-family=mod]{--fam:var(--c-mod)}.module[data-family=seq]{--fam:var(--c-seq)}.module[data-family=out]{--fam:var(--c-out)}
+.module.selected{border-color:var(--fam);box-shadow:0 0 0 1px var(--fam),0 8px 24px #000a}
+.module.dragging{opacity:.92;z-index:4;box-shadow:0 14px 34px #000c}
+.module h3{font-weight:500;margin:0;display:flex;align-items:baseline;gap:8px;padding:9px 12px 8px;font-size:12px;cursor:grab;touch-action:none;user-select:none;border-bottom:1px solid var(--line)}
+.module h3 b{font-weight:500;font-family:var(--mono);letter-spacing:.08em;color:var(--fam)}
+.module h3 span{color:var(--mute);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.module.dragging h3{cursor:grabbing}
+.graph{display:block;width:calc(100% - 24px);height:40px;margin:10px 12px 4px;background:var(--bg);border:1px solid var(--line);border-radius:6px}
+.graph path{fill:none;stroke:var(--fam);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px 4px;padding:8px 12px 10px}
+.controls .wide{grid-column:1/-1}
+.controls label.sel{display:grid;gap:3px;font-size:11px;color:var(--mute)}
+.note{margin:0;padding:6px 12px 12px;color:var(--mute);font-size:12px}
+.cell{display:grid;justify-items:center;gap:3px}
+.cell-label{background:none;border:0;padding:0;min-height:0;font-size:11px;color:var(--mute);cursor:help}
+.cell-label:hover{color:var(--text)}
+.dial{position:relative;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2e3545,#171b24);border:1px solid var(--line2);cursor:ns-resize;touch-action:none;--r:.5}
+.dial::before{content:"";position:absolute;inset:-5px;border-radius:50%;background:conic-gradient(from -135deg,var(--fam) 0,var(--fam) calc(var(--r)*270deg),var(--line) calc(var(--r)*270deg),var(--line) 270deg,transparent 270deg);-webkit-mask:radial-gradient(circle,transparent 61%,#000 63%);mask:radial-gradient(circle,transparent 61%,#000 63%)}
+.dial::after{content:"";position:absolute;left:50%;top:5px;width:3px;height:14px;margin-left:-1.5px;border-radius:2px;background:var(--text);transform-origin:50% 18px;transform:rotate(calc(-135deg + var(--r)*270deg))}
+.dial-val{font:11px var(--mono);color:var(--text)}
+.jacks{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:42px;padding:9px 14px;border-top:1px solid var(--line);background:#0003;border-radius:0 0 9px 9px}
+.jack-group{display:flex;align-items:center;gap:6px}
+.jack-group span{font:500 9px var(--mono);letter-spacing:.1em;color:var(--mute)}
+.jack{position:relative;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle,#05070a 38%,var(--ring,var(--line2)) 42%,var(--ring,var(--line2)) 62%,#222 66%);border:0;padding:0;min-height:0;cursor:crosshair;touch-action:none}
+.jack::after{content:"";position:absolute;inset:-6px}
+.jack.in{--ring:#6c7487}
+.jack.out{--ring:var(--fam)}
+.jack.cv{--ring:var(--c-mod)}
+.linking .jack.ok{box-shadow:0 0 0 3px #0008,0 0 0 5px var(--accent);animation:pulse 1s infinite}
+.linking .jack.no{opacity:.3}
+.jack.pending{box-shadow:0 0 0 3px var(--accent)}
+@keyframes pulse{50%{box-shadow:0 0 0 3px #0008,0 0 0 8px #f0b04a55}}
+
+/* Dock : clavier et séquenceur */
+.dock{border-top:1px solid var(--line);background:var(--bg2);padding:10px 14px 14px;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.seq-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.seq-row label{display:flex;align-items:center;gap:8px;color:var(--mute);font-size:12px}
+#bpm{width:140px;accent-color:var(--accent)}
+#steps{display:grid;grid-template-columns:repeat(16,minmax(30px,1fr));gap:4px;flex:1;min-width:480px}
+#steps button{padding:4px 0;min-height:30px;font:11px var(--mono);color:var(--mute)}
+#steps button.on{background:#3a2a0e;border-color:var(--accent);color:var(--text)}
+#steps button.playing{outline:2px solid var(--ok)}
+.keys-scroll{overflow-x:auto}
+#keys{position:relative;height:112px;min-width:560px}
+#keys button{position:absolute;top:0;padding:0;border-radius:0 0 6px 6px;touch-action:none;display:flex;align-items:flex-end;justify-content:center;font-size:10px;color:#556;min-height:0}
+#keys button.white{background:#eef0f5;border:1px solid #9aa0ae;color:#445;height:100%;width:calc(100%/14)}
+#keys button.black{background:#12141a;border:1px solid #000;height:62%;width:calc(100%/14*.6);z-index:1;color:#999}
+#keys button.on{background:var(--accent);color:#000}
+
+/* Panneau droit */
+canvas{display:block;width:100%;height:84px;background:var(--bg);border:1px solid var(--line);border-radius:8px;margin-bottom:8px}
+.meter{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--accent),var(--bad))}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.macros{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#diagnostics p{margin:4px 0 0;font-size:13px;color:var(--mute)}
+#diagnostics strong.ok{color:var(--ok)}#diagnostics strong.bad{color:var(--accent)}
+.lesson b{display:block;font-weight:500;margin-top:6px;font-size:12px;color:var(--text)}
+kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2);border-radius:4px;padding:1px 5px}
+
+/* Écrans moyens et téléphones : pas de défilement de page horizontal */
+@media (max-width:1100px){
+  body{display:block}
+  .workspace{display:block}
+  #openCatalog{display:inline-flex}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:min(300px,86vw);z-index:30;transform:translateX(-100%);transition:transform .2s;box-shadow:8px 0 30px #000a}
+  .sidebar.open{transform:none}
+  .center{display:block}
+  .rack-scroll{height:62vh;min-height:340px}
+  .panel{border-left:0;border-top:1px solid var(--line)}
+  #steps{min-width:0;grid-template-columns:repeat(8,minmax(0,1fr))}
 }
-</style><style id="mobile-navigation-v6">
-#focusModule{max-width:180px;min-width:110px;background:#13162e;color:#f0e9ff;border:1px solid #60548e;border-radius:6px;padding:6px}
-#focusPrev,#focusNext{min-width:29px;background:#221a3e;border:1px solid #53417b;color:#e8d8ff}
-#toggleBrowser{background:#1b2340;border:1px solid #5570a1;color:#d7e9ff}
-@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){
-.workspace{grid-template-columns:minmax(0,1fr)!important;position:relative}
-.viewport{grid-column:1!important;grid-row:1!important;width:100%!important}
-.sidebar{display:none!important;position:fixed!important;left:max(5px,env(safe-area-inset-left))!important;top:54px!important;bottom:calc(55px + env(safe-area-inset-bottom))!important;width:min(260px,72vw)!important;max-width:72vw!important;z-index:51!important;box-shadow:12px 0 24px #000b;background:#10152a;border:1px solid #455078;border-radius:10px}
-.mobile-browser-open .sidebar{display:block!important}
-#toggleBrowser{position:sticky;left:0;z-index:25}
-#focusModule{position:sticky;left:60px;z-index:25;max-width:150px;min-width:125px}
-#focusPrev,#focusNext{position:sticky;z-index:25}
-.rack-toolbar{display:flex;align-items:center;gap:4px;min-width:700px}
-#analysisStrip.dock-open,#performance.dock-open,#macroPanel.dock-open{z-index:59!important}
+@media (max-width:640px){
+  header{padding:8px 10px}
+  .brand small{display:none}
+  header .group{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
+  header .group button{flex:none}
+  .toolbar{padding:8px 10px}
+  #status{margin-left:0;width:100%}
 }
-</style><style id="keyboard-workflow-v8">
-#shortcutHelp{background:#17283d;color:#d5efff;border:1px solid #426b8b;white-space:nowrap}
-#shortcutHelp:hover{background:#264b68}
-#shortcutDialog{position:fixed;inset:0;z-index:9999;background:#02050ac9;display:none;align-items:center;justify-content:center;padding:20px}
-#shortcutDialog.open{display:flex}
-#shortcutDialog .shortcut-sheet{width:min(560px,100%);max-height:85dvh;overflow:auto;background:#11182a;color:#f3f6ff;border:1px solid #6785ad;border-radius:14px;padding:24px;box-shadow:0 20px 90px #000d}
-#shortcutDialog h2{font-size:20px;margin:0 0 12px}
-#shortcutDialog .shortcut-line{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #ffffff1c}
-#shortcutDialog kbd{font:12px ui-monospace,monospace;background:#242e48;color:#e6faff;border:1px solid #4c6183;border-radius:5px;padding:4px 7px;white-space:nowrap}
-#shortcutDialog button{margin-top:14px}
-#rack .module.selected{outline:3px solid #e7f9ff!important;outline-offset:5px!important;box-shadow:0 0 0 8px #64e5ff24,0 13px 27px #000b!important}
-@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){#shortcutHelp{min-height:34px}}
-</style><style id="sonora-coherent-rack">
-/* One consistent instrument design, not stacked visual themes. */
-:root{--panel:#101923;--panel-line:#324456;--signal:#7ce0db}
-body{background:#0b1018;color:#ecf3f5}
-.workspace{background:#101721}
-.sidebar,.inspector{background:#121d28;border-color:#2c4051}
-.viewport{background:#0d1621}
-#rack{background-color:#101b28;background-image:repeating-linear-gradient(90deg,transparent 0,transparent 19px,#ffffff08 20px,transparent 21px),repeating-linear-gradient(0deg,transparent 0,transparent 19px,#ffffff06 20px,transparent 21px)!important}
-#rack .module{box-sizing:border-box;width:238px!important;min-height:0!important;height:auto!important;padding:13px 15px 36px!important;border:2px solid #38495a!important;border-top:5px solid var(--accent,#79d7db)!important;border-radius:7px!important;background:linear-gradient(180deg,#1c2938,#121c2b)!important;color:#e7f2f6!important;box-shadow:0 8px 18px #0007!important;overflow:visible!important;isolation:isolate}
-#rack .module h3{padding:6px 0 10px!important;margin:0 0 10px!important;font-size:13px!important;line-height:1.3!important;font-weight:800;letter-spacing:.045em;min-height:28px;border-bottom:1px solid #526172!important;color:#f4f8fa!important;overflow-wrap:anywhere}
-#rack .module .hardware-face{display:flex;position:relative;align-items:center;justify-content:center;height:20px;margin:0 0 6px;pointer-events:none}
-#rack .module .face-brand{font-size:8px;letter-spacing:.13em;color:var(--accent,#91d7e0);font-weight:800}
-#rack .module .screw{display:none}
-#rack .module .status-led{width:6px;height:6px;position:absolute;right:0;top:6px;background:#76f4c8;border-radius:50%;box-shadow:0 0 7px #76f4c8}
-#rack .module .mini-graph{display:block;height:55px!important;min-height:55px;margin:4px 0 11px!important;padding:4px;border:1px solid #38596b!important;border-radius:4px!important;background:#07141c!important;overflow:hidden}
-#rack .module .mini-graph svg{width:100%;height:100%}
-#rack .module .hardware-meter{display:none}
-#rack .module .rotary{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px 8px!important;margin:10px 0!important;align-items:start}
-#rack .module .rotary-cell{display:flex!important;flex-direction:column;align-items:center;gap:7px;position:relative;min-width:0;min-height:106px!important;padding:4px 1px!important}
-#rack .module .rotary-cell input[type=range]{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
-#rack .module .rotary-cell .dial{position:relative!important;z-index:3!important;width:48px!important;height:48px!important;flex:none;cursor:ns-resize;touch-action:none}
-#rack .module .rotary-cell .dial:focus-visible{outline:2px solid #fff;outline-offset:3px}
-#rack .module .rotary-cell label{display:flex!important;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px;margin:0!important;font-size:10px!important;line-height:1.35!important;text-align:center;overflow-wrap:anywhere;max-width:100%}
-#rack .module .rotary-cell output{float:none!important;font:10px ui-monospace,monospace!important;color:#9ef0ed}
-#rack .module .rotary-cell .control-number{display:none}
-#rack .module select{width:100%;max-width:100%;padding:7px;background:#0d1823;color:#f3f9fa;border:1px solid #476072;border-radius:4px}
-#rack .module .port{z-index:5}
-#rack .module .portlabel{z-index:5}
-#rack .module.selected{outline:3px solid #b6f7ed!important;outline-offset:3px!important}
-#rack .module[data-family="envelope"]{width:260px!important}
-#rack .module[data-family="sequencer"]{width:270px!important}
-#rack .module[data-family="mixer"],#rack .module[data-family="vca"],#rack .module[data-family="output"]{width:210px!important}
-#rack .module .hardware-steps{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:2px;margin:9px 0}
-#rack .module .hardware-steps span{height:10px;border:1px solid #51667b;background:#182a37}
-#rack .module .hardware-steps .downbeat{background:#f0a66b}
-#rack .module .hardware-vu{display:grid;grid-template-columns:14px 1fr;gap:4px;margin:8px 0}
-#rack .module .vu-bars{height:9px;background:repeating-linear-gradient(90deg,#67d7b1 0 6px,#152937 6px 9px)}
-#wires{z-index:1!important;pointer-events:none}
-#wires .cable{pointer-events:stroke;stroke-width:4;opacity:.8}
-#rack .module{z-index:3}
-#rack .module:focus-within{z-index:4}
-@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){#rack .module .rotary-cell .dial{width:52px!important;height:52px!important}}
-</style><style id="sonora-navigation-ux-v9">
-.viewport{position:relative}
-.rack-toolbar{position:sticky!important;top:0;left:0;z-index:35!important;max-width:100%;min-width:0!important;width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;white-space:nowrap;background:#111c2af5!important;backdrop-filter:blur(12px);border-bottom:1px solid #3e5268}
-.rack-toolbar button,.rack-toolbar select{flex-shrink:0}
-#patchOverview,#patchFit{background:#21374b;color:#e0f6ff;border:1px solid #567d93;font-weight:700}
-#patchOverview[aria-expanded="true"]{background:#346477}
-.patch-map{position:fixed;right:clamp(12px,2vw,28px);bottom:calc(24px + env(safe-area-inset-bottom));z-index:70;width:min(340px,calc(100vw - 24px));padding:13px;background:#0e1b2aef;border:1px solid #547087;border-radius:12px;box-shadow:0 15px 45px #000b;color:#e8f4fa;backdrop-filter:blur(16px)}
-.patch-map[hidden]{display:none!important}
-.patch-map-head{display:flex;align-items:center;justify-content:space-between;font-size:11px;letter-spacing:.12em;margin-bottom:8px}
-.patch-map-head button{padding:3px 9px}
-#patchMapCanvas{width:100%;height:auto;display:block;cursor:crosshair;background:#08121c;border:1px solid #38536b;border-radius:5px;touch-action:none}
-.patch-map p{font-size:11px;line-height:1.35;color:#a9c0d0;margin:8px 0 0}
-@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){
-.rack-toolbar{min-width:0!important;overflow-x:auto!important;scroll-snap-type:x proximity}
-.rack-toolbar>*{scroll-snap-align:start}
-.patch-map{right:8px;bottom:calc(64px + env(safe-area-inset-bottom));width:min(290px,calc(100vw - 16px))}
-}
-</style><style id="single-screen-instrument-v10">
-/* One screen is the default; no map, panning workflow, or second screen. */
-#patchOverview,#patchFit,#focusPrev,#focusNext,#focusModule,#patchForward,#patchBack{display:none!important}
-#patchMap{display:none!important}
-.workspace{height:calc(100dvh - 64px)!important;min-height:0!important;overflow:hidden}
-.viewport{height:100%!important;min-height:0!important;overflow:hidden!important;display:flex;flex-direction:column}
-.rack-toolbar{position:relative!important;flex:0 0 auto;min-height:44px;max-height:48px;overflow-x:auto;overflow-y:hidden;padding:4px 8px!important}
-#rack{flex:0 0 auto;min-width:0!important;min-height:0!important;transform-origin:top left;overflow:visible}
-#rack:before{display:none}
-#rack .module{box-shadow:0 3px 10px #0008!important}
-#rack .module .hardware-face{height:13px;margin-bottom:0}
-#rack .module h3{margin-bottom:5px!important;padding:4px 0 6px!important}
-#rack .module .mini-graph{height:36px!important;min-height:36px!important;margin:2px 0 5px!important}
-#rack .module .rotary{gap:4px 5px!important;margin:4px 0!important}
-#rack .module .rotary-cell{min-height:78px!important;gap:3px!important;padding:1px!important}
-#rack .module .rotary-cell .dial{width:38px!important;height:38px!important}
-#rack .module .rotary-cell label{font-size:9px!important;line-height:1.15!important;min-height:0}
-#rack .module .hardware-steps{margin:3px 0}
-#rack .module{padding:8px 10px 28px!important}
-#rack .module .port{bottom:4px}
-#rack .module .portlabel{bottom:4px}
-@media(max-width:760px),(orientation:landscape) and (max-height:600px) and (pointer:coarse){
-.workspace{height:calc(100dvh - 54px)!important}
-.rack-toolbar{min-height:38px;max-height:42px}
-#rack .module .rotary-cell .dial{width:38px!important;height:38px!important}
-}
-</style></head><body><header><div class="brand"><span class="brand-icon">∿</span><div><strong>SONORA</strong><small>Synthèse · Modulation · Analyse · Création</small></div></div><nav class="main-tabs" aria-label="Navigation SONORA"><button data-tab="instrument">▥ Instrument</button><button class="active" data-tab="modular">⬡ Modular</button><button data-tab="pistes">☷ Pistes</button><button data-tab="laboratoire">▦ Laboratoire</button><button data-tab="code">⌘ Code</button></nav><span class="grow"></span><button id="start">▶ Activer l'audio</button><button id="play">▶ Séquenceur</button><button id="stop">■ STOP / PANIC</button><button id="undo">↶</button><button id="redo">↷</button><button id="save">Exporter</button><button id="load">Importer</button><input id="file" type="file" accept=".json" hidden><button id="doctor">Patch Doctor</button><button id="reset">Patch initial</button></header>
-<div class="workspace"><aside class="sidebar"><h2>⌄ Modules</h2><input id="moduleSearch" type="search" placeholder="⌕ Rechercher un module…" aria-label="Rechercher un module"><div id="catalog"></div><div class="panel"><strong>Mode d'emploi</strong><p>Ajoute des modules, déplace-les par leur titre et relie les prises en tirant un câble. Clique sur un câble pour le débrancher.</p><p>Les connexions audio sont calculées par le moteur Web Audio. Les liaisons de modulation sont indiquées séparément.</p></div></aside><main class="viewport" id="viewport"><div class="rack-toolbar"><button id="patchBack" aria-label="Recentrer">‹</button><span class="patch-title">Mon instrument <span class="pencil">✎</span></span><button id="patchForward" aria-label="Voir les modules suivants">›</button><select id="patchPreset" aria-label="Choisir un patch"><option value="subtractive">Synthé soustractif</option><option value="ambient">Texture ambient</option><option value="rhythm">Séquence rythmique</option></select><button id="shortcutHelp" type="button" title="Afficher les raccourcis clavier" aria-keyshortcuts="?">⌨ Raccourcis</button><button id="patchOverview" type="button" title="Afficher le plan du patch" aria-expanded="false">▤ Plan</button><button id="patchFit" type="button" title="Recentrer sur la chaîne audio">◎ Chaîne</button><button id="tidyPatch" type="button" title="Réorganiser les modules sans modifier le son">▦ Ranger</button><button id="focusPrev" type="button" title="Module précédent">◀</button><select id="focusModule" aria-label="Aller à un module"><option value="">⌖ Naviguer</option></select><button id="focusNext" type="button" title="Module suivant">▶</button><button id="toggleBrowser" type="button" aria-expanded="false" title="Afficher ou masquer les modules">☷ Modules</button><span class="rack-toolbar-spacer"></span><span class="tempo-chip">◀ <span id="toolbarBpm">120</span> BPM</span><span class="poly-chip">Polyphonie <b>16</b></span><span class="cpu-chip">● Audio</span></div><aside id="patchMap" class="patch-map" aria-label="Plan interactif du patch" hidden><div class="patch-map-head"><strong>PLAN DU PATCH</strong><button id="patchMapClose" aria-label="Fermer le plan">×</button></div><canvas id="patchMapCanvas" width="440" height="260" aria-label="Vue d’ensemble des modules"></canvas><p>Clique dans le plan pour naviguer. Le cadre indique la zone visible.</p></aside><div class="rack" id="rack"><svg class="wires" id="wires"></svg></div></main><aside class="inspector"><div class="inspector-tabs"><button class="active" data-inspector="module">Module</button><button data-inspector="params">Paramètres</button><button data-inspector="assign">Affectations</button></div><h2>Instrument</h2><div class="panel"><strong>Clavier</strong><div class="keys" id="keys"></div></div><h2>Séquenceur global</h2><div class="panel"><label>Tempo <output id="bpmText">120</output> BPM</label><input type="range" min="40" max="240" value="120" id="bpm" style="width:100%"><div class="steps" id="steps"></div><p class="hint">16 pas, une note par pas ; le module SEQ active aussi le séquenceur global.</p></div><h2>Analyse</h2><div class="panel"><canvas id="scope" width="230" height="90"></canvas><div class="meter"><div id="meter"></div></div></div><h2>Inspecteur</h2><div class="panel" id="inspector">Sélectionne un module. Chaque paramètre possède une fiche « ? ».</div><h2>Diagnostic</h2><div class="panel" id="diagnostics"><p class="hint">Utilise « Patch Doctor » pour analyser les connexions et les sources silencieuses.</p></div><h2>État</h2><div class="panel"><div class="status" id="status">Prêt — active l'audio pour jouer.</div><p class="hint">Moteur Web Audio autonome. Plusieurs familles de modules sont disponibles ; certaines topologies avancées nécessitent encore un moteur de modulation généralisé.</p></div></aside></div><div id="mobileDockControls" role="toolbar" aria-label="Afficher les outils"><button type="button" data-dock="performance" aria-expanded="false">⌨ Clavier</button><button type="button" data-dock="analysisStrip" aria-expanded="false">◉ Analyse</button><button type="button" data-dock="macroPanel" aria-expanded="false">◈ Macros</button><button type="button" id="hideDock">✕ Fermer</button></div><div id="analysisStrip"><div class="analysis-card"><h4>Oscilloscope</h4><div id="scopeSlot"></div></div><div class="analysis-card"><h4>Analyse spectrale</h4><canvas id="spectrum" width="270" height="103"></canvas></div><div class="analysis-card"><h4>Spectrogramme</h4><canvas id="spectrogram" width="270" height="103"></canvas></div><div class="analysis-card"><h4>Corrélogramme</h4><canvas id="correlation" width="270" height="103"></canvas></div></div><div id="performance"><h4>⌨ Clavier &nbsp; · &nbsp; Séquenceur &nbsp; · &nbsp; Macros</h4><div id="keyboardSlot"></div></div><div id="macroPanel"><h4>Macros</h4><div class="macros"><button data-macro="bright">Brillance</button><button data-macro="soft">Douceur</button><button data-macro="motion">Mouvement</button><button data-macro="space">Espace</button></div></div><section class="lesson" id="lesson"><button id="close">✕</button><h2 id="lt"></h2><p id="ld"></p><h3>Écoute et expérimente</h3><p id="le"></p><h3>Notion</h3><p id="ln"></p></section>
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="../../sonora/" title="Retour à SONORA"><span class="brand-mark">∿</span><span><strong>SONORA</strong><small>Synthé modulaire</small></span></a>
+  <div class="group">
+    <button id="openCatalog" type="button">+ Module</button>
+    <button id="start" class="primary" type="button">▶ Activer l'audio</button>
+    <button id="play" type="button">▶ Séquenceur</button>
+    <button id="stop" class="danger" type="button">■ Stop</button>
+  </div>
+  <span class="grow"></span>
+  <div class="group">
+    <button id="undo" type="button" aria-label="Annuler" title="Annuler (Ctrl+Z)">↶</button>
+    <button id="redo" type="button" aria-label="Rétablir" title="Rétablir (Ctrl+Maj+Z)">↷</button>
+    <button id="save" type="button">Exporter</button>
+    <button id="load" type="button">Importer</button>
+    <input id="file" type="file" accept=".json" hidden>
+    <button id="doctor" type="button">Diagnostic</button>
+    <button id="reset" type="button">Patch initial</button>
+  </div>
+</header>
+
+<div class="workspace">
+  <aside class="sidebar" id="sidebar" aria-label="Catalogue de modules">
+    <h2>Modules</h2>
+    <input id="moduleSearch" type="search" placeholder="Rechercher un module" aria-label="Rechercher un module">
+    <div id="catalogList"></div>
+    <div class="card">
+      <strong>Brancher</strong>
+      <p>Tire un câble d'une prise OUT vers une prise IN, ou touche l'une puis l'autre. Les prises compatibles s'allument. Clique un câble puis sur sa croix pour le débrancher.</p>
+      <p>Déplace un module par son titre. Le bouton Ranger les réorganise sans changer le son.</p>
+    </div>
+  </aside>
+
+  <main class="center">
+    <div class="toolbar">
+      <span class="title">Mon instrument</span>
+      <select id="patchPreset" aria-label="Choisir un patch">
+        <option value="subtractive">Synthé soustractif</option>
+        <option value="ambient">Texture ambient</option>
+        <option value="rhythm">Séquence rythmique</option>
+      </select>
+      <button id="tidy" type="button" title="Réorganiser les modules sans modifier le son">Ranger</button>
+      <span id="status" role="status" aria-live="polite">Prêt</span>
+    </div>
+    <div class="rack-scroll" id="scroller"><div id="rack"><svg id="wires" aria-hidden="false"></svg></div></div>
+    <div class="dock">
+      <div class="seq-row">
+        <label>Tempo <input id="bpm" type="range" min="40" max="240" value="120"><span id="bpmText">120</span> BPM</label>
+        <div id="steps" aria-label="Séquenceur 16 pas"></div>
+      </div>
+      <div class="keys-scroll"><div id="keys" aria-label="Clavier"></div></div>
+    </div>
+  </main>
+
+  <aside class="panel" aria-label="Analyse et réglages">
+    <div class="card">
+      <h2>Analyse</h2>
+      <canvas id="scope" aria-label="Oscilloscope"></canvas>
+      <canvas id="spectrum" aria-label="Spectre"></canvas>
+      <div class="meter" aria-label="Niveau"><i id="meter"></i></div>
+    </div>
+    <div class="card">
+      <h2>Module sélectionné</h2>
+      <div id="inspector"><p>Clique un module pour le sélectionner.</p></div>
+    </div>
+    <div class="card lesson" id="lesson">
+      <h2>Notion</h2>
+      <p id="lt">Clique le nom d'un réglage pour lire son explication.</p>
+    </div>
+    <div class="card">
+      <h2>Diagnostic</h2>
+      <div id="diagnostics"><p>Lance « Diagnostic » pour vérifier les branchements.</p></div>
+    </div>
+    <div class="card">
+      <h2>Macros</h2>
+      <div class="macros" id="macros">
+        <button type="button" data-macro="bright">Brillance</button>
+        <button type="button" data-macro="soft">Douceur</button>
+        <button type="button" data-macro="motion">Mouvement</button>
+        <button type="button" data-macro="space">Espace</button>
+      </div>
+    </div>
+    <div class="card"><h2>Clavier</h2><p>Touches <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>… pour jouer. <kbd>Suppr</kbd> retire le câble ou le module sélectionné.</p></div>
+  </aside>
+</div>
+
 <script>
 const $=q=>document.querySelector(q),catalog={
-osc:{group:"Sources",name:"VCO · Oscillateur",kind:"source",theme:"gold",params:{wave:["forme","select",["sine","triangle","sawtooth","square"]],detune:["cents",-1200,1200,1],gain:["niveau",0,1,.01]}},
-noise:{group:"Sources",name:"NOISE · Bruit",kind:"source",theme:"dark",params:{gain:["niveau",0,1,.01]}},
-sampler:{group:"Sources",name:"SUB · Sous-osc.",kind:"source",theme:"gold",params:{wave:["forme","select",["sine","square","triangle"]],detune:["cents",-2400,0,100],gain:["niveau",0,1,.01]}},
-filter:{group:"Filtres",name:"VCF · Passe-bas",kind:"processor",params:{cutoff:["coupure Hz",60,12000,10],q:["résonance",.1,18,.1]}},
-highpass:{group:"Filtres",name:"HPF · Passe-haut",kind:"processor",params:{cutoff:["coupure Hz",40,12000,10],q:["résonance",.1,18,.1]}},
-bandpass:{group:"Filtres",name:"BPF · Passe-bande",kind:"processor",params:{cutoff:["centre Hz",80,12000,10],q:["résonance",.1,18,.1]}},
-vca:{group:"Mixage",name:"VCA · Amplificateur",kind:"processor",params:{gain:["gain",0,1,.01]}},
-mixer:{group:"Mixage",name:"MIX · Mélangeur",kind:"processor",theme:"dark",params:{gain:["niveau",0,1,.01]}},
-pan:{group:"Mixage",name:"PAN · Panoramique",kind:"processor",params:{pan:["position",-1,1,.01]}},
-drive:{group:"Effets",name:"DRIVE · Saturation",kind:"processor",theme:"gold",params:{drive:["intensité",0,100,1]}},
-delay:{group:"Effets",name:"DELAY · Écho",kind:"processor",params:{time:["temps s",.02,1,.01],feedback:["retour",0,.85,.01]}},
-chorus:{group:"Effets",name:"CHORUS · Doublage",kind:"processor",params:{rate:["vitesse",.1,8,.1],depth:["profondeur",0,.015,.001]}},
-tremolo:{group:"Effets",name:"TREMOLO · Amplitude",kind:"processor",params:{rate:["vitesse",.2,20,.1],depth:["profondeur",0,1,.01]}},
-compressor:{group:"Effets",name:"COMP · Dynamique",kind:"processor",theme:"dark",params:{threshold:["seuil dB",-60,0,1],ratio:["ratio",1,20,1]}},
-out:{group:"Sortie",name:"OUTPUT · Master",kind:"output",theme:"dark",params:{gain:["niveau",0,1,.01]}},
-adsr:{group:"Modulation",name:"ADSR · Enveloppe",kind:"control",theme:"gold",params:{attack:["attaque s",.005,2,.005],decay:["decay s",.01,2,.01],sustain:["maintien",0,1,.01],release:["release s",.01,4,.01]}},
-lfo:{group:"Modulation",name:"LFO · Oscillation",kind:"control",params:{rate:["fréquence",.1,20,.1],depth:["profondeur",0,3000,10]}},
-seq:{group:"Séquenceurs",name:"SEQ · 16 pas",kind:"control",theme:"dark",params:{transpose:["transposition",-24,24,1]}},
-clock:{group:"Séquenceurs",name:"CLOCK · Tempo",kind:"control",params:{bpm:["tempo",40,240,1]}},
-scope:{group:"Analyse",name:"SCOPE · Oscilloscope",kind:"control",theme:"dark",params:{}},
-meter:{group:"Analyse",name:"METER · Niveau",kind:"control",params:{}}
+osc:{group:"Sources",name:"VCO : Oscillateur",kind:"source",theme:"gold",params:{wave:["forme","select",["sine","triangle","sawtooth","square"]],detune:["cents",-1200,1200,1],gain:["niveau",0,1,.01]}},
+noise:{group:"Sources",name:"NOISE : Bruit",kind:"source",theme:"dark",params:{gain:["niveau",0,1,.01]}},
+sampler:{group:"Sources",name:"SUB : Sous-osc.",kind:"source",theme:"gold",params:{wave:["forme","select",["sine","square","triangle"]],detune:["cents",-2400,0,100],gain:["niveau",0,1,.01]}},
+filter:{group:"Filtres",name:"VCF : Passe-bas",kind:"processor",params:{cutoff:["coupure Hz",60,12000,10],q:["résonance",.1,18,.1]}},
+highpass:{group:"Filtres",name:"HPF : Passe-haut",kind:"processor",params:{cutoff:["coupure Hz",40,12000,10],q:["résonance",.1,18,.1]}},
+bandpass:{group:"Filtres",name:"BPF : Passe-bande",kind:"processor",params:{cutoff:["centre Hz",80,12000,10],q:["résonance",.1,18,.1]}},
+vca:{group:"Mixage",name:"VCA : Amplificateur",kind:"processor",params:{gain:["gain",0,1,.01]}},
+mixer:{group:"Mixage",name:"MIX : Mélangeur",kind:"processor",theme:"dark",params:{gain:["niveau",0,1,.01]}},
+pan:{group:"Mixage",name:"PAN : Panoramique",kind:"processor",params:{pan:["position",-1,1,.01]}},
+drive:{group:"Effets",name:"DRIVE : Saturation",kind:"processor",theme:"gold",params:{drive:["intensité",0,100,1]}},
+delay:{group:"Effets",name:"DELAY : Écho",kind:"processor",params:{time:["temps s",.02,1,.01],feedback:["retour",0,.85,.01]}},
+chorus:{group:"Effets",name:"CHORUS : Doublage",kind:"processor",params:{rate:["vitesse",.1,8,.1],depth:["profondeur",0,.015,.001]}},
+tremolo:{group:"Effets",name:"TREMOLO : Amplitude",kind:"processor",params:{rate:["vitesse",.2,20,.1],depth:["profondeur",0,1,.01]}},
+compressor:{group:"Effets",name:"COMP : Dynamique",kind:"processor",theme:"dark",params:{threshold:["seuil dB",-60,0,1],ratio:["ratio",1,20,1]}},
+out:{group:"Sortie",name:"OUTPUT : Master",kind:"output",theme:"dark",params:{gain:["niveau",0,1,.01]}},
+adsr:{group:"Modulation",name:"ADSR : Enveloppe",kind:"control",theme:"gold",params:{attack:["attaque s",.005,2,.005],decay:["decay s",.01,2,.01],sustain:["maintien",0,1,.01],release:["release s",.01,4,.01]}},
+lfo:{group:"Modulation",name:"LFO : Oscillation",kind:"control",params:{rate:["fréquence",.1,20,.1],depth:["profondeur",0,3000,10]}},
+seq:{group:"Séquenceurs",name:"SEQ : 16 pas",kind:"control",theme:"dark",params:{transpose:["transposition",-24,24,1]}},
+clock:{group:"Séquenceurs",name:"CLOCK : Tempo",kind:"control",params:{bpm:["tempo",40,240,1]}},
+scope:{group:"Analyse",name:"SCOPE : Oscilloscope",kind:"control",theme:"dark",params:{}},
+meter:{group:"Analyse",name:"METER : Niveau",kind:"control",params:{}}
 };
 const defaults={osc:{wave:"sawtooth",detune:0,gain:.35},sampler:{wave:"square",detune:-1200,gain:.18},noise:{gain:.15},filter:{cutoff:1800,q:1},highpass:{cutoff:150,q:1},bandpass:{cutoff:1200,q:2},vca:{gain:.7},mixer:{gain:.7},pan:{pan:0},drive:{drive:15},delay:{time:.3,feedback:.28},chorus:{rate:1.3,depth:.004},tremolo:{rate:5,depth:.45},compressor:{threshold:-20,ratio:4},out:{gain:.7},adsr:{attack:.02,decay:.2,sustain:.7,release:.35},lfo:{rate:2,depth:500},seq:{transpose:0},clock:{bpm:120},scope:{},meter:{}};
 const notions={wave:["Forme d'onde","La sinusoïde ne possède qu'une fréquence ; les formes carrée et en dent de scie contiennent des harmoniques.","Change la forme en maintenant une note et écoute le timbre.","Analyse de Fourier : un son complexe peut se décomposer en sinusoïdes."],detune:["Désaccordage","Le cent est un centième de demi-ton.","Essaie 7 cents puis 1200 cents.","f₂ = f₁ × 2^(cents / 1200)"],gain:["Amplitude","Le gain multiplie l'amplitude du signal.","Réduis le niveau avant d'ajouter une saturation.","Une multiplication par deux correspond à environ +6 dB."],cutoff:["Fréquence de coupure","La coupure détermine la zone de fréquences transmise ou atténuée.","Fais varier de 300 Hz à 5000 Hz sur une dent de scie.","La fréquence est mesurée en hertz : cycles par seconde."],q:["Résonance","Q décrit l'accentuation et la sélectivité autour de la fréquence de coupure.","Augmente Q lentement avec le filtre.","Un Q élevé crée un pic spectral."],attack:["Attaque","Durée de montée de l'enveloppe.","Compare 0,01 s et 1 s.","Phase A de ADSR."],decay:["Décroissance","Temps de descente vers le niveau de maintien.","Compare 0,05 s et 1 s.","Phase D de ADSR."],sustain:["Maintien","Niveau conservé tant que la note est tenue.","Compare 0,2 et 0,9.","Contrairement aux autres paramètres ADSR, c'est un niveau."],release:["Relâchement","Temps d'extinction après Note Off.","Compare 0,05 s et 2 s.","Phase R de ADSR."],rate:["Fréquence de modulation","Nombre de cycles de modulation par seconde.","Compare 0,5 et 8 Hz.","T = 1/f."],depth:["Profondeur","Intensité d'un effet ou d'une modulation.","Commence à zéro puis augmente progressivement.","Modulation = signal de commande × profondeur."],time:["Temps de retard","Durée entre un son et son écho.","Essaie 0,15 puis 0,5 seconde.","Distance temporelle entre signal direct et retardé."],feedback:["Rétroaction","Part du signal retardé renvoyée dans le délai.","Augmente progressivement, sans dépasser le niveau prudent.","Une boucle de rétroaction prolonge les répétitions."],drive:["Distorsion","Une fonction non linéaire ajoute des harmoniques.","Compare 0 et 70 sur une sinusoïde.","La saturation modifie le spectre du signal."],bpm:["Tempo","Nombre de battements par minute.","Compare 60 et 180 BPM.","Durée d'un battement = 60/BPM secondes."],pan:["Panoramique","Répartition entre canaux gauche et droit.","Passe de -1 à +1 au casque, à faible volume.","Spatialisation stéréophonique."],threshold:["Seuil","Niveau au-delà duquel la compression intervient.","Abaisse le seuil et observe la dynamique.","Niveau exprimé en dBFS."],ratio:["Ratio","Rapport de réduction de dynamique au-delà du seuil.","Compare 2:1 et 10:1.","Une compression 4:1 réduit 4 dB au-dessus du seuil à 1 dB."],transpose:["Transposition","Déplacement de la hauteur musicale en demi-tons.","Compare +12 et -12.","12 demi-tons = une octave."]};
-let nodes=[],edges=[],next=1,selected=null,history=[],future=[],ctx=null,analyser=null,master=null,active=new Map(),running=false,timer=null,step=0,bpm=120,pending=null,drag=null,mouse={x:0,y:0};let pattern=[60,null,64,null,67,null,72,null,67,null,64,null,62,null,59,null];const noteNames=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];const status=t=>$("#status").textContent=t;const find=id=>nodes.find(n=>n.id===id);
-function snap(){return JSON.stringify({nodes,edges,next,selected,pattern,bpm})}function checkpoint(){try{localStorage.setItem("sonora-patchwork-autosave",snap())}catch(e){}history.push(snap());if(history.length>60)history.shift();future=[];historyUI()}function historyUI(){$("#undo").disabled=!history.length;$("#redo").disabled=!future.length}function restore(raw){panic();const d=JSON.parse(raw);nodes=d.nodes;edges=d.edges;next=d.next;selected=d.selected;pattern=d.pattern;bpm=d.bpm;$("#bpm").value=bpm;$("#bpmText").textContent=bpm;render();renderSteps();historyUI()}function undo(){if(history.length){future.push(snap());restore(history.pop())}}function redo(){if(future.length){history.push(snap());restore(future.pop())}}
-function add(type,x,y,record=true){if(record)checkpoint();const id=type+(next++);nodes.push({id,type,x:x??(25+(nodes.length%11)*188),y:y??(40+Math.floor(nodes.length/11)*265),params:{...defaults[type]}});selected=id;render();status("Module "+catalog[type].name+" ajouté");return id}
-function port(n,side){const el=document.createElement("div");el.className="port "+side;el.dataset.node=n.id;el.dataset.side=side;el.title=side==="in"?"Entrée audio":"Sortie audio";el.onpointerdown=e=>{e.stopPropagation();e.preventDefault();if(pending&&pending.el!==el){const old=pending;if(old.side!==side){const a=side==="out"?n.id:old.id,b=side==="in"?n.id:old.id;pending=null;connect(a,b);return}old.el.classList.remove("pending")}pending={id:n.id,side,el};el.classList.add("pending");el.setPointerCapture(e.pointerId)};el.onpointermove=e=>{if(pending?.el===el){mouse=point(e.clientX,e.clientY);drawWires()}};el.onpointerup=e=>{if(pending?.el!==el)return;const target=document.elementFromPoint(e.clientX,e.clientY)?.closest(".port");if(target&&target!==el&&target.dataset.side!==side){const a=side==="out"?n.id:target.dataset.node,b=side==="in"?n.id:target.dataset.node;connect(a,b);pending=null;drawWires()}else{pending={id:n.id,side,el};el.classList.add("pending");drawWires()}};el.onpointercancel=()=>{pending=null;drawWires()};return el}
-function point(x,y){const r=$("#rack").getBoundingClientRect();return {x:x-r.left,y:y-r.top}}function center(el){const r=el.getBoundingClientRect();return point(r.left+r.width/2,r.top+r.height/2)}
-function curve(a,b){const sag=Math.min(230,65+Math.hypot(b.x-a.x,b.y-a.y)*.37),bottom=Math.max(a.y,b.y)+sag,m=(a.x+b.x)/2;return "M"+a.x+" "+a.y+" C"+a.x+" "+bottom+" "+m+" "+bottom+" "+m+" "+bottom+" S"+b.x+" "+bottom+" "+b.x+" "+b.y}
-function path(d,cls,color){const p=document.createElementNS("http://www.w3.org/2000/svg","path");p.setAttribute("d",d);p.setAttribute("class",cls);p.setAttribute("stroke",color);p.setAttribute("fill","none");return p}
-function drawWires(){const svg=$("#wires");svg.replaceChildren();const colors=["#d8a85c","#6bb6a8","#e38c86","#ad9cdd","#a1c87b","#e2cf91"];for(const [i,[a,b]] of edges.entries()){const A=$("#rack").querySelector('[data-node="'+a+'"].port.out'),B=$("#rack").querySelector('[data-node="'+b+'"].port.in');if(!A||!B)continue;const d=curve(center(A),center(B)),color=colors[i%colors.length];svg.append(path(d,"shadow","#000"));const body=path(d,"cable",color);body.onclick=()=>{checkpoint();edges=edges.filter(e=>e[0]!==a||e[1]!==b);render();panic()};svg.append(body,path(d,"shine","#fff"))}if(pending?.el&&mouse.x&&mouse.y){const d=curve(center(pending.el),mouse);svg.append(path(d,"cable","#f2c778"))}}
-function connect(a,b){const A=find(a),B=find(b);if(!A||!B||a===b||catalog[A.type].kind==="output"||catalog[B.type].kind!=="processor"&&catalog[B.type].kind!=="output"||catalog[A.type].kind==="control"||edges.some(e=>e[0]===a&&e[1]===b)){status("Connexion impossible ou déjà présente");return}if(hasPath(b,a)){status("Boucle audio refusée");return}checkpoint();edges.push([a,b]);render();panic();status(a+" → "+b+" connecté")}
-function hasPath(a,b,seen=new Set()){if(a===b)return true;if(seen.has(a))return false;seen.add(a);return edges.some(([x,y])=>x===a&&hasPath(y,b,seen))}
-function diagnose(){const issues=[];const outs=nodes.filter(n=>n.type==="out"),sources=nodes.filter(n=>catalog[n.type].kind==="source");if(!outs.length)issues.push("Aucun module OUTPUT : ajoute une sortie.");if(!sources.length)issues.push("Aucune source sonore : ajoute VCO, NOISE ou SUB.");for(const n of sources){const seen=new Set();const visit=id=>{if(seen.has(id))return false;seen.add(id);if(find(id)?.type==="out")return true;return edges.some(([a,b])=>a===id&&visit(b))};if(!visit(n.id))issues.push(n.id+" n'est relié à aucune sortie OUTPUT.");if(n.params.gain===0)issues.push(n.id+" : gain à zéro.");}for(const n of outs)if(n.params.gain===0)issues.push(n.id+" : volume de sortie à zéro.");for(const n of nodes.filter(n=>n.type==="filter"||n.type==="highpass"||n.type==="bandpass"))if(n.params.cutoff<100)issues.push(n.id+" : coupure très basse, risque de son faible.");if(!edges.length)issues.push("Aucun câble connecté.");const box=$("#diagnostics");box.replaceChildren();const title=document.createElement("strong");title.textContent=issues.length?issues.length+" point(s) à vérifier":"Patch cohérent";box.append(title);for(const issue of issues){const p=document.createElement("p");p.textContent="• "+issue;box.append(p)}if(!issues.length){const p=document.createElement("p");p.textContent="Au moins une source est reliée à OUTPUT. Cela ne garantit pas qu'un son soit audible.";box.append(p)}status("Diagnostic terminé : "+issues.length+" point(s) signalé(s)")};$("#doctor").onclick=diagnose;
-function render(){const rack=$("#rack");rack.querySelectorAll(".module").forEach(e=>e.remove());for(const n of nodes){const c=catalog[n.type],div=document.createElement("section");div.className="module "+(c.theme||"")+(selected===n.id?" selected":"");div.style.left=n.x+"px";div.style.top=n.y+"px";div.dataset.id=n.id;const head=document.createElement("h3");head.textContent=c.name;head.onpointerdown=e=>{if(e.button!==0)return;e.preventDefault();head.setPointerCapture(e.pointerId);const x=e.clientX,y=e.clientY,ox=n.x,oy=n.y;let moved=false;head.onpointermove=ev=>{if(!head.hasPointerCapture(ev.pointerId))return;if(!moved&&Math.hypot(ev.clientX-x,ev.clientY-y)>4){checkpoint();moved=true}n.x=Math.max(0,ox+ev.clientX-x);n.y=Math.max(0,oy+ev.clientY-y);div.style.left=n.x+"px";div.style.top=n.y+"px";drawWires()};head.onpointerup=()=>{head.onpointermove=null}};div.append(head);div.onclick=()=>{selected=n.id;document.querySelectorAll(".module").forEach(m=>m.classList.toggle("selected",m.dataset.id===n.id));inspect(n)};for(const [key,meta]of Object.entries(c.params)){const label=document.createElement("label");label.textContent=meta[0];const help=document.createElement("button");help.className="learn";help.textContent="?";help.onclick=e=>{e.stopPropagation();lesson(key)};label.append(help);let input;if(meta[1]==="select"){input=document.createElement("select");for(const v of meta[2]){const o=document.createElement("option");o.value=v;o.textContent=v;input.append(o)}input.value=n.params[key];input.onchange=()=>{checkpoint();n.params[key]=input.value;refreshAudio()}}else{const out=document.createElement("output");out.textContent=Number(n.params[key]).toFixed(meta[3]<.1?2:meta[3]<1?1:0);label.append(out);input=document.createElement("input");input.type="range";input.min=meta[1];input.max=meta[2];input.step=meta[3];input.value=n.params[key];input.onpointerdown=()=>checkpoint();input.oninput=()=>{n.params[key]=Number(input.value);out.textContent=Number(input.value).toFixed(meta[3]<.1?2:meta[3]<1?1:0);refreshAudio()}}div.append(label,input)}if(c.kind==="processor"||c.kind==="output"){div.append(port(n,"in"));const lab=document.createElement("span");lab.className="portlabel in";lab.textContent="IN";div.append(lab)}if(c.kind!=="output"&&c.kind!=="control"){div.append(port(n,"out"));const lab=document.createElement("span");lab.className="portlabel out";lab.textContent="OUT";div.append(lab)}if(c.kind==="control"){const note=document.createElement("p");note.style.fontSize="10px";note.textContent=n.type==="seq"?"Contrôle le séquenceur global":n.type==="adsr"?"Enveloppe des voix":n.type==="lfo"?"Modulation globale (version expérimentale)":"Analyse / horloge globale";div.append(note)}rack.append(div)}drawWires();if(selected&&find(selected))inspect(find(selected))}
-function inspect(n){$("#inspector").replaceChildren();const title=document.createElement("strong");title.textContent=catalog[n.type].name;const p=document.createElement("p");p.textContent="Identifiant : "+n.id+" · "+catalog[n.type].group;const del=document.createElement("button");del.textContent="Supprimer";del.onclick=()=>{checkpoint();nodes=nodes.filter(x=>x.id!==n.id);edges=edges.filter(e=>e[0]!==n.id&&e[1]!==n.id);selected=null;render();panic()};const dup=document.createElement("button");dup.textContent="Dupliquer";dup.onclick=()=>{checkpoint();nodes.push({id:n.type+next++,type:n.type,x:n.x+35,y:n.y+40,params:{...n.params}});render()};$("#inspector").append(title,p,del,dup)}
-function lesson(key){const d=notions[key]||["Réglage","Ce paramètre agit sur le traitement sonore.","Modifie sa valeur et écoute la différence.","Observe les conséquences sur le signal."];$("#lt").textContent=d[0];$("#ld").textContent=d[1];$("#le").textContent=d[2];$("#ln").textContent=d[3];$("#lesson").classList.add("open")}
-$("#close").onclick=()=>$("#lesson").classList.remove("open");
-function initAudio(){if(ctx){ctx.resume();return}ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=.7;analyser=ctx.createAnalyser();analyser.fftSize=2048;master.connect(analyser);analyser.connect(ctx.destination);status("Audio actif · "+ctx.sampleRate+" Hz")}
+let nodes=[],edges=[],next=1,selected=null,selectedEdge=null,history=[],future=[],ctx=null,analyser=null,master=null,active=new Map(),running=false,timer=null,step=0,bpm=120;
+let pattern=[60,null,64,null,67,null,72,null,67,null,64,null,62,null,59,null];
+const noteNames=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
+const status=t=>$("#status").textContent=t;
+const find=id=>nodes.find(n=>n.id===id);
+const W=216,GAP_X=72,GAP_Y=22;
+const FILTERS=["filter","highpass","bandpass"];
+
+function initAudio(){if(ctx){ctx.resume();return}ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=.7;analyser=ctx.createAnalyser();analyser.fftSize=2048;master.connect(analyser);analyser.connect(ctx.destination);status("Audio actif, "+ctx.sampleRate+" Hz")}
 function waveshape(amount){const n=4096,curve=new Float32Array(n),k=Math.max(0,amount)*2;for(let i=0;i<n;i++){const x=i*2/(n-1)-1;curve[i]=k===0?x:(1+k)*x/(1+k*Math.abs(x))}return curve}
 function processor(n,created,stoppables){const p=n.params;let input,output;const track=x=>{created.push(x);return x};if(["filter","highpass","bandpass"].includes(n.type)){input=track(ctx.createBiquadFilter());input.type=n.type==="filter"?"lowpass":n.type;input.frequency.value=p.cutoff;input.Q.value=p.q;output=input}else if(["vca","mixer","out"].includes(n.type)){input=track(ctx.createGain());input.gain.value=p.gain;output=input}else if(n.type==="pan"){input=track(ctx.createStereoPanner());input.pan.value=p.pan;output=input}else if(n.type==="drive"){input=track(ctx.createWaveShaper());input.curve=waveshape(p.drive);input.oversample="2x";output=input}else if(n.type==="delay"){input=track(ctx.createGain());const delay=track(ctx.createDelay(2)),fb=track(ctx.createGain()),sum=track(ctx.createGain());delay.delayTime.value=p.time;fb.gain.value=p.feedback;input.connect(sum);input.connect(delay);delay.connect(fb);fb.connect(delay);delay.connect(sum);output=sum}else if(n.type==="chorus"){input=track(ctx.createGain());const delay=track(ctx.createDelay(.1)),mix=track(ctx.createGain()),lfo=track(ctx.createOscillator()),depth=track(ctx.createGain());delay.delayTime.value=.02;depth.gain.value=p.depth;lfo.frequency.value=p.rate;lfo.connect(depth);depth.connect(delay.delayTime);lfo.start();stoppables.push(lfo);input.connect(mix);input.connect(delay);delay.connect(mix);output=mix}else if(n.type==="tremolo"){input=track(ctx.createGain());const amp=track(ctx.createGain()),osc=track(ctx.createOscillator()),depth=track(ctx.createGain());amp.gain.value=1-p.depth/2;depth.gain.value=p.depth/2;osc.frequency.value=p.rate;osc.connect(depth);depth.connect(amp.gain);osc.start();stoppables.push(osc);input.connect(amp);output=amp}else if(n.type==="compressor"){input=track(ctx.createDynamicsCompressor());input.threshold.value=p.threshold;input.ratio.value=p.ratio;output=input}return {input,output}}
-function noteOn(midi){if(!ctx)initAudio();if(active.has(midi))noteOff(midi);const created=[],sources=[],stoppables=[],audioNodes=new Map(),reachable=new Set();for(const n of nodes){if(catalog[n.type].kind==="processor"||catalog[n.type].kind==="output"){audioNodes.set(n.id,processor(n,created,stoppables))}}const connectedToOut=id=>{if(reachable.has(id))return false;reachable.add(id);if(find(id)?.type==="out")return true;return edges.some(([a,b])=>a===id&&connectedToOut(b))};for(const n of nodes.filter(x=>catalog[x.type].kind==="source")){reachable.clear();if(!connectedToOut(n.id))continue;let source;if(n.type==="noise"){const buffer=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;source=ctx.createBufferSource();source.buffer=buffer;source.loop=true}else{source=ctx.createOscillator();source.type=n.params.wave;source.frequency.value=440*Math.pow(2,(midi-69)/12);source.detune.value=n.params.detune}const g=ctx.createGain();g.gain.value=n.params.gain;source.connect(g);created.push(source,g);sources.push(source);audioNodes.set(n.id,{output:g});source.start()}for(const [a,b]of edges){const A=audioNodes.get(a),B=audioNodes.get(b);if(A?.output&&B?.input)A.output.connect(B.input)}for(const n of nodes.filter(x=>x.type==="out")){audioNodes.get(n.id)?.output.connect(master)}if(!sources.length){for(const n of stoppables){try{n.stop()}catch(e){}}for(const n of created){try{n.disconnect()}catch(e){}}status("Patch silencieux : relie une source à OUTPUT via les modules souhaités.");return}const env=nodes.find(n=>n.type==="adsr")?.params;const gate=ctx.createGain();gate.gain.setValueAtTime(0,ctx.currentTime);gate.gain.linearRampToValueAtTime(1,ctx.currentTime+.006);for(const n of nodes.filter(x=>x.type==="out")){const out=audioNodes.get(n.id);if(out){out.output.disconnect(master);out.output.connect(gate)}}gate.connect(master);created.push(gate);if(env){const t=ctx.currentTime;gate.gain.cancelScheduledValues(t);gate.gain.setValueAtTime(0,t);gate.gain.linearRampToValueAtTime(1,t+Math.max(.005,env.attack));gate.gain.linearRampToValueAtTime(env.sustain,t+Math.max(.005,env.attack)+env.decay)}active.set(midi,{created,sources,stoppables,gate,env});status("Note "+midi+" · "+sources.length+" source(s)")}
+function noteOn(midi){if(!ctx)initAudio();if(active.has(midi))noteOff(midi);const created=[],sources=[],stoppables=[],audioNodes=new Map(),reachable=new Set();for(const n of nodes){if(catalog[n.type].kind==="processor"||catalog[n.type].kind==="output"){audioNodes.set(n.id,processor(n,created,stoppables))}}const connectedToOut=id=>{if(reachable.has(id))return false;reachable.add(id);if(find(id)?.type==="out")return true;return edges.some(([a,b])=>a===id&&connectedToOut(b))};for(const n of nodes.filter(x=>catalog[x.type].kind==="source")){reachable.clear();if(!connectedToOut(n.id))continue;let source;if(n.type==="noise"){const buffer=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;source=ctx.createBufferSource();source.buffer=buffer;source.loop=true}else{source=ctx.createOscillator();source.type=n.params.wave;source.frequency.value=440*Math.pow(2,(midi-69)/12);source.detune.value=n.params.detune}const g=ctx.createGain();g.gain.value=n.params.gain;source.connect(g);created.push(source,g);sources.push(source);audioNodes.set(n.id,{output:g});source.start()}for(const [a,b]of edges){const A=audioNodes.get(a),B=audioNodes.get(b);if(A?.output&&B?.input)A.output.connect(B.input)}for(const [a,b] of edges){const L=find(a);if(L?.type!=="lfo")continue;const f=audioNodes.get(b)?.input;if(!f?.frequency)continue;const o=ctx.createOscillator(),d=ctx.createGain();o.frequency.value=L.params.rate;d.gain.value=L.params.depth;o.connect(d);d.connect(f.frequency);o.start();created.push(o,d);stoppables.push(o)}for(const [a,b] of edges){const L=find(a);if(L?.type!=="lfo")continue;const f=audioNodes.get(b)?.input;if(!f?.frequency)continue;const o=ctx.createOscillator(),d=ctx.createGain();o.frequency.value=L.params.rate;d.gain.value=L.params.depth;o.connect(d);d.connect(f.frequency);o.start();created.push(o,d);stoppables.push(o)}for(const n of nodes.filter(x=>x.type==="out")){audioNodes.get(n.id)?.output.connect(master)}if(!sources.length){for(const n of stoppables){try{n.stop()}catch(e){}}for(const n of created){try{n.disconnect()}catch(e){}}status("Patch silencieux : relie une source à OUTPUT via les modules souhaités.");return}const env=nodes.find(n=>n.type==="adsr")?.params;const gate=ctx.createGain();gate.gain.setValueAtTime(0,ctx.currentTime);gate.gain.linearRampToValueAtTime(1,ctx.currentTime+.006);for(const n of nodes.filter(x=>x.type==="out")){const out=audioNodes.get(n.id);if(out){out.output.disconnect(master);out.output.connect(gate)}}gate.connect(master);created.push(gate);if(env){const t=ctx.currentTime;gate.gain.cancelScheduledValues(t);gate.gain.setValueAtTime(0,t);gate.gain.linearRampToValueAtTime(1,t+Math.max(.005,env.attack));gate.gain.linearRampToValueAtTime(env.sustain,t+Math.max(.005,env.attack)+env.decay)}active.set(midi,{created,sources,stoppables,gate,env});status("Note "+midi+", "+sources.length+" source(s)")}
 function noteOff(midi){const v=active.get(midi);if(!v||!ctx)return;const t=ctx.currentTime,release=v.env?.release??.08;v.gate.gain.cancelScheduledValues(t);v.gate.gain.setTargetAtTime(0,t,Math.max(.01,release/4));for(const source of [...v.sources,...v.stoppables]){try{source.stop(t+release+0.15)}catch(e){}}setTimeout(()=>{for(const n of v.created){try{n.disconnect()}catch(e){}}},(release+.3)*1000);active.delete(midi)}
 function panic(){for(const m of [...active.keys()])noteOff(m)}
-function refreshAudio(){/* New notes reflect current module settings. Active notes keep their voice graph. */}function renderSteps(){$("#steps").replaceChildren();pattern.forEach((m,i)=>{const b=document.createElement("button");b.textContent=m===null?"·":noteNames[m%12]+Math.floor(m/12-1);b.className=(m!==null?"on ":"")+(step===i&&running?"playing":"");b.title="Cliquer : changer la note ou activer/désactiver";b.onclick=()=>{checkpoint();pattern[i]=m===null?60:m>=72?null:m+2;renderSteps()};$("#steps").append(b)})}
+function refreshAudio(){/* New notes reflect current module settings. Active notes keep their voice graph. */}function renderSteps(){$("#steps").replaceChildren();pattern.forEach((m,i)=>{const b=document.createElement("button");b.textContent=m===null?"-":noteNames[m%12]+Math.floor(m/12-1);b.className=(m!==null?"on ":"")+(step===i&&running?"playing":"");b.title="Cliquer : changer la note ou activer/désactiver";b.onclick=()=>{checkpoint();pattern[i]=m===null?60:m>=72?null:m+2;renderSteps()};$("#steps").append(b)})}
 function tick(){const prev=(step+15)%16;if(pattern[prev]!==null)noteOff(pattern[prev]+(nodes.find(n=>n.type==="seq")?.params.transpose||0));const m=pattern[step];if(m!==null)noteOn(m+(nodes.find(n=>n.type==="seq")?.params.transpose||0));renderSteps();step=(step+1)%16}
 function sequencer(){if(running){clearInterval(timer);running=false;panic();$("#play").textContent="▶ Séquenceur";renderSteps();return}initAudio();running=true;step=0;tick();timer=setInterval(tick,60000/bpm/4);$("#play").textContent="❚❚ Pause"}$("#play").onclick=sequencer;$("#bpm").oninput=e=>{bpm=Number(e.target.value);$("#bpmText").textContent=bpm;if(running){clearInterval(timer);timer=setInterval(tick,60000/bpm/4)}};$("#start").onclick=initAudio;$("#stop").onclick=()=>{if(running)sequencer();panic();status("Toutes les notes arrêtées")};$("#undo").onclick=undo;$("#redo").onclick=redo;
-$("#save").onclick=()=>{try{localStorage.setItem("sonora-patchwork-autosave",snap())}catch(e){}const blob=new Blob([snap()],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="sonora-patchwork.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
-$("#load").onclick=()=>$("#file").click();$("#file").onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const d=JSON.parse(await file.text());if(!Array.isArray(d.nodes)||!Array.isArray(d.edges)||d.nodes.length>250||d.edges.length>500||!d.nodes.every(n=>n&&typeof n.id==="string"&&catalog[n.type]&&Number.isFinite(n.x)&&Number.isFinite(n.y)&&n.params&&typeof n.params==="object")||!d.edges.every(e=>Array.isArray(e)&&e.length===2&&d.nodes.some(n=>n.id===e[0])&&d.nodes.some(n=>n.id===e[1])))throw Error("Patch invalide");checkpoint();restore(JSON.stringify(d));status("Patch importé")}catch(err){status("Import refusé : "+err.message)}e.target.value=""};
-function initial(){panic();nodes=[];edges=[];next=1;const a=add("osc",24,45,false),a2=add("osc",24,275,false),mix=add("mixer",285,210,false),b=add("filter",545,210,false),c=add("vca",805,210,false),d=add("out",1065,210,false);nodes.find(n=>n.id===a2).params.wave="square";nodes.find(n=>n.id===a2).params.detune=7;add("adsr",805,45,false);add("lfo",285,465,false);add("seq",545,465,false);edges=[[a,mix],[a2,mix],[mix,b],[b,c],[c,d]];selected=a;render();tidyPatch(false);history=[];future=[];historyUI();status("Patch initial : VCO → VCF → VCA → OUTPUT")}$("#reset").onclick=()=>{try{localStorage.removeItem("sonora-patchwork-autosave")}catch(e){}initial()};
-const groups=[...new Set(Object.values(catalog).map(c=>c.group))];for(const g of groups){const h=document.createElement("div");h.className="category";h.textContent=g;$("#catalog").append(h);for(const [type,c]of Object.entries(catalog)){if(c.group!==g)continue;const b=document.createElement("button");b.className="add";b.textContent="+ "+c.name;b.onclick=()=>add(type);$("#catalog").append(b)}}
-document.addEventListener("pointermove",e=>{if(pending){mouse=point(e.clientX,e.clientY);drawWires()}});document.addEventListener("keydown",e=>{if(e.key==="Escape"&&pending){pending.el.classList.remove("pending");pending=null;drawWires()}});const keys=$("#keys");for(let i=48;i<=71;i++){const b=document.createElement("button");b.textContent=noteNames[i%12];b.className=[1,3,6,8,10].includes(i%12)?"black":"";b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);noteOn(i);b.classList.add("on")};b.onpointerup=()=>{noteOff(i);b.classList.remove("on")};b.onpointercancel=()=>{noteOff(i);b.classList.remove("on")};keys.append(b)}
-const held=new Map(),keymap="awsedftgyhujkolp";document.addEventListener("keydown",e=>{if(e.target.matches("input,select,textarea")||e.repeat)return;if((e.ctrlKey||e.metaKey)&&e.key==="z"){e.preventDefault();e.shiftKey?redo():undo();return}const i=keymap.indexOf(e.key.toLowerCase());if(i>=0){const note=60+i;held.set(e.key,note);noteOn(note)}});document.addEventListener("keyup",e=>{if(held.has(e.key)){noteOff(held.get(e.key));held.delete(e.key)}});window.addEventListener("blur",panic);
-const scope=$("#scope"),g=scope.getContext("2d"),buf=new Uint8Array(2048);function animate(){requestAnimationFrame(animate);g.fillStyle="#08120f";g.fillRect(0,0,230,90);g.strokeStyle="#27463c";for(let i=0;i<230;i+=23){g.beginPath();g.moveTo(i,0);g.lineTo(i,90);g.stroke()}if(!analyser)return;analyser.getByteTimeDomainData(buf);let peak=0;g.beginPath();g.strokeStyle="#a2d3a2";for(let i=0;i<230;i++){const v=(buf[Math.floor(i*buf.length/230)]-128)/128;peak=Math.max(peak,Math.abs(v));const y=45-v*38;i?g.lineTo(i,y):g.moveTo(i,y)}g.stroke();$("#meter").style.width=Math.min(100,peak*100)+"%"}initial();try{const saved=localStorage.getItem("sonora-patchwork-autosave");if(saved){const d=JSON.parse(saved);if(Array.isArray(d.nodes)&&Array.isArray(d.edges)&&d.nodes.length<250&&d.nodes.every(n=>catalog[n.type])){restore(saved);status("Patch local récupéré automatiquement")}}}catch(e){}renderSteps();animate();
 
-function mountReferenceLayout(){const keyboard=$("#keys");if(keyboard)$("#keyboardSlot").append(keyboard);const scope=$("#scope");if(scope)$("#scopeSlot").append(scope);document.querySelectorAll("#macroPanel button").forEach(b=>b.onclick=()=>{const name=b.dataset.macro;const change=(type,key,value)=>{const n=nodes.find(n=>n.type===type);if(n)n.params[key]=value};checkpoint();if(name==="bright"){change("filter","cutoff",7500);change("osc","wave","sawtooth")}if(name==="soft"){change("filter","cutoff",650);change("osc","wave","sine")}if(name==="motion"){change("lfo","rate",6);change("lfo","depth",1800)}if(name==="space"){change("delay","time",.42);change("delay","feedback",.55)}render();status("Macro "+b.textContent+" appliquée aux modules présents")})}
-const spec=$("#spectrum"),sg=spec.getContext("2d"),spectrogram=$("#spectrogram"),spg=spectrogram.getContext("2d"),cor=$("#correlation"),cg=cor.getContext("2d"),freq=new Uint8Array(1024);
-function analysisFrame(){requestAnimationFrame(analysisFrame);sg.fillStyle="#061023";sg.fillRect(0,0,270,103);cg.fillStyle="#061023";cg.fillRect(0,0,270,103);if(!analyser)return;analyser.getByteFrequencyData(freq);sg.beginPath();sg.strokeStyle="#bd60ff";for(let x=0;x<270;x++){const i=Math.min(freq.length-1,Math.floor(Math.pow(x/269,2)*freq.length)),y=100-freq[i]*.37;x?sg.lineTo(x,y):sg.moveTo(x,y)}sg.stroke();spg.drawImage(spectrogram,1,0,269,103,0,0,269,103);for(let y=0;y<103;y++){const v=freq[Math.min(freq.length-1,Math.floor(Math.pow(1-y/103,2)*freq.length))]/255;spg.fillStyle="hsl("+(260-v*220)+" 95% "+(7+v*55)+"%)";spg.fillRect(269,y,1,1)}cg.strokeStyle="#3ad5ec";cg.beginPath();for(let i=0;i<200;i++){const angle=i*.17,r=(buf[i]-128)/128*45,x=135+Math.cos(angle)*r,y=51+Math.sin(angle)*r;i?cg.lineTo(x,y):cg.moveTo(x,y)}cg.stroke()}
-mountReferenceLayout();analysisFrame();
-function miniWave(n){let d="M0 33 L20 33 L20 8 L48 8 L48 33 L76 33 L76 8 L104 8 L104 33 L150 33";if(n.type==="osc"||n.type==="sampler")d=n.params.wave==="sine"?"M0 22 Q12 1 25 22 T50 22 T75 22 T100 22 T125 22 T150 22":n.params.wave==="triangle"?"M0 34 L19 8 L38 34 L57 8 L76 34 L95 8 L114 34 L133 8 L150 34":n.params.wave==="square"?"M0 34 V8 H30 V34 H60 V8 H90 V34 H120 V8 H150":"M0 34 L30 8 V34 L60 8 V34 L90 8 V34 L120 8 V34 L150 8";else if(n.type==="adsr"){const p=n.params,x=12+p.attack*18,y=x+12+p.decay*14,z=35-p.sustain*27;d="M0 37 L"+x+" 6 L"+y+" "+z+" L120 "+z+" L150 37"}else if(n.type==="lfo")d="M0 22 Q12 1 25 22 T50 22 T75 22 T100 22 T125 22 T150 22";else if(n.type==="filter")d="M0 8 H65 Q82 8 94 24 T150 37";else if(n.type==="vca"||n.type==="out")d="M0 37 L40 29 L80 20 L120 9 L150 5";return '<svg viewBox="0 0 150 44" preserveAspectRatio="none"><path d="'+d+'"/></svg>'}
-function enhanceModules(){document.querySelectorAll("#rack .module").forEach(el=>{if(el.dataset.enhanced)return;el.dataset.enhanced="1";const n=nodes.find(v=>v.id===el.dataset.id);if(!n)return;const families={osc:"oscillator",sampler:"oscillator",noise:"noise",filter:"filter",highpass:"filter",bandpass:"filter",adsr:"envelope",lfo:"lfo",mixer:"mixer",vca:"vca",out:"output",seq:"sequencer",clock:"sequencer",scope:"analysis",meter:"analysis",drive:"effect",delay:"effect",chorus:"effect",tremolo:"effect",compressor:"effect",pan:"mixer"};el.dataset.family=families[n.type]||"effect";el.dataset.model=({osc:"VCO-01",sampler:"WAVE-02",noise:"NOISE-X",filter:"VCF-04",highpass:"HPF-02",bandpass:"BPF-03",adsr:"ENV-04",lfo:"LFO-02",mixer:"MIX-04",vca:"AMP-01",out:"MASTER",seq:"STEP-16",clock:"CLK-01"})[n.type]||"FX-LAB";const face=document.createElement("div");face.className="hardware-face";face.setAttribute("aria-hidden","true");face.innerHTML='<span class="screw screw-a"></span><span class="screw screw-b"></span><span class="status-led"></span><span class="face-brand">'+({osc:"VOLT / LAB",sampler:"VOLT / LAB",filter:"ACID WORKS",highpass:"ACID WORKS",bandpass:"ACID WORKS",adsr:"NOCTURNE",lfo:"PULSE / MOD",mixer:"PATCH BAY",vca:"REDLINE",out:"SONORA AUDIO",seq:"BEAT FORGE",clock:"BEAT FORGE",delay:"ECHO DISTRICT",drive:"ECHO DISTRICT"})[n.type]+'</span>';el.prepend(face);const graph=document.createElement("div");graph.className="mini-graph";graph.innerHTML=miniWave(n);el.querySelector("h3")?.after(graph);const rotary=document.createElement("div");rotary.className="rotary";graph.after(rotary);const children=[...el.children];for(let i=0;i<children.length-1;i++){const label=children[i],input=children[i+1];if(label.tagName!=="LABEL"||input.tagName!=="INPUT"||input.type!=="range")continue;const cell=document.createElement("div");cell.className="rotary-cell";const dial=document.createElement("div");dial.className="dial";const update=()=>{const ratio=(Number(input.value)-Number(input.min))/(Number(input.max)-Number(input.min));dial.style.setProperty("--angle",(-135+270*ratio)+"deg");if(n.type==="adsr")graph.innerHTML=miniWave(n)};input.addEventListener("input",update);dial.setAttribute("role","slider");dial.setAttribute("tabindex","0");dial.setAttribute("aria-label",label.textContent.replace("?",""));dial.setAttribute("aria-valuemin",input.min);dial.setAttribute("aria-valuemax",input.max);const setValue=v=>{const min=Number(input.min),max=Number(input.max),step=Number(input.step)||.01;input.value=String(Math.max(min,Math.min(max,Math.round((v-min)/step)*step+min)));input.dispatchEvent(new Event("input",{bubbles:true}));dial.setAttribute("aria-valuenow",input.value)};let dragStart=null;dial.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();dial.setPointerCapture(e.pointerId);dragStart={y:e.clientY,value:Number(input.value)};checkpoint()});dial.addEventListener("pointermove",e=>{if(!dragStart||!dial.hasPointerCapture(e.pointerId))return;const sensitivity=e.shiftKey?0.001:0.004;setValue(dragStart.value+(dragStart.y-e.clientY)*(Number(input.max)-Number(input.min))*sensitivity)});dial.addEventListener("pointerup",()=>dragStart=null);dial.addEventListener("pointercancel",()=>dragStart=null);dial.addEventListener("dblclick",()=>setValue((Number(input.min)+Number(input.max))/2));dial.addEventListener("keydown",e=>{const step=Number(input.step)||.01;if(e.key==="ArrowUp"||e.key==="ArrowRight"){e.preventDefault();checkpoint();setValue(Number(input.value)+step)}if(e.key==="ArrowDown"||e.key==="ArrowLeft"){e.preventDefault();checkpoint();setValue(Number(input.value)-step)}});cell.append(input,dial,label);rotary.append(cell);update();dial.setAttribute("aria-valuenow",input.value);i++}const wave=el.querySelector("select");if(wave)wave.addEventListener("change",()=>graph.innerHTML=miniWave(n));const cells=[...rotary.querySelectorAll(".rotary-cell")];cells.forEach((cell,i)=>{cell.dataset.index=String(i);const legend=document.createElement("span");legend.className="control-number";legend.textContent=String(i+1).padStart(2,"0");cell.append(legend)});if(["oscillator","filter","envelope","lfo","sequencer"].includes(el.dataset.family)){const meter=document.createElement("div");meter.className="hardware-meter";meter.setAttribute("aria-hidden","true");for(let i=0;i<12;i++){const seg=document.createElement("i");seg.style.setProperty("--i",i);meter.append(seg)}graph.after(meter)}if(el.dataset.family==="sequencer"){const steps=document.createElement("div");steps.className="hardware-steps";steps.setAttribute("aria-hidden","true");for(let i=0;i<16;i++){const dot=document.createElement("span");if(i%4===0)dot.classList.add("downbeat");steps.append(dot)}rotary.after(steps)}if(el.dataset.family==="output"){const vu=document.createElement("div");vu.className="hardware-vu";vu.setAttribute("aria-hidden","true");vu.innerHTML='<span>L</span><div class="vu-bars"></div><span>R</span><div class="vu-bars"></div>';rotary.after(vu)}})}
-const nativeRender=render;render=function(){nativeRender();enhanceModules();requestAnimationFrame(()=>drawWires())};enhanceModules();
-
-// Interface navigation: inactive destinations are explicit links, not fake working tabs.
-document.querySelectorAll(".main-tabs button").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.tab==="modular")return;const urls={instrument:"../../",pistes:"../../pistes/",laboratoire:"../../laboratoire/",code:"../../code/"};status("Navigation : "+b.textContent+" — ouvre la section SONORA");if(urls[b.dataset.tab])window.location.href=urls[b.dataset.tab]}));
-const moduleSearch=$("#moduleSearch");moduleSearch.addEventListener("input",()=>{const q=moduleSearch.value.trim().toLocaleLowerCase("fr");let visible=0;document.querySelectorAll("#catalog .add").forEach(b=>{const yes=b.textContent.toLocaleLowerCase("fr").includes(q);b.hidden=!yes;if(yes)visible++});document.querySelectorAll("#catalog .category").forEach(h=>{let next=h.nextElementSibling,any=false;while(next&&!next.classList.contains("category")){if(next.classList.contains("add")&&!next.hidden)any=true;next=next.nextElementSibling}h.hidden=!any});status(visible+" module(s) correspondant à la recherche")});
-$("#patchBack").onclick=()=>{$("#viewport").scrollTo({left:0,top:0,behavior:"smooth"})};
-$("#patchForward").onclick=()=>{$("#viewport").scrollBy({left:420,behavior:"smooth"})};
-$("#patchPreset").onchange=e=>{const v=e.target.value;if(v==="subtractive"){checkpoint();initial()}else if(v==="ambient"){checkpoint();initial();const delay=add("delay",1310,260,false);const out=nodes.find(n=>n.type==="out");const vca=nodes.find(n=>n.type==="vca");edges=edges.filter(e=>e[1]!==out.id);edges.push([vca.id,delay],[delay,out.id]);nodes.find(n=>n.id===delay).params.time=.55;render()}else{checkpoint();initial();bpm=150;$("#bpm").value=bpm;$("#bpmText").textContent=bpm;$("#toolbarBpm").textContent=bpm;renderSteps()}status("Patch : "+e.target.selectedOptions[0].textContent)};
-$("#bpm").addEventListener("input",()=>$("#toolbarBpm").textContent=$("#bpm").value);
-document.querySelectorAll(".inspector-tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".inspector-tabs button").forEach(x=>x.classList.toggle("active",x===b));const target=$("#inspector");if(b.dataset.inspector==="params"){target.textContent="Sélectionne un module et modifie ses potentiomètres dans le rack. Le bouton ? ouvre la documentation du paramètre."}else if(b.dataset.inspector==="assign"){target.textContent="Les affectations CV/Gate ne sont pas encore disponibles dans ce moteur. Les câbles actuellement actifs transportent uniquement de l’audio."}else if(selected&&find(selected)){inspect(find(selected))}else target.textContent="Sélectionne un module dans le rack."});
-
-// Mobile dock: a single dismissible tool panel, never permanently overlaying the patch.
-(function(){const controls=document.getElementById("mobileDockControls");if(!controls)return;const panels=["performance","analysisStrip","macroPanel"];function setDock(id){for(const panelId of panels){const el=document.getElementById(panelId);el.classList.toggle("dock-open",panelId===id);el.setAttribute("aria-hidden",window.matchMedia("(max-width:760px), (orientation: landscape) and (max-height: 600px) and (pointer: coarse)").matches&&panelId!==id?"true":"false")}controls.querySelectorAll("[data-dock]").forEach(b=>b.setAttribute("aria-expanded",String(b.dataset.dock===id)))}controls.querySelectorAll("[data-dock]").forEach(b=>b.addEventListener("click",()=>setDock(b.getAttribute("aria-expanded")==="true"?null:b.dataset.dock)));document.getElementById("hideDock").addEventListener("click",()=>setDock(null));document.addEventListener("keydown",e=>{if(e.key==="Escape")setDock(null)});window.matchMedia("(max-width:760px), (orientation: landscape) and (max-height: 600px) and (pointer: coarse)").addEventListener("change",()=>setDock(null));setDock(null)})();
-
-// Geometry engine: read the real module sizes after enhancement, then lay out without collisions.
-// Saved patches are not rearranged automatically. The user can invoke "Ranger" explicitly.
-function tidyPatch(record=true){
- if(!nodes.length)return;
- if(record)checkpoint();
- const rack=$("#rack"),viewport=$("#viewport");
- const gapX=64,gapY=92,left=36,top=90;
- const columns=[
-  nodes.filter(n=>["osc","sampler","noise"].includes(n.type)),
-  nodes.filter(n=>["mixer","pan"].includes(n.type)),
-  nodes.filter(n=>["filter","highpass","bandpass"].includes(n.type)),
-  nodes.filter(n=>["vca","drive","delay","chorus","tremolo","compressor"].includes(n.type)),
-  nodes.filter(n=>n.type==="out"),
-  nodes.filter(n=>["adsr","lfo","seq","clock","scope","meter"].includes(n.type))
- ].filter(c=>c.length);
- const sizes=new Map();
- for(const n of nodes){const el=[...rack.querySelectorAll(".module")].find(e=>e.dataset.id===n.id);if(!el)continue;const r=el.getBoundingClientRect();sizes.set(n.id,{w:Math.ceil(r.width),h:Math.ceil(r.height)})}
- // Control modules get their own lower band so modulation never covers the audio chain.
- const audioColumns=columns.filter(c=>!c.every(n=>["adsr","lfo","seq","clock","scope","meter"].includes(n.type)));
- const controlColumns=columns.filter(c=>c.every(n=>["adsr","lfo","seq","clock","scope","meter"].includes(n.type)));
- let x=left,mainBottom=top;
- for(const col of audioColumns){let y=top,maxW=0;for(const n of col){const size=sizes.get(n.id)||{w:260,h:290};n.x=x;n.y=y;y+=size.h+gapY;maxW=Math.max(maxW,size.w)}mainBottom=Math.max(mainBottom,y-gapY);x+=maxW+gapX}
- const audioRight=x;let controlX=left,controlY=mainBottom+85;
- for(const col of controlColumns){for(const n of col){const size=sizes.get(n.id)||{w:260,h:290};n.x=controlX;n.y=controlY;controlX+=size.w+gapX}}
- let maxRight=audioRight,maxBottom=mainBottom;
- for(const n of nodes){const el=[...rack.querySelectorAll(".module")].find(e=>e.dataset.id===n.id);if(el){el.style.left=n.x+"px";el.style.top=n.y+"px"}const z=sizes.get(n.id)||{w:260,h:290};maxRight=Math.max(maxRight,n.x+z.w);maxBottom=Math.max(maxBottom,n.y+z.h)}
- rack.style.width=Math.ceil(maxRight+100)+"px";rack.style.height=Math.ceil(maxBottom+150)+"px";
- const svg=$("#wires");svg.setAttribute("width",Math.ceil(maxRight+100));svg.setAttribute("height",Math.ceil(maxBottom+150));svg.style.width=Math.ceil(maxRight+100)+"px";svg.style.height=Math.ceil(maxBottom+150)+"px";
- drawWires();
- if(record){status("Patch rangé : modules séparés, câbles recalculés");try{localStorage.setItem("sonora-patchwork-autosave",snap())}catch(e){}}
+/* ---------- Famille, état, historique ---------- */
+const FAMILY={osc:"source",sampler:"source",noise:"source",filter:"filter",highpass:"filter",bandpass:"filter",vca:"amp",mixer:"amp",pan:"amp",drive:"fx",delay:"fx",chorus:"fx",tremolo:"fx",compressor:"fx",adsr:"mod",lfo:"mod",seq:"seq",clock:"seq",out:"out",scope:"tool",meter:"tool"};
+const family=t=>FAMILY[t]||"tool";
+function snap(){return JSON.stringify({nodes,edges,next,selected,pattern,bpm})}
+function checkpoint(){try{localStorage.setItem("sonora-synthe-autosave",snap())}catch(e){}history.push(snap());if(history.length>60)history.shift();future=[];historyUI()}
+function historyUI(){$("#undo").disabled=!history.length;$("#redo").disabled=!future.length}
+function restore(raw){panic();const d=JSON.parse(raw);nodes=d.nodes;edges=d.edges;next=d.next;selected=d.selected;selectedEdge=null;pattern=d.pattern;bpm=d.bpm;$("#bpm").value=bpm;$("#bpmText").textContent=bpm;render();renderSteps();historyUI()}
+function undo(){if(history.length){future.push(snap());restore(history.pop())}}
+function redo(){if(future.length){history.push(snap());restore(future.pop())}}
+function validPatch(d){
+  return d&&Array.isArray(d.nodes)&&Array.isArray(d.edges)&&Array.isArray(d.pattern)&&d.pattern.length===16&&d.nodes.length<=250&&d.edges.length<=500&&Number.isFinite(d.next)
+    &&d.nodes.every(n=>n&&typeof n.id==="string"&&catalog[n.type]&&Number.isFinite(n.x)&&Number.isFinite(n.y)&&n.params&&typeof n.params==="object")
+    &&d.edges.every(e=>Array.isArray(e)&&e.length===2&&d.nodes.some(n=>n.id===e[0])&&d.nodes.some(n=>n.id===e[1]));
 }
-$("#tidyPatch").onclick=()=>tidyPatch(true);
-window.addEventListener("resize",()=>requestAnimationFrame(drawWires));
 
-// Mobile navigation: select a specific module instead of blindly panning a giant canvas.
-(function(){
- const picker=$("#focusModule"),prev=$("#focusPrev"),next=$("#focusNext"),browser=$("#toggleBrowser"),viewport=$("#viewport");
- if(!picker||!viewport)return;
- let activeIndex=0;
- const moduleOrder=()=>[...nodes].sort((a,b)=>a.y-b.y||a.x-b.x);
- function syncPicker(){
-  const old=picker.value;const fragment=document.createDocumentFragment();
-  const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="⌖ Naviguer";fragment.append(placeholder);
-  moduleOrder().forEach((n,i)=>{const o=document.createElement("option");o.value=n.id;o.textContent=(i+1)+" · "+catalog[n.type].name;fragment.append(o)});
-  picker.replaceChildren(fragment);if(nodes.some(n=>n.id===old))picker.value=old;
- }
- function focusId(id){
-  const n=nodes.find(n=>n.id===id);if(!n)return;
-  const el=[...$("#rack").querySelectorAll(".module")].find(m=>m.dataset.id===id);if(!el)return;
-  const x=Math.max(0,n.x-24),y=Math.max(0,n.y-45);
-  viewport.scrollTo({left:x,top:y,behavior:window.matchMedia("(prefers-reduced-motion:reduce)").matches?"instant":"smooth"});
-  picker.value=id;activeIndex=Math.max(0,moduleOrder().findIndex(v=>v.id===id));
-  selected=id;document.querySelectorAll("#rack .module").forEach(m=>m.classList.toggle("selected",m.dataset.id===id));inspect(n);
- }
- picker.addEventListener("change",()=>focusId(picker.value));
- prev.addEventListener("click",()=>{const order=moduleOrder();if(order.length)focusId(order[(activeIndex-1+order.length)%order.length].id)});
- next.addEventListener("click",()=>{const order=moduleOrder();if(order.length)focusId(order[(activeIndex+1)%order.length].id)});
- browser.addEventListener("click",()=>{const opened=document.body.classList.toggle("mobile-browser-open");browser.setAttribute("aria-expanded",String(opened))});
- document.addEventListener("click",e=>{if(e.target.closest("#catalog .add")&&window.matchMedia("(max-width:760px), (orientation:landscape) and (max-height:600px) and (pointer:coarse)").matches){document.body.classList.remove("mobile-browser-open");browser.setAttribute("aria-expanded","false");requestAnimationFrame(()=>focusId(nodes[nodes.length-1]?.id))}});
- const observer=new MutationObserver(()=>{syncPicker()});observer.observe($("#rack"),{childList:true});
- syncPicker();
- window.sonoraFocusModule=focusId;
-})();
+/* ---------- Règles de branchement ---------- */
+const hasOut=n=>{const k=catalog[n.type].kind;return k==="source"||k==="processor"||n.type==="lfo"};
+const hasIn=n=>{const k=catalog[n.type].kind;return k==="processor"||k==="output"};
+const hasCv=n=>FILTERS.includes(n.type);
+function canConnect(a,b){
+  const A=find(a),B=find(b);
+  if(!A||!B||a===b||!hasOut(A)||edges.some(e=>e[0]===a&&e[1]===b))return false;
+  if(A.type==="lfo")return hasCv(B);
+  return hasIn(B)&&!hasPath(b,a);
+}
+function hasPath(a,b,seen=new Set()){if(a===b)return true;if(seen.has(a))return false;seen.add(a);return edges.some(([x,y])=>x===a&&hasPath(y,b,seen))}
+function connect(a,b){
+  if(!canConnect(a,b)){status("Branchement impossible : sortie vers entrée compatible, sans boucle audio");return false}
+  checkpoint();edges.push([a,b]);selectedEdge=null;render();panic();status(a+" → "+b+" branché");return true;
+}
+function removeEdge(a,b){checkpoint();edges=edges.filter(e=>e[0]!==a||e[1]!==b);selectedEdge=null;render();panic();status("Câble retiré")}
 
-// Detect actual geometric overlaps after fonts and controls have settled.
-// Offer an explicit fix for previously saved layouts without changing their sound.
-(function(){
- const button=$("#tidyPatch");if(!button)return;
- const check=()=>{
-  const cards=[...$("#rack").querySelectorAll(".module")];
-  let count=0;
-  for(let i=0;i<cards.length;i++)for(let j=i+1;j<cards.length;j++){
-   const a=cards[i].getBoundingClientRect(),b=cards[j].getBoundingClientRect();
-   if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>12&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>12)count++;
+/* ---------- Modules ---------- */
+function add(type,x,y,record=true){
+  if(record)checkpoint();
+  const id=type+(next++);
+  const n={id,type,x:x??0,y:y??0,params:{...defaults[type]}};
+  nodes.push(n);selected=id;render();
+  if(x===undefined){placeVisible(n);drawWires();status(catalog[type].name+" ajouté")}
+  return id;
+}
+function removeNode(id){checkpoint();nodes=nodes.filter(n=>n.id!==id);edges=edges.filter(e=>e[0]!==id&&e[1]!==id);selected=null;render();panic();status("Module supprimé")}
+function duplicateNode(n){checkpoint();const id=n.type+(next++);nodes.push({id,type:n.type,x:n.x+30,y:n.y+30,params:{...n.params}});selected=id;render();resolveOverlap(find(id));drawWires();status("Module dupliqué")}
+
+function graphPath(n){
+  const p=n.params,t=n.type;
+  if(t==="osc"||t==="sampler"){
+    return {sine:"M0 20 Q13 -2 27 20 T53 20 T80 20 T107 20 T133 20 T160 20",
+      triangle:"M0 33 L20 7 L40 33 L60 7 L80 33 L100 7 L120 33 L140 7 L160 33",
+      square:"M0 33 V7 H27 V33 H53 V7 H80 V33 H107 V7 H133 V33 H160",
+      sawtooth:"M0 33 L27 7 V33 L53 7 V33 L80 7 V33 L107 7 V33 L133 7 V33 L160 7"}[p.wave]||"M0 20 H160";
   }
-  button.dataset.overlaps=String(count);
-  button.textContent=count?"▦ Ranger · "+count+" chevauchement"+(count>1?"s":""):"▦ Ranger";
-  button.title=count?"Réparer les "+count+" chevauchements détectés sans changer le son":"Réorganiser le patch";
- };
- const observer=new MutationObserver(()=>requestAnimationFrame(check));
- observer.observe($("#rack"),{childList:true,subtree:false});
- window.addEventListener("load",()=>setTimeout(check,300));
- button.addEventListener("click",()=>setTimeout(check,80));
- window.addEventListener("resize",()=>requestAnimationFrame(check));
- requestAnimationFrame(check);
-})();
-
-// Keyboard editing commands. Capture phase prevents musical keymap from swallowing editing shortcuts.
-(function(){
- const dialog=document.createElement("div");dialog.id="shortcutDialog";dialog.setAttribute("role","dialog");dialog.setAttribute("aria-modal","true");dialog.setAttribute("aria-label","Raccourcis clavier");
- const sheet=document.createElement("div");sheet.className="shortcut-sheet";
- const heading=document.createElement("h2");heading.textContent="Raccourcis SONORA";sheet.append(heading);
- const rows=[
- ["Supprimer le module sélectionné","Suppr / Retour arrière"],
- ["Annuler / Rétablir","⌘/Ctrl + Z / ⇧⌘/Ctrl + Z"],
- ["Copier / Coller un module","⌘/Ctrl + C / V"],
- ["Dupliquer le module","⌘/Ctrl + D"],
- ["Tout sélectionner (modules)","⌘/Ctrl + A"],
- ["Désélectionner / fermer","Échap"],
- ["Naviguer entre les modules","Tab / ⇧Tab"],
- ["Déplacer le module","Touches fléchées"],
- ["Déplacement précis","⇧ + flèches"],
- ["Ranger le patch","⌘/Ctrl + ⇧ + L"],
- ["Afficher les raccourcis","?"],
- ["Jouer des notes","Clavier musical existant"]
- ];
- rows.forEach(([action,keys])=>{const line=document.createElement("div");line.className="shortcut-line";const label=document.createElement("span");label.textContent=action;const key=document.createElement("kbd");key.textContent=keys;line.append(label,key);sheet.append(line)});
- const close=document.createElement("button");close.type="button";close.textContent="Fermer (Échap)";close.onclick=()=>{dialog.classList.remove("open");$("#shortcutHelp").focus()};sheet.append(close);dialog.append(sheet);document.body.append(dialog);
- $("#shortcutHelp").onclick=()=>dialog.classList.add("open");
- dialog.addEventListener("pointerdown",e=>{if(e.target===dialog)dialog.classList.remove("open")});
- let copied=null;let multiSelected=[];
- const isEditable=el=>!!el?.closest('input,textarea,select,[contenteditable="true"],[role="textbox"]');
- const getSelected=()=>nodes.find(n=>n.id===selected);
- const selectNode=id=>{selected=id;multiSelected=[];document.querySelectorAll("#rack .module").forEach(m=>m.classList.toggle("selected",m.dataset.id===id));const n=getSelected();if(n)inspect(n)};
- const deleteSelected=()=>{
-  const ids=multiSelected.length?multiSelected:(getSelected()?[selected]:[]);
-  if(!ids.length)return;
-  checkpoint();const removed=new Set(ids);
-  nodes=nodes.filter(n=>!removed.has(n.id));edges=edges.filter(([a,b])=>!removed.has(a)&&!removed.has(b));
-  selected=null;multiSelected=[];render();refreshAudio();status(ids.length+" module"+(ids.length>1?"s":"")+" supprimé"+(ids.length>1?"s":"")+" · Annuler : ⌘/Ctrl+Z");
- };
- const duplicateSelected=()=>{const n=getSelected();if(!n)return;checkpoint();const id=n.type+next++;nodes.push({id,type:n.type,x:n.x+45,y:n.y+55,params:{...n.params}});render();selectNode(id);status("Module dupliqué")};
- const copySelected=()=>{const n=getSelected();if(n){copied={type:n.type,params:{...n.params}};status("Module copié : "+catalog[n.type].name)}};
- const pasteCopied=()=>{if(!copied)return;checkpoint();const anchor=getSelected();const id=copied.type+next++;nodes.push({id,type:copied.type,x:(anchor?.x??35)+55,y:(anchor?.y??50)+55,params:{...copied.params}});render();selectNode(id);status("Module collé")};
- document.addEventListener("keydown",e=>{
-  if(dialog.classList.contains("open")){if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();dialog.classList.remove("open")}return}
-  if(isEditable(e.target)||e.altKey)return;
-  const mod=e.metaKey||e.ctrlKey,key=e.key.toLowerCase();
-  const intercept=()=>{e.preventDefault();e.stopImmediatePropagation()};
-  if(mod&&key==="z"){intercept();e.shiftKey?redo():undo();return}
-  if(mod&&key==="y"){intercept();redo();return}
-  if(mod&&e.shiftKey&&key==="l"){intercept();tidyPatch(true);return}
-  if(mod&&key==="c"&&getSelected()){intercept();copySelected();return}
-  if(mod&&key==="v"&&copied){intercept();pasteCopied();return}
-  if(mod&&key==="d"&&getSelected()){intercept();duplicateSelected();return}
-  if(mod&&key==="a"){intercept();multiSelected=nodes.map(n=>n.id);document.querySelectorAll("#rack .module").forEach(m=>m.classList.add("selected"));status(nodes.length+" modules sélectionnés");return}
-  if((e.key==="Delete"||e.key==="Backspace")&&(getSelected()||multiSelected.length)){intercept();deleteSelected();return}
-  if(e.key==="Escape"){if(getSelected()||multiSelected.length){intercept();selected=null;multiSelected=[];document.querySelectorAll("#rack .module").forEach(m=>m.classList.remove("selected"));status("Sélection effacée")}return}
-  if(e.key==="?"&&!mod){intercept();dialog.classList.add("open");return}
-  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)&&getSelected()&&!mod){intercept();const n=getSelected();checkpoint();const step=e.shiftKey?1:12;n.x=Math.max(0,n.x+(e.key==="ArrowLeft"?-step:e.key==="ArrowRight"?step:0));n.y=Math.max(0,n.y+(e.key==="ArrowUp"?-step:e.key==="ArrowDown"?step:0));const el=[...$("#rack").querySelectorAll(".module")].find(m=>m.dataset.id===n.id);if(el){el.style.left=n.x+"px";el.style.top=n.y+"px"}drawWires();return}
- },true);
-})();
-
-// Spatial navigation: interactive overview of real module positions, not a decorative diagram.
-(function(){
- const viewport=$("#viewport"),rack=$("#rack"),panel=$("#patchMap"),canvas=$("#patchMapCanvas");
- const toggle=$("#patchOverview"),close=$("#patchMapClose"),fit=$("#patchFit");
- if(!viewport||!rack||!canvas)return;
- const g=canvas.getContext("2d");let scheduled=false,transform=null;
- const modules=()=>[...rack.querySelectorAll(".module")];
- function bounds(){
-  const els=modules();let right=viewport.clientWidth,bottom=viewport.clientHeight;
-  for(const el of els){right=Math.max(right,el.offsetLeft+el.offsetWidth+40);bottom=Math.max(bottom,el.offsetTop+el.offsetHeight+40)}
-  return {w:Math.max(right,rack.scrollWidth),h:Math.max(bottom,rack.scrollHeight)};
- }
- function paint(){
-  scheduled=false;if(panel.hidden)return;
-  const {w,h}=bounds(),cw=canvas.width,ch=canvas.height,pad=12;
-  const scale=Math.min((cw-pad*2)/w,(ch-pad*2)/h);
-  const ox=(cw-w*scale)/2,oy=(ch-h*scale)/2;transform={scale,ox,oy,w,h};
-  g.clearRect(0,0,cw,ch);g.fillStyle="#08121c";g.fillRect(0,0,cw,ch);
-  g.strokeStyle="#21394c";g.lineWidth=1;
-  for(let x=0;x<w;x+=240){const px=ox+x*scale;g.beginPath();g.moveTo(px,oy);g.lineTo(px,oy+h*scale);g.stroke()}
-  for(let y=0;y<h;y+=240){const py=oy+y*scale;g.beginPath();g.moveTo(ox,py);g.lineTo(ox+w*scale,py);g.stroke()}
-  for(const el of modules()){
-   const n=nodes.find(n=>n.id===el.dataset.id);if(!n)continue;
-   const x=ox+el.offsetLeft*scale,y=oy+el.offsetTop*scale;
-   const width=Math.max(5,el.offsetWidth*scale),height=Math.max(5,el.offsetHeight*scale);
-   const accent=getComputedStyle(el).getPropertyValue("--accent").trim()||"#79d8dc";
-   g.fillStyle=accent;g.globalAlpha=.72;g.fillRect(x,y,width,height);g.globalAlpha=1;
-   if(n.id===selected){g.strokeStyle="#fff";g.lineWidth=2;g.strokeRect(x-2,y-2,width+4,height+4)}
+  if(t==="noise"){let d="M0 20";for(let i=1;i<=40;i++)d+=" L"+i*4+" "+(8+((i*37)%23));return d}
+  if(FILTERS.includes(t)){
+    const c=catalog[t].params.cutoff,r=Math.log(p.cutoff/c[1])/Math.log(c[2]/c[1]),xc=22+r*116;
+    if(t==="filter")return "M0 10 H"+(xc-14)+" C"+xc+" 10 "+xc+" 6 "+(xc+10)+" 24 S"+(xc+30)+" 34 160 35";
+    if(t==="highpass")return "M0 35 C"+(xc-30)+" 35 "+(xc-10)+" 34 "+(xc)+" 24 S"+(xc+6)+" 10 "+(xc+16)+" 10 H160";
+    return "M0 35 Q"+(xc-34)+" 35 "+xc+" 6 T160 35";
   }
-  const vx=ox+viewport.scrollLeft*scale,vy=oy+viewport.scrollTop*scale;
-  g.fillStyle="#b7f6ff13";g.fillRect(vx,vy,viewport.clientWidth*scale,viewport.clientHeight*scale);
-  g.strokeStyle="#d9faff";g.lineWidth=2;g.strokeRect(vx,vy,viewport.clientWidth*scale,viewport.clientHeight*scale);
- }
- function schedule(){if(!scheduled){scheduled=true;requestAnimationFrame(paint)}}
- function setOpen(open){panel.hidden=!open;toggle.setAttribute("aria-expanded",String(open));if(open)schedule()}
- toggle.onclick=()=>setOpen(panel.hidden);close.onclick=()=>setOpen(false);
- canvas.addEventListener("pointerdown",e=>{
-  if(!transform)return;const rect=canvas.getBoundingClientRect();
-  const x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;
-  const px=(x-transform.ox)/transform.scale-viewport.clientWidth/2;
-  const py=(y-transform.oy)/transform.scale-viewport.clientHeight/2;
-  viewport.scrollTo({left:Math.max(0,px),top:Math.max(0,py),behavior:"smooth"});
- });
- fit.onclick=()=>{
-  const chain=nodes.filter(n=>!["adsr","lfo","seq","clock","scope","meter"].includes(n.type));
-  if(!chain.length)return;
-  const x=Math.min(...chain.map(n=>n.x)),y=Math.min(...chain.map(n=>n.y));
-  viewport.scrollTo({left:Math.max(0,x-25),top:Math.max(0,y-60),behavior:"smooth"});
-  status("Chaîne audio recentrée");
- };
- viewport.addEventListener("scroll",schedule,{passive:true});
- window.addEventListener("resize",schedule);
- new ResizeObserver(schedule).observe(rack);
- new MutationObserver(schedule).observe(rack,{childList:true});
- document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!panel.hidden)setOpen(false)});
-})();
+  if(t==="adsr"){const a=6+p.attack/2*40,d=a+6+p.decay/2*40,s=34-p.sustain*26,rl=Math.min(158,d+30+p.release/4*30);return "M0 34 L"+a+" 6 L"+d+" "+s+" H"+(d+28)+" L"+rl+" 34"}
+  if(t==="lfo")return "M0 20 Q20 -4 40 20 T80 20 T120 20 T160 20";
+  if(t==="drive")return "M0 33 C40 33 50 7 80 7 S120 7 160 7";
+  if(t==="out"||t==="vca")return "M0 34 L160 6";
+  return "M0 20 H160";
+}
+function drawGraph(n,svg){svg.innerHTML='<path d="'+graphPath(n)+'"/>'}
 
-// Single-screen instrument: compact measured grid, auto-fit without scrolling.
-// CSS zoom preserves DOM hit-testing and cable coordinates; drag movement is zoom-corrected.
-(function(){
- const rack=$("#rack"),viewport=$("#viewport");if(!rack||!viewport)return;
- let busy=false,scale=1,originalDrag=null;
- const isControl=n=>["adsr","lfo","seq","clock","scope","meter"].includes(n.type);
- function fitAll(){
-  if(busy||!nodes.length)return;busy=true;
-  try{
-   rack.style.zoom="1";rack.style.transform="none";
-   const cards=[...rack.querySelectorAll(".module")];
-   const sizes=new Map(cards.map(el=>[el.dataset.id,{w:el.offsetWidth,h:el.offsetHeight,el}]));
-   const controls=nodes.filter(isControl),audio=nodes.filter(n=>!isControl(n));
-   const availableW=Math.max(320,viewport.clientWidth-18);
-   const availableH=Math.max(240,viewport.clientHeight-(viewport.querySelector(".rack-toolbar")?.offsetHeight||45)-12);
-   // Search compact column counts: maximize scale while keeping each module fully visible.
-   let best=null;
-   for(let cols=1;cols<=Math.min(12,nodes.length);cols++){
-    const gapX=18,gapY=22,pad=16;
-    const rows=[];const sorted=[...audio,...controls];
-    for(let i=0;i<sorted.length;i+=cols)rows.push(sorted.slice(i,i+cols));
-    const colWidths=Array(cols).fill(0),rowHeights=rows.map(row=>Math.max(...row.map(n=>sizes.get(n.id)?.h||250)));
-    rows.forEach(row=>row.forEach((n,c)=>{colWidths[c]=Math.max(colWidths[c],sizes.get(n.id)?.w||240)}));
-    const width=pad*2+colWidths.reduce((a,b)=>a+b,0)+(cols-1)*gapX;
-    const height=pad*2+rowHeights.reduce((a,b)=>a+b,0)+(rows.length-1)*gapY;
-    const candidateScale=Math.min(1,availableW/width,availableH/height);
-    if(!best||candidateScale>best.scale){best={cols,rows,colWidths,rowHeights,width,height,scale:candidateScale,gapX,gapY,pad}}
-   }
-   if(!best)return;
-   let y=best.pad;
-   best.rows.forEach((row,r)=>{
-    let x=best.pad;
-    row.forEach((n,c)=>{const z=sizes.get(n.id);n.x=x;n.y=y;if(z){z.el.style.left=x+"px";z.el.style.top=y+"px"}x+=best.colWidths[c]+best.gapX});
-    y+=best.rowHeights[r]+best.gapY;
-   });
-   rack.style.width=best.width+"px";rack.style.height=best.height+"px";
-   const svg=$("#wires");svg.setAttribute("width",best.width);svg.setAttribute("height",best.height);svg.style.width=best.width+"px";svg.style.height=best.height+"px";
-   scale=Math.max(.12,best.scale);rack.style.zoom=String(scale);
-   viewport.scrollLeft=0;viewport.scrollTop=0;drawWires();
-   const warning=scale<.55?" · commandes petites sur cet écran":"";
-   status("Vue intégrale · "+nodes.length+" modules · "+Math.round(scale*100)+" %"+warning);
-  }finally{busy=false}
- }
- const previousRender=render;
- render=function(){previousRender();requestAnimationFrame(fitAll)};
- // The old header drag uses raw pointer pixels. Correct delta for zoom.
- function repairDragging(){
-  rack.addEventListener("pointerdown",e=>{
-   const h=e.target.closest(".module h3");if(!h)return;
-   const el=h.closest(".module"),n=nodes.find(n=>n.id===el.dataset.id);if(!n)return;
-   const x=e.clientX,y=e.clientY,ox=n.x,oy=n.y;
-   const move=ev=>{if(!h.hasPointerCapture(ev.pointerId))return;n.x=Math.max(0,ox+(ev.clientX-x)/scale);n.y=Math.max(0,oy+(ev.clientY-y)/scale);el.style.left=n.x+"px";el.style.top=n.y+"px";drawWires()};
-   // Capture listener runs before the old header listener; override its move callback after pointerdown.
-   requestAnimationFrame(()=>{if(h.hasPointerCapture(e.pointerId))h.onpointermove=move});
-  },true);
- }
- repairDragging();
- const tidy=$("#tidyPatch");if(tidy)tidy.addEventListener("click",()=>requestAnimationFrame(fitAll));
- const ro=new ResizeObserver(()=>requestAnimationFrame(fitAll));ro.observe(viewport);
- window.addEventListener("orientationchange",()=>setTimeout(fitAll,120));
- requestAnimationFrame(fitAll);
-})();
-</script></body></html>
+function makeDial(n,key,meta,graph){
+  const [label,min,max,step]=meta,log=key==="cutoff",dec=(String(step).split(".")[1]||"").length;
+  const toR=v=>log?Math.log(v/min)/Math.log(max/min):(v-min)/(max-min);
+  const fromR=r=>{r=Math.min(1,Math.max(0,r));let v=log?min*Math.pow(max/min,r):min+r*(max-min);v=Math.round(v/step)*step;return +Math.min(max,Math.max(min,v)).toFixed(6)};
+  const cell=document.createElement("div");cell.className="cell";
+  const lab=document.createElement("button");lab.type="button";lab.className="cell-label";lab.textContent=label;lab.onclick=e=>{e.stopPropagation();lesson(key)};
+  const dial=document.createElement("div");dial.className="dial";dial.tabIndex=0;dial.setAttribute("role","slider");dial.setAttribute("aria-label",label);
+  dial.setAttribute("aria-valuemin",min);dial.setAttribute("aria-valuemax",max);
+  const val=document.createElement("span");val.className="dial-val";
+  const show=()=>{const v=n.params[key];dial.style.setProperty("--r",toR(v));val.textContent=v.toFixed(dec);dial.setAttribute("aria-valuenow",v)};
+  const set=v=>{n.params[key]=v;show();drawGraph(n,graph);refreshAudio()};
+  let start=null;
+  dial.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();dial.focus();dial.setPointerCapture(e.pointerId);start={y:e.clientY,r:toR(n.params[key])};checkpoint()});
+  dial.addEventListener("pointermove",e=>{if(!start)return;set(fromR(start.r+(start.y-e.clientY)/(e.shiftKey?700:160)))});
+  const end=()=>{start=null};dial.addEventListener("pointerup",end);dial.addEventListener("pointercancel",end);
+  dial.addEventListener("wheel",e=>{e.preventDefault();set(fromR(toR(n.params[key])+(e.deltaY<0?1:-1)*(e.shiftKey?.005:.03)))},{passive:false});
+  dial.addEventListener("dblclick",()=>{checkpoint();set(defaults[n.type][key])});
+  dial.addEventListener("keydown",e=>{const d={ArrowUp:1,ArrowRight:1,ArrowDown:-1,ArrowLeft:-1}[e.key];if(!d)return;e.preventDefault();checkpoint();set(fromR(toR(n.params[key])+d*.02))});
+  show();cell.append(dial,val,lab);return cell;
+}
+
+function jack(n,kind,side){
+  const j=document.createElement("button");j.type="button";j.className="jack "+side+(kind==="cv"?" cv":"");
+  j.dataset.node=n.id;j.dataset.side=side;j.dataset.kind=kind;
+  j.setAttribute("aria-label",(side==="in"?"Entrée ":"Sortie ")+(kind==="cv"?"modulation":"audio")+" de "+catalog[n.type].name);
+  j.title=side==="in"?(kind==="cv"?"Entrée de modulation (coupure)":"Entrée audio"):(kind==="cv"?"Sortie de modulation":"Sortie audio");
+  j.addEventListener("pointerdown",e=>startLink(e,j));
+  return j;
+}
+function jackGroup(label,j){const g=document.createElement("div");g.className="jack-group";const s=document.createElement("span");s.textContent=label;if(j.classList.contains("out"))g.append(s,j);else g.append(j,s);return g}
+
+function buildModule(n){
+  const c=catalog[n.type],el=document.createElement("section");
+  el.className="module"+(selected===n.id?" selected":"");el.dataset.id=n.id;el.dataset.family=family(n.type);
+  el.style.left=n.x+"px";el.style.top=n.y+"px";
+  const [code,...rest]=c.name.split(" : ");
+  const h=document.createElement("h3"),b=document.createElement("b"),s=document.createElement("span");b.textContent=code;s.textContent=rest.join(" : ");h.append(b,s);
+  h.addEventListener("pointerdown",e=>startDrag(e,n,el,h));
+  el.append(h);
+  const g=document.createElementNS("http://www.w3.org/2000/svg","svg");g.setAttribute("class","graph");g.setAttribute("viewBox","0 0 160 40");g.setAttribute("preserveAspectRatio","none");g.setAttribute("aria-hidden","true");drawGraph(n,g);el.append(g);
+  const entries=Object.entries(c.params);
+  if(entries.length){
+    const box=document.createElement("div");box.className="controls";
+    for(const [key,meta] of entries){
+      if(meta[1]==="select"){
+        const l=document.createElement("label");l.className="sel wide";l.append(meta[0]);
+        const sel=document.createElement("select");for(const v of meta[2]){const o=document.createElement("option");o.value=v;o.textContent=v;sel.append(o)}
+        sel.value=n.params[key];sel.onchange=()=>{checkpoint();n.params[key]=sel.value;drawGraph(n,g);refreshAudio()};
+        sel.addEventListener("pointerdown",e=>e.stopPropagation());l.append(sel);box.append(l);
+      }else box.append(makeDial(n,key,meta,g));
+    }
+    el.append(box);
+  }else{
+    const p=document.createElement("p");p.className="note";p.textContent="Analyse affichée dans le panneau de droite.";el.append(p);
+  }
+  if(c.kind==="control"&&n.type!=="lfo"){
+    const p=document.createElement("p");p.className="note";
+    p.textContent={adsr:"Enveloppe appliquée à chaque note jouée.",seq:"Séquenceur global, réglé dans la barre du bas.",clock:"Horloge globale, sans prise."}[n.type]||"Module global, sans prise.";
+    if(entries.length||n.type==="adsr"||n.type==="seq"||n.type==="clock")el.append(p);
+  }
+  const jacks=document.createElement("div");jacks.className="jacks";
+  const left=document.createElement("div");left.style.display="flex";left.style.gap="10px";
+  if(hasIn(n))left.append(jackGroup("IN",jack(n,"audio","in")));
+  if(hasCv(n))left.append(jackGroup("MOD",jack(n,"cv","in")));
+  const right=document.createElement("div");
+  if(hasOut(n))right.append(jackGroup(n.type==="lfo"?"MOD":"OUT",jack(n,n.type==="lfo"?"cv":"audio","out")));
+  if(left.children.length||right.children.length){jacks.append(left,right);el.append(jacks)}
+  el.addEventListener("pointerdown",()=>{if(selected!==n.id)selectNode(n.id,false)});
+  return el;
+}
+function selectNode(id,rerender=true){
+  selected=id;selectedEdge=null;
+  document.querySelectorAll(".module").forEach(m=>m.classList.toggle("selected",m.dataset.id===id));
+  inspect(find(id));drawWires();
+}
+function inspect(n){
+  const box=$("#inspector");box.replaceChildren();
+  if(!n){const p=document.createElement("p");p.textContent="Clique un module pour le sélectionner.";box.append(p);return}
+  const t=document.createElement("strong");t.textContent=catalog[n.type].name;
+  const p=document.createElement("p");p.textContent="Identifiant "+n.id+", groupe "+catalog[n.type].group;
+  const row=document.createElement("div");row.className="btn-row";
+  const del=document.createElement("button");del.type="button";del.textContent="Supprimer";del.onclick=()=>removeNode(n.id);
+  const dup=document.createElement("button");dup.type="button";dup.textContent="Dupliquer";dup.onclick=()=>duplicateNode(n);
+  row.append(dup,del);box.append(t,p,row);
+}
+function lesson(key){
+  const d=notions[key]||["Réglage","Ce paramètre agit sur le traitement sonore.","Modifie sa valeur et écoute la différence.",""];
+  const box=$("#lesson");box.replaceChildren();
+  const h=document.createElement("h2");h.textContent="Notion";
+  const t=document.createElement("strong");t.textContent=d[0];
+  const a=document.createElement("p");a.textContent=d[1];
+  const b1=document.createElement("b");b1.textContent="À essayer";const b2=document.createElement("p");b2.textContent=d[2];
+  box.append(h,t,a,b1,b2);
+  if(d[3]){const b3=document.createElement("b");b3.textContent="À retenir";const p3=document.createElement("p");p3.textContent=d[3];box.append(b3,p3)}
+}
+
+/* ---------- Rendu ---------- */
+function render(doLayout=false){
+  const rack=$("#rack");rack.querySelectorAll(".module").forEach(e=>e.remove());
+  for(const n of nodes)rack.append(buildModule(n));
+  if(doLayout)tidy(false);
+  else{fitRack();drawWires()}
+  inspect(find(selected));
+}
+function size(n){const el=$("#rack").querySelector('.module[data-id="'+n.id+'"]');return el?{w:el.offsetWidth,h:el.offsetHeight}:{w:W,h:260}}
+function fitRack(){
+  let mw=0,mh=0;for(const n of nodes){const s=size(n);mw=Math.max(mw,n.x+s.w);mh=Math.max(mh,n.y+s.h)}
+  const r=$("#rack"),sc=$("#scroller");
+  r.style.width=Math.max(mw+120,sc.clientWidth)+"px";r.style.height=Math.max(mh+120,sc.clientHeight)+"px";
+}
+function placeVisible(n){
+  const sc=$("#scroller"),s=size(n),others=nodes.filter(o=>o!==n);
+  const moveTo=(x,y)=>{n.x=x;n.y=y;const e=$("#rack").querySelector('.module[data-id="'+n.id+'"]');e.style.left=x+"px";e.style.top=y+"px"};
+  for(let y=sc.scrollTop+16;y+s.h<sc.scrollTop+sc.clientHeight;y+=24)for(let x=sc.scrollLeft+16;x+s.w<sc.scrollLeft+sc.clientWidth;x+=24){
+    moveTo(x,y);if(!others.some(o=>overlaps(n,o))){fitRack();return}
+  }
+  moveTo(Math.round((sc.scrollLeft+16)/8)*8,Math.round((sc.scrollTop+16)/8)*8);resolveOverlap(n);
+  sc.scrollTo({left:Math.max(0,n.x-24),top:Math.max(0,n.y-24),behavior:"smooth"});
+}
+
+/* Rangement : colonnes selon le chemin du signal, sans chevauchement */
+function tidy(record=true){
+  if(record)checkpoint();
+  const depth={};
+  const audioEdges=edges.filter(([a])=>find(a)?.type!=="lfo");
+  const d=id=>{if(depth[id]!==undefined)return depth[id];depth[id]=0;const ins=audioEdges.filter(e=>e[1]===id).map(e=>d(e[0])+1);return depth[id]=ins.length?Math.max(...ins):0};
+  const chain=nodes.filter(n=>hasOut(n)&&n.type!=="lfo"||hasIn(n)),globals=nodes.filter(n=>!chain.includes(n));
+  chain.forEach(n=>d(n.id));
+  for(const n of globals.filter(n=>n.type==="lfo")){const t=edges.find(e=>e[0]===n.id);depth[n.id]=t?Math.max(0,(depth[t[1]]??1)-1):0}
+  const cols=new Map();
+  for(const n of nodes){if(globals.includes(n)&&n.type!=="lfo")continue;const k=depth[n.id]??0;if(!cols.has(k))cols.set(k,[]);cols.get(k).push(n)}
+  let bottom=0;
+  [...cols.keys()].sort((a,b)=>a-b).forEach(k=>{
+    let y=24;for(const n of cols.get(k)){n.x=24+k*(W+GAP_X);n.y=y;y+=size(n).h+GAP_Y}
+    bottom=Math.max(bottom,y);
+  });
+  let x=24;const rest=globals.filter(n=>n.type!=="lfo");
+  for(const n of rest){n.x=x;n.y=bottom+16;x+=W+GAP_X}
+  for(const n of nodes){const el=$("#rack").querySelector('.module[data-id="'+n.id+'"]');if(el){el.style.left=n.x+"px";el.style.top=n.y+"px"}}
+  fitRack();drawWires();if(record)status("Modules rangés");
+}
+function overlaps(a,b){const A=size(a),B=size(b);return a.x<b.x+B.w+8&&b.x<a.x+A.w+8&&a.y<b.y+B.h+8&&b.y<a.y+A.h+8}
+function resolveOverlap(n){
+  let guard=0;
+  while(guard++<200){const hit=nodes.find(o=>o!==n&&overlaps(n,o));if(!hit)break;n.y=hit.y+size(hit).h+GAP_Y}
+  const el=$("#rack").querySelector('.module[data-id="'+n.id+'"]');if(el){el.style.left=n.x+"px";el.style.top=n.y+"px"}fitRack();
+}
+function startDrag(e,n,el,h){
+  if(e.button!==0)return;e.preventDefault();
+  h.setPointerCapture(e.pointerId);
+  const x0=e.clientX,y0=e.clientY,ox=n.x,oy=n.y;let moved=false;
+  const move=ev=>{
+    if(!moved&&Math.hypot(ev.clientX-x0,ev.clientY-y0)>4){checkpoint();moved=true;el.classList.add("dragging")}
+    if(!moved)return;
+    n.x=Math.max(0,Math.round((ox+ev.clientX-x0)/8)*8);n.y=Math.max(0,Math.round((oy+ev.clientY-y0)/8)*8);
+    el.style.left=n.x+"px";el.style.top=n.y+"px";drawWires();
+  };
+  const up=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",up);h.removeEventListener("pointercancel",up);el.classList.remove("dragging");if(moved){resolveOverlap(n);drawWires()}};
+  h.addEventListener("pointermove",move);h.addEventListener("pointerup",up);h.addEventListener("pointercancel",up);
+}
+
+/* ---------- Câbles ---------- */
+const SVGNS="http://www.w3.org/2000/svg";
+const jackEl=(id,side,kind)=>$("#rack").querySelector('.jack[data-node="'+id+'"][data-side="'+side+'"][data-kind="'+kind+'"]');
+function jackPos(j){const r=$("#rack").getBoundingClientRect(),b=j.getBoundingClientRect();return {x:b.left+b.width/2-r.left,y:b.top+b.height/2-r.top}}
+function sagOf(a,b){return Math.min(90,26+Math.hypot(b.x-a.x,b.y-a.y)*.16)}
+function curve(a,b){
+  const dx=b.x-a.x;
+  if(dx>70){const k=Math.max(50,dx*.5);return "M"+a.x+" "+a.y+" C"+(a.x+k)+" "+a.y+" "+(b.x-k)+" "+b.y+" "+b.x+" "+b.y}
+  const low=Math.max(a.y,b.y)+sagOf(a,b);
+  return "M"+a.x+" "+a.y+" C"+(a.x+60)+" "+low+" "+(b.x-60)+" "+low+" "+b.x+" "+b.y;
+}
+function el(name,attrs){const e=document.createElementNS(SVGNS,name);for(const k in attrs)e.setAttribute(k,attrs[k]);return e}
+const colorOf=(id,cv)=>cv?"var(--c-mod)":getComputedStyle($("#rack").querySelector('.module[data-id="'+id+'"]')||document.body).getPropertyValue("--fam")||"#aaa";
+let linking=null,mouse=null;
+function drawWires(){
+  const svg=$("#wires");svg.replaceChildren();
+  for(const [a,b] of edges){
+    const cv=find(a)?.type==="lfo";
+    const A=jackEl(a,"out",cv?"cv":"audio"),B=jackEl(b,"in",cv?"cv":"audio");
+    if(!A||!B)continue;
+    const pa=jackPos(A),pb=jackPos(B),d=curve(pa,pb),sel=selectedEdge&&selectedEdge[0]===a&&selectedEdge[1]===b;
+    const col=colorOf(a,cv);
+    svg.append(el("path",{d,class:"shadow"}));
+    const c=el("path",{d,class:"cable"+(cv?" cv":"")+(sel?" sel":""),stroke:col,style:"color:"+col});svg.append(c);
+    const hit=el("path",{d,class:"hit"});hit.addEventListener("click",ev=>{ev.stopPropagation();selectedEdge=[a,b];drawWires()});svg.append(hit);
+    const L=hit.getTotalLength();if(L>90)hit.style.strokeDasharray="0 30 "+(L-60)+" 30";else hit.style.pointerEvents="none"; // les extrémités restent libres pour les prises
+    if(sel){
+      const mx=(pa.x+pb.x)/2,my=pb.x-pa.x>70?(pa.y+pb.y)/2:Math.max(pa.y,pb.y)+sagOf(pa,pb)*.75;
+      const g=el("g",{class:"del",transform:"translate("+mx+" "+my+")"});g.append(el("circle",{r:11}),el("text",{}));g.lastChild.textContent="×";
+      g.addEventListener("click",ev=>{ev.stopPropagation();removeEdge(a,b)});svg.append(g);
+    }
+  }
+  if(linking&&mouse){svg.append(el("path",{d:linking.side==="out"?curve(jackPos(linking.el),mouse):curve(mouse,jackPos(linking.el)),class:"live"}))}
+}
+function compatible(from,to){
+  if(from.dataset.side===to.dataset.side||from.dataset.node===to.dataset.node)return false;
+  const out=from.dataset.side==="out"?from:to,inn=from.dataset.side==="out"?to:from;
+  if(out.dataset.kind!==inn.dataset.kind)return false;
+  return canConnect(out.dataset.node,inn.dataset.node);
+}
+function markTargets(on){
+  const rack=$("#rack");rack.classList.toggle("linking",on);
+  rack.querySelectorAll(".jack").forEach(j=>{j.classList.remove("ok","no");if(on&&linking){j.classList.add(j!==linking.el&&compatible(linking.el,j)?"ok":"no")}});
+  linking&&linking.el.classList.toggle("pending",on);
+}
+function endLink(){if(linking)linking.el.classList.remove("pending");linking=null;mouse=null;markTargets(false);drawWires()}
+function finishLink(target){
+  const from=linking.el;
+  if(target&&target!==from&&compatible(from,target)){
+    const out=from.dataset.side==="out"?from:target,inn=from.dataset.side==="out"?target:from;
+    endLink();connect(out.dataset.node,inn.dataset.node);return true;
+  }
+  return false;
+}
+function startLink(e,j){
+  e.stopPropagation();e.preventDefault();
+  if(linking&&linking.el!==j){ // mode « toucher puis toucher »
+    if(finishLink(j))return;
+    status("Ces deux prises ne sont pas compatibles");endLink();return;
+  }
+  if(linking&&linking.el===j){endLink();return}
+  linking={el:j,side:j.dataset.side,tap:true};markTargets(true);
+  const x0=e.clientX,y0=e.clientY;
+  const move=ev=>{
+    mouse={x:ev.clientX-$("#rack").getBoundingClientRect().left,y:ev.clientY-$("#rack").getBoundingClientRect().top};
+    if(Math.hypot(ev.clientX-x0,ev.clientY-y0)>6&&linking)linking.tap=false;drawWires();
+  };
+  const up=ev=>{
+    document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);document.removeEventListener("pointercancel",cancel);
+    if(!linking)return;
+    if(linking.tap){status("Choisis maintenant une prise compatible (elles sont allumées)");return}
+    const t=document.elementFromPoint(ev.clientX,ev.clientY)?.closest(".jack");
+    if(!finishLink(t)){status(t?"Ces deux prises ne sont pas compatibles":"Câble lâché dans le vide");endLink()}
+  };
+  const cancel=()=>{document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);document.removeEventListener("pointercancel",cancel);endLink()};
+  document.addEventListener("pointermove",move);document.addEventListener("pointerup",up);document.addEventListener("pointercancel",cancel);
+}
+$("#rack").addEventListener("pointerdown",e=>{if(e.target.closest(".module,.jack,.del"))return;let ch=false;if(selectedEdge){selectedEdge=null;ch=true}if(linking){endLink();return}if(ch)drawWires()});
+$("#scroller").addEventListener("scroll",()=>{if(linking)drawWires()});
+window.addEventListener("resize",()=>{fitRack();drawWires()});
+
+/* ---------- Catalogue ---------- */
+const groups=[...new Set(Object.values(catalog).map(c=>c.group))];
+function buildCatalog(filter=""){
+  const list=$("#catalogList");list.replaceChildren();const q=filter.trim().toLowerCase();
+  for(const g of groups){
+    const items=Object.entries(catalog).filter(([,c])=>c.group===g&&(!q||c.name.toLowerCase().includes(q)||g.toLowerCase().includes(q)));
+    if(!items.length)continue;
+    const d=document.createElement("details");d.className="cat";d.open=true;
+    const s=document.createElement("summary");s.textContent=g;d.append(s);
+    for(const [type,c] of items){
+      const b=document.createElement("button");b.type="button";b.className="add";b.textContent=c.name;
+      b.style.setProperty("--fam","var(--c-"+family(type)+")");
+      b.onclick=()=>{add(type);$("#sidebar").classList.remove("open")};d.append(b);
+    }
+    list.append(d);
+  }
+}
+$("#moduleSearch").oninput=e=>buildCatalog(e.target.value);
+$("#openCatalog").onclick=()=>$("#sidebar").classList.toggle("open");
+document.addEventListener("pointerdown",e=>{const sb=$("#sidebar");if(sb.classList.contains("open")&&!e.target.closest("#sidebar,#openCatalog"))sb.classList.remove("open")});
+
+/* ---------- Patches prédéfinis ---------- */
+const PRESETS={
+  subtractive:{nodes:[["osc"],["osc",{wave:"square",detune:7}],["mixer"],["filter"],["vca"],["out"],["adsr"],["lfo",{rate:.4,depth:250}],["seq"]],edges:[[0,2],[1,2],[2,3],[3,4],[4,5],[7,3]]},
+  ambient:{nodes:[["osc",{wave:"sine",gain:.3}],["osc",{wave:"triangle",detune:5,gain:.25}],["noise",{gain:.04}],["mixer"],["filter",{cutoff:900,q:.7}],["chorus"],["delay",{time:.45,feedback:.5}],["vca"],["out"],["adsr",{attack:.8,decay:.6,sustain:.8,release:2.5}],["lfo",{rate:.15,depth:300}]],edges:[[0,3],[1,3],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[10,4]]},
+  rhythm:{nodes:[["osc",{wave:"square",gain:.3}],["sampler"],["mixer"],["drive",{drive:30}],["filter",{cutoff:1400,q:4}],["vca"],["out"],["adsr",{attack:.005,decay:.12,sustain:.15,release:.1}],["lfo",{rate:4,depth:600}],["seq"]],edges:[[0,2],[1,2],[2,3],[3,4],[4,5],[5,6],[8,4]]}
+};
+function loadPreset(name,record=true){
+  if(record)checkpoint();panic();
+  const p=PRESETS[name]||PRESETS.subtractive;
+  nodes=[];edges=[];next=1;
+  const ids=p.nodes.map(([type,params])=>{const id=type+(next++);nodes.push({id,type,x:0,y:0,params:{...defaults[type],...(params||{})}});return id});
+  edges=p.edges.map(([a,b])=>[ids[a],ids[b]]);
+  selected=ids[0];selectedEdge=null;
+  render(true);
+  status("Patch « "+$("#patchPreset").selectedOptions[0].textContent+" » chargé");
+}
+$("#patchPreset").onchange=e=>loadPreset(e.target.value);
+$("#reset").onclick=()=>{try{localStorage.removeItem("sonora-synthe-autosave")}catch(e){}$("#patchPreset").value="subtractive";loadPreset("subtractive");history=[];future=[];historyUI()};
+$("#tidy").onclick=()=>tidy(true);
+
+/* ---------- Import, export, diagnostic ---------- */
+$("#save").onclick=()=>{try{localStorage.setItem("sonora-synthe-autosave",snap())}catch(e){}const blob=new Blob([snap()],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="sonora-synthe.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$("#load").onclick=()=>$("#file").click();
+$("#file").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!validPatch(d))throw Error("Patch invalide");checkpoint();restore(JSON.stringify(d));status("Patch importé")}catch(err){status("Import refusé : "+err.message)}e.target.value=""};
+function diagnose(){
+  const issues=[],outs=nodes.filter(n=>n.type==="out"),sources=nodes.filter(n=>catalog[n.type].kind==="source");
+  if(!outs.length)issues.push("Aucun module OUTPUT : ajoute une sortie.");
+  if(!sources.length)issues.push("Aucune source sonore : ajoute VCO, NOISE ou SUB.");
+  for(const n of sources){
+    const seen=new Set();const visit=id=>{if(seen.has(id))return false;seen.add(id);if(find(id)?.type==="out")return true;return edges.some(([a,b])=>a===id&&visit(b))};
+    if(!visit(n.id))issues.push(n.id+" n'est relié à aucune sortie OUTPUT.");
+    if(n.params.gain===0)issues.push(n.id+" : niveau à zéro.");
+  }
+  for(const n of outs)if(n.params.gain===0)issues.push(n.id+" : volume de sortie à zéro.");
+  for(const n of nodes.filter(x=>FILTERS.includes(x.type)))if(n.params.cutoff<100)issues.push(n.id+" : coupure très basse, risque de son faible.");
+  for(const n of nodes.filter(x=>x.type==="lfo"))if(!edges.some(e=>e[0]===n.id))issues.push(n.id+" : LFO non branché, il ne modifie rien. Relie sa prise MOD à l'entrée MOD d'un filtre.");
+  if(!edges.length)issues.push("Aucun câble branché.");
+  const box=$("#diagnostics");box.replaceChildren();
+  const t=document.createElement("strong");t.className=issues.length?"bad":"ok";t.textContent=issues.length?issues.length+" point(s) à vérifier":"Patch cohérent";box.append(t);
+  for(const i of issues){const p=document.createElement("p");p.textContent=i;box.append(p)}
+  if(!issues.length){const p=document.createElement("p");p.textContent="Au moins une source est reliée à OUTPUT.";box.append(p)}
+  status("Diagnostic : "+issues.length+" point(s)");
+}
+$("#doctor").onclick=diagnose;
+
+/* ---------- Macros ---------- */
+document.querySelectorAll("#macros button").forEach(b=>b.onclick=()=>{
+  const name=b.dataset.macro;let hit=0;
+  const change=(type,key,v)=>nodes.filter(n=>n.type===type).forEach(n=>{n.params[key]=v;hit++});
+  checkpoint();
+  if(name==="bright"){change("filter","cutoff",7500);change("osc","wave","sawtooth")}
+  if(name==="soft"){change("filter","cutoff",650);change("osc","wave","sine")}
+  if(name==="motion"){change("lfo","rate",6);change("lfo","depth",1800)}
+  if(name==="space"){change("delay","time",.42);change("delay","feedback",.55)}
+  render();status(hit?"Macro « "+b.textContent+" » appliquée":"Macro « "+b.textContent+" » : aucun module concerné dans ce patch");
+});
+
+/* ---------- Clavier ---------- */
+const keysEl=$("#keys");
+{
+  let w=0;
+  for(let i=48;i<=71;i++){
+    const black=[1,3,6,8,10].includes(i%12),b=document.createElement("button");
+    b.type="button";b.className=black?"black":"white";b.setAttribute("aria-label",noteNames[i%12]+(Math.floor(i/12)-1));
+    if(black)b.style.left="calc(100%/14*"+w+" - 100%/14*.3)";else{b.style.left="calc(100%/14*"+w+")";b.textContent=noteNames[i%12];w++}
+    b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);noteOn(i);b.classList.add("on")};
+    b.onpointerup=()=>{noteOff(i);b.classList.remove("on")};b.onpointercancel=b.onpointerup;
+    keysEl.append(b);
+  }
+}
+const held=new Map(),keymap="awsedftgyhujkolp";
+document.addEventListener("keydown",e=>{
+  if(e.target.matches("input,select,textarea")||e.repeat)return;
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault();e.shiftKey?redo():undo();return}
+  if(e.key==="Escape"&&linking){endLink();return}
+  if(e.key==="Delete"||e.key==="Backspace"){
+    if(e.target.closest("button"))return;
+    if(selectedEdge){e.preventDefault();removeEdge(...selectedEdge)}else if(selected&&find(selected)){e.preventDefault();removeNode(selected)}
+    return;
+  }
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  const i=keymap.indexOf(e.key.toLowerCase());if(i>=0){const note=60+i;held.set(e.key,note);noteOn(note)}
+});
+document.addEventListener("keyup",e=>{if(held.has(e.key)){noteOff(held.get(e.key));held.delete(e.key)}});
+window.addEventListener("blur",panic);
+
+/* ---------- Analyse ---------- */
+const scopeC=$("#scope"),specC=$("#spectrum"),sg=scopeC.getContext("2d"),pg=specC.getContext("2d"),tbuf=new Uint8Array(2048),fbuf=new Uint8Array(1024);
+function fitCanvas(c){const r=window.devicePixelRatio||1,w=Math.round(c.clientWidth*r),h=Math.round(c.clientHeight*r);if(c.width!==w||c.height!==h){c.width=w;c.height=h}return [c.width,c.height]}
+function frame(){
+  requestAnimationFrame(frame);
+  let [w,h]=fitCanvas(scopeC);sg.fillStyle="#0c0e13";sg.fillRect(0,0,w,h);
+  sg.strokeStyle="#2a303d";sg.lineWidth=1;sg.beginPath();sg.moveTo(0,h/2);sg.lineTo(w,h/2);sg.stroke();
+  let [w2,h2]=fitCanvas(specC);pg.fillStyle="#0c0e13";pg.fillRect(0,0,w2,h2);
+  if(!analyser)return;
+  analyser.getByteTimeDomainData(tbuf);let peak=0;sg.beginPath();sg.strokeStyle="#4cc9d9";sg.lineWidth=2;
+  for(let i=0;i<w;i++){const v=(tbuf[Math.floor(i*tbuf.length/w)]-128)/128;peak=Math.max(peak,Math.abs(v));const y=h/2-v*h*.45;i?sg.lineTo(i,y):sg.moveTo(i,y)}sg.stroke();
+  analyser.getByteFrequencyData(fbuf);pg.fillStyle="#a98bf0";
+  const bars=48;for(let i=0;i<bars;i++){const idx=Math.min(fbuf.length-1,Math.floor(Math.pow(i/bars,2)*fbuf.length)),v=fbuf[idx]/255,bw=w2/bars;pg.fillRect(i*bw+1,h2-v*h2,bw-2,v*h2)}
+  $("#meter").style.width=Math.min(100,peak*100)+"%";
+}
+
+/* ---------- Démarrage ---------- */
+buildCatalog();renderSteps();frame();
+{
+  let loaded=false;
+  try{const raw=localStorage.getItem("sonora-synthe-autosave");if(raw){const d=JSON.parse(raw);if(validPatch(d)){restore(raw);loaded=true;tidy(false)}}}catch(e){}
+  if(!loaded)loadPreset("subtractive",false);
+  history=[];future=[];historyUI();
+}
+</script>
+</body>
+</html>
