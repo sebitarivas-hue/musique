@@ -150,6 +150,25 @@ canvas{display:block;width:100%;height:84px;background:var(--bg);border:1px soli
 kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2);border-radius:4px;padding:1px 5px}
 
 /* Écrans moyens et téléphones : pas de défilement de page horizontal */
+.top{min-width:0}
+#defiBar{padding:10px 14px 12px;border-bottom:1px solid var(--line);background:var(--panel);max-height:40vh;overflow:auto}
+#defiBar .meta{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+#defiBar .dt{font-size:15px;font-weight:500;margin:2px 0}
+#defiBar p{margin:2px 0;color:var(--mute);font-size:13px}
+#defiBar ol{margin:6px 0 8px;padding-left:20px;font-size:13px}
+#defiBar li{margin:2px 0}
+#defiBar .state{font-size:13px;color:var(--accent);margin:6px 0}
+#defiBar.ok .state{color:var(--ok)}
+#defiBar .bilan{color:var(--text);opacity:.9}
+#defiBar .btn-row{margin-top:6px}
+#defiBar .btn-row button{min-height:30px;padding:4px 10px;font-size:13px}
+dialog{background:var(--bg2);color:var(--text);border:1px solid var(--line2);border-radius:12px;width:min(560px,92vw);padding:18px;max-height:86vh;overflow:auto}
+dialog::backdrop{background:#000b}
+dialog h2{margin-bottom:4px}
+.defi-niveau{margin:14px 0 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.defi-item{display:flex;gap:10px;align-items:baseline;width:100%;text-align:left;margin:3px 0}
+.defi-item .tick{width:1.2em;color:var(--ok);flex:none}
+.defi-item small{color:var(--mute);display:block}
 @media (max-width:1100px){
   body{display:block}
   .workspace{display:block}
@@ -210,6 +229,7 @@ kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2)
   </aside>
 
   <main class="center">
+    <div class="top">
     <div class="toolbar">
       <span class="title">Mon instrument</span>
       <select id="patchPreset" aria-label="Choisir un patch">
@@ -218,10 +238,13 @@ kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2)
         <option value="rhythm">Séquence rythmique</option>
       </select>
       <button id="tidy" type="button" title="Réorganiser les modules sans modifier le son">Ranger</button>
+      <button id="togDefis" class="toggle" type="button" aria-pressed="false" title="Défis guidés pas à pas">Défis</button>
       <button id="togSide" class="toggle" type="button" aria-pressed="true" title="Afficher ou masquer le catalogue de modules">Catalogue</button>
       <button id="togPanel" class="toggle" type="button" aria-pressed="true" title="Afficher ou masquer l'analyse, la fiche et le diagnostic">Analyse</button>
       <button id="togFit" class="toggle" type="button" aria-pressed="false" title="Réduire le rack pour voir tout le patch d'un coup">Voir tout</button>
       <span id="status" role="status" aria-live="polite">Prêt</span>
+    </div>
+    <section id="defiBar" hidden aria-label="Défi en cours"></section>
     </div>
     <div class="rack-scroll" id="scroller"><div id="zoomBox"><div id="rack"><svg id="wires" aria-hidden="false"></svg></div></div></div>
     <div class="dock">
@@ -266,6 +289,12 @@ kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2)
   </aside>
 </div>
 
+<dialog id="defiList" aria-label="Liste des défis">
+  <h2>Défis</h2>
+  <p id="defiScore"></p>
+  <div id="defiItems"></div>
+  <div class="btn-row"><button type="button" id="defiReset">Effacer ma progression</button><button type="button" id="defiClose">Fermer</button></div>
+</dialog>
 <script>
 const $=q=>document.querySelector(q),catalog={
 osc:{group:"Sources",name:"VCO : Oscillateur",kind:"source",theme:"gold",params:{wave:["forme","select",["sine","triangle","sawtooth","square"]],detune:["cents",-1200,1200,1],gain:["niveau",0,1,.01]}},
@@ -428,6 +457,105 @@ Object.assign(notions,{
   gate:["Durée de la note","Part du pas pendant laquelle la note est tenue. Le reste du pas est du silence.","Compare 0,2 (staccato) et 1 (legato).","Ce moment où la note est tenue s'appelle le gate."]
 });
 
+/* Défis guidés : une consigne, un indice, un patch de départ et une vérification automatique du patch.
+   Pour valider, l'élève doit aussi jouer une note (ou quelques pas du séquenceur) : il écoute ce qu'il a construit.
+   depart : patch de départ au format des patches prédéfinis (modules, câbles par numéro) ; null = on garde le patch courant.
+   ecoute : "note" (une note jouée) ou "seq" (quatre pas du séquenceur). */
+const N=t=>nodes.filter(n=>n.type===t);
+const E=(ta,tb)=>edges.some(([a,b])=>find(a)?.type===ta&&find(b)?.type===tb);
+const reachesOut=id=>{const seen=new Set();const v=x=>{if(seen.has(x))return false;seen.add(x);if(find(x)?.type==="out")return true;return edges.some(([a,b])=>a===x&&v(b))};return v(id)};
+const soundOK=()=>N("osc").some(o=>reachesOut(o.id));
+const adsrTo=t=>N("adsr").filter(a=>edges.some(([x,y])=>x===a.id&&find(y)?.type===t));
+const lfoTo=ts=>N("lfo").filter(l=>edges.some(([x,y])=>x===l.id&&ts.includes(find(y)?.type)));
+const NIVEAUX_DEFIS=["Premiers pas","Sculpter le son","Composer avec le patch"];
+const DEFIS=[
+{id:"premier-son",niveau:0,titre:"Entendre un premier son",
+ but:"Faire sonner un oscillateur.",
+ depart:{nodes:[["out"]],edges:[]},
+ consigne:["Ajoute un VCO depuis le catalogue, dans Sources.","Tire un câble de sa prise OUT vers la prise IN de OUTPUT.","Active l'audio, puis joue une note avec le clavier ou les touches A, S, D, F."],
+ indice:"Quand tu tires un câble, les prises qui peuvent le recevoir s'allument.",
+ verifier:()=>soundOK(),ecoute:"note",
+ bilan:"Un patch est un chemin : une source, puis la sortie. Sans câble jusqu'à OUTPUT, aucun son ne sort."},
+{id:"timbre",niveau:0,titre:"Changer de timbre",
+ but:"Obtenir le son le plus doux : une sinusoïde.",
+ depart:{nodes:[["osc"],["out"]],edges:[[0,1]]},
+ consigne:["Sur le VCO, choisis la forme sine.","Joue une note. Essaie aussi square et sawtooth, puis reviens à sine : écoute la différence."],
+ indice:"La forme se change dans la liste du VCO, sous le dessin de l'onde.",
+ verifier:()=>N("osc").some(o=>reachesOut(o.id)&&o.params.wave==="sine"),ecoute:"note",
+ bilan:"La sinusoïde ne contient qu'une seule fréquence. Les autres formes ajoutent des harmoniques : leur timbre est plus brillant."},
+{id:"filtre",niveau:0,titre:"Assombrir avec un filtre",
+ but:"Retirer les aigus d'un son brillant.",
+ depart:{nodes:[["osc"],["out"]],edges:[[0,1]]},
+ consigne:["Ajoute un VCF passe-bas, dans Filtres.","Place-le entre le VCO et OUTPUT : supprime le câble direct (clique dessus, puis sur la croix), puis relie le VCO au VCF et le VCF à OUTPUT.","Baisse la coupure à 800 Hz ou moins, puis joue."],
+ indice:"Le câble direct du VCO vers OUTPUT doit disparaître, sinon le son passe sans être filtré.",
+ verifier:()=>N("filter").some(f=>f.params.cutoff<=800&&reachesOut(f.id)&&N("osc").some(o=>hasPath(o.id,f.id)))&&!E("osc","out"),ecoute:"note",
+ bilan:"Le filtre passe-bas laisse passer les graves et retire les aigus. On part d'un son riche et on enlève : c'est la synthèse soustractive."},
+{id:"nappe",niveau:0,titre:"Une nappe qui monte doucement",
+ but:"Donner au son une attaque lente et une fin longue.",
+ depart:{nodes:[["osc"],["vca"],["out"],["adsr"]],edges:[[0,1],[1,2]]},
+ consigne:["Relie la prise ENV de l'ADSR à la prise MOD du VCA.","Règle l'attaque à 0,8 s ou plus, et le relâchement à 1,5 s ou plus.","Joue une note et tiens-la, puis lâche-la."],
+ indice:"ENV est en bas à droite de l'ADSR. MOD est en bas du VCA, à côté de IN.",
+ verifier:()=>adsrTo("vca").some(a=>a.params.attack>=.8&&a.params.release>=1.5)&&soundOK(),ecoute:"note",
+ bilan:"Attack et Release sont des durées. Elles dessinent la forme du son dans le temps, de l'appui à l'extinction."},
+{id:"pince",niveau:1,titre:"Un son pincé",
+ but:"Faire un son qui retombe vite, comme une corde pincée.",
+ depart:{nodes:[["osc"],["vca"],["out"],["adsr",{attack:.3,decay:.8,sustain:.7}]],edges:[[0,1],[1,2]]},
+ consigne:["Relie ENV de l'ADSR à MOD du VCA.","Attaque à 0,01 s ou moins, decay à 0,25 s ou moins, maintien à 0,2 ou moins.","Joue plusieurs notes courtes."],
+ indice:"Un son pincé monte tout de suite et ne se maintient presque pas.",
+ verifier:()=>adsrTo("vca").some(a=>a.params.attack<=.01&&a.params.decay<=.25&&a.params.sustain<=.2)&&soundOK(),ecoute:"note",
+ bilan:"Une attaque brève et un maintien bas donnent un son percussif. Attack, Decay et Release sont des durées ; Sustain est un niveau."},
+{id:"wah",niveau:1,titre:"L'effet wah",
+ but:"Faire bouger la coupure du filtre avec un LFO.",
+ depart:{nodes:[["osc"],["filter",{cutoff:1500,q:4}],["out"],["lfo",{rate:.4,depth:100}]],edges:[[0,1],[1,2]]},
+ consigne:["Relie la prise MOD du LFO à l'entrée MOD du filtre.","Règle le LFO entre 1 et 6 Hz, avec une profondeur de 400 ou plus.","Tiens une note : le son s'ouvre et se ferme en boucle."],
+ indice:"Les deux prises MOD sont roses. Le câble de modulation est en pointillés.",
+ verifier:()=>lfoTo(FILTERS).some(l=>l.params.rate>=1&&l.params.rate<=6&&l.params.depth>=400)&&soundOK(),ecoute:"note",
+ bilan:"Un LFO ne s'entend pas lui-même : on l'entend par ce qu'il modifie. Ici, la coupure du filtre varie lentement et régulièrement."},
+{id:"vibrato",niveau:1,titre:"Un vibrato",
+ but:"Faire osciller légèrement la hauteur.",
+ depart:{nodes:[["osc",{wave:"sine"}],["out"],["lfo",{rate:.4,depth:100}]],edges:[[0,1]]},
+ consigne:["Relie la prise MOD du LFO à l'entrée MOD du VCO.","Règle une fréquence entre 4 et 7 Hz et une profondeur entre 100 et 1000.","Tiens une note : la hauteur ondule."],
+ indice:"Le vibrato des chanteurs et des violonistes tourne autour de 5 à 6 oscillations par seconde.",
+ verifier:()=>lfoTo(["osc"]).some(l=>l.params.rate>=4&&l.params.rate<=7&&l.params.depth>=100&&l.params.depth<=1000)&&soundOK(),ecoute:"note",
+ bilan:"Vibrato : la hauteur varie. Trémolo : le volume varie. Le même LFO fait les deux selon ce qu'on lui branche."},
+{id:"epais",niveau:1,titre:"Épaissir avec deux oscillateurs",
+ but:"Obtenir un son large avec deux VCO à peine désaccordés.",
+ depart:{nodes:[["osc"],["osc"],["mixer"],["out"]],edges:[[0,2],[2,3]]},
+ consigne:["Relie le second VCO au mélangeur.","Règle le désaccordage de l'un des deux entre 3 et 15 cents.","Tiens une note : tu entends un léger battement."],
+ indice:"Un cent vaut un centième de demi-ton : le désaccord est très faible.",
+ verifier:()=>N("osc").filter(o=>reachesOut(o.id)).length>=2&&N("osc").some(o=>Math.abs(o.params.detune)>=3&&Math.abs(o.params.detune)<=15),ecoute:"note",
+ bilan:"Deux sons de fréquences très proches battent : leur somme gonfle et se creuse régulièrement. C'est ce qui épaissit le timbre."},
+{id:"echo",niveau:2,titre:"Ajouter un écho",
+ but:"Faire répéter le son après un délai.",
+ depart:{nodes:[["osc"],["vca"],["delay",{time:.1,feedback:.1}],["out"],["adsr",{attack:.005,decay:.15,sustain:.3,release:.2}]],edges:[[0,1],[1,3],[4,1]]},
+ consigne:["Place le DELAY entre le VCA et OUTPUT : supprime le câble direct, puis relie le VCA au DELAY et le DELAY à OUTPUT.","Règle le temps entre 0,2 et 0,6 s, et le retour à 0,3 ou plus.","Joue une note courte et écoute les échos s'éteindre."],
+ indice:"Le retour (feedback) renvoie une partie du son à l'entrée du délai : plus il est haut, plus il y a d'échos.",
+ verifier:()=>N("delay").some(d=>d.params.time>=.2&&d.params.time<=.6&&d.params.feedback>=.3&&reachesOut(d.id)&&N("vca").some(v=>hasPath(v.id,d.id)))&&!E("vca","out"),ecoute:"note",
+ bilan:"Un écho est une copie retardée du son. Le retour la renvoie dans le délai : à chaque passage, elle perd de la force."},
+{id:"enveloppe-filtre",niveau:2,titre:"Une enveloppe pour le filtre aussi",
+ but:"Faire s'ouvrir le filtre à chaque note, en plus du volume.",
+ depart:{nodes:[["osc"],["filter",{cutoff:500}],["vca"],["out"],["adsr",{attack:.005,decay:.15,sustain:.4,release:.3}]],edges:[[0,1],[1,2],[2,3],[4,2]]},
+ consigne:["Relie aussi ENV de l'ADSR à l'entrée MOD du filtre.","Allonge le decay à 0,4 s ou plus.","Joue une note : le son s'ouvre vite, puis se referme."],
+ indice:"Une prise ENV peut recevoir plusieurs câbles : la même enveloppe commande le volume et la couleur.",
+ verifier:()=>N("adsr").some(a=>edges.some(([x,y])=>x===a.id&&FILTERS.includes(find(y)?.type))&&edges.some(([x,y])=>x===a.id&&find(y)?.type==="vca")&&a.params.decay>=.4)&&soundOK(),ecoute:"note",
+ bilan:"Une enveloppe peut piloter plusieurs réglages. Quand la coupure suit l'enveloppe, le timbre change au fil de la note, comme sur un vrai instrument."},
+{id:"sequenceur",niveau:2,titre:"Faire jouer le séquenceur",
+ but:"Déclencher l'enveloppe à chaque pas du séquenceur.",
+ depart:{nodes:[["osc"],["vca"],["out"],["adsr",{attack:.005,decay:.1,sustain:.2,release:.1}],["seq",{gate:.9}]],edges:[[0,1],[1,2],[3,1]]},
+ consigne:["Relie la prise GATE du SEQ à l'entrée GATE de l'ADSR.","Règle la durée du SEQ à 0,5 ou moins : les notes seront détachées.","Lance le séquenceur (bouton en haut) et écoute au moins quatre pas."],
+ indice:"Les tirets gris sont le câble de déclenchement. Le clavier ne déclenche plus cette enveloppe, seul le séquenceur le fait.",
+ verifier:()=>N("seq").some(s=>s.params.gate<=.5&&edges.some(([x,y])=>x===s.id&&find(y)?.type==="adsr"))&&soundOK(),ecoute:"seq",
+ bilan:"Le séquenceur envoie un signal GATE à chaque pas : l'enveloppe se déclenche, la note est jouée, puis relâchée. Un pas vaut une double croche."},
+{id:"instrument",niveau:2,titre:"Construire ton instrument",
+ but:"Assembler un synthétiseur soustractif complet.",
+ depart:null,
+ consigne:["Garde au moins deux VCO reliés à la sortie.","Passe par un filtre, puis un VCA piloté par l'ADSR (câble ENV vers MOD).","Branche un LFO sur un module, puis joue."],
+ indice:"Tu peux repartir du patch « Synthé soustractif » dans la liste de la barre d'outils.",
+ verifier:()=>N("osc").filter(o=>reachesOut(o.id)).length>=2&&N("filter").some(f=>reachesOut(f.id)&&N("osc").some(o=>hasPath(o.id,f.id)))&&adsrTo("vca").length>0&&N("lfo").some(l=>edges.some(e=>e[0]===l.id)),ecoute:"note",
+ bilan:"Tu as construit un synthétiseur soustractif : des sources, un filtre qui sculpte, un amplificateur piloté par une enveloppe, une modulation lente."}
+];
+
+let played=0,playedSeq=0;
 let nodes=[],edges=[],next=1,selected=null,selectedEdge=null,history=[],future=[],ctx=null,analyser=null,master=null,active=new Map(),running=false,timer=null,step=0,bpm=120;
 let pattern=[60,null,64,null,67,null,72,null,67,null,64,null,62,null,59,null];
 const noteNames=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
@@ -491,6 +619,7 @@ function noteOn(midi,from="key"){
   gate.connect(master);created.push(gate);
   if(legacy){const a=Math.max(.005,legacy.attack);gate.gain.cancelScheduledValues(t0);gate.gain.setValueAtTime(0,t0);gate.gain.linearRampToValueAtTime(1,t0+a);gate.gain.linearRampToValueAtTime(legacy.sustain,t0+a+legacy.decay)}
   active.set(key,{created,sources,stoppables,gate,legacy,env});
+  played++;if(from==="seq")playedSeq++;checkSoon();
   status((from==="seq"?"Pas":"Note")+" "+midi+", "+sources.length+" source(s)"+(env.length?", "+env.length+" enveloppe(s) câblée(s)":""));
 }
 const gatedBySeq=id=>edges.some(g=>g[1]===id&&find(g[0])?.type==="seq");
@@ -630,7 +759,7 @@ function makeDial(n,key,meta,graph){
   dial.setAttribute("aria-valuemin",min);dial.setAttribute("aria-valuemax",max);
   const val=document.createElement("span");val.className="dial-val";
   const show=()=>{const v=n.params[key];dial.style.setProperty("--r",toR(v));val.textContent=v.toFixed(dec);dial.setAttribute("aria-valuenow",v)};
-  const set=v=>{n.params[key]=v;show();drawGraph(n,graph);refreshAudio()};
+  const set=v=>{n.params[key]=v;show();drawGraph(n,graph);refreshAudio();checkSoon()};
   let start=null;
   dial.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();dial.focus();dial.setPointerCapture(e.pointerId);start={y:e.clientY,r:toR(n.params[key])};checkpoint()});
   dial.addEventListener("pointermove",e=>{if(!start)return;set(fromR(start.r+(start.y-e.clientY)/(e.shiftKey?700:160)))});
@@ -667,7 +796,7 @@ function buildModule(n){
       if(meta[1]==="select"){
         const l=document.createElement("label");l.className="sel wide";l.append(meta[0]);
         const sel=document.createElement("select");for(const v of meta[2]){const o=document.createElement("option");o.value=v;o.textContent=v;sel.append(o)}
-        sel.value=n.params[key];sel.onchange=()=>{checkpoint();n.params[key]=sel.value;drawGraph(n,g);refreshAudio()};
+        sel.value=n.params[key];sel.onchange=()=>{checkpoint();n.params[key]=sel.value;drawGraph(n,g);refreshAudio();checkSoon()};
         sel.addEventListener("pointerdown",e=>e.stopPropagation());l.append(sel);box.append(l);
       }else box.append(makeDial(n,key,meta,g));
     }
@@ -736,6 +865,7 @@ function render(doLayout=false){
   if(doLayout)tidy(false);
   else{fitRack();drawWires()}
   inspect(find(selected));
+  checkSoon();
 }
 function size(n){const el=$("#rack").querySelector('.module[data-id="'+n.id+'"]');return el?{w:el.offsetWidth,h:el.offsetHeight}:{w:W,h:260}}
 let zoom=1,fitMode=false;
@@ -898,6 +1028,84 @@ window.addEventListener("resize",()=>{fitRack();drawWires()});
   $("#togFit").onclick=()=>{fitMode=!fitMode;$("#togFit").setAttribute("aria-pressed",String(fitMode));if(fitMode)$("#scroller").scrollTo(0,0);fitRack();drawWires();status(fitMode?"Patch entier affiché. Touche « Voir tout » de nouveau pour revenir à la taille normale.":"Taille normale")};
   window.applyPanneaux=apply;
 }
+
+/* ---------- Défis guidés ---------- */
+const DKEY="sonora-synthe-defis";
+let dsave={done:{},cur:null},dRun=null,dRaf=0;
+try{dsave={...dsave,...JSON.parse(localStorage.getItem(DKEY)||"{}")}}catch(e){}
+const dWrite=()=>{try{localStorage.setItem(DKEY,JSON.stringify(dsave))}catch(e){}};
+const curDefi=()=>DEFIS.find(d=>d.id===dsave.cur);
+function checkSoon(){if(!dsave.cur||!dRun||dRaf)return;dRaf=requestAnimationFrame(()=>{dRaf=0;checkDefi()})}
+function setDefiState(txt){const e=$("#defiState");if(e)e.textContent=txt}
+function checkDefi(){
+  const d=curDefi();if(!d||!dRun||dRun.ok)return;
+  let cond=false;try{cond=!!d.verifier()}catch(e){}
+  if(!cond){dRun.armed=false;setDefiState("À construire.");return}
+  if(!dRun.armed){dRun.armed=true;dRun.armedAt=played;dRun.armedSeq=playedSeq}
+  const heard=d.ecoute==="seq"?playedSeq-dRun.armedSeq>=4:played-dRun.armedAt>=1;
+  if(!heard){setDefiState(d.ecoute==="seq"?"Le patch est prêt. Lance le séquenceur et écoute quatre pas.":"Le patch est prêt. Joue une note pour valider.");return}
+  dRun.ok=true;dsave.done[d.id]=true;dWrite();renderDefiBar();status("Défi réussi : "+d.titre);
+}
+function nextDefi(){const i=DEFIS.findIndex(d=>d.id===dsave.cur);return DEFIS.slice(i+1).find(d=>!dsave.done[d.id])||DEFIS[i+1]||null}
+function renderDefiBar(){
+  const bar=$("#defiBar"),d=curDefi();bar.replaceChildren();bar.classList.toggle("ok",!!dRun?.ok);
+  if(!d){const p=document.createElement("p");p.textContent="Choisis un défi dans la liste.";bar.append(p);return}
+  const i=DEFIS.indexOf(d);
+  const meta=document.createElement("div");meta.className="meta";meta.textContent="Défi "+(i+1)+" sur "+DEFIS.length+", "+NIVEAUX_DEFIS[d.niveau]+". "+Object.keys(dsave.done).length+" réussi(s).";
+  const dt=document.createElement("div");dt.className="dt";dt.textContent=d.titre;
+  const but=document.createElement("p");but.textContent=d.but;
+  bar.append(meta,dt,but);
+  if(!dRun?.ok){
+    const ol=document.createElement("ol");for(const c of d.consigne){const li=document.createElement("li");li.textContent=c;ol.append(li)}bar.append(ol);
+    if(dRun?.hint){const h=document.createElement("p");h.textContent="Indice : "+d.indice;bar.append(h)}
+  }
+  const st=document.createElement("div");st.className="state";st.id="defiState";st.setAttribute("role","status");
+  st.textContent=dRun?.ok?"Réussi.":dRun?.armed?"Le patch est prêt. Joue une note pour valider.":"À construire.";bar.append(st);
+  if(dRun?.ok){const b=document.createElement("p");b.className="bilan";b.textContent="À retenir : "+d.bilan;bar.append(b)}
+  const row=document.createElement("div");row.className="btn-row";
+  const btn=(label,fn)=>{const x=document.createElement("button");x.type="button";x.textContent=label;x.onclick=fn;row.append(x);return x};
+  if(dRun?.ok){const nx=nextDefi();if(nx)btn("Défi suivant",()=>startDefi(nx.id))}
+  else{btn(dRun?.hint?"Masquer l'indice":"Indice",()=>{dRun.hint=!dRun.hint;renderDefiBar()});btn("Recommencer",()=>startDefi(d.id))}
+  btn("Liste des défis",openDefiList);
+  btn("Fermer",()=>showDefiBar(false));
+  bar.append(row);
+}
+function showDefiBar(on){$("#defiBar").hidden=!on;$("#togDefis").setAttribute("aria-pressed",String(on));fitRack();drawWires()}
+function loadSpec(spec){
+  checkpoint();panic();nodes=[];edges=[];next=1;
+  const ids=spec.nodes.map(([type,params])=>{const id=type+(next++);nodes.push({id,type,x:0,y:0,params:{...defaults[type],...(params||{})}});return id});
+  edges=spec.edges.map(([a,b])=>[ids[a],ids[b]]);selected=ids[0];selectedEdge=null;render(true);
+}
+function startDefi(id){
+  const d=DEFIS.find(x=>x.id===id);if(!d)return;
+  dsave.cur=id;dRun={armed:false,armedAt:played,armedSeq:playedSeq,ok:false,hint:false};dWrite();
+  if(d.depart)loadSpec(d.depart);
+  renderDefiBar();showDefiBar(true);
+  status("Défi : "+d.titre+(d.depart?". Ctrl+Z revient au patch d'avant.":""));
+  checkSoon();
+}
+function openDefiList(){
+  const box=$("#defiItems");box.replaceChildren();
+  $("#defiScore").textContent=Object.keys(dsave.done).length+" défi(s) réussi(s) sur "+DEFIS.length+".";
+  NIVEAUX_DEFIS.forEach((nom,n)=>{
+    const h=document.createElement("div");h.className="defi-niveau";h.textContent="Niveau "+(n+1)+", "+nom;box.append(h);
+    for(const d of DEFIS.filter(x=>x.niveau===n)){
+      const b=document.createElement("button");b.type="button";b.className="defi-item";
+      const tick=document.createElement("span");tick.className="tick";tick.textContent=dsave.done[d.id]?"✓":"";
+      const tx=document.createElement("span");tx.append(d.titre);const s=document.createElement("small");s.textContent=d.but;tx.append(s);
+      b.append(tick,tx);b.onclick=()=>{closeDefiList();startDefi(d.id)};box.append(b);
+    }
+  });
+  const dlg=$("#defiList");if(dlg.showModal)dlg.showModal();else dlg.setAttribute("open","");
+}
+const closeDefiList=()=>{const dlg=$("#defiList");if(dlg.close)dlg.close();else dlg.removeAttribute("open")};
+$("#defiClose").onclick=closeDefiList;
+$("#defiReset").onclick=()=>{dsave.done={};dWrite();openDefiList();if(dRun)dRun.ok=false;renderDefiBar();status("Progression effacée")};
+$("#togDefis").onclick=()=>{
+  if(!$("#defiBar").hidden){showDefiBar(false);return}
+  if(dsave.cur&&curDefi()){if(!dRun)dRun={armed:false,armedAt:played,armedSeq:playedSeq,ok:false,hint:false};renderDefiBar();showDefiBar(true);checkSoon()}
+  else openDefiList();
+};
 
 /* ---------- Catalogue ---------- */
 const groups=[...new Set(Object.values(catalog).map(c=>c.group))];
