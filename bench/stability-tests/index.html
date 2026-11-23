@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stabilité SONORA</title>
+<style>body{margin:0;padding:16px;background:#0b0d09;color:#f2efe6;font:15px/1.5 system-ui,sans-serif;max-width:900px;margin-inline:auto}p,li,label{color:#a39f90}button,select,input{font:inherit;padding:8px 12px;min-height:40px;border-radius:6px;border:1px solid #2e2e2a;background:#151513;color:#f2efe6}button{background:#b8f54a;color:#000;font-weight:700;border:0;cursor:pointer}table{width:100%;border-collapse:collapse;font-size:.85rem}td,th{border-top:1px solid #2e2e2a;padding:4px 6px;text-align:left}pre{background:#151513;padding:8px;overflow:auto;max-height:300px}</style></head><body>
+<h1>Stabilité dans la durée</h1>
+<p><a href="../benchmark-dashboard.html">retour au banc</a>. Joue une charge pendant 15, 30 ou 45 minutes et note chaque dix secondes l'état, les coupures, la dérive d'horloge, la mémoire, et chaque changement de visibilité de la page. Pour le comportement après changement de fenêtre ou mise en veille : pendant l'essai, change d'onglet, réduis la fenêtre, ou mets l'ordinateur en veille quelques secondes, puis reviens ; les événements sont datés dans le journal. Une page cachée peut être ralentie par le navigateur : c'est un résultat à noter, pas une erreur du banc.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+<label>Scénario <select id="sc"></select></label><label>Instances <input id="inst" type="number" value="16" style="width:80px"></label>
+<label>Durée <select id="dur"><option value="900">15 minutes</option><option value="1800">30 minutes</option><option value="2700">45 minutes</option><option value="30">30 secondes (essai du banc)</option></select></label>
+<label><input type="checkbox" id="silence"> sans haut-parleur</label><button id="go">Lancer</button></div>
+<p id="etat"></p><table id="jr"></table><h2>Verdict</h2><pre id="sortie"></pre>
+<script type="module">
+import { mesurer } from "../bench-core.js"; import { SCENARIOS } from "../scenarios.js";
+const $ = id => document.getElementById(id); $("sc").innerHTML = SCENARIOS.filter(s => s.mode !== "non-mesure").map(s => `<option value="${s.id}">${s.id} ${s.nom}</option>`).join(""); $("sc").value = "s21";
+const evenements = []; document.addEventListener("visibilitychange", () => evenements.push({ t: new Date().toISOString(), evenement: "visibilite:" + document.visibilityState })); addEventListener("blur", () => evenements.push({ t: new Date().toISOString(), evenement: "perte de focus" })); addEventListener("focus", () => evenements.push({ t: new Date().toISOString(), evenement: "retour du focus" }));
+window.STABILITE = { evenements }; $("go").onclick = async () => { $("go").disabled = true; const def = SCENARIOS.find(s => s.id === $("sc").value), secondes = +$("dur").value, t0 = performance.now(); let dernier = 0;
+  const r = await mesurer(def, { secondes, instances: +$("inst").value, silence: $("silence").checked, canaux: 2, volume: 0.02 }, p => { if (p.s - dernier >= 10 || p.s === secondes) { dernier = p.s; $("etat").textContent = `${p.s}/${secondes} s`; $("jr").insertAdjacentHTML("beforeend", `<tr><td>${p.s} s</td><td>coupures ${p.ps ? p.ps.underrunEvents : "n/d"}</td><td>charge fenêtre ${p.derniere && p.derniere.occupe_ms != null ? (p.derniere.occupe_ms / p.derniere.appels / (128 / 44100 * 1000) * 100).toFixed(0) + " %" : "n/d"}</td><td>${document.visibilityState}</td></tr>`); } });
+  const rapport = { type: "stabilite", scenario: def.id, duree_demandee_s: secondes, duree_reelle_s: +((performance.now() - t0) / 1000).toFixed(1), verdict: r.verdict, raison: r.raison, statistiques: r.statistiques, evenements_de_page: evenements, erreurs: r.erreurs };
+  $("sortie").textContent = JSON.stringify(rapport, null, 1); window.STABILITE.rapport = rapport; $("go").disabled = false; };
+</script></body></html>

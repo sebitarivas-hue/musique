@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Latence SONORA</title>
+<style>body{margin:0;padding:16px;background:#0b0d09;color:#f2efe6;font:15px/1.5 system-ui,sans-serif;max-width:900px;margin-inline:auto}p,li,label{color:#a39f90}button,select{font:inherit;padding:8px 12px;min-height:40px;border-radius:6px;border:0;background:#b8f54a;color:#000;font-weight:700;cursor:pointer}table{width:100%;border-collapse:collapse;font-size:.88rem}td,th{border-top:1px solid #2e2e2a;padding:5px 6px;text-align:left}h2{border-top:1px solid #2e2e2a;padding-top:.7em;margin-top:1.5em}pre{background:#151513;padding:8px;overflow:auto}</style></head><body>
+<h1>Latence : trois mesures qui ne se mélangent pas</h1>
+<p><a href="../benchmark-dashboard.html">retour au banc</a>. Les trois nombres répondent à trois questions différentes : combien de temps le moteur garde le son (1), ce que le navigateur annonce (2), ce qu'on mesure vraiment entre le haut-parleur et le micro (3). Ne jamais les additionner ni les comparer entre eux sans le dire.</p>
+
+<h2>1. Latence interne du moteur</h2>
+<p>Ce que le moteur ajoute avant que le son parte vers le navigateur : un bloc de calcul (taille de bloc divisée par la fréquence d'échantillonnage) et, pour un message de commande (note, réglage), le temps pour qu'il soit pris en compte par le fil audio. Mesuré ici : aller-retour d'un message entre le fil principal et le fil audio.</p>
+<div><label>Taille de bloc <select id="q1"><option>128</option><option>32</option><option>64</option><option>256</option><option>512</option></select></label> <button id="b1">Mesurer (200 échos)</button></div><table id="t1"></table>
+
+<h2>2. Latence estimée par l'AudioContext</h2>
+<p>Valeurs annoncées par le navigateur : latence de base, latence de sortie, et, si disponible, latences moyenne et maximale des statistiques de lecture. Ce sont des estimations, parfois nulles ou factices selon le pilote.</p>
+<div><button id="b2">Relever</button></div><table id="t2"></table>
+
+<h2>3. Latence réelle entrée-sortie (haut-parleur vers micro)</h2>
+<p>Exige un vrai matériel : un haut-parleur qui entend le micro (ordinateur portable, volume moyen, pièce calme, pas de casque). Le navigateur demande l'autorisation du micro. Un signal à longueur maximale est émis, enregistré, puis corrélé : le retard est la position du pic. Une réverbération ou un bruit de fond forts abaissent le rapport pic sur bruit : en dessous de 8, ne pas se fier au résultat. Non validé sur appareil réel à ce jour.</p>
+<div><button id="b3">Lancer 5 mesures</button></div><table id="t3"></table><pre id="j"></pre>
+<script type="module">
+import { mls, correler } from "./loopback.js";
+const $ = id => document.getElementById(id), ligne = (k, v) => `<tr><td>${k}</td><td>${v}</td></tr>`;
+const WK = `class Echo extends AudioWorkletProcessor{process(){return true}}
+class Capteur extends AudioWorkletProcessor{constructor(){super();this.f0=-1;this.nb=0;this.on=false;this.port.onmessage=e=>{if(e.data==='go'){this.on=true;this.f0=-1}}}
+process(i){if(!this.on)return true;const c=i[0]&&i[0][0];if(!c)return true;if(this.f0<0)this.f0=currentFrame;this.port.postMessage({f:currentFrame,d:c.slice(0)});return true}}
+class Ping extends AudioWorkletProcessor{constructor(){super();this.port.onmessage=e=>{this.t=e.data};}process(){if(this.t!==undefined){this.port.postMessage({t:this.t,frame:currentFrame});this.t=undefined}return true}}
+registerProcessor('capteur',Capteur);registerProcessor('ping',Ping);registerProcessor('echo',Echo);`;
+const module = () => URL.createObjectURL(new Blob([WK], { type: "text/javascript" }));
+const nouveau = async q => { const ctx = new AudioContext({ latencyHint: "interactive", ...(+q !== 128 ? { renderSizeHint: +q } : {}) }); await ctx.resume(); await ctx.audioWorklet.addModule(module()); return ctx; };
+$("b1").onclick = async () => { const ctx = await nouveau($("q1").value), nd = new AudioWorkletNode(ctx, "ping"); nd.connect(ctx.destination); const d = []; const att = () => new Promise(r => { nd.port.onmessage = e => r(performance.now() - e.data.t); nd.port.postMessage(performance.now()); });
+  for (let i = 0; i < 200; i++) { d.push(await att()); await new Promise(r => setTimeout(r, 5)); } d.sort((a, b) => a - b); const q = ctx.renderQuantumSize ?? 128; $("t1").innerHTML = ligne("Taille de bloc", q + " échantillons à " + ctx.sampleRate + " Hz") + ligne("Durée d'un bloc", (q / ctx.sampleRate * 1000).toFixed(2) + " ms") + ligne("Aller-retour du message, médiane", d[100].toFixed(2) + " ms") + ligne("Aller-retour du message, p95", d[190].toFixed(2) + " ms") + ligne("Remarque", "inclut deux passages par la boucle d'événements du fil principal : à lire comme un majorant du temps de prise en compte d'une commande"); await ctx.close(); };
+$("b2").onclick = async () => { const ctx = await nouveau(128), o = ctx.createOscillator(), g = ctx.createGain(); g.gain.value = 0.001; o.connect(g).connect(ctx.destination); o.start(); await new Promise(r => setTimeout(r, 2500)); const ts = ctx.getOutputTimestamp ? ctx.getOutputTimestamp() : null, ps = ctx.playbackStats ? (ctx.playbackStats.toJSON ? ctx.playbackStats.toJSON() : null) : null;
+  $("t2").innerHTML = ligne("baseLatency", ctx.baseLatency != null ? (ctx.baseLatency * 1000).toFixed(2) + " ms" : "UNKNOWN") + ligne("outputLatency", ctx.outputLatency != null ? (ctx.outputLatency * 1000).toFixed(2) + " ms" : "UNKNOWN") + ligne("Somme des deux (indicatif)", ctx.outputLatency != null ? ((ctx.baseLatency + ctx.outputLatency) * 1000).toFixed(2) + " ms" : "UNKNOWN") + ligne("getOutputTimestamp", ts ? `temps audio ${ts.contextTime.toFixed(3)} s, horloge ${ts.performanceTime.toFixed(1)} ms` : "absent") + ligne("playbackStats", ps ? `moyenne ${(ps.averageLatency * 1000).toFixed(2)} ms, minimum ${(ps.minimumLatency * 1000).toFixed(2)} ms, maximum ${(ps.maximumLatency * 1000).toFixed(2)} ms, coupures ${ps.underrunEvents}` : "absent"); o.stop(); await ctx.close(); };
+$("b3").onclick = async () => { const res = []; let flux;
+  try { flux = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } }); } catch (e) { $("t3").innerHTML = ligne("Micro", "refusé ou absent : " + e.message); return; }
+  for (let essai = 0; essai < 5; essai++) { const ctx = await nouveau(128), sr = ctx.sampleRate, s = mls(14), buf = ctx.createBuffer(1, s.length, sr); buf.getChannelData(0).set(s.map(x => x * 0.5));
+    const src = ctx.createMediaStreamSource(flux), cap = new AudioWorkletNode(ctx, "capteur", { numberOfOutputs: 0 }); src.connect(cap); const morceaux = []; let f0 = null; cap.port.onmessage = e => { if (f0 === null) f0 = e.data.f; morceaux.push(e.data.d); }; cap.port.postMessage("go");
+    await new Promise(r => setTimeout(r, 400)); const quand = ctx.currentTime + 0.3, jouer = ctx.createBufferSource(); jouer.buffer = buf; jouer.connect(ctx.destination); jouer.start(quand); const frameEmission = Math.round(quand * sr);
+    await new Promise(r => setTimeout(r, (s.length / sr + 1.2) * 1000)); const total = morceaux.reduce((a, m) => a + m.length, 0), recu = new Float32Array(total); let k = 0; for (const m of morceaux) { recu.set(m, k); k += m.length; }
+    const r = correler(s, recu), retardTotal = (f0 + r.retard_echantillons) - frameEmission; res.push({ essai: essai + 1, aller_retour_ms: +(retardTotal / sr * 1000).toFixed(2), rapport_pic_bruit: +(r.rapport_pic_bruit || 0).toFixed(1), valide: (r.rapport_pic_bruit || 0) >= 8 }); await ctx.close(); }
+  flux.getTracks().forEach(t => t.stop()); const bons = res.filter(r => r.valide).map(r => r.aller_retour_ms).sort((a, b) => a - b);
+  $("t3").innerHTML = res.map(r => ligne("Essai " + r.essai, `${r.aller_retour_ms} ms (pic sur bruit ${r.rapport_pic_bruit}${r.valide ? "" : " : trop faible, écarté"})`)).join("") + ligne("Médiane des essais valides", bons.length ? bons[Math.floor(bons.length / 2)] + " ms (" + bons.length + " sur 5)" : "aucune mesure fiable"); $("j").textContent = JSON.stringify({ type: "latence-aller-retour", essais: res }, null, 1); };
+</script></body></html>

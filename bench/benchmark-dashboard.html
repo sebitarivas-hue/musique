@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Banc d'essai SONORA</title>
+<style>
+:root{--bg:#0b0d09;--fg:#f2efe6;--mut:#a39f90;--ln:#2e2e2a;--ac:#b8f54a;--card:#151513;--ko:#e5705f;--mid:#e6c34a}
+@media (prefers-color-scheme:light){:root{--bg:#f5f2e9;--fg:#161614;--mut:#5f5b50;--ln:#d6d1c0;--ac:#2f6b00;--card:#fff;--ko:#b3261e;--mid:#8a6d00}}
+*{box-sizing:border-box}body{margin:0;padding:16px;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif;max-width:1100px;margin-inline:auto}
+h1{font-size:1.5rem;margin:.2em 0}h2{font-size:1.15rem;margin:1.6em 0 .4em;border-top:1px solid var(--ln);padding-top:.8em}p,li,label{color:var(--mut)}
+button,select,input{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--ln);border-radius:6px;padding:8px 12px;min-height:40px}button{cursor:pointer;font-weight:700;background:var(--ac);color:#000;border:0}button:disabled{opacity:.5}
+.rang{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:8px 0}.rang>div{display:flex;flex-direction:column;gap:3px}
+table{width:100%;border-collapse:collapse;font-size:.85rem;margin:8px 0}td,th{border-top:1px solid var(--ln);padding:5px 6px;text-align:left;vertical-align:top}th{color:var(--mut)}
+.STABLE{color:var(--ac)}.LIMITE{color:var(--mid)}.INSTABLE,.ECHEC{color:var(--ko)}.INCIDENT{color:var(--mid)}.NON_MESURE,.NON_CONCLUANT{color:var(--mut)}
+#etat{min-height:1.5em;color:var(--fg);white-space:pre-wrap}canvas{max-width:100%;background:var(--card);border:1px solid var(--ln);border-radius:6px}pre{background:var(--card);padding:8px;overflow:auto;max-height:260px;font-size:.78rem;border-radius:6px}
+.avert{border:1px solid var(--mid);padding:8px 12px;border-radius:6px}
+</style></head><body>
+<h1>Banc d'essai SONORA</h1>
+<p class="avert">Cette page joue des sons de test très faibles (volume réglable, ou coupé : case « sans haut-parleur », le calcul est le même). Elle mesure la tenue du temps réel : une lecture sans coupure, pas la vitesse d'un rendu hors ligne. Garde la page visible et au premier plan pendant les essais, et ne change pas d'onglet : le navigateur ralentit les pages cachées et fausse la mesure.</p>
+<p>Autres essais : <a href="latency-tests/index.html">latence</a>, <a href="stability-tests/index.html">stabilité (15, 30, 45 minutes)</a>, <a href="memory-tests/index.html">mémoire</a>. Méthode : <code>benchmark-methodology.md</code>.</p>
+
+<h2>1. Cet appareil</h2>
+<div class="rang"><button id="diag">Relever les capacités du navigateur</button><span id="diagEtat"></span></div>
+<table id="diagTab"></table>
+<details><summary>Informations à saisir à la main (non accessibles depuis une page web)</summary>
+<div class="rang" id="manuel"></div><p>Voir <code>hardware-inventory.md</code> : Paramètres, Système, À propos de ; le Gestionnaire des tâches, onglet Performances, donne le processeur et la mémoire. Rien n'est envoyé : tout reste dans cette page et dans le fichier exporté.</p></details>
+
+<h2>2. Essai interactif d'un scénario</h2>
+<div class="rang">
+<div><label for="sc">Scénario</label><select id="sc"></select></div>
+<div><label for="inst">Instances</label><input id="inst" type="number" min="1" max="512" value="8" style="width:90px"></div>
+<div><label for="blq">Taille de bloc</label><select id="blq"><option>128</option><option>32</option><option>64</option><option>256</option><option>512</option></select></div>
+<div><label for="can">Canaux</label><select id="can"><option>2</option><option>1</option><option>6</option></select></div>
+<div><label for="sec">Secondes</label><input id="sec" type="number" min="3" max="3600" value="10" style="width:90px"></div>
+<div><label for="vol">Volume</label><input id="vol" type="number" min="0" max="0.3" step="0.01" value="0.02" style="width:80px"></div>
+<div><label><input id="silence" type="checkbox"> sans haut-parleur</label></div>
+<button id="go">Lancer</button><button id="ramp">Chercher la polyphonie stable</button><button id="stop" disabled>Arrêter</button>
+</div>
+<div id="etat" role="status" aria-live="polite"></div>
+
+<h2>3. Série automatique</h2>
+<div class="rang">
+<div><label for="prof">Profil</label><select id="prof"><option>ESSENTIEL</option><option>STUDIO</option><option>EXPERT</option></select></div>
+<div><label for="secA">Secondes par essai</label><input id="secA" type="number" min="3" value="8" style="width:90px"></div>
+<div><label for="rep">Répétitions</label><input id="rep" type="number" min="1" max="9" value="1" style="width:70px"></div>
+<div><label for="blqA">Tailles de bloc</label><input id="blqA" value="128" style="width:150px" title="séparées par des virgules : 32,64,128,256,512"></div>
+<button id="auto">Lancer la série</button>
+</div>
+
+<h2>4. Résultats</h2>
+<div class="rang"><button id="expJ">Exporter JSON</button><button id="expC">Exporter CSV</button><label>Comparer avec un autre fichier <input id="imp" type="file" accept=".json" multiple></label><button id="vider">Effacer</button></div>
+<table id="res"></table>
+<canvas id="graph" width="1000" height="320"></canvas>
+<h2>5. Comparaison entre appareils</h2><p>Les résultats de machines différentes ne se comparent que si leurs conditions de mesure sont documentées (colonne « appareil » et fichier d'inventaire).</p>
+<table id="cmp"></table>
+<div id="bench-visu"></div>
+<script type="module" src="dashboard.js"></script>
+</body></html>
