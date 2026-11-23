@@ -44,6 +44,7 @@ button.danger{border-color:#6b2f2f;color:#ffb0b0}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
 .card p{margin:6px 0 0;color:var(--mute);font-size:13px}
 .card strong{font-size:13px;font-weight:500}
+#steps button.off{opacity:.3}
 .center{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-width:0;min-height:0}
 .toolbar{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .toolbar .title{font-weight:500;margin-right:6px}
@@ -68,6 +69,7 @@ details.cat[open] summary::before{content:"▾ "}
 #wires .shadow{fill:none;stroke:#000;stroke-opacity:.45;stroke-width:7;stroke-linecap:round;transform:translate(0,3px)}
 #wires .cable{fill:none;stroke-width:4.5;stroke-linecap:round;opacity:.95}
 #wires .cable.cv{stroke-dasharray:1 7;stroke-width:5}
+#wires .cable.gate{stroke-dasharray:10 6}
 #wires .cable.sel{stroke-width:6.5;filter:drop-shadow(0 0 5px currentColor)}
 #wires .live{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-dasharray:7 6;stroke-linecap:round}
 #wires .del{pointer-events:all;cursor:pointer}
@@ -104,6 +106,7 @@ details.cat[open] summary::before{content:"▾ "}
 .jack.in{--ring:#6c7487}
 .jack.out{--ring:var(--fam)}
 .jack.cv{--ring:var(--c-mod)}
+.jack.gate{--ring:var(--c-seq)}
 .linking .jack.ok{box-shadow:0 0 0 3px #0008,0 0 0 5px var(--accent);animation:pulse 1s infinite}
 .linking .jack.no{opacity:.3}
 .jack.pending{box-shadow:0 0 0 3px var(--accent)}
@@ -133,6 +136,8 @@ canvas{display:block;width:100%;height:84px;background:var(--bg);border:1px soli
 .macros{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 #diagnostics p{margin:4px 0 0;font-size:13px;color:var(--mute)}
 #diagnostics strong.ok{color:var(--ok)}#diagnostics strong.bad{color:var(--accent)}
+.fiche .fl{display:block;margin-top:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.fiche p{color:var(--text);opacity:.85}
 .lesson b{display:block;font-weight:500;margin-top:6px;font-size:12px;color:var(--text)}
 kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2);border-radius:4px;padding:1px 5px}
 
@@ -188,6 +193,7 @@ kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2)
     <div class="card">
       <strong>Brancher</strong>
       <p>Tire un câble d'une prise OUT vers une prise IN, ou touche l'une puis l'autre. Les prises compatibles s'allument. Clique un câble puis sur sa croix pour le débrancher.</p>
+      <p>Trois sortes de câbles : audio (trait plein, couleur du module), modulation (pointillés roses), déclenchement GATE (tirets gris).</p>
       <p>Déplace un module par son titre. Le bouton Ranger les réorganise sans changer le son.</p>
     </div>
   </aside>
@@ -224,6 +230,7 @@ kbd{font:11px var(--mono);background:var(--panel2);border:1px solid var(--line2)
       <h2>Module sélectionné</h2>
       <div id="inspector"><p>Clique un module pour le sélectionner.</p></div>
     </div>
+    <div class="card fiche" id="fiche"></div>
     <div class="card lesson" id="lesson">
       <h2>Notion</h2>
       <p id="lt">Clique le nom d'un réglage pour lire son explication.</p>
@@ -264,13 +271,149 @@ compressor:{group:"Effets",name:"COMP : Dynamique",kind:"processor",theme:"dark"
 out:{group:"Sortie",name:"OUTPUT : Master",kind:"output",theme:"dark",params:{gain:["niveau",0,1,.01]}},
 adsr:{group:"Modulation",name:"ADSR : Enveloppe",kind:"control",theme:"gold",params:{attack:["attaque s",.005,2,.005],decay:["decay s",.01,2,.01],sustain:["maintien",0,1,.01],release:["release s",.01,4,.01]}},
 lfo:{group:"Modulation",name:"LFO : Oscillation",kind:"control",params:{rate:["fréquence",.1,20,.1],depth:["profondeur",0,3000,10]}},
-seq:{group:"Séquenceurs",name:"SEQ : 16 pas",kind:"control",theme:"dark",params:{transpose:["transposition",-24,24,1]}},
+seq:{group:"Séquenceurs",name:"SEQ : 16 pas",kind:"control",theme:"dark",params:{transpose:["transposition",-24,24,1],length:["pas",1,16,1],gate:["durée",.1,1,.05]}},
 clock:{group:"Séquenceurs",name:"CLOCK : Tempo",kind:"control",params:{bpm:["tempo",40,240,1]}},
 scope:{group:"Analyse",name:"SCOPE : Oscilloscope",kind:"control",theme:"dark",params:{}},
 meter:{group:"Analyse",name:"METER : Niveau",kind:"control",params:{}}
 };
-const defaults={osc:{wave:"sawtooth",detune:0,gain:.35},sampler:{wave:"square",detune:-1200,gain:.18},noise:{gain:.15},filter:{cutoff:1800,q:1},highpass:{cutoff:150,q:1},bandpass:{cutoff:1200,q:2},vca:{gain:.7},mixer:{gain:.7},pan:{pan:0},drive:{drive:15},delay:{time:.3,feedback:.28},chorus:{rate:1.3,depth:.004},tremolo:{rate:5,depth:.45},compressor:{threshold:-20,ratio:4},out:{gain:.7},adsr:{attack:.02,decay:.2,sustain:.7,release:.35},lfo:{rate:2,depth:500},seq:{transpose:0},clock:{bpm:120},scope:{},meter:{}};
+const defaults={osc:{wave:"sawtooth",detune:0,gain:.35},sampler:{wave:"square",detune:-1200,gain:.18},noise:{gain:.15},filter:{cutoff:1800,q:1},highpass:{cutoff:150,q:1},bandpass:{cutoff:1200,q:2},vca:{gain:.7},mixer:{gain:.7},pan:{pan:0},drive:{drive:15},delay:{time:.3,feedback:.28},chorus:{rate:1.3,depth:.004},tremolo:{rate:5,depth:.45},compressor:{threshold:-20,ratio:4},out:{gain:.7},adsr:{attack:.02,decay:.2,sustain:.7,release:.35},lfo:{rate:2,depth:500},seq:{transpose:0,length:16,gate:.9},clock:{bpm:120},scope:{},meter:{}};
 const notions={wave:["Forme d'onde","La sinusoïde ne possède qu'une fréquence ; les formes carrée et en dent de scie contiennent des harmoniques.","Change la forme en maintenant une note et écoute le timbre.","Analyse de Fourier : un son complexe peut se décomposer en sinusoïdes."],detune:["Désaccordage","Le cent est un centième de demi-ton.","Essaie 7 cents puis 1200 cents.","f₂ = f₁ × 2^(cents / 1200)"],gain:["Amplitude","Le gain multiplie l'amplitude du signal.","Réduis le niveau avant d'ajouter une saturation.","Une multiplication par deux correspond à environ +6 dB."],cutoff:["Fréquence de coupure","La coupure détermine la zone de fréquences transmise ou atténuée.","Fais varier de 300 Hz à 5000 Hz sur une dent de scie.","La fréquence est mesurée en hertz : cycles par seconde."],q:["Résonance","Q décrit l'accentuation et la sélectivité autour de la fréquence de coupure.","Augmente Q lentement avec le filtre.","Un Q élevé crée un pic spectral."],attack:["Attaque","Durée de montée de l'enveloppe.","Compare 0,01 s et 1 s.","Phase A de ADSR."],decay:["Décroissance","Temps de descente vers le niveau de maintien.","Compare 0,05 s et 1 s.","Phase D de ADSR."],sustain:["Maintien","Niveau conservé tant que la note est tenue.","Compare 0,2 et 0,9.","Contrairement aux autres paramètres ADSR, c'est un niveau."],release:["Relâchement","Temps d'extinction après Note Off.","Compare 0,05 s et 2 s.","Phase R de ADSR."],rate:["Fréquence de modulation","Nombre de cycles de modulation par seconde.","Compare 0,5 et 8 Hz.","T = 1/f."],depth:["Profondeur","Intensité d'un effet ou d'une modulation.","Commence à zéro puis augmente progressivement.","Modulation = signal de commande × profondeur."],time:["Temps de retard","Durée entre un son et son écho.","Essaie 0,15 puis 0,5 seconde.","Distance temporelle entre signal direct et retardé."],feedback:["Rétroaction","Part du signal retardé renvoyée dans le délai.","Augmente progressivement, sans dépasser le niveau prudent.","Une boucle de rétroaction prolonge les répétitions."],drive:["Distorsion","Une fonction non linéaire ajoute des harmoniques.","Compare 0 et 70 sur une sinusoïde.","La saturation modifie le spectre du signal."],bpm:["Tempo","Nombre de battements par minute.","Compare 60 et 180 BPM.","Durée d'un battement = 60/BPM secondes."],pan:["Panoramique","Répartition entre canaux gauche et droit.","Passe de -1 à +1 au casque, à faible volume.","Spatialisation stéréophonique."],threshold:["Seuil","Niveau au-delà duquel la compression intervient.","Abaisse le seuil et observe la dynamique.","Niveau exprimé en dBFS."],ratio:["Ratio","Rapport de réduction de dynamique au-delà du seuil.","Compare 2:1 et 10:1.","Une compression 4:1 réduit 4 dB au-dessus du seuil à 1 dB."],transpose:["Transposition","Déplacement de la hauteur musicale en demi-tons.","Compare +12 et -12.","12 demi-tons = une octave."]};
+/* Fiches pédagogiques : une par type de module.
+   role : ce que fait le module. branche : où brancher. essayer : une expérience à faire.
+   retenir : la notion. repere : un repère historique ou concret pour aller plus loin. */
+const FICHES={
+osc:{
+  role:"Produit le son de départ : une onde qui se répète. Sa forme décide du timbre, la note jouée décide de la hauteur.",
+  branche:"Sortie OUT vers un mélangeur, un filtre ou OUTPUT. Entrée MOD : un LFO y fait varier la hauteur (vibrato).",
+  essayer:"Joue une note en changeant la forme : la sinusoïde est douce, le triangle un peu plus clair, la dent de scie et le carré sont riches en harmoniques. Puis règle le second VCO à 7 cents : les deux sons battent doucement et le timbre s'épaissit.",
+  retenir:"La hauteur est la fréquence de l'onde. Le timbre vient de sa forme, donc de ses harmoniques.",
+  repere:"VCO veut dire Voltage Controlled Oscillator, oscillateur commandé en tension. Sur les synthétiseurs modulaires des années 1960, la hauteur dépendait d'une tension électrique."},
+noise:{
+  role:"Produit un bruit blanc : toutes les fréquences y sont présentes avec la même énergie. Il n'a pas de hauteur précise.",
+  branche:"Sortie OUT vers un filtre ou un mélangeur.",
+  essayer:"Relie le bruit seul à un filtre passe-bande, puis balaie la fréquence centrale : tu entends le vent. Avec une enveloppe très courte, tu obtiens un charleston ou un souffle.",
+  retenir:"Le bruit sert aux sons sans hauteur : souffle, frottement, percussions. Le filtre lui donne une couleur.",
+  repere:"Les premières boîtes à rythmes fabriquaient leurs caisses claires et leurs cymbales à partir de bruit filtré."},
+sampler:{
+  role:"Sous-oscillateur : une onde une octave plus bas que la note jouée, pour renforcer les graves.",
+  branche:"Sortie OUT vers un mélangeur, avec un VCO.",
+  essayer:"Mélange-le à un VCO à la même forme d'onde, puis monte son niveau : le son gagne en poids sans changer de note.",
+  retenir:"Une octave plus bas, c'est une fréquence divisée par deux, soit moins 1200 cents.",
+  repere:"La basse des musiques électroniques repose souvent sur un sous-oscillateur ajouté à l'oscillateur principal."},
+filter:{
+  role:"Filtre passe-bas : laisse passer les fréquences graves et atténue celles qui sont au-dessus de la coupure.",
+  branche:"Entrée IN depuis un mélangeur ou un VCO, sortie OUT vers un VCA. Entrée MOD : un LFO ou une enveloppe ENV fait varier la coupure.",
+  essayer:"Joue une dent de scie et descends la coupure de 8000 à 300 Hz : le son s'assombrit. Monte la résonance : un pic apparaît autour de la coupure. Puis relie un LFO lent à MOD : c'est l'effet wah.",
+  retenir:"La synthèse soustractive part d'un son riche en harmoniques et en enlève avec un filtre.",
+  repere:"Le filtre en échelle de Robert Moog, au milieu des années 1960, a donné sa voix aux premiers synthétiseurs."},
+highpass:{
+  role:"Filtre passe-haut : coupe les fréquences graves, sous la fréquence réglée.",
+  branche:"Entrée IN, sortie OUT. Se place avant le VCA ou en fin de chaîne.",
+  essayer:"Fais passer une dent de scie grave et monte la coupure : le son devient mince, puis ne laisse plus que des sifflements.",
+  retenir:"Retirer les graves d'un son dégage la place pour un autre son plus grave dans le mélange.",
+  repere:"En studio, le passe-haut sert à enlever le bruit de manipulation et les grondements très graves."},
+bandpass:{
+  role:"Filtre passe-bande : ne laisse passer qu'une bande de fréquences autour du centre.",
+  branche:"Entrée IN, sortie OUT.",
+  essayer:"Envoie du bruit dans un passe-bande avec une résonance élevée, puis déplace le centre : tu fabriques un sifflement, ou une voyelle en réglant bien le centre.",
+  retenir:"Plus Q est grand, plus la bande est étroite et plus le son est pur.",
+  repere:"La voix humaine se décrit par des bandes de fréquences renforcées, les formants, que reproduisent des passe-bandes."},
+vca:{
+  role:"Amplificateur : règle le volume du signal. Avec une enveloppe, il dessine l'évolution du son dans le temps.",
+  branche:"Entrée IN, sortie OUT. Entrée MOD : l'enveloppe ENV de l'ADSR façonne le volume note par note, un LFO fait un trémolo.",
+  essayer:"Relie ENV de l'ADSR à MOD du VCA. Passe l'attaque de 0,005 s à 0,8 s : le son passe d'une percussion à une nappe.",
+  retenir:"Le VCA agit sur l'amplitude. Multiplier l'amplitude par deux ajoute environ 6 décibels.",
+  repere:"VCA veut dire Voltage Controlled Amplifier, amplificateur commandé en tension."},
+mixer:{
+  role:"Additionne plusieurs signaux en un seul.",
+  branche:"Plusieurs sorties vers IN, une sortie OUT vers la suite de la chaîne.",
+  essayer:"Relie deux VCO au mélangeur et accorde le second une quinte plus haut (700 cents) : tu obtiens un son plus large.",
+  retenir:"Additionner des signaux additionne leurs amplitudes : trop de niveau finit par saturer.",
+  repere:"Une console de mixage est un grand ensemble de mélangeurs et de réglages de niveau."},
+pan:{
+  role:"Panoramique : place le son entre l'enceinte gauche et l'enceinte droite.",
+  branche:"Entrée IN, sortie OUT, de préférence près de la sortie.",
+  essayer:"Place le son à gauche, puis à droite, avec un casque : tu entends la position changer.",
+  retenir:"Notre oreille situe un son grâce aux différences de niveau et de temps entre les deux oreilles.",
+  repere:"Les premiers disques stéréo des années 1950 et 1960 plaçaient parfois chaque instrument d'un seul côté."},
+drive:{
+  role:"Saturation : déforme le signal et ajoute des harmoniques.",
+  branche:"Entrée IN, sortie OUT. Se place avant le filtre pour un son qui mord, après pour un son plus dur.",
+  essayer:"Envoie une sinusoïde dans la saturation et monte l'intensité en regardant le spectre : de nouvelles raies apparaissent.",
+  retenir:"Une distorsion est une déformation non linéaire : elle crée des fréquences absentes du son d'origine.",
+  repere:"La guitare électrique saturée est née d'amplificateurs poussés au-delà de leur limite."},
+delay:{
+  role:"Écho : rejoue le son après un délai, avec un retour réglable.",
+  branche:"Entrée IN, sortie OUT. Se place en fin de chaîne.",
+  essayer:"Règle le temps à 0,3 s et le retour à 0,5, joue une note courte : les échos s'espacent et s'éteignent.",
+  retenir:"Le son parcourt environ 34 centimètres par milliseconde : un écho de 300 ms correspond à un mur situé à plus de 50 mètres.",
+  repere:"Les premiers échos étaient faits avec des bandes magnétiques : un enregistreur lisait ce qu'un autre venait d'enregistrer."},
+chorus:{
+  role:"Doublage : mélange le son avec une copie légèrement retardée, dont le retard oscille.",
+  branche:"Entrée IN, sortie OUT.",
+  essayer:"Applique-le à une sinusoïde et augmente la profondeur : le son semble joué par plusieurs instruments.",
+  retenir:"Faire varier un retard change un peu la hauteur de la copie, comme le passage d'une sirène devant soi.",
+  repere:"L'effet imite plusieurs instrumentistes jouant la même ligne, jamais exactement ensemble."},
+tremolo:{
+  role:"Trémolo : fait varier le volume de façon périodique.",
+  branche:"Entrée IN, sortie OUT.",
+  essayer:"Règle 5 Hz et une profondeur de 0,5 : le son pulse. Monte la vitesse : il devient rugueux.",
+  retenir:"Trémolo : le volume varie. Vibrato : la hauteur varie. On ne confond pas les deux.",
+  repere:"Les violonistes et les chanteurs font de légers vibratos, les guitaristes des trémolos avec la main ou l'amplificateur."},
+compressor:{
+  role:"Compresseur : réduit l'écart entre les sons forts et les sons faibles.",
+  branche:"Entrée IN, sortie OUT, de préférence en fin de chaîne.",
+  essayer:"Descends le seuil à moins 40 dB et monte le ratio : les notes fortes sont rabaissées, le son est plus régulier.",
+  retenir:"Avec un ratio de 4 pour 1, une montée de 4 décibels au-dessus du seuil ne donne qu'1 décibel en sortie.",
+  repere:"À la radio, le compresseur garde un niveau régulier pour que la musique reste audible dans le bruit d'une voiture."},
+out:{
+  role:"Sortie : envoie le signal vers les enceintes ou le casque.",
+  branche:"Entrée IN seulement. Toute chaîne audible doit finir ici.",
+  essayer:"Débranche le câble qui arrive à OUTPUT : le son disparaît. Le diagnostic te le signale.",
+  retenir:"Un patch est un chemin : source, traitements, sortie. Sans sortie, rien ne s'entend.",
+  repere:"Sur un synthétiseur modulaire, on vérifie toujours d'abord le chemin du signal jusqu'à la sortie."},
+adsr:{
+  role:"Enveloppe : décrit comment un son évolue de l'appui sur la touche à son extinction, en quatre étapes.",
+  branche:"Sortie ENV vers MOD d'un VCA (volume) ou d'un filtre (coupure). Entrée GATE : reliée au séquenceur, l'enveloppe ne se déclenche que sur ses pas.",
+  essayer:"Attaque 0,005 s, decay 0,12 s, maintien 0,15 : un son pincé. Attaque 0,8 s, relâchement 2,5 s : une nappe. Relie aussi ENV à un filtre : la couleur évolue avec le volume.",
+  retenir:"Attack, Decay, Release sont des durées. Sustain est un niveau.",
+  repere:"Cette enveloppe en quatre étapes est souvent attribuée à Vladimir Ussachevsky, compositeur et pionnier de la musique électronique, dans les années 1960."},
+lfo:{
+  role:"Oscillateur basse fréquence : il oscille trop lentement pour s'entendre et sert à faire varier un autre réglage.",
+  branche:"Sortie MOD vers MOD d'un filtre (wah), d'un VCA (trémolo) ou d'un oscillateur (vibrato).",
+  essayer:"Relie-le à un oscillateur avec une fréquence de 5 Hz : vibrato. Puis au filtre : wah. Puis au VCA : trémolo. C'est le même module pour trois effets.",
+  retenir:"Un LFO ne s'entend pas lui-même : on l'entend par ce qu'il modifie. La profondeur règle l'ampleur du changement.",
+  repere:"En dessous d'environ 20 Hz, on entend des battements séparés plutôt qu'une hauteur."},
+seq:{
+  role:"Séquenceur de 16 pas : joue une mélodie à chaque pas, au tempo réglé dans la barre du bas.",
+  branche:"Sortie GATE vers GATE d'une enveloppe : elle se déclenche alors sur chaque pas du séquenceur seulement, le clavier ne la déclenche plus.",
+  essayer:"Règle la durée à 0,3 pour des notes détachées, puis à 1 pour les lier. Mets la longueur à 12 pas : la boucle se décale par rapport à une boucle de 16.",
+  retenir:"Un pas est une double croche : à 120 BPM, un pas dure 125 millisecondes.",
+  repere:"Les séquenceurs analogiques des années 1960 et 1970 ont donné leur rythme régulier à la musique électronique."},
+clock:{
+  role:"Horloge globale : donne la pulsation.",
+  branche:"Sans prise. Le tempo se règle dans la barre du bas.",
+  essayer:"Change le tempo pendant que le séquenceur joue : tous les pas accélèrent ou ralentissent ensemble.",
+  retenir:"Le tempo se mesure en battements par minute : 120 BPM font deux battements par seconde.",
+  repere:"Le métronome mécanique, inventé au début du XIXe siècle, a donné ses repères de tempo aux compositeurs."},
+scope:{
+  role:"Oscilloscope : montre la forme de l'onde dans le temps.",
+  branche:"Sans prise. L'affichage est dans le panneau de droite.",
+  essayer:"Joue une note et change la forme du VCO : tu vois le dessin changer avant d'entendre la différence.",
+  retenir:"Une onde périodique répète le même dessin. Sa fréquence est le nombre de répétitions par seconde.",
+  repere:"Les oscilloscopes servent depuis les années 1940 à observer les signaux électriques, dont le son."},
+meter:{
+  role:"Indicateur de niveau : montre la force du signal.",
+  branche:"Sans prise. L'affichage est dans le panneau de droite.",
+  essayer:"Monte le niveau des sources : la barre monte. Surveille-la quand tu ajoutes une saturation.",
+  retenir:"Un niveau trop fort déforme le son. Il vaut mieux baisser avant la sortie.",
+  repere:"Les vumètres des studios ont longtemps été des aiguilles, lentes, plus proches de ce que perçoit l'oreille."}
+};
+Object.assign(notions,{
+  length:["Longueur de la boucle","Nombre de pas joués avant de revenir au début. Les pas au-delà sont grisés.","Passe de 16 à 12 pas : la boucle raccourcit et change de caractère.","Une boucle plus courte que la mesure crée un décalage qu'on appelle polymétrie."],
+  gate:["Durée de la note","Part du pas pendant laquelle la note est tenue. Le reste du pas est du silence.","Compare 0,2 (staccato) et 1 (legato).","Ce moment où la note est tenue s'appelle le gate."]
+});
+
 let nodes=[],edges=[],next=1,selected=null,selectedEdge=null,history=[],future=[],ctx=null,analyser=null,master=null,active=new Map(),running=false,timer=null,step=0,bpm=120;
 let pattern=[60,null,64,null,67,null,72,null,67,null,64,null,62,null,59,null];
 const noteNames=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
@@ -282,13 +425,11 @@ const FILTERS=["filter","highpass","bandpass"];
 function initAudio(){if(ctx){ctx.resume();return}ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=.7;analyser=ctx.createAnalyser();analyser.fftSize=2048;master.connect(analyser);analyser.connect(ctx.destination);status("Audio actif, "+ctx.sampleRate+" Hz")}
 function waveshape(amount){const n=4096,curve=new Float32Array(n),k=Math.max(0,amount)*2;for(let i=0;i<n;i++){const x=i*2/(n-1)-1;curve[i]=k===0?x:(1+k)*x/(1+k*Math.abs(x))}return curve}
 function processor(n,created,stoppables){const p=n.params;let input,output;const track=x=>{created.push(x);return x};if(["filter","highpass","bandpass"].includes(n.type)){input=track(ctx.createBiquadFilter());input.type=n.type==="filter"?"lowpass":n.type;input.frequency.value=p.cutoff;input.Q.value=p.q;output=input}else if(["vca","mixer","out"].includes(n.type)){input=track(ctx.createGain());input.gain.value=p.gain;output=input}else if(n.type==="pan"){input=track(ctx.createStereoPanner());input.pan.value=p.pan;output=input}else if(n.type==="drive"){input=track(ctx.createWaveShaper());input.curve=waveshape(p.drive);input.oversample="2x";output=input}else if(n.type==="delay"){input=track(ctx.createGain());const delay=track(ctx.createDelay(2)),fb=track(ctx.createGain()),sum=track(ctx.createGain());delay.delayTime.value=p.time;fb.gain.value=p.feedback;input.connect(sum);input.connect(delay);delay.connect(fb);fb.connect(delay);delay.connect(sum);output=sum}else if(n.type==="chorus"){input=track(ctx.createGain());const delay=track(ctx.createDelay(.1)),mix=track(ctx.createGain()),lfo=track(ctx.createOscillator()),depth=track(ctx.createGain());delay.delayTime.value=.02;depth.gain.value=p.depth;lfo.frequency.value=p.rate;lfo.connect(depth);depth.connect(delay.delayTime);lfo.start();stoppables.push(lfo);input.connect(mix);input.connect(delay);delay.connect(mix);output=mix}else if(n.type==="tremolo"){input=track(ctx.createGain());const amp=track(ctx.createGain()),osc=track(ctx.createOscillator()),depth=track(ctx.createGain());amp.gain.value=1-p.depth/2;depth.gain.value=p.depth/2;osc.frequency.value=p.rate;osc.connect(depth);depth.connect(amp.gain);osc.start();stoppables.push(osc);input.connect(amp);output=amp}else if(n.type==="compressor"){input=track(ctx.createDynamicsCompressor());input.threshold.value=p.threshold;input.ratio.value=p.ratio;output=input}return {input,output}}
-function panic(){for(const m of [...active.keys()])noteOff(m)}
-function refreshAudio(){/* New notes reflect current module settings. Active notes keep their voice graph. */}function renderSteps(){$("#steps").replaceChildren();pattern.forEach((m,i)=>{const b=document.createElement("button");b.textContent=m===null?"-":noteNames[m%12]+Math.floor(m/12-1);b.className=(m!==null?"on ":"")+(step===i&&running?"playing":"");b.title="Cliquer : changer la note ou activer/désactiver";b.onclick=()=>{checkpoint();pattern[i]=m===null?60:m>=72?null:m+2;renderSteps()};$("#steps").append(b)})}
-function tick(){const prev=(step+15)%16;if(pattern[prev]!==null)noteOff(pattern[prev]+(nodes.find(n=>n.type==="seq")?.params.transpose||0));const m=pattern[step];if(m!==null)noteOn(m+(nodes.find(n=>n.type==="seq")?.params.transpose||0));renderSteps();step=(step+1)%16}
-function sequencer(){if(running){clearInterval(timer);running=false;panic();$("#play").textContent="▶ Séquenceur";renderSteps();return}initAudio();running=true;step=0;tick();timer=setInterval(tick,60000/bpm/4);$("#play").textContent="❚❚ Pause"}$("#play").onclick=sequencer;$("#bpm").oninput=e=>{bpm=Number(e.target.value);$("#bpmText").textContent=bpm;if(running){clearInterval(timer);timer=setInterval(tick,60000/bpm/4)}};$("#start").onclick=initAudio;$("#stop").onclick=()=>{if(running)sequencer();panic();status("Toutes les notes arrêtées")};$("#undo").onclick=undo;$("#redo").onclick=redo;
-function noteOn(midi){
+let lastSeqNote=null,gateTimer=null;
+function noteOn(midi,from="key"){
   if(!ctx)initAudio();
-  if(active.has(midi))noteOff(midi);
+  const key=from+midi;
+  if(active.has(key))releaseVoice(key);
   const created=[],sources=[],stoppables=[],audioNodes=new Map(),reachable=new Set(),t0=ctx.currentTime;
   for(const n of nodes){const k=catalog[n.type].kind;if(k==="processor"||k==="output")audioNodes.set(n.id,processor(n,created,stoppables))}
   const toOut=id=>{if(reachable.has(id))return false;reachable.add(id);if(find(id)?.type==="out")return true;return edges.some(([a,b])=>a===id&&toOut(b))};
@@ -306,7 +447,8 @@ function noteOn(midi){
     for(const n of created){try{n.disconnect()}catch(e){}}
     status("Patch silencieux : relie une source à OUTPUT en passant par les modules voulus.");return;
   }
-  /* Modulation câblée : le LFO oscille autour de la valeur réglée, l'ADSR la façonne note par note */
+  /* Modulation câblée : le LFO oscille autour de la valeur réglée, l'ADSR la façonne note par note.
+     Une enveloppe dont l'entrée GATE est reliée au séquenceur ne se déclenche que sur les pas du séquenceur. */
   const env=[];
   for(const [a,b] of edges){
     const M=find(a),T=find(b),node=audioNodes.get(b);
@@ -319,6 +461,7 @@ function noteOn(midi){
       const o=ctx.createOscillator(),d=ctx.createGain();o.frequency.value=M.params.rate;d.gain.value=M.params.depth*scale;
       o.connect(d);d.connect(param);o.start();created.push(o,d);stoppables.push(o);
     }else if(M.type==="adsr"){
+      if(gatedBySeq(M.id)&&from!=="seq")continue;
       if(filt&&node.input)env.push({p:node.input.frequency,rest:T.params.cutoff,peak:Math.min(18000,T.params.cutoff*4),sus:Math.min(18000,T.params.cutoff*(1+3*M.params.sustain)),e:M.params});
       else if(T.type==="vca"&&node.input)env.push({p:node.input.gain,rest:0,peak:T.params.gain,sus:T.params.gain*M.params.sustain,e:M.params});
     }
@@ -327,17 +470,18 @@ function noteOn(midi){
     const a=Math.max(.005,x.e.attack),d=Math.max(.01,x.e.decay);
     x.p.cancelScheduledValues(t0);x.p.setValueAtTime(x.rest,t0);x.p.linearRampToValueAtTime(x.peak,t0+a);x.p.linearRampToValueAtTime(x.sus,t0+a+d);
   }
-  /* Sans ADSR branché, la première enveloppe du patch façonne le volume global, comme avant */
-  const legacy=env.length?undefined:nodes.find(n=>n.type==="adsr")?.params;
+  /* Sans ADSR branché sur un module, la première enveloppe libre façonne le volume global */
+  const legacy=env.length?undefined:nodes.find(n=>n.type==="adsr"&&!edges.some(e=>e[0]===n.id)&&(!gatedBySeq(n.id)||from==="seq"))?.params;
   const gate=ctx.createGain();gate.gain.setValueAtTime(0,t0);gate.gain.linearRampToValueAtTime(1,t0+.006);
   for(const n of nodes.filter(x=>x.type==="out"))audioNodes.get(n.id)?.output.connect(gate);
   gate.connect(master);created.push(gate);
   if(legacy){const a=Math.max(.005,legacy.attack);gate.gain.cancelScheduledValues(t0);gate.gain.setValueAtTime(0,t0);gate.gain.linearRampToValueAtTime(1,t0+a);gate.gain.linearRampToValueAtTime(legacy.sustain,t0+a+legacy.decay)}
-  active.set(midi,{created,sources,stoppables,gate,legacy,env});
-  status("Note "+midi+", "+sources.length+" source(s)"+(env.length?", "+env.length+" enveloppe(s) câblée(s)":""));
+  active.set(key,{created,sources,stoppables,gate,legacy,env});
+  status((from==="seq"?"Pas":"Note")+" "+midi+", "+sources.length+" source(s)"+(env.length?", "+env.length+" enveloppe(s) câblée(s)":""));
 }
-function noteOff(midi){
-  const v=active.get(midi);if(!v||!ctx)return;
+const gatedBySeq=id=>edges.some(g=>g[1]===id&&find(g[0])?.type==="seq");
+function releaseVoice(key){
+  const v=active.get(key);if(!v||!ctx)return;
   const t=ctx.currentTime;
   let release=v.legacy?.release??.08;
   if(v.env.length)release=Math.max(...v.env.map(x=>x.e.release));
@@ -345,8 +489,48 @@ function noteOff(midi){
   v.gate.gain.cancelScheduledValues(t);v.gate.gain.setValueAtTime(v.gate.gain.value,t);v.gate.gain.setTargetAtTime(0,t,Math.max(.01,release/4));
   for(const s of [...v.sources,...v.stoppables]){try{s.stop(t+release+.15)}catch(e){}}
   setTimeout(()=>{for(const n of v.created){try{n.disconnect()}catch(e){}}},(release+.3)*1000);
-  active.delete(midi);
+  active.delete(key);
 }
+function noteOff(midi,from="key"){releaseVoice(from+midi)}
+function panic(){for(const k of [...active.keys()])releaseVoice(k);lastSeqNote=null;clearTimeout(gateTimer)}
+function refreshAudio(){/* Les nouvelles notes prennent les réglages courants ; une note en cours garde son graphe. */}
+
+/* ---------- Séquenceur : 16 pas, longueur et durée de note réglables dans le module SEQ ---------- */
+const seqParams=()=>nodes.find(n=>n.type==="seq")?.params||{transpose:0,length:16,gate:.9};
+function renderSteps(){
+  const len=seqParams().length;
+  $("#steps").replaceChildren();
+  pattern.forEach((m,i)=>{
+    const b=document.createElement("button");b.type="button";
+    b.textContent=m===null?"-":noteNames[m%12]+Math.floor(m/12-1);
+    b.className=(m!==null?"on ":"")+(step===i&&running?"playing ":"")+(i>=len?"off":"");
+    b.title="Cliquer : changer la note ou activer ou désactiver le pas";
+    b.onclick=()=>{checkpoint();pattern[i]=m===null?60:m>=72?null:m+2;renderSteps()};
+    $("#steps").append(b);
+  });
+}
+function tick(){
+  const sp=seqParams(),len=Math.max(1,Math.round(sp.length)),dur=60000/bpm/4;
+  if(step>=len)step=0;
+  if(lastSeqNote!==null){noteOff(lastSeqNote,"seq");lastSeqNote=null}
+  clearTimeout(gateTimer);
+  const m=pattern[step];
+  if(m!==null){
+    const note=m+sp.transpose;noteOn(note,"seq");lastSeqNote=note;
+    gateTimer=setTimeout(()=>{noteOff(note,"seq");if(lastSeqNote===note)lastSeqNote=null},dur*Math.min(.98,sp.gate));
+  }
+  renderSteps();
+  step=(step+1)%len;
+}
+function sequencer(){
+  if(running){clearInterval(timer);running=false;panic();$("#play").textContent="▶ Séquenceur";renderSteps();return}
+  initAudio();running=true;step=0;tick();timer=setInterval(tick,60000/bpm/4);$("#play").textContent="❚❚ Pause";
+}
+$("#play").onclick=sequencer;
+$("#bpm").oninput=e=>{bpm=Number(e.target.value);$("#bpmText").textContent=bpm;if(running){clearInterval(timer);timer=setInterval(tick,60000/bpm/4)}};
+$("#start").onclick=initAudio;
+$("#stop").onclick=()=>{if(running)sequencer();panic();status("Toutes les notes arrêtées")};
+$("#undo").onclick=undo;$("#redo").onclick=redo;
 
 
 /* ---------- Famille, état, historique ---------- */
@@ -355,7 +539,7 @@ const family=t=>FAMILY[t]||"tool";
 function snap(){return JSON.stringify({nodes,edges,next,selected,pattern,bpm})}
 function checkpoint(){try{localStorage.setItem("sonora-synthe-autosave",snap())}catch(e){}history.push(snap());if(history.length>60)history.shift();future=[];historyUI()}
 function historyUI(){$("#undo").disabled=!history.length;$("#redo").disabled=!future.length}
-function restore(raw){panic();const d=JSON.parse(raw);nodes=d.nodes;edges=d.edges;next=d.next;selected=d.selected;selectedEdge=null;pattern=d.pattern;bpm=d.bpm;$("#bpm").value=bpm;$("#bpmText").textContent=bpm;render();renderSteps();historyUI()}
+function restore(raw){panic();const d=JSON.parse(raw);nodes=d.nodes;nodes.forEach(n=>{n.params={...defaults[n.type],...n.params}});edges=d.edges;next=d.next;selected=d.selected;selectedEdge=null;pattern=d.pattern;bpm=d.bpm;$("#bpm").value=bpm;$("#bpmText").textContent=bpm;render();renderSteps();historyUI()}
 function undo(){if(history.length){future.push(snap());restore(history.pop())}}
 function redo(){if(future.length){history.push(snap());restore(future.pop())}}
 function validPatch(d){
@@ -366,13 +550,17 @@ function validPatch(d){
 
 /* ---------- Règles de branchement ---------- */
 const isCvSrc=n=>n.type==="lfo"||n.type==="adsr";
-const hasOut=n=>{const k=catalog[n.type].kind;return k==="source"||k==="processor"||isCvSrc(n)};
+const isModSrc=n=>isCvSrc(n)||n.type==="seq";
+const kindOf=n=>n.type==="seq"?"gate":isCvSrc(n)?"cv":"audio";
+const hasOut=n=>{const k=catalog[n.type].kind;return k==="source"||k==="processor"||isModSrc(n)};
+const hasGateIn=n=>n.type==="adsr";
 const hasIn=n=>{const k=catalog[n.type].kind;return k==="processor"||k==="output"};
 const hasCv=n=>FILTERS.includes(n.type)||n.type==="vca"||n.type==="osc"||n.type==="sampler";
 const cvLabel=n=>FILTERS.includes(n.type)?"coupure":n.type==="vca"?"volume":"hauteur";
 function canConnect(a,b){
   const A=find(a),B=find(b);
   if(!A||!B||a===b||!hasOut(A)||edges.some(e=>e[0]===a&&e[1]===b))return false;
+  if(A.type==="seq")return B.type==="adsr";
   if(isCvSrc(A))return A.type==="adsr"?(FILTERS.includes(B.type)||B.type==="vca"):hasCv(B);
   return hasIn(B)&&!hasPath(b,a);
 }
@@ -440,10 +628,10 @@ function makeDial(n,key,meta,graph){
 }
 
 function jack(n,kind,side){
-  const j=document.createElement("button");j.type="button";j.className="jack "+side+(kind==="cv"?" cv":"");
+  const j=document.createElement("button");j.type="button";j.className="jack "+side+(kind!=="audio"?" "+kind:"");
   j.dataset.node=n.id;j.dataset.side=side;j.dataset.kind=kind;
-  j.setAttribute("aria-label",(side==="in"?"Entrée ":"Sortie ")+(kind==="cv"?"modulation":"audio")+" de "+catalog[n.type].name);
-  j.title=side==="in"?(kind==="cv"?"Entrée de modulation : "+cvLabel(n):"Entrée audio"):(kind==="cv"?(n.type==="adsr"?"Sortie d'enveloppe":"Sortie de modulation"):"Sortie audio");
+  j.setAttribute("aria-label",(side==="in"?"Entrée ":"Sortie ")+({cv:"modulation",gate:"déclenchement",audio:"audio"})[kind]+" de "+catalog[n.type].name);
+  j.title=kind==="gate"?(side==="in"?"Entrée de déclenchement : l'enveloppe suit le séquenceur":"Sortie de déclenchement : un signal à chaque pas"):side==="in"?(kind==="cv"?"Entrée de modulation : "+cvLabel(n):"Entrée audio"):(kind==="cv"?(n.type==="adsr"?"Sortie d'enveloppe":"Sortie de modulation"):"Sortie audio");
   j.addEventListener("pointerdown",e=>startLink(e,j));
   return j;
 }
@@ -475,15 +663,16 @@ function buildModule(n){
   }
   if(c.kind==="control"&&n.type!=="lfo"){
     const p=document.createElement("p");p.className="note";
-    p.textContent={adsr:edges.some(e=>e[0]===n.id)?"Façonne les modules reliés à sa prise ENV.":"Non branché : façonne le volume global. Relie ENV à un VCA ou à un filtre.",seq:"Séquenceur global, réglé dans la barre du bas.",clock:"Horloge globale, sans prise."}[n.type]||"Module global, sans prise.";
+    p.textContent={adsr:gatedBySeq(n.id)?"Déclenchée par le séquenceur. Les notes du clavier ignorent cette enveloppe.":edges.some(e=>e[0]===n.id)?"Façonne les modules reliés à sa prise ENV.":"Non branchée : façonne le volume global. Relie ENV à un VCA ou à un filtre.",seq:edges.some(e=>e[0]===n.id)?"Déclenche l'enveloppe reliée à GATE à chaque pas.":"Relie GATE à une enveloppe pour la déclencher à chaque pas. Les pas se règlent dans la barre du bas.",clock:"Horloge globale, sans prise."}[n.type]||"Module global, sans prise.";
     if(entries.length||n.type==="adsr"||n.type==="seq"||n.type==="clock")el.append(p);
   }
   const jacks=document.createElement("div");jacks.className="jacks";
   const left=document.createElement("div");left.style.display="flex";left.style.gap="10px";
   if(hasIn(n))left.append(jackGroup("IN",jack(n,"audio","in")));
+  if(hasGateIn(n))left.append(jackGroup("GATE",jack(n,"gate","in")));
   if(hasCv(n))left.append(jackGroup("MOD",jack(n,"cv","in")));
   const right=document.createElement("div");
-  if(hasOut(n))right.append(jackGroup(n.type==="adsr"?"ENV":n.type==="lfo"?"MOD":"OUT",jack(n,isCvSrc(n)?"cv":"audio","out")));
+  if(hasOut(n))right.append(jackGroup(n.type==="adsr"?"ENV":n.type==="lfo"?"MOD":n.type==="seq"?"GATE":"OUT",jack(n,kindOf(n),"out")));
   if(left.children.length||right.children.length){jacks.append(left,right);el.append(jacks)}
   el.addEventListener("pointerdown",()=>{if(selected!==n.id)selectNode(n.id,false)});
   return el;
@@ -494,6 +683,7 @@ function selectNode(id,rerender=true){
   inspect(find(id));drawWires();
 }
 function inspect(n){
+  renderFiche(n);
   const box=$("#inspector");box.replaceChildren();
   if(!n){const p=document.createElement("p");p.textContent="Clique un module pour le sélectionner.";box.append(p);return}
   const t=document.createElement("strong");t.textContent=catalog[n.type].name;
@@ -502,6 +692,17 @@ function inspect(n){
   const del=document.createElement("button");del.type="button";del.textContent="Supprimer";del.onclick=()=>removeNode(n.id);
   const dup=document.createElement("button");dup.type="button";dup.textContent="Dupliquer";dup.onclick=()=>duplicateNode(n);
   row.append(dup,del);box.append(t,p,row);
+}
+function renderFiche(n){
+  const box=$("#fiche");box.replaceChildren();
+  const f=n&&FICHES[n.type];
+  const h=document.createElement("h2");h.textContent="Fiche du module";box.append(h);
+  if(!f){const p=document.createElement("p");p.textContent="Sélectionne un module pour lire sa fiche.";box.append(p);return}
+  const title=document.createElement("strong");title.textContent=catalog[n.type].name;box.append(title);
+  for(const [label,key] of [["Rôle","role"],["Branchements","branche"],["À essayer","essayer"],["À retenir","retenir"],["Pour aller plus loin","repere"]]){
+    const l=document.createElement("span");l.className="fl";l.textContent=label;
+    const p=document.createElement("p");p.textContent=f[key];box.append(l,p);
+  }
 }
 function lesson(key){
   const d=notions[key]||["Réglage","Ce paramètre agit sur le traitement sonore.","Modifie sa valeur et écoute la différence.",""];
@@ -542,12 +743,12 @@ function placeVisible(n){
 function tidy(record=true){
   if(record)checkpoint();
   const depth={};
-  const audioEdges=edges.filter(([a])=>!isCvSrc(find(a)||{}));
+  const audioEdges=edges.filter(([a])=>!isModSrc(find(a)||{}));
   const d=id=>{if(depth[id]!==undefined)return depth[id];depth[id]=0;const ins=audioEdges.filter(e=>e[1]===id).map(e=>d(e[0])+1);return depth[id]=ins.length?Math.max(...ins):0};
-  const wired=n=>isCvSrc(n)&&edges.some(e=>e[0]===n.id);
-  const chain=nodes.filter(n=>(hasOut(n)&&!isCvSrc(n))||hasIn(n)||wired(n)),globals=nodes.filter(n=>!chain.includes(n));
+  const wired=n=>isModSrc(n)&&edges.some(e=>e[0]===n.id);
+  const chain=nodes.filter(n=>(hasOut(n)&&!isModSrc(n))||hasIn(n)||wired(n)),globals=nodes.filter(n=>!chain.includes(n));
   chain.forEach(n=>d(n.id));
-  for(const n of chain.filter(isCvSrc)){const t=edges.find(e=>e[0]===n.id);depth[n.id]=Math.max(0,(depth[t[1]]??1)-1)}
+  for(const n of chain.filter(isModSrc)){const t=edges.find(e=>e[0]===n.id);depth[n.id]=Math.max(0,(depth[t[1]]??1)-1)}
   const cols=new Map();
   for(const n of nodes){if(globals.includes(n))continue;const k=depth[n.id]??0;if(!cols.has(k))cols.set(k,[]);cols.get(k).push(n)}
   let bottom=0;
@@ -592,18 +793,18 @@ function curve(a,b){
   return "M"+a.x+" "+a.y+" C"+(a.x+60)+" "+low+" "+(b.x-60)+" "+low+" "+b.x+" "+b.y;
 }
 function el(name,attrs){const e=document.createElementNS(SVGNS,name);for(const k in attrs)e.setAttribute(k,attrs[k]);return e}
-const colorOf=(id,cv)=>cv?"var(--c-mod)":getComputedStyle($("#rack").querySelector('.module[data-id="'+id+'"]')||document.body).getPropertyValue("--fam")||"#aaa";
+const colorOf=(id,kind)=>kind==="cv"?"var(--c-mod)":kind==="gate"?"var(--c-seq)":getComputedStyle($("#rack").querySelector('.module[data-id="'+id+'"]')||document.body).getPropertyValue("--fam")||"#aaa";
 let linking=null,mouse=null;
 function drawWires(){
   const svg=$("#wires");svg.replaceChildren();
   for(const [a,b] of edges){
-    const cv=isCvSrc(find(a)||{});
-    const A=jackEl(a,"out",cv?"cv":"audio"),B=jackEl(b,"in",cv?"cv":"audio");
+    const kind=kindOf(find(a)||{type:""});
+    const A=jackEl(a,"out",kind),B=jackEl(b,"in",kind);
     if(!A||!B)continue;
     const pa=jackPos(A),pb=jackPos(B),d=curve(pa,pb),sel=selectedEdge&&selectedEdge[0]===a&&selectedEdge[1]===b;
-    const col=colorOf(a,cv);
+    const col=colorOf(a,kind);
     svg.append(el("path",{d,class:"shadow"}));
-    const c=el("path",{d,class:"cable"+(cv?" cv":"")+(sel?" sel":""),stroke:col,style:"color:"+col});svg.append(c);
+    const c=el("path",{d,class:"cable"+(kind==="audio"?"":" "+kind)+(sel?" sel":""),stroke:col,style:"color:"+col});svg.append(c);
     const hit=el("path",{d,class:"hit"});hit.addEventListener("click",ev=>{ev.stopPropagation();selectedEdge=[a,b];drawWires()});svg.append(hit);
     const L=hit.getTotalLength();if(L>90)hit.style.strokeDasharray="0 30 "+(L-60)+" 30";else hit.style.pointerEvents="none"; // les extrémités restent libres pour les prises
     if(sel){
@@ -686,7 +887,7 @@ document.addEventListener("pointerdown",e=>{const sb=$("#sidebar");if(sb.classLi
 const PRESETS={
   subtractive:{nodes:[["osc"],["osc",{wave:"square",detune:7}],["mixer"],["filter"],["vca"],["out"],["adsr"],["lfo",{rate:.4,depth:250}],["seq"]],edges:[[0,2],[1,2],[2,3],[3,4],[4,5],[7,3],[6,4]]},
   ambient:{nodes:[["osc",{wave:"sine",gain:.3}],["osc",{wave:"triangle",detune:5,gain:.25}],["noise",{gain:.04}],["mixer"],["filter",{cutoff:900,q:.7}],["chorus"],["delay",{time:.45,feedback:.5}],["vca"],["out"],["adsr",{attack:.8,decay:.6,sustain:.8,release:2.5}],["lfo",{rate:.15,depth:300}]],edges:[[0,3],[1,3],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[10,4],[9,7]]},
-  rhythm:{nodes:[["osc",{wave:"square",gain:.3}],["sampler"],["mixer"],["drive",{drive:30}],["filter",{cutoff:1400,q:4}],["vca"],["out"],["adsr",{attack:.005,decay:.12,sustain:.15,release:.1}],["lfo",{rate:4,depth:600}],["seq"]],edges:[[0,2],[1,2],[2,3],[3,4],[4,5],[5,6],[8,4],[7,5],[7,4]]}
+  rhythm:{nodes:[["osc",{wave:"square",gain:.3}],["sampler"],["mixer"],["drive",{drive:30}],["filter",{cutoff:1400,q:4}],["vca"],["out"],["adsr",{attack:.005,decay:.12,sustain:.15,release:.1}],["lfo",{rate:4,depth:600}],["seq",{gate:.4}]],edges:[[0,2],[1,2],[2,3],[3,4],[4,5],[5,6],[8,4],[7,5],[7,4],[9,7]]}
 };
 function loadPreset(name,record=true){
   if(record)checkpoint();panic();

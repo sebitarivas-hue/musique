@@ -1,11 +1,11 @@
 // TIMBRE : la salle de jeux de l'oreille. Sept jeux (le septième, Le mot juste, sur le lexique de l'Atlas), de vrais enregistrements de la banque du site, des questions tirées au hasard à chaque partie
 // (deux élèves côte à côte n'ont jamais la même série). La logique pure est dans jeu_logique.js, testée dans Node.
-import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=eb924f2079";
-import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=eb924f2079";
-import { preparer, mixer } from "../harmonie/echantillons.js?v=eb924f2079";
+import { UNIVERS, TOUS, parUnivers } from "./univers.js?v=07be5c1b87";
+import { NIVEAUX, MANCHES, creerQuestions, points, etoilesDe, niveauOuvert, creerIntrus, creerHautBas, ajouterMemoire, creerPaires, survieParams, niveauJoueur, titreJoueur } from "./jeu_logique.js?v=07be5c1b87";
+import { preparer, mixer } from "../harmonie/echantillons.js?v=07be5c1b87";
 import { monter } from "./scene.js?v=20261117c";
-import { questionsMots } from "./quiz_logique.js?v=eb924f2079";
-import { dessin } from "../orchestre/icones.js?v=eb924f2079";
+import { questionsMots } from "./quiz_logique.js?v=07be5c1b87";
+import { dessin } from "../orchestre/icones.js?v=07be5c1b87";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

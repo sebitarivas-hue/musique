@@ -5,7 +5,7 @@
 // Une case est « vide », « bloc » (un clip d'une mesure, aligné) ou « long » (un clip qui passe par cette mesure sans être un bloc : un enregistrement,
 // un fichier importé, un clip de plusieurs mesures ; on peut l'ouvrir mais pas le copier ni le vider d'ici).
 // Sans DOM : testé dans Node (tests/blocs.test.js).
-import * as P from "./projet.js?v=eb924f2079";
+import * as P from "./projet.js?v=07be5c1b87";
 
 export const MESURES_PAR_GROUPE = 4;
 const TOL = 0.002;   // secondes : l'écart toléré entre un clip et sa mesure (les calculs en secondes ne sont pas exacts)
