@@ -1,7 +1,7 @@
 // Bibliothèque de modules : signatures, documentation, état d'implémentation.
 // `impl` : le générateur de code sait produire ce module. Un module déclaré mais non implémenté est vérifié
 // (types, unités) mais refusé à la génération avec l'erreur E801 : on ne simule rien.
-import { ZERO, D_TEMPS, D_FREQ, D_PHASE, D_NIVEAU } from "./unites.js?v=d4460b62a7";
+import { ZERO, D_TEMPS, D_FREQ, D_PHASE, D_NIVEAU } from "./unites.js?v=48d9546040";
 
 const P = (nom, t, o = {}) => ({ nom, t, ...o });
 const sortie = (r, n = 1, d = ZERO) => ({ r, n, d });

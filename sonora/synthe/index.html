@@ -499,7 +499,7 @@ const reachesOut=id=>{const seen=new Set();const v=x=>{if(seen.has(x))return fal
 const soundOK=()=>N("osc").some(o=>reachesOut(o.id));
 const adsrTo=t=>N("adsr").filter(a=>edges.some(([x,y])=>x===a.id&&find(y)?.type===t));
 const lfoTo=ts=>N("lfo").filter(l=>edges.some(([x,y])=>x===l.id&&ts.includes(find(y)?.type)));
-const NIVEAUX_DEFIS=["Premiers pas","Sculpter le son","Composer avec le patch","Synthèse FM"];
+const NIVEAUX_DEFIS=["Premiers pas","Sculpter le son","Composer avec le patch","Synthèse FM","Projets"];
 const DEFIS=[
 {id:"premier-son",critere:"Un VCO relié à OUTPUT, puis une note jouée.",niveau:0,titre:"Entendre un premier son",
  but:"Faire sonner un oscillateur.",
@@ -598,7 +598,35 @@ const DEFIS=[
  consigne:["Relie FM à l'entrée MOD du VCO, et ENV de l'ADSR à MOD du VCA.","Choisis un rapport qui n'est pas un nombre entier (3,5 par exemple) et un indice de 3 ou plus.","Règle l'enveloppe : attaque 0,01 s ou moins, decay 0,8 s ou plus, maintien 0,1 ou moins, relâchement 1 s ou plus."],
  indice:"Une cloche est frappée d'un coup, puis résonne longtemps sans qu'on la tienne : l'attaque est brève et le maintien presque nul.",
  verifier:()=>N("fm").some(f=>edges.some(([a,b])=>a===f.id&&find(b)?.type==="osc")&&!Number.isInteger(f.params.ratio)&&f.params.index>=3)&&adsrTo("vca").some(a=>a.params.attack<=.01&&a.params.decay>=.8&&a.params.sustain<=.1&&a.params.release>=1)&&soundOK(),ecoute:"note",
- bilan:"Un rapport non entier crée des partiels qui ne sont pas multiples de la fondamentale : l'oreille n'entend plus de hauteur nette, comme pour une cloche ou un gong. L'enveloppe longue, sans maintien, laisse le son résonner puis s'éteindre."}
+ bilan:"Un rapport non entier crée des partiels qui ne sont pas multiples de la fondamentale : l'oreille n'entend plus de hauteur nette, comme pour une cloche ou un gong. L'enveloppe longue, sans maintien, laisse le son résonner puis s'éteindre."},
+{id:"basse",critere:"SUB et VCO reliés à la sortie, coupure du filtre à 700 Hz ou moins, ENV relié au VCA avec attaque de 0,01 s ou moins, decay de 0,4 s ou moins, maintien de 0,4 ou moins.",niveau:4,titre:"Une basse",
+ but:"Construire un son de basse : grave, plein et net.",
+ depart:{nodes:[["osc",{wave:"sawtooth"}],["sampler"],["mixer"],["filter",{cutoff:3000}],["vca"],["out"],["adsr",{attack:.2,decay:.8,sustain:.8,release:.3}]],edges:[[0,2],[2,3],[3,4],[4,5]]},
+ consigne:["Relie le SUB au mélangeur : il ajoute un son une octave plus bas.","Baisse la coupure du filtre à 700 Hz ou moins.","Relie ENV de l'ADSR à MOD du VCA, avec attaque 0,01 s ou moins, decay 0,4 s ou moins, maintien 0,4 ou moins.","Joue les notes les plus graves du clavier."],
+ indice:"Une basse n'a presque pas d'aigus : le filtre les retire. Une enveloppe courte la rend nette.",
+ verifier:()=>N("sampler").some(s=>reachesOut(s.id))&&N("osc").some(o=>reachesOut(o.id))&&N("filter").some(f=>f.params.cutoff<=700&&reachesOut(f.id))&&adsrTo("vca").some(a=>a.params.attack<=.01&&a.params.decay<=.4&&a.params.sustain<=.4),ecoute:"note",
+ bilan:"Une basse additionne un son principal et un sous-oscillateur une octave plus bas, assombris par un filtre. Une enveloppe courte la rend nette et percutante."},
+{id:"caisse-claire",critere:"Bruit relié à la sortie par un passe-bande centré entre 1000 et 3000 Hz ; ENV relié au VCA avec attaque de 0,005 s, decay de 0,08 à 0,25 s, maintien de 0,05 ou moins.",niveau:4,titre:"Une caisse claire",
+ but:"Fabriquer une percussion sans hauteur avec du bruit.",
+ depart:{nodes:[["noise",{gain:.5}],["bandpass",{cutoff:400,q:.5}],["vca"],["out"],["adsr",{attack:.1,decay:.6,sustain:.6,release:.4}]],edges:[[0,1],[1,2],[2,3]]},
+ consigne:["Relie ENV de l'ADSR à MOD du VCA.","Règle l'attaque à 0,005 s, le decay entre 0,08 et 0,25 s, le maintien à 0,05 ou moins.","Place le centre du passe-bande entre 1000 et 3000 Hz, puis joue."],
+ indice:"Une caisse claire est un coup de bruit très court, sans note : seule la couleur du filtre change d'un son à l'autre.",
+ verifier:()=>N("noise").some(n=>reachesOut(n.id))&&N("bandpass").some(b=>b.params.cutoff>=1000&&b.params.cutoff<=3000&&reachesOut(b.id))&&adsrTo("vca").some(a=>a.params.attack<=.005&&a.params.decay>=.08&&a.params.decay<=.25&&a.params.sustain<=.05),ecoute:"note",
+ bilan:"Les percussions sans hauteur sont faites de bruit. Le filtre choisit leur couleur, l'enveloppe leur durée."},
+{id:"charleston",critere:"Bruit relié à la sortie par un passe-haut de 5000 Hz ou plus ; ENV relié au VCA avec attaque de 0,005 s, decay de 0,08 s ou moins, maintien de 0,02 ou moins.",niveau:4,titre:"Un charleston",
+ but:"Fabriquer un son aigu, sec et très bref.",
+ depart:{nodes:[["noise",{gain:.4}],["highpass",{cutoff:300}],["vca"],["out"],["adsr",{attack:.05,decay:.5,sustain:.5,release:.3}]],edges:[[0,1],[1,2],[2,3]]},
+ consigne:["Relie ENV de l'ADSR à MOD du VCA.","Monte la coupure du passe-haut à 5000 Hz ou plus : il ne laisse que les aigus.","Règle l'attaque à 0,005 s, le decay à 0,08 s ou moins et le maintien à 0,02 ou moins."],
+ indice:"Plus le decay est court, plus le charleston est fermé. Essaie 0,3 s pour entendre un charleston ouvert.",
+ verifier:()=>N("noise").some(n=>reachesOut(n.id))&&N("highpass").some(h=>h.params.cutoff>=5000&&reachesOut(h.id))&&adsrTo("vca").some(a=>a.params.attack<=.005&&a.params.decay<=.08&&a.params.sustain<=.02),ecoute:"note",
+ bilan:"Un charleston est un bruit très aigu et très bref : le passe-haut retire les graves, l'enveloppe raccourcit le son."},
+{id:"morceau",critere:"SEQ relié à ADSR par GATE ; au moins 6 pas actifs sur 3 notes différentes ; une modulation (LFO ou FM branché) ou un effet (DELAY ou CHORUS dans la chaîne) ; huit pas écoutés.",niveau:4,titre:"Ton morceau",pas:8,
+ but:"Écrire une mélodie pour le séquenceur et ajouter une couleur de ton choix.",
+ depart:{nodes:[["osc"],["vca"],["out"],["adsr",{attack:.005,decay:.15,sustain:.3,release:.15}],["seq",{gate:.6}]],edges:[[0,1],[1,2],[3,1]],pattern:[60,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},
+ consigne:["Relie GATE du SEQ à GATE de l'ADSR.","Dans la barre du bas, touche les pas pour écrire ta mélodie : au moins six pas actifs, sur trois notes différentes.","Ajoute une couleur : un LFO ou une FM branchés, ou un DELAY ou un CHORUS dans la chaîne.","Lance le séquenceur et écoute au moins huit pas."],
+ indice:"Chaque touche sur un pas fait monter la note de deux demi-tons, puis éteint le pas. Un pas éteint est un silence.",
+ verifier:()=>soundOK()&&N("seq").some(s=>edges.some(([x,y])=>x===s.id&&find(y)?.type==="adsr"))&&pattern.filter(m=>m!==null).length>=6&&new Set(pattern.filter(m=>m!==null)).size>=3&&(N("lfo").some(l=>edges.some(e=>e[0]===l.id))||N("fm").some(f=>edges.some(e=>e[0]===f.id))||["delay","chorus"].some(t=>N(t).some(x=>reachesOut(x.id)))),ecoute:"seq",
+ bilan:"Tu as relié un séquenceur à une enveloppe, écrit une mélodie pas à pas et ajouté une couleur : c'est la structure d'un instrument électronique joué par une machine."}
 ];
 
 let played=0,playedSeq=0;
@@ -737,7 +765,7 @@ function renderSteps(){
     b.textContent=m===null?"-":noteNames[m%12]+Math.floor(m/12-1);
     b.className=(m!==null?"on ":"")+(step===i&&running?"playing ":"")+(i>=len?"off":"");
     b.title="Cliquer : changer la note ou activer ou désactiver le pas";
-    b.onclick=()=>{checkpoint();pattern[i]=m===null?60:m>=72?null:m+2;renderSteps()};
+    b.onclick=()=>{checkpoint();pattern[i]=m===null?60:m>=72?null:m+2;renderSteps();checkSoon()};
     $("#steps").append(b);
   });
 }
@@ -1085,18 +1113,29 @@ function startLink(e,j){
   if(linking&&linking.el===j){endLink();return}
   linking={el:j,side:j.dataset.side,tap:true};markTargets(true);
   const x0=e.clientX,y0=e.clientY;
+  /* Défilement automatique : en tirant un câble près du bord de la zone, le rack défile pour atteindre un module éloigné */
+  let ptr=null,raf=0;
+  const auto=()=>{
+    raf=0;if(!linking||linking.tap||!ptr)return;
+    const sc=$("#scroller"),r=sc.getBoundingClientRect(),M=44;let dx=0,dy=0;
+    if(ptr.y<r.top+M)dy=-Math.ceil((r.top+M-ptr.y)/4);else if(ptr.y>r.bottom-M)dy=Math.ceil((ptr.y-(r.bottom-M))/4);
+    if(ptr.x<r.left+M)dx=-Math.ceil((r.left+M-ptr.x)/4);else if(ptr.x>r.right-M)dx=Math.ceil((ptr.x-(r.right-M))/4);
+    if(dx||dy){sc.scrollBy(dx,dy);const rr=$("#rack").getBoundingClientRect();mouse={x:(ptr.x-rr.left)/zoom,y:(ptr.y-rr.top)/zoom};drawWires();raf=requestAnimationFrame(auto)}
+  };
   const move=ev=>{
     const rr=$("#rack").getBoundingClientRect();mouse={x:(ev.clientX-rr.left)/zoom,y:(ev.clientY-rr.top)/zoom};
-    if(Math.hypot(ev.clientX-x0,ev.clientY-y0)>6&&linking)linking.tap=false;drawWires();
+    if(Math.hypot(ev.clientX-x0,ev.clientY-y0)>6&&linking)linking.tap=false;
+    ptr={x:ev.clientX,y:ev.clientY};if(!raf&&linking&&!linking.tap)raf=requestAnimationFrame(auto);
+    drawWires();
   };
   const up=ev=>{
-    document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);document.removeEventListener("pointercancel",cancel);
+    document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);document.removeEventListener("pointercancel",cancel);cancelAnimationFrame(raf);
     if(!linking)return;
     if(linking.tap){status("Choisis maintenant une prise compatible (elles sont allumées)");return}
     const t=document.elementFromPoint(ev.clientX,ev.clientY)?.closest(".jack");
     if(!finishLink(t)){status(t?"Ces deux prises ne sont pas compatibles":"Câble lâché dans le vide");endLink()}
   };
-  const cancel=()=>{document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);document.removeEventListener("pointercancel",cancel);endLink()};
+  const cancel=()=>{cancelAnimationFrame(raf);document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);document.removeEventListener("pointercancel",cancel);endLink()};
   document.addEventListener("pointermove",move);document.addEventListener("pointerup",up);document.addEventListener("pointercancel",cancel);
 }
 $("#rack").addEventListener("pointerdown",e=>{if(e.target.closest(".module,.jack,.del"))return;let ch=false;if(selectedEdge){selectedEdge=null;ch=true}if(linking){endLink();return}if(ch)drawWires()});
@@ -1133,8 +1172,8 @@ function checkDefi(){
   let cond=false;try{cond=!!d.verifier()}catch(e){}
   if(!cond){dRun.armed=false;setDefiState("À construire.");return}
   if(!dRun.armed){dRun.armed=true;dRun.armedAt=played;dRun.armedSeq=playedSeq}
-  const heard=d.ecoute==="seq"?playedSeq-dRun.armedSeq>=4:played-dRun.armedAt>=1;
-  if(!heard){setDefiState(d.ecoute==="seq"?"Le patch est prêt. Lance le séquenceur et écoute quatre pas.":"Le patch est prêt. Joue une note pour valider.");return}
+  const need=d.pas||4,heard=d.ecoute==="seq"?playedSeq-dRun.armedSeq>=need:played-dRun.armedAt>=1;
+  if(!heard){setDefiState(d.ecoute==="seq"?"Le patch est prêt. Lance le séquenceur et écoute "+need+" pas.":"Le patch est prêt. Joue une note pour valider.");return}
   dRun.ok=true;dsave.done[d.id]=true;dWrite();renderDefiBar();status("Défi réussi : "+d.titre);
 }
 function nextDefi(){const i=DEFIS.findIndex(d=>d.id===dsave.cur);return DEFIS.slice(i+1).find(d=>!dsave.done[d.id])||DEFIS[i+1]||null}
@@ -1165,7 +1204,9 @@ function showDefiBar(on){$("#defiBar").hidden=!on;$("#togDefis").setAttribute("a
 function loadSpec(spec){
   checkpoint();panic();nodes=[];edges=[];next=1;
   const ids=spec.nodes.map(([type,params])=>{const id=type+(next++);nodes.push({id,type,x:0,y:0,params:{...defaults[type],...(params||{})}});return id});
-  edges=spec.edges.map(([a,b])=>[ids[a],ids[b]]);selected=ids[0];selectedEdge=null;render(true);
+  edges=spec.edges.map(([a,b])=>[ids[a],ids[b]]);selected=ids[0];selectedEdge=null;
+  if(spec.pattern)pattern=[...spec.pattern];
+  render(true);renderSteps();
 }
 function startDefi(id){
   const d=DEFIS.find(x=>x.id===id);if(!d)return;
@@ -1350,6 +1391,6 @@ buildCatalog();renderSteps();frame();
   applyPanneaux();
 }
 </script>
-<script src="../barre-cours.js?v=d4460b62a7"></script>
+<script src="../barre-cours.js?v=48d9546040"></script>
 </body>
 </html>

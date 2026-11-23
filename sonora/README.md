@@ -17,6 +17,7 @@ Contenu de ce dossier
 - PHASE7.md : bibliothèque de modules DSP : 14 modules livrés (écho, chorus, flanger, phaser, saturation, écrêtage, réverbération, panoramique, table d'onde, additive, niveau, rampe, ar, corde pincée).
 - PHASE8.md : création avancée du Studio : export WAV, lien de partage, clavier MIDI, séquenceur euclidien.
 - PHASE9.md : SONORA Library, 33 programmes mesurés, recherche, modules, projets. La page est dans `library/`.
+- synthe/ : le synthé modulaire, ouvert dès la 4e : on relie des modules par des câbles, 18 défis guidés, une fiche par module, une fiche professeur imprimable. La page est générée ; ses sources, son mode d'emploi et ses décisions ouvertes sont dans `outils/synthe/` (README.md).
 - CLASSE.md : le catalogue de la classe, des programmes d'élèves sans serveur ni compte (proposition, dépôt, classe.json).
 - PISTES.md : SONORA Pistes, le séquenceur audio (import, enregistrement au micro, montage, export WAV). La page est dans `pistes/`.
 - HARMONIE.md : SONORA Harmonie, le jeu d'harmonie (modes, accords, progressions, jeu d'oreille, composition). La page est dans `harmonie/`.
