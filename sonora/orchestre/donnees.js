@@ -69,7 +69,7 @@ export const INSTRUMENTS = [
   { id: "castagnettes", effectif: "1", visuels: 1, nom: "Castagnettes", fam: "percussions", rang: 4, g0: -12, g1: 12, banque: null, tess: null, mode: "bois entrechoqués",
     texte: "Deux petites coques de bois dur reliées par un cordon, que l'on fait claquer. Un claquement sec, qui évoque tout de suite l'Espagne. Sans hauteur précise." },
   { id: "blocsChinois", effectif: "1", visuels: 1, nom: "Blocs chinois", fam: "percussions", rang: 4, g0: 12, g1: 36, banque: null, coup: { banque: "blocs-chinois", duree: 1.0, notes: [60, 67, 72, 77] }, tess: null, mode: "blocs de bois frappés",
-    texte: "Des blocs de bois creux, de tailles différentes, alignés sur un support et frappés avec une baguette : un son sec et creux, d'autant plus grave que le bloc est grand. Sans hauteur précise." },
+    texte: "Des blocs de bois creux, de tailles différentes, alignés sur un support et frappés avec une baguette : un son sec et creux, d'autant plus grave que le bloc est grand. Sans hauteur précise. Ici, un seul wood block enregistré est joué plus ou moins vite pour faire entendre quatre blocs de tailles différentes : ce ne sont pas quatre vrais blocs." },
   { id: "fouet", effectif: "1", visuels: 1, nom: "Fouet", fam: "percussions", rang: 4, g0: 36, g1: 60, banque: null, coup: { banque: "fouet", duree: 1.0 }, tess: null, mode: "bois claqués",
     texte: "Deux planchettes de bois articulées que l'on referme d'un coup sec : le claquement imite le bruit d'un fouet. Sans hauteur précise." },
 ];

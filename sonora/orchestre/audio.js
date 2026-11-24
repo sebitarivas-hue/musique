@@ -1,24 +1,30 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=48d9546040";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=48d9546040";
+import { nomNote } from "./donnees.js?v=b4d8ee1b6e";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=b4d8ee1b6e";
 
-let ctx = null, sources = [];
+let ctx = null, sources = [], jeton = 0;
+// Une seule lecture compte : la dernière demandée. Chaque demande prend un numéro (`debut`) ; arrêter, ou demander autre chose, rend périmées celles qui sont encore en préparation.
+// Avant (rafale de clics sur les instruments, 24/11/2026) : huit rendus complets étaient calculés à la suite, chacun coupant le précédent, et l'écran se figeait sur un poste lent.
+export function arreter() { jeton++; for (const s of sources) { try { s.stop(); } catch (e) {} } sources = []; }
+export const debut = () => { arreter(); return jeton; };
+export const perimee = j => j !== jeton;
 export function message(t) { const e = document.getElementById("etat"); if (e) e.textContent = t; }
 export function contexte() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC(); } if (ctx.state === "suspended") ctx.resume(); return ctx; }
-export function arreter() { for (const s of sources) { try { s.stop(); } catch (e) {} } sources = []; }
 
 // Un tampon audio stéréo pour des notes (numéros MIDI) jouées par l'instrument. pas : durée entre notes (une gamme), sinon une note tenue.
-export async function rendre(inst, notes, pas) {
+export async function rendre(inst, notes, pas, j) {
   if (!inst.banque || !notes.length) return null;
   const c = contexte(), tampons = await preparer(inst.banque, c); if (!tampons) return null;
+  if (j !== undefined && perimee(j)) return null;   // une demande plus récente a pris la place : on ne calcule rien
   const tenue = inst.duree || 1.8, ev = notes.map((m, i) => ({ t: i * (pas || 0), duree: pas ? pas * 0.9 : tenue, notes: [m], vitesse: 0.8 }));   // inst.duree : un coup de tam-tam sonne plus longtemps qu'une note
   const lr = mixer(ev, tampons, { sr: c.sampleRate, instrument: inst.banque, duree: ev[ev.length - 1].t + (pas ? 0.8 + (inst.duree || 0) * 0.5 : tenue + 0.6) });
   const buf = c.createBuffer(2, lr[0].length, c.sampleRate); buf.copyToChannel(lr[0], 0); buf.copyToChannel(lr[1], 1); return buf;
 }
 // Les voix d'une fugue : chaque voix est rendue avec son instrument (evenements en secondes), puis les voix sont additionnées dans un seul tampon, sans écrêtage.
-export async function rendreMelodie(inst, evenements, duree) {
+export async function rendreMelodie(inst, evenements, duree, j) {
   if (!inst.banque || !evenements.length) return null; const c = contexte(), tampons = await preparer(inst.banque, c); if (!tampons) return null;
+  if (j !== undefined && perimee(j)) return null;
   return mixer(evenements, tampons, { sr: c.sampleRate, instrument: inst.banque, duree });
 }
 export function sommer(listes, duree) {
@@ -37,7 +43,7 @@ export function lire(parties, fin) {
 }
 // Une note tenue ou une gamme, d'un seul instrument (espace 01).
 export async function jouer(inst, notes, pas) {
-  if (!inst.banque || !notes.length) return; message("chargement de " + inst.nom.toLowerCase() + "…");
-  const buf = await rendre(inst, notes, pas); if (!buf) { message("les sons ne sont pas disponibles ici"); return; }
+  if (!inst.banque || !notes.length) return; const j = debut(); message("chargement de " + inst.nom.toLowerCase() + "…");
+  const buf = await rendre(inst, notes, pas, j); if (perimee(j)) return; if (!buf) { message("les sons ne sont pas disponibles ici"); return; }
   lire([{ buf }], () => message("prêt")); message(pas ? "gamme : " + nomNote(notes[0]) + " à " + nomNote(notes[notes.length - 1]) : nomNote(notes[0]));
 }

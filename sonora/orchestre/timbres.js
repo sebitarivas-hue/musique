@@ -1,8 +1,8 @@
 // SONORA Orchestre, espace 03 : reconnaître les timbres. Un test à l'aveugle (famille ou instrument, éventuellement tous sur la même note) et une comparaison de deux timbres sur la même note.
-import { FAMILLES, INSTRUMENTS, parId, nomNote } from "./donnees.js?v=48d9546040";
-import { POOL, POOL_IMAGE, MOTS_TIMBRE, etiquette, NOTE_COMMUNE, alea, creerQuestions, noteCommune, libelleChoix } from "./timbres_logique.js?v=48d9546040";
-import { registresDe_ } from "./audio_aide.js?v=48d9546040";
-import { rendre, lire, arreter, message, jouer } from "./audio.js?v=48d9546040";
+import { FAMILLES, INSTRUMENTS, parId, nomNote } from "./donnees.js?v=b4d8ee1b6e";
+import { POOL, POOL_IMAGE, MOTS_TIMBRE, etiquette, NOTE_COMMUNE, alea, creerQuestions, noteCommune, libelleChoix } from "./timbres_logique.js?v=b4d8ee1b6e";
+import { registresDe_ } from "./audio_aide.js?v=b4d8ee1b6e";
+import { rendre, lire, arreter, message, jouer, debut, perimee } from "./audio.js?v=b4d8ee1b6e";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -76,8 +76,8 @@ function comparaison() {
     return { a, b, m };
   };
   const jouer2 = async ensemble => {
-    const { a, b, m } = maj(); if (m === null) return; message("chargement…");
-    const [x, y] = await Promise.all([rendre(a, [m]), rendre(b, [m])]); if (!x || !y) { message("les sons ne sont pas disponibles ici"); return; }
+    const { a, b, m } = maj(); if (m === null) return; const j = debut(); message("chargement…");
+    const [x, y] = await Promise.all([rendre(a, [m], undefined, j), rendre(b, [m], undefined, j)]); if (perimee(j)) return; if (!x || !y) { message("les sons ne sont pas disponibles ici"); return; }
     lire([{ buf: x, delai: 0 }, { buf: y, delai: ensemble ? 0 : 2.2 }], () => message("prêt")); message(nomNote(m));
   };
   $("cmp-a").onchange = $("cmp-b").onchange = maj; $("cmp-suite").onclick = () => jouer2(false); $("cmp-ens").onclick = () => jouer2(true); $("cmp-stop").onclick = () => { arreter(); message("prêt"); };

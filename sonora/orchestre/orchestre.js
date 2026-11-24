@@ -1,14 +1,14 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=48d9546040";
-import { message, arreter, jouer, rendreMelodie, sommer, lire } from "./audio.js?v=48d9546040";
-import { monterTimbres } from "./timbres.js?v=48d9546040";
-import { monterFugue } from "./fugue.js?v=48d9546040";
-import { monterBritten } from "./britten.js?v=48d9546040";
-import { monterVariations } from "./variations.js?v=48d9546040";
-import { svgIcone, dessin } from "./icones.js?v=48d9546040";
-import { PHOTOS } from "./photos.js?v=48d9546040";
-import { FICHES } from "./fiches.js?v=48d9546040";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=b4d8ee1b6e";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=b4d8ee1b6e";
+import { monterTimbres } from "./timbres.js?v=b4d8ee1b6e";
+import { monterFugue } from "./fugue.js?v=b4d8ee1b6e";
+import { monterBritten } from "./britten.js?v=b4d8ee1b6e";
+import { monterVariations } from "./variations.js?v=b4d8ee1b6e";
+import { svgIcone, dessin } from "./icones.js?v=b4d8ee1b6e";
+import { PHOTOS } from "./photos.js?v=b4d8ee1b6e";
+import { FICHES } from "./fiches.js?v=b4d8ee1b6e";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -90,8 +90,9 @@ function majMelange() {
 }
 async function jouerMelange() {
   const parts = accordDeLaSelection(); if (!parts.length) { message("choisis d'abord des sections qui ont un enregistrement"); return; }
-  message("chargement de " + parts.length + " sections…"); const duree = 4.6;
-  const lr = await Promise.all(parts.map(p => rendreMelodie(p.inst, [{ t: 0, duree: 3.4, notes: [p.m], vitesse: 0.8 }], duree)));
+  const j = debut(); message("chargement de " + parts.length + " sections…"); const duree = 4.6;
+  const lr = await Promise.all(parts.map(p => rendreMelodie(p.inst, [{ t: 0, duree: 3.4, notes: [p.m], vitesse: 0.8 }], duree, j)));
+  if (perimee(j)) return;
   const buf = sommer(lr, duree); lire([{ buf }], () => message("prêt"));
   message("accord de do majeur : " + parts.map(p => (p.inst.id === "violons2" ? "seconds violons" : p.inst.nom.toLowerCase()) + " " + nomNote(p.m)).join(", "));
 }

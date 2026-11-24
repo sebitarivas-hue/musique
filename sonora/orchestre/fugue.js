@@ -1,11 +1,11 @@
 // SONORA Orchestre, espace 05 : construire une fugue. Le sujet et le contre-sujet s'écrivent sur une portée, avec un clavier de couleurs ; les voix entrent l'une après l'autre (sujet, réponse à la quinte, sujet à l'octave, réponse),
 // chacune avec l'instrument choisi, et le contre-sujet accompagne l'entrée suivante. Les sons sont ceux de la banque du site.
-import { parId, nomNote } from "./donnees.js?v=48d9546040";
-import { POOL, etiquette } from "./timbres_logique.js?v=48d9546040";
-import { PAS, SECTIONS, SUJET_EXEMPLE, VOIX_PAR_DEFAUT, caler, exposition, fugueComplete, frottements, evenementsVoix } from "./fugue_logique.js?v=48d9546040";
-import { htmlGlossaire } from "./fugue_glossaire.js?v=48d9546040";
-import { rendreMelodie, sommer, lire, arreter, message, contexte, jouer } from "./audio.js?v=48d9546040";
-import { htmlPortee, lierPortee } from "./portee.js?v=48d9546040";
+import { parId, nomNote } from "./donnees.js?v=b4d8ee1b6e";
+import { POOL, etiquette } from "./timbres_logique.js?v=b4d8ee1b6e";
+import { PAS, SECTIONS, SUJET_EXEMPLE, VOIX_PAR_DEFAUT, caler, exposition, fugueComplete, frottements, evenementsVoix } from "./fugue_logique.js?v=b4d8ee1b6e";
+import { htmlGlossaire } from "./fugue_glossaire.js?v=b4d8ee1b6e";
+import { rendreMelodie, sommer, lire, arreter, message, contexte, jouer, debut, perimee } from "./audio.js?v=b4d8ee1b6e";
+import { htmlPortee, lierPortee } from "./portee.js?v=b4d8ee1b6e";
 
 const $ = id => document.getElementById(id), CLE = "sonora.orchestre.fugue";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -52,8 +52,9 @@ function changer() {
 
 // ---------------------------------------------------------------- lecture
 async function jouerVoix(voix, total) {
-  arreter(); cancelAnimationFrame(etat.anim); message("chargement des instruments…"); const dt = 60 / etat.bpm, duree = total * dt + 1;
-  const lr = await Promise.all(voix.map(v => rendreMelodie(parId(v.instrument), evenementsVoix(v, etat.bpm), duree)));
+  const j = debut(); cancelAnimationFrame(etat.anim); message("chargement des instruments…"); const dt = 60 / etat.bpm, duree = total * dt + 1;
+  const lr = await Promise.all(voix.map(v => rendreMelodie(parId(v.instrument), evenementsVoix(v, etat.bpm), duree, j)));
+  if (perimee(j)) return;
   if (lr.every(x => !x)) { message("les sons ne sont pas disponibles ici"); return; }
   const buf = sommer(lr, duree), t0 = lire([{ buf }], () => { cancelAnimationFrame(etat.anim); const t = $("tete"); if (t) t.setAttribute("visibility", "hidden"); message("prêt"); });
   message("la fugue joue"); const tete = $("tete"), c = contexte();

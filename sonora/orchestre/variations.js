@@ -1,11 +1,11 @@
 // SONORA Orchestre, espace 04 : comprendre les variations. On part d'un thème (celui de l'élève, sinon le sujet d'exemple) et on le transforme de huit façons ; chaque variation s'écoute avec l'instrument de son choix,
 // après le thème, pour entendre à la fois ce qui change (la forme) et ce qui reste (l'identité). Le Rondeau de Purcell, thème de Britten, s'ajoutera quand une partition libre sera dans le dépôt.
-import { FAMILLES, parId, nomNote } from "./donnees.js?v=48d9546040";
-import { POOL, etiquette } from "./timbres_logique.js?v=48d9546040";
-import { caler, PAS } from "./fugue_logique.js?v=48d9546040";
-import { SUJET_EXEMPLE, melodie, TRANSFORMATIONS, FAMILLES_THEME, dureeTemps, evenements } from "./variations_logique.js?v=48d9546040";
-import { liensEcoute } from "./ecoutes.js?v=48d9546040";
-import { rendreMelodie, sommer, lire, arreter, message } from "./audio.js?v=48d9546040";
+import { FAMILLES, parId, nomNote } from "./donnees.js?v=b4d8ee1b6e";
+import { POOL, etiquette } from "./timbres_logique.js?v=b4d8ee1b6e";
+import { caler, PAS } from "./fugue_logique.js?v=b4d8ee1b6e";
+import { SUJET_EXEMPLE, melodie, TRANSFORMATIONS, FAMILLES_THEME, dureeTemps, evenements } from "./variations_logique.js?v=b4d8ee1b6e";
+import { liensEcoute } from "./ecoutes.js?v=b4d8ee1b6e";
+import { rendreMelodie, sommer, lire, arreter, message, debut, perimee } from "./audio.js?v=b4d8ee1b6e";
 
 const $ = id => document.getElementById(id), CLE_FUGUE = "sonora.orchestre.fugue";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -18,12 +18,12 @@ function mini(a, b) {   // deux lignes superposées : le thème en gris, la vari
   const r = (n, cl) => '<rect class="' + cl + '" x="' + (4 + n.t / T * (W - 8)).toFixed(1) + '" y="' + (4 + (hi - n.m) * h).toFixed(1) + '" width="' + Math.max(1.5, n.d / T * (W - 8) - 1).toFixed(1) + '" height="' + Math.max(2, h - 1).toFixed(1) + '"/>';
   return '<svg class="mini" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Le thème en gris et la variation en couleur, superposés">' + a.map(n => r(n, "m-theme")).join("") + b.map(n => r(n, "m-var")).join("") + "</svg>";
 }
-async function tampon(instId, mel, bpm) {
+async function tampon(instId, mel, bpm, j) {
   const inst = parId(instId), cal = caler(mel.map(n => n.m), inst), dt = 60 / bpm, duree = dureeTemps(mel) * dt + 1.2;
-  const lr = await rendreMelodie(inst, evenements(mel, bpm, cal.decalage), duree); return lr ? { buf: sommer([lr], duree), duree } : null;
+  const lr = await rendreMelodie(inst, evenements(mel, bpm, cal.decalage), duree, j); return lr ? { buf: sommer([lr], duree), duree } : null;
 }
 async function jouerSuite(parties) {   // parties : [{ inst, mel }] jouées l'une après l'autre
-  arreter(); message("chargement…"); const rendus = []; for (const p of parties) { const t = await tampon(p.inst, p.mel, etat.bpm); if (!t) { message("les sons ne sont pas disponibles ici"); return; } rendus.push(t); }
+  const j = debut(); message("chargement…"); const rendus = []; for (const p of parties) { const t = await tampon(p.inst, p.mel, etat.bpm, j); if (perimee(j)) return; if (!t) { message("les sons ne sont pas disponibles ici"); return; } rendus.push(t); }
   let delai = 0; const lectures = rendus.map(t => { const x = { buf: t.buf, delai }; delai += t.duree - 0.4; return x; });
   lire(lectures, () => message("prêt")); message("à l'écoute");
 }
