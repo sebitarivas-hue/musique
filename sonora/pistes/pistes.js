@@ -1,36 +1,36 @@
 // SONORA Pistes : séquenceur audio. Les sons sont importés (glisser-déposer, sélecteur de fichiers), enregistrés au micro, ou rendus depuis la Library.
 // La lecture et l'export WAV construisent le même graphe Web Audio (construire) : ce que l'on entend est ce que l'on exporte.
-import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=d02336debb";
-import * as Ed from "./editions.js?v=d02336debb";
-import * as P from "./projet.js?v=d02336debb";
-import * as TR from "./transport.js?v=d02336debb";
-import { Stockage } from "./stockage.js?v=d02336debb";
-import { creerBouton } from "./bouton.js?v=d02336debb";
-import * as MI from "./midi.js?v=d02336debb";
-import * as N from "./notes.js?v=d02336debb";
-import { Rouleau } from "./rouleau.js?v=d02336debb";
-import { PanneauPartition } from "./partition/panneau.js?v=d02336debb";
-import { separer, NOMS_PARTIES } from "./separation.js?v=d02336debb";
-import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=d02336debb";
-import * as BM from "./batterie_midi.js?v=d02336debb";
-import { detecterTempo, etirerCanaux } from "./tempo.js?v=d02336debb";
-import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=d02336debb";
-import * as INS from "./instruments.js?v=d02336debb";
-import { lirePartition, depuisMusicXml } from "./musicxml.js?v=d02336debb";
-import * as OMR from "./omr.js?v=d02336debb";
-import { creerConsole } from "./console.js?v=d02336debb";
-import { creerVueBlocs } from "./blocs-ui.js?v=d02336debb";
-import { creerMaster } from "./master.js?v=d02336debb";
-import { rendreSuiteEch } from "../harmonie/echantillons.js?v=d02336debb";
-import * as MO from "./moteurs.js?v=d02336debb";
-import { monterPanneaux } from "./panneaux.js?v=d02336debb";
-import { monterNotions } from "./notions.js?v=d02336debb";
-import { DEMOS } from "./demos.js?v=d02336debb";
-import * as B from "./bibliotheque.js?v=d02336debb";
-import { encoderWAV } from "../studio/wav.js?v=d02336debb";
-import { ENTREES } from "../library/catalogue.js?v=d02336debb";
-import { compiler } from "../src/index.js?v=d02336debb";
-import { rendre } from "../src/rendu.js?v=d02336debb";
+import { COMMANDES, MENUS, commandePour, affichage } from "./commandes.js?v=6a08b0b0dc";
+import * as Ed from "./editions.js?v=6a08b0b0dc";
+import * as P from "./projet.js?v=6a08b0b0dc";
+import * as TR from "./transport.js?v=6a08b0b0dc";
+import { Stockage } from "./stockage.js?v=6a08b0b0dc";
+import { creerBouton } from "./bouton.js?v=6a08b0b0dc";
+import * as MI from "./midi.js?v=6a08b0b0dc";
+import * as N from "./notes.js?v=6a08b0b0dc";
+import { Rouleau } from "./rouleau.js?v=6a08b0b0dc";
+import { PanneauPartition } from "./partition/panneau.js?v=6a08b0b0dc";
+import { separer, NOMS_PARTIES } from "./separation.js?v=6a08b0b0dc";
+import { separerStems, creerMoteurORT, modelesEnCache, NOMS_STEMS, STEMS, TAILLE_MODELES_MO, DUREE_MAX as DUREE_MAX_STEMS } from "./stems.js?v=6a08b0b0dc";
+import * as BM from "./batterie_midi.js?v=6a08b0b0dc";
+import { detecterTempo, etirerCanaux } from "./tempo.js?v=6a08b0b0dc";
+import { Clavier, brancher as brancherMidi } from "../studio/midi.js?v=6a08b0b0dc";
+import * as INS from "./instruments.js?v=6a08b0b0dc";
+import { lirePartition, depuisMusicXml } from "./musicxml.js?v=6a08b0b0dc";
+import * as OMR from "./omr.js?v=6a08b0b0dc";
+import { creerConsole } from "./console.js?v=6a08b0b0dc";
+import { creerVueBlocs } from "./blocs-ui.js?v=6a08b0b0dc";
+import { creerMaster } from "./master.js?v=6a08b0b0dc";
+import { rendreSuiteEch } from "../harmonie/echantillons.js?v=6a08b0b0dc";
+import * as MO from "./moteurs.js?v=6a08b0b0dc";
+import { monterPanneaux } from "./panneaux.js?v=6a08b0b0dc";
+import { monterNotions } from "./notions.js?v=6a08b0b0dc";
+import { DEMOS } from "./demos.js?v=6a08b0b0dc";
+import * as B from "./bibliotheque.js?v=6a08b0b0dc";
+import { encoderWAV } from "../studio/wav.js?v=6a08b0b0dc";
+import { ENTREES } from "../library/catalogue.js?v=6a08b0b0dc";
+import { compiler } from "../src/index.js?v=6a08b0b0dc";
+import { rendre } from "../src/rendu.js?v=6a08b0b0dc";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)
@@ -73,7 +73,7 @@ function reponseSalle(ctx, duree) {
 let FAUST = null, NREV = 0;
 async function usineReverb() {
   if (!FAUST) FAUST = (async () => {
-    const fw = await import("./faust/faustwasm.js?v=d02336debb"), base = new URL("./faust/reverb/", import.meta.url);
+    const fw = await import("./faust/faustwasm.js?v=6a08b0b0dc"), base = new URL("./faust/reverb/", import.meta.url);
     const json = await (await fetch(new URL("dsp-meta.json", base))).text(), module = await WebAssembly.compile(await (await fetch(new URL("dsp-module.wasm", base))).arrayBuffer());
     const adresses = {}; (function w(l) { for (const i of l) i.items ? w(i.items) : (adresses[i.shortname || i.label] = i.address); })(JSON.parse(json).ui);
     return { fw, fac: { module, json, soundfiles: {} }, adresses };

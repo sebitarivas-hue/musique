@@ -1,16 +1,16 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=d02336debb";
-import { ACCORDS, voicerAccord } from "./accord.js?v=d02336debb";
-import { EXEMPLES } from "./exemples.js?v=d02336debb";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=d02336debb";
-import { monterTimbres } from "./timbres.js?v=d02336debb";
-import { monterFugue } from "./fugue.js?v=d02336debb";
-import { monterBritten } from "./britten.js?v=d02336debb";
-import { monterVariations } from "./variations.js?v=d02336debb";
-import { svgIcone, dessin } from "./icones.js?v=d02336debb";
-import { PHOTOS } from "./photos.js?v=d02336debb";
-import { FICHES } from "./fiches.js?v=d02336debb";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=6a08b0b0dc";
+import { ACCORDS, voicerAccord } from "./accord.js?v=6a08b0b0dc";
+import { EXEMPLES } from "./exemples.js?v=6a08b0b0dc";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=6a08b0b0dc";
+import { monterTimbres } from "./timbres.js?v=6a08b0b0dc";
+import { monterFugue } from "./fugue.js?v=6a08b0b0dc";
+import { monterBritten } from "./britten.js?v=6a08b0b0dc";
+import { monterVariations } from "./variations.js?v=6a08b0b0dc";
+import { svgIcone, dessin } from "./icones.js?v=6a08b0b0dc";
+import { PHOTOS } from "./photos.js?v=6a08b0b0dc";
+import { FICHES } from "./fiches.js?v=6a08b0b0dc";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -22,7 +22,7 @@ function visuel(id, t, titre) {
   return '<img class="photo" src="photos/' + p.f + '" width="' + Math.round(p.w * k) + '" height="' + Math.round(p.h * k) + '" alt="' + esc(titre || "") + '">';
 }
 function imageSvg(id) { const p = PHOTOS[id], k = 100 / Math.max(p.w, p.h), w = p.w * k, h = p.h * k; return '<image class="photo-svg" href="photos/' + p.f + '" x="' + (50 - w / 2).toFixed(1) + '" y="' + (50 - h / 2).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '"/>'; }
-const etat = { melange: [], accord: "do", choix: null, famille: null, vue: "plan", note: null };
+const etat = { melange: [], accord: "do", jeu: "arco", choix: null, famille: null, vue: "plan", note: null };
 // ---------------------------------------------------------------- le plan
 // Les dessins d'une section, posés en grille polaire dans son secteur, debout, la tête vers l'extérieur (les musiciens font face au chef).
 function iconesDuSecteur(i) {
@@ -74,11 +74,18 @@ function dessinerTessitures() {
 
 // ---------------------------------------------------------------- le mélange : des sections choisies sur le plan jouent ensemble un accord de do majeur
 const PRESETS = { cordes: i => i.fam === "cordes", bois: i => i.fam === "bois", cuivres: i => i.fam === "cuivres", tout: () => true };
+// La version jouée d'un instrument : à l'archet, son enregistrement ; en pizzicato, sa banque pincée (ou rien, s'il n'en a pas).
+function versionJeu(i) {
+  if (!i) return null;
+  if (etat.jeu !== "pizz") return jouables(i) ? i : null;
+  return PIZZICATO[i.id] ? { ...i, banque: PIZZICATO[i.id] } : null;
+}
+function jouable(i) { const v = versionJeu(i); return !!(v && jouables(v)); }
 function accordDeLaSelection() {   // les instruments choisis, du grave à l'aigu : chacun joue une note de l'accord choisi, jamais à l'unisson d'un autre
-  return voicerAccord(INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && jouables(i)), undefined, ACCORDS[etat.accord]);
+  return voicerAccord(INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && jouable(i)).map(versionJeu), undefined, ACCORDS[etat.accord]);
 }
 function majMelange() {
-  const n = etat.melange.length, muets = etat.melange.filter(id => !jouables(parId(id)));
+  const n = etat.melange.length, muets = etat.melange.filter(id => !jouable(parId(id)));
   $("m-etat").textContent = n ? n + (n > 1 ? " sections choisies" : " section choisie") + (muets.length ? " (" + muets.length + " sans enregistrement, ignorée" + (muets.length > 1 ? "s" : "") + ")" : "") + "." : "Aucune section choisie.";
   document.querySelectorAll(".sect").forEach(g => g.classList.toggle("dans-melange", etat.melange.indexOf(g.dataset.id) >= 0));
   document.querySelectorAll(".sect").forEach(g => g.setAttribute("aria-pressed", String(etat.melange.indexOf(g.dataset.id) >= 0)));
@@ -89,19 +96,21 @@ async function jouerMelange() {
   const lr = await Promise.all(parts.map(p => rendreMelodie(p.inst, [{ t: 0, duree: 3.4, notes: [p.m], vitesse: 0.8 }], duree, j)));
   if (perimee(j)) return;
   const buf = sommer(lr, duree); lire([{ buf }], () => message("prêt"));
-  const sans = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && jouables(i) && !parts.some(p => p.inst.id === i.id)).map(i => i.nom.toLowerCase());
-  message("accord de " + ACCORDS[etat.accord].nom + " : " + parts.map(p => (p.inst.id === "violons2" ? "seconds violons" : p.inst.nom.toLowerCase()) + " " + nomNote(p.m)).join(", ") + (sans.length ? ". Sans note dans l'accord, faute de hauteur libre sans unisson : " + sans.join(", ") : ""));
+  const sans = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && !parts.some(p => p.inst.id === i.id)).map(i => i.nom.toLowerCase());
+  message("accord de " + ACCORDS[etat.accord].nom + (etat.jeu === "pizz" ? " en pizzicato" : "") + " : " + parts.map(p => (p.inst.id === "violons2" ? "seconds violons" : p.inst.nom.toLowerCase()) + " " + nomNote(p.m)).join(", ") + (sans.length ? ". Sans note dans l'accord, faute de hauteur libre sans unisson : " + sans.join(", ") : ""));
 }
+function setJeu(jeu) { etat.jeu = jeu; $("m-pizz").setAttribute("aria-pressed", String(jeu === "pizz")); majMelange(); }
 function brancherMelange() {
   document.querySelectorAll("[data-preset]").forEach(b => { b.onclick = () => { etat.melange = INSTRUMENTS.filter(PRESETS[b.dataset.preset]).filter(i => jouables(i)).map(i => i.id); majMelange(); jouerMelange(); }; });
   $("m-vider").onclick = () => { etat.melange = []; majMelange(); arreter(); };
   $("m-jouer").onclick = jouerMelange;
   $("m-accord").onchange = e => { etat.accord = e.target.value; };
+  $("m-pizz").onclick = () => { setJeu(etat.jeu === "pizz" ? "arco" : "pizz"); };
   $("exemples").insertAdjacentHTML("beforeend", EXEMPLES.map(x => '<button type="button" data-exemple="' + x.id + '">' + esc(x.titre) + "</button>").join(""));
   document.querySelectorAll("[data-exemple]").forEach(b => { b.onclick = () => {
     const ex = EXEMPLES.find(x => x.id === b.dataset.exemple); if (!ex) return;
     etat.melange = (ex.ids === "tout" ? INSTRUMENTS.filter(i => jouables(i)) : ex.ids.map(parId)).filter(Boolean).map(i => i.id);
-    etat.accord = ex.accord; $("m-accord").value = ex.accord;
+    etat.accord = ex.accord; $("m-accord").value = ex.accord; setJeu(ex.jeu || "arco");
     majMelange(); $("m-exemple").textContent = ex.titre + ". " + ex.ecoute + " " + ex.repere;
     jouerMelange();
   }; });

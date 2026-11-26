@@ -1,7 +1,7 @@
 // SONORA Orchestre : des exemples d'orchestration à écouter (sans DOM, testé dans Node).
 // Chaque exemple choisit des instruments du plan et un accord ; l'accord est joué avec la règle de accord.js (pas d'unisson).
 // `ids` : les instruments (identifiants de donnees.js), ou "tout" pour tout l'orchestre qui a un son. `accord` : une clé de ACCORDS.
-// `ecoute` : ce qu'on entend ; `repere` : le point à observer. Les consignes décrivent ce qui s'entend dans la version jouée ici, pas une analyse de partition.
+// `jeu` : "pizz" pour le pizzicato (absent : à l'archet). `ecoute` : ce qu'on entend ; `repere` : le point à observer. Les consignes décrivent ce qui s'entend dans la version jouée ici, pas une analyse de partition.
 export const EXEMPLES = [
   { id: "cordes", titre: "Les cordes, du grave à l'aigu", accord: "do", ids: ["contrebasses", "violoncelles", "altos", "violons2", "violons1"],
     ecoute: "Une masse chaude et continue : les cinq pupitres de cordes jouent ensemble, un accord de do majeur.",
@@ -24,6 +24,9 @@ export const EXEMPLES = [
   { id: "percussions", titre: "Un accord frappé : timbales, cloches, xylophone", accord: "do", ids: ["timbales", "cloches", "xylophone"],
     ecoute: "Des instruments qu'on frappe : la note est précise, mais elle s'éteint vite.",
     repere: "Compare la durée de ces notes avec celle des cordes, qui se prolongent." },
+  { id: "pizz", titre: "Pizzicato : les cordes pincées", accord: "do", jeu: "pizz", ids: ["contrebasses", "violoncelles", "violons2", "violons1"],
+    ecoute: "Les cordes pincées : chaque note s'éteint vite, et l'accord devient une suite de pincements.",
+    repere: "Compare avec l'exemple « Les cordes » : même accord, même instruments, autre attaque." },
   { id: "tutti", titre: "Le tutti : tout l'orchestre sur do majeur", accord: "do", ids: "tout",
     ecoute: "Tous les instruments qui ont un son jouent ensemble : chaque instrument a sa propre note.",
     repere: "Écoute la masse : elle se construit à partir des timbres, et non d'un seul son répété." },

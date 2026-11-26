@@ -110,3 +110,7 @@ export function centre(inst, cx = 500, cy = 540) {
   const [r0, r1] = ANNEAUX[inst.rang], r = (r0 + r1) / 2, a = (inst.g0 + inst.g1) / 2 * Math.PI / 180;
   return [cx + r * Math.sin(a), cy - r * Math.cos(a)];
 }
+
+// Le pizzicato : la banque d'échantillons qui remplace celle de l'archet quand le jeu est pincé. Mêmes tessitures que l'archet (vérifié par les tests).
+// Les altos n'ont pas de pizzicato dans la banque : en mode pizzicato, ils sont laissés de côté et l'écran le dit.
+export const PIZZICATO = { violons1: "violons-piz", violons2: "violons-piz", violoncelles: "celli-piz", contrebasses: "basses-piz", harpe: "harpe" };
