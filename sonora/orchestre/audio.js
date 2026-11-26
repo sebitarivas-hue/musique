@@ -1,7 +1,7 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=e921369dbd";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=e921369dbd";
+import { nomNote } from "./donnees.js?v=2fb0a4bcbc";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=2fb0a4bcbc";
 
 let ctx = null, sources = [], jeton = 0, sortie = null, salle = null;   // salle : la réverbération, une seule par contexte   // sortie : le seul nœud de gain en service (un par lecture, retiré à l'arrêt)
 // Une seule lecture compte : la dernière demandée. Chaque demande prend un numéro (`debut`) ; arrêter, ou demander autre chose, rend périmées celles qui sont encore en préparation.
@@ -37,11 +37,9 @@ export function placer(lr, inst) {
   const [L, R] = lr, n = L.length, a = ((inst.g0 + inst.g1) / 2) * Math.PI / 180;
   const pan = Math.max(-0.85, Math.min(0.85, Math.sin(a) * 0.85)), th = (pan + 1) * Math.PI / 4;
   const prof = [1, 0.94, 0.88, 0.82, 0.78][inst.rang] ?? 0.9, gl = Math.cos(th) * prof, gr = Math.sin(th) * prof;
-  const OL = new Float32Array(n), OR = new Float32Array(n);
-  for (let i = 0; i < n; i++) { const m = (L[i] + R[i]) / 2; OL[i] = m * gl; OR[i] = m * gr; }
-  return [OL, OR];
+  for (let i = 0; i < n; i++) { const m = (L[i] + R[i]) / 2; L[i] = m * gl; R[i] = m * gr; }   // sur place : pas de copie (mémoire d'un téléphone)
+  return lr;
 }
-// Équilibrage : chaque piste ramenée à un même niveau moyen (gain borné), pour qu'un instrument doux ne soit pas couvert par un instrument fort.
 // Équilibre d'orchestre, en décibels, par instrument (approximation d'une balance symphonique typique, pas une mesure) :
 // les cuivres dominent en forte, les cordes forment la base, les bois sont en retrait, la harpe et le célesta sont doux, les timbales et la grosse caisse sont accentués.
 // Les échantillons de la banque sont déjà ramenés à un même niveau à la fabrication : cette table redonne la hiérarchie, sans jamais amplifier une piste.
@@ -57,7 +55,8 @@ export function equilibrer(listes, ids = []) {
   return listes.map((lr, k) => {
     if (!lr) return lr;
     const g = Math.pow(10, (NIVEAU_ORCHESTRE[ids[k]] ?? 0) / 20);
-    return g === 1 ? lr : [lr[0].map(v => v * g), lr[1].map(v => v * g)];
+    if (g !== 1) for (let i = 0; i < lr[0].length; i++) { lr[0][i] *= g; lr[1][i] *= g; }   // sur place : pas de copie
+    return lr;
   });
 }
 export function arreter() { jeton++; for (const s of sources) { try { s.stop(); } catch (e) {} } sources = []; if (sortie) { try { sortie.disconnect(); } catch (e) {} sortie = null; } }
@@ -65,7 +64,13 @@ export const enCours = () => sources.length > 0;   // vrai tant qu'un son joue (
 export const debut = () => { arreter(); return jeton; };
 export const perimee = j => j !== jeton;
 export function message(t) { const e = document.getElementById("etat"); if (e) e.textContent = t; }
-export function contexte() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC(); } if (ctx.state === "suspended") ctx.resume(); return ctx; }
+// iPhone : le son joue même si le bouton silencieux est activé (audioSession « playback », Safari 16.4 et plus),
+// et un contexte « interrompu » (appel, notification, verrouillage) est relancé, pas seulement un contexte « suspendu ».
+export function contexte() {
+  if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC(); try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {} }
+  if (ctx.state !== "running" && ctx.state !== "closed") { try { const p = ctx.resume(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
+  return ctx;
+}
 
 // Un tampon audio stéréo pour des notes (numéros MIDI) jouées par l'instrument. pas : durée entre notes (une gamme), sinon une note tenue.
 export async function rendre(inst, notes, pas, j) {
@@ -79,6 +84,7 @@ export async function rendre(inst, notes, pas, j) {
 // Les voix d'une fugue : chaque voix est rendue avec son instrument (evenements en secondes), puis les voix sont additionnées dans un seul tampon, sans écrêtage.
 export async function rendreMelodie(inst, evenements, duree, j) {
   if (!inst.banque || !evenements.length) return null; const c = contexte(), tampons = await preparer(inst.banque, c); if (!tampons) return null;
+  await new Promise(r => setTimeout(r, 0));   // rendre la main à l'écran entre deux instruments : la page ne se fige pas sur un téléphone
   if (j !== undefined && perimee(j)) return null;
   return mixer(evenements, tampons, { sr: c.sampleRate, instrument: inst.banque, duree });
 }

@@ -88,6 +88,12 @@ export function catalogue(base = racineBanque()) {
   return CACHE.catalogues[base];
 }
 // Charge tous les échantillons d'un instrument de la banque. Renvoie la liste de tampons (vide si la banque n'est pas servie : l'appelant garde alors la synthèse).
+// Décodage à 32 kHz, la fréquence de la banque : un tiers de mémoire en moins qu'à 48 kHz (la fréquence habituelle d'un iPhone). Le mélange tient compte de cette fréquence.
+function decodeur(ctx) {
+  const OAC = typeof window !== "undefined" && (window.OfflineAudioContext || window.webkitOfflineAudioContext);
+  if (!OAC) return ctx;
+  try { return CACHE.decodeur || (CACHE.decodeur = new OAC(1, 1, 32000)); } catch (e) { return ctx; }
+}
 export function chargerInstrument(nomBanque, ctx, base = racineBanque()) {
   if (CACHE.instruments[nomBanque]) return CACHE.instruments[nomBanque];
   const charger = async () => {
@@ -97,7 +103,7 @@ export function chargerInstrument(nomBanque, ctx, base = racineBanque()) {
     const L = await Promise.all(entrees.map(async e => {
       try {
         const b = await (await fetch(`${base}${e.id}.mp3`)).arrayBuffer();
-        const buf = await new Promise((ok, ko) => { const p = ctx.decodeAudioData(b, ok, ko); if (p && p.catch) p.catch(ko); });
+        const dec = decodeur(ctx), buf = await new Promise((ok, ko) => { const p = dec.decodeAudioData(b, ok, ko); if (p && p.catch) p.catch(ko); });
         const canal = buf.getChannelData(0); let m = 0; for (let i = 0; i < canal.length; i++) m = Math.max(m, Math.abs(canal[i]));
         let o = 0; while (o < canal.length && Math.abs(canal[o]) < m * 0.003) o++; // le silence du début (retard du codeur MP3) est sauté
         return { id: e.id, f: e.f, canal, sr: buf.sampleRate, off: o / buf.sampleRate, a: e.a, b: e.b, c: e.c };
