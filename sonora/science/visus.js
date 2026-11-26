@@ -1,5 +1,5 @@
 // Dessins de SONORA Science : signal, spectre, spectrogramme, enveloppe, courbes. Tout est tracé à partir des mesures, aucune image n'est préparée.
-import * as A from "./mesure-signal.js?v=2fb0a4bcbc";
+import * as A from "./mesure-signal.js?v=19ef21d316";
 
 function pret(cv) {
   const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1), w = Math.max(10, Math.round(r.width * d)), h = Math.max(10, Math.round(r.height * d));

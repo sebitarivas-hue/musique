@@ -1,17 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, ROULEMENTS, ROULEMENTS_RECONSTITUES, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=2fb0a4bcbc";
-import { ACCORDS, voicerAccord } from "./accord.js?v=2fb0a4bcbc";
-import { EXEMPLES } from "./exemples.js?v=2fb0a4bcbc";
-import { CADENCES, voicerCadence } from "./cadences.js?v=2fb0a4bcbc";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=2fb0a4bcbc";
-import { monterTimbres } from "./timbres.js?v=2fb0a4bcbc";
-import { monterFugue } from "./fugue.js?v=2fb0a4bcbc";
-import { monterBritten } from "./britten.js?v=2fb0a4bcbc";
-import { monterVariations } from "./variations.js?v=2fb0a4bcbc";
-import { svgIcone, dessin } from "./icones.js?v=2fb0a4bcbc";
-import { PHOTOS } from "./photos.js?v=2fb0a4bcbc";
-import { FICHES } from "./fiches.js?v=2fb0a4bcbc";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, ROULEMENTS, ROULEMENTS_RECONSTITUES, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=19ef21d316";
+import { ACCORDS, voicerAccord } from "./accord.js?v=19ef21d316";
+import { EXEMPLES } from "./exemples.js?v=19ef21d316";
+import { CADENCES, voicerCadence } from "./cadences.js?v=19ef21d316";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=19ef21d316";
+import { monterTimbres } from "./timbres.js?v=19ef21d316";
+import { monterFugue } from "./fugue.js?v=19ef21d316";
+import { monterBritten } from "./britten.js?v=19ef21d316";
+import { monterVariations } from "./variations.js?v=19ef21d316";
+import { svgIcone, dessin } from "./icones.js?v=19ef21d316";
+import { PHOTOS } from "./photos.js?v=19ef21d316";
+import { FICHES } from "./fiches.js?v=19ef21d316";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -119,17 +119,31 @@ function piste_percu(i, debuts, duree) {
   if (etat.roul && ROULEMENTS_RECONSTITUES.includes(i.id)) return { inst: { banque: i.coup.banque, nom: i.nom }, ev: debuts.flatMap(t => roulement(t, duree, 60)) };
   return null;
 }
+// La frappe d'accent qui termine un roulement de caisse claire, comme à l'orchestre.
+const FIN_ACCENTUEE = ["caisseClaire"];
+function frappeFinale(i, t) { return FIN_ACCENTUEE.includes(i.id) ? { inst: { banque: i.coup.banque, nom: i.nom }, ev: [{ t, duree: 0.6, notes: [60], vitesse: 0.95 }] } : null; }
+// Le roulement d'un instrument seul, depuis sa fiche : 2,6 s, avec la frappe finale pour la caisse claire ; les timbales roulent sur une note de leur zone.
+async function roulementSeul(inst, z) {
+  const j = debut(), duree = 3.8, pistes = [];
+  if (z) pistes.push(rendreMelodie(inst, roulement(0, 2.6, Math.round((z[0] + z[1]) / 2)), duree, j));
+  else { const sauve = etat.roul; etat.roul = true; const r = piste_percu(inst, [0], 2.6); etat.roul = sauve; if (r) pistes.push(rendreMelodie(r.inst, r.ev, duree, j)); const f = frappeFinale(inst, 2.6); if (f) pistes.push(rendreMelodie(f.inst, f.ev, duree, j)); }
+  message("chargement du roulement…");
+  const lr = await Promise.all(pistes); if (perimee(j)) return;
+  lire([{ buf: sommer(lr, duree) }], () => message("prêt")); message("roulement de " + inst.nom.toLowerCase());
+}
 async function jouerMelange() {
   // Les percussions sans hauteur jouent leur coup (do4) avec l'accord, au même instant : elles ne sont pas séparées de l'accord.
   const parts = accordDeLaSelection(), percs = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && i.coup);
   if (!parts.length && !percs.length) { message(etat.melange.length ? "un accord a besoin d'un instrument à hauteur précise" : "choisis d'abord des instruments sur le plan"); return; }
   const j = debut(); message("chargement…"); const duree = 4.6;
-  const insts = [...parts.map(p => p.inst), ...percs];
+  const finales = etat.roul ? percs.map(i => frappeFinale(i, 3.4)).filter(Boolean) : [];
+  const insts = [...parts.map(p => p.inst), ...percs, ...percs.filter(i => etat.roul && FIN_ACCENTUEE.includes(i.id))];
   const brut = await Promise.all([
     // les timbales roulent sur leur note de l'accord si l'option est active
     ...parts.map(p => { const a = articulation(3.4); return rendreMelodie(p.inst, etat.roul && ROULEMENTS_RECONSTITUES.includes(p.inst.id) ? roulement(0, 3.4, p.m) : [{ t: 0, duree: a.duree, notes: [p.m], vitesse: a.vitesse }], duree, j); }),
     // sans roulement, chaque percussion sans hauteur frappe une fois, avec l'accord
     ...percs.map(i => { const r = piste_percu(i, [0], 3.4); return r ? rendreMelodie(r.inst, r.ev, duree, j) : rendreMelodie({ banque: i.coup.banque, nom: i.nom }, [{ t: 0, duree: 0.9, notes: [60], vitesse: 0.8 }], duree, j); }),
+    ...finales.map(f => rendreMelodie(f.inst, f.ev, duree, j)),
   ]);
   if (perimee(j)) return;
   const muets = insts.filter((_, k) => !brut[k]).map(i => i.nom.toLowerCase());
@@ -152,7 +166,7 @@ async function jouerCadence() {
   v.forEach((acc, k) => acc.parts.forEach(p => { if (!parIns.has(p.inst.id)) parIns.set(p.inst.id, { inst: p.inst, ev: [] }); const e = parIns.get(p.inst.id).ev; if (etat.roul && ROULEMENTS_RECONSTITUES.includes(p.inst.id)) e.push(...roulement(k * T, T * 0.95, p.m)); else { const a = articulation(T * 0.95); e.push({ t: k * T, duree: a.duree, notes: [p.m], vitesse: a.vitesse }); } }));
   const pistes = [...parIns.values()].map(x => rendreMelodie(x.inst, x.ev, duree, j));
   const insts = [...parIns.values()].map(x => x.inst);
-  for (const i of percs) { const r = piste_percu(i, v.map((_, k) => k * T), T * 0.95); pistes.push(r ? rendreMelodie(r.inst, r.ev, duree, j) : rendreMelodie({ banque: i.coup.banque, nom: i.nom }, v.map((_, k) => ({ t: k * T, duree: 0.9, notes: [60], vitesse: 0.8 })), duree, j)); insts.push(i); }
+  for (const i of percs) { const f = etat.roul ? frappeFinale(i, (v.length - 1) * T + T * 0.95) : null; if (f) { pistes.push(rendreMelodie(f.inst, f.ev, duree, j)); insts.push(i); } const r = piste_percu(i, v.map((_, k) => k * T), T * 0.95); pistes.push(r ? rendreMelodie(r.inst, r.ev, duree, j) : rendreMelodie({ banque: i.coup.banque, nom: i.nom }, v.map((_, k) => ({ t: k * T, duree: 0.9, notes: [60], vitesse: 0.8 })), duree, j)); insts.push(i); }
   const lr = await Promise.all(pistes);
   if (perimee(j)) return;
   const buf = sommer(equilibrer(lr, insts.map(i => i.id)).map((x, k) => placer(x, insts[k])), duree); lire([{ buf }], () => message("prêt"));
@@ -222,9 +236,11 @@ function fiche() {
   h += sectionsFiche(inst, z);
   if (inst.tess) h += '<div style="--c:' + f.couleur + '">' + clavier(inst) + '</div><p class="legende">' + (z ? "Les touches actives font entendre l'instrument ; les touches grisées sont dans sa tessiture, mais hors de la zone enregistrée." : "") + "</p>";
   const coup = inst.coup;   // une percussion sans hauteur, enregistrée : un coup, ou la suite des blocs
-  h += '<div class="actions-fiche">' + (z ? '<button type="button" class="principal" id="gamme">Écouter une gamme</button><button type="button" id="stop">Arrêter</button>' : coup ? '<button type="button" class="principal" id="coup">Écouter un coup</button>' + (coup.notes ? '<button type="button" id="coups">Écouter les quatre blocs</button>' : "") + '<button type="button" id="stop">Arrêter</button>' : "") + "</div>";
+  const roulable = !!(ROULEMENTS[inst.id] || ROULEMENTS_RECONSTITUES.includes(inst.id)), bRoul = roulable ? '<button type="button" id="roul-fiche">Écouter un roulement</button>' : "";
+  h += '<div class="actions-fiche">' + (z ? '<button type="button" class="principal" id="gamme">Écouter une gamme</button>' + bRoul + '<button type="button" id="stop">Arrêter</button>' : coup ? '<button type="button" class="principal" id="coup">Écouter un coup</button>' + (coup.notes ? '<button type="button" id="coups">Écouter les quatre blocs</button>' : "") + bRoul + '<button type="button" id="stop">Arrêter</button>' : "") + "</div>";
   if (!z && !coup) h += '<p class="sans-son" style="--c:' + f.couleur + '">Pas d\'enregistrement de cet instrument dans la banque du site : on ne le fait pas entendre ici plutôt que d\'imiter son timbre.</p>';
   el.innerHTML = h; brancherSections(inst, z);
+  if (roulable) $("roul-fiche").onclick = () => roulementSeul(inst, z);
   if (coup) { const pseudo = { banque: coup.banque, nom: inst.nom, duree: coup.duree }; $("coup").onclick = () => jouer(pseudo, [60]); $("stop").onclick = () => { arreter(); message("prêt"); };
     if (coup.notes) $("coups").onclick = () => jouer(pseudo, coup.notes, 0.3); return; }
   if (!z) return;

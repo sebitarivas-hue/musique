@@ -1,7 +1,7 @@
 // SONORA Orchestre : les cadences, c'est-à-dire des enchaînements d'accords qui terminent une phrase (sans DOM, testé dans Node).
 // Les cadences en do majeur, puis les cadences en la mineur (mi majeur y joue la dominante, avec le sol dièse). Chaque accord est voicé avec la règle de accord.js (une note par instrument, pas d'unisson), et chaque instrument
 // garde une voix proche de sa note précédente d'un accord à l'autre : l'enchaînement sonne comme une suite de voix, pas une suite de sauts.
-import { voicerAccord, ACCORDS } from "./accord.js?v=2fb0a4bcbc";
+import { voicerAccord, ACCORDS } from "./accord.js?v=19ef21d316";
 
 export const CADENCES = [
   { id: "parfaite", nom: "Cadence parfaite (V–I)", accords: ["sol", "do"],
