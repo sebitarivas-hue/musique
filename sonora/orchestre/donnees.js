@@ -141,6 +141,11 @@ export const MARCATO = {
   violons1: { banque: "violons-mrc", echant: [55, 94] }, violons2: { banque: "violons-mrc", echant: [55, 94] },
   violoncelles: { banque: "celli-mrc", echant: [36, 72] }, altos: { banque: "violas-mrc", echant: [48, 84] }, contrebasses: { banque: "basses-mrc", echant: [24, 60] },
 };
+// Roulements. Enregistrés (Sonatina Symphonic Orchestra) pour la caisse claire, les cymbales, le tambour de basque et le triangle.
+// Reconstitués à partir de vrais coups frappés vite, avec des nuances variées, pour les timbales (à leur note dans l'accord) et la grosse caisse :
+// les roulements de timbales de SSO n'ont pas de hauteur fiable, et la grosse caisse n'a pas de roulement enregistré. Le tam-tam n'en a pas.
+export const ROULEMENTS = { caisseClaire: "caisse-claire-roul", cymbales: "cymbales-roul", tambourBasque: "tambour-basque-roul", triangle: "triangle-roul" };
+export const ROULEMENTS_RECONSTITUES = ["timbales", "grosseCaisse"];
 export const HARMONIQUES = {
   violons1: { banque: "violons-hrm", echant: [55, 94] }, violons2: { banque: "violons-hrm", echant: [55, 94] },
   violoncelles: { banque: "celli-hrm", echant: [36, 72] }, altos: { banque: "altos-hrm", echant: [48, 84] },

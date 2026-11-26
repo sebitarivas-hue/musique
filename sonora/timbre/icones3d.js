@@ -1,7 +1,7 @@
 // Des icônes en 3D, vernies comme de la pâte à modeler : une scène, un seul moteur de rendu, une photo par icône (image PNG transparente), gardée pour la session.
 // Sert à la page Jouer du site (jeux, chiffres) et à TIMBRE. Three.js (licence MIT) et son éclairage d'ambiance RoomEnvironment sont dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=ccc22b0ed5";
-import { RoomEnvironment } from "./vendor/RoomEnvironment.js?v=ccc22b0ed5";
+import * as T from "./vendor/three.module.min.js?v=a806993f0a";
+import { RoomEnvironment } from "./vendor/RoomEnvironment.js?v=a806993f0a";
 
 const VERSION = "ico3d-4";
 const vernis = (c, o = {}) => new T.MeshPhysicalMaterial(Object.assign({ color: new T.Color(c), roughness: .36, metalness: 0, clearcoat: 1, clearcoatRoughness: .12, envMapIntensity: .55 }, o));

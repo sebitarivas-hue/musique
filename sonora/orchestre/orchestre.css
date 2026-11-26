@@ -189,3 +189,4 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
   .exemples .etq { justify-self: start; }
   .m-etat { margin-left: 0; }
 }
+#m-roul[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
