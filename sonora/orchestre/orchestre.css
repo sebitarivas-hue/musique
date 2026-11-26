@@ -174,3 +174,18 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
 
 /* 19/11/2026 : studio.css bloque le défilement de la page sur ordinateur (body de la hauteur de l'écran, overflow caché, pensé pour l'atelier). Cette page défile : on rend la hauteur et le défilement au corps de la page. */
 @media (min-width: 1101px) { body { height: auto; min-height: 100vh; overflow: visible; } }
+/* Téléphone (moins de 520 px) : le plan défile latéralement pour garder des étiquettes lisibles ; la barre de mélange et les exemples passent en grille, cibles tactiles de 44 px. */
+@media (max-width: 520px) {
+  .cadre { grid-template-columns: minmax(0, 1fr); } .scene { min-width: 0; }
+  #plan { overflow-x: auto; -webkit-overflow-scrolling: touch; min-width: 0; }
+  #plan svg { min-width: 640px; display: block; }
+  .melange { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; }
+  .melange > .etq, .melange > .m-etat, .melange > label.m-etat, .melange > .exemples, .melange > #m-exemple { grid-column: 1 / -1; }
+  .melange button, .melange select { min-height: 44px; font-size: .95rem; width: 100%; }
+  .melange label.m-etat { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+  .melange #m-accord { min-height: 44px; font-size: 1rem; }
+  .exemples { display: grid; grid-template-columns: 1fr; gap: 6px; }
+  .exemples button { text-align: left; }
+  .exemples .etq { justify-self: start; }
+  .m-etat { margin-left: 0; }
+}

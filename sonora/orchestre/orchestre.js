@@ -1,16 +1,16 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=c4c67a398e";
-import { ACCORDS, voicerAccord } from "./accord.js?v=c4c67a398e";
-import { EXEMPLES } from "./exemples.js?v=c4c67a398e";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=c4c67a398e";
-import { monterTimbres } from "./timbres.js?v=c4c67a398e";
-import { monterFugue } from "./fugue.js?v=c4c67a398e";
-import { monterBritten } from "./britten.js?v=c4c67a398e";
-import { monterVariations } from "./variations.js?v=c4c67a398e";
-import { svgIcone, dessin } from "./icones.js?v=c4c67a398e";
-import { PHOTOS } from "./photos.js?v=c4c67a398e";
-import { FICHES } from "./fiches.js?v=c4c67a398e";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=b43ca581e7";
+import { ACCORDS, voicerAccord } from "./accord.js?v=b43ca581e7";
+import { EXEMPLES } from "./exemples.js?v=b43ca581e7";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=b43ca581e7";
+import { monterTimbres } from "./timbres.js?v=b43ca581e7";
+import { monterFugue } from "./fugue.js?v=b43ca581e7";
+import { monterBritten } from "./britten.js?v=b43ca581e7";
+import { monterVariations } from "./variations.js?v=b43ca581e7";
+import { svgIcone, dessin } from "./icones.js?v=b43ca581e7";
+import { PHOTOS } from "./photos.js?v=b43ca581e7";
+import { FICHES } from "./fiches.js?v=b43ca581e7";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
