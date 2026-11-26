@@ -115,4 +115,6 @@ export function centre(inst, cx = 500, cy = 540) {
 
 // Le pizzicato : la banque d'échantillons qui remplace celle de l'archet quand le jeu est pincé. Mêmes tessitures que l'archet (vérifié par les tests).
 // Les altos n'ont pas de pizzicato dans la banque : en mode pizzicato, ils sont laissés de côté et l'écran le dit.
+// Le trémolo : la banque des violons vibrés (tessiture de l'archet). Violoncelles, altos et contrebasses n'en ont pas : ils sont laissés de côté en trémolo.
+export const TREMOLO = { violons1: "violons-trem", violons2: "violons-trem" };
 export const PIZZICATO = { violons1: "violons-piz", violons2: "violons-piz", violoncelles: "celli-piz", contrebasses: "basses-piz", harpe: "harpe" };

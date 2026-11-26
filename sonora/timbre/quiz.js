@@ -1,6 +1,6 @@
 // Les quiz de l'Atlas, dans la salle de jeux : cinq jeux sur ce qu'on apprend en classe, tirés au hasard à chaque partie.
 // Les points du cours suivent les règles du site : une étoile gagnée rapporte une seule fois (jamais « une fois par jour »), rien pour une simple visite.
-import { CREER, MANCHES, etoiles } from "./quiz_logique.js?v=133e7b3e5d";
+import { CREER, MANCHES, etoiles } from "./quiz_logique.js?v=23c89978c2";
 import { monterGlobe } from "./globe.js?v=20261117c";
 
 const $ = id => document.getElementById(id), esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
