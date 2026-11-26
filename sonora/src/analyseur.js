@@ -1,7 +1,7 @@
 // Analyse syntaxique : descente récursive pour les déclarations, précédence pour les expressions.
 // Le premier défaut d'une déclaration est signalé, puis l'analyseur se resynchronise sur la déclaration ou le membre suivant.
-import { lexer } from "./lexeur.js?v=b4d8ee1b6e";
-import { noeud } from "./ast.js?v=b4d8ee1b6e";
+import { lexer } from "./lexeur.js?v=ad77b02a98";
+import { noeud } from "./ast.js?v=ad77b02a98";
 
 class ErreurSyntaxe extends Error {}
 

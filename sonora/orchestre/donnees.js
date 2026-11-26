@@ -2,7 +2,7 @@
 // Hauteurs en numéros MIDI (60 = do4, la4 = 440 Hz, comme dans Découvertes). Les tessitures sont les hauteurs réellement entendues, en usage courant d'orchestre ; elles varient un peu selon les ouvrages.
 // `banque` : l'instrument de la banque d'échantillons du site (outils/faust/banque) qui sert de son ; `echant` : la zone enregistrée dans cette banque (vérifiée contre catalogue.json par les tests).
 // `coup` : les percussions sans hauteur, enregistrées (banque, duree d'écoute en s, notes : les coups joués ; do4 = 60). Elles n'ont ni tessiture ni clavier.
-// Les castagnettes, le cor anglais et la clarinette basse n'ont pas d'enregistrement libre dans la banque : la fiche le dit, sans faux son.
+// Les castagnettes n'ont pas d'enregistrement libre dans la banque : la fiche le dit, sans faux son. Le cor anglais et la clarinette basse viennent de Sonatina Symphonic Orchestra (Creative Commons Sampling Plus 1.0, voir outils/banque_sso.py).
 
 export const FAMILLES = {
   cordes: { pale: "#FFE2C2", nom: "Les cordes", court: "Cordes", couleur: "#FF9F43", son: "Une corde vibre, frottée par un archet ou pincée." },
@@ -32,11 +32,11 @@ export const INSTRUMENTS = [
     texte: "Un tube de métal tenu en travers : le musicien souffle sur le bord d'un trou, comme sur le goulot d'une bouteille. Son clair, léger." },
   { id: "hautbois", effectif: "2 ou 3", visuels: 2, nom: "Hautbois", fam: "bois", rang: 1, g0: -12, g1: 4, banque: "hautbois-ens", echant: [58, 88], tess: [58, 91], mode: "anche double",
     texte: "Deux fines lamelles de roseau vibrent l'une contre l'autre. Le son est nasal et pénétrant : c'est le hautbois qui donne le la à tout l'orchestre pour l'accord." },
-  { id: "corAnglais", effectif: "1", visuels: 1, nom: "Cor anglais", fam: "bois", rang: 1, g0: 4, g1: 14, banque: null, tess: [52, 84], mode: "anche double",
+  { id: "corAnglais", effectif: "1", visuels: 1, nom: "Cor anglais", fam: "bois", rang: 1, g0: 4, g1: 14, banque: "cor-anglais", echant: [53, 77], tess: [52, 84], mode: "anche double",
     texte: "Un grand hautbois plus grave, au pavillon en forme de poire. Ce n'est ni un cor ni anglais : son nom viendrait d'un vieux malentendu." },
   { id: "clarinettes", effectif: "2 ou 3", visuels: 2, nom: "Clarinettes", fam: "bois", rang: 1, g0: 14, g1: 30, banque: "clarinettes-ens", echant: [50, 86], tess: [50, 94], mode: "anche simple",
     texte: "Une seule lamelle de roseau vibre contre le bec. Le son est rond dans le grave, brillant dans l'aigu." },
-  { id: "clarinetteBasse", effectif: "1", visuels: 1, nom: "Clarinette basse", fam: "bois", rang: 1, g0: 30, g1: 40, banque: null, tess: [37, 77], mode: "anche simple",
+  { id: "clarinetteBasse", effectif: "1", visuels: 1, nom: "Clarinette basse", fam: "bois", rang: 1, g0: 30, g1: 40, banque: "clarinette-basse", echant: [38, 74], tess: [37, 77], mode: "anche simple",
     texte: "La clarinette en plus grand : une octave plus grave que la clarinette ordinaire, avec un pavillon recourbé en métal." },
   { id: "bassons", effectif: "2 ou 3", visuels: 2, nom: "Bassons", fam: "bois", rang: 1, g0: 40, g1: 64, banque: "bassons-ens", echant: [34, 76], tess: [34, 75], mode: "anche double",
     texte: "Un tube de bois de plus de deux mètres, replié sur lui-même. Le basson est la basse des bois : son grave est rond, son aigu plaintif." },

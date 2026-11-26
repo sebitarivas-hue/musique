@@ -1,14 +1,15 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=b4d8ee1b6e";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=b4d8ee1b6e";
-import { monterTimbres } from "./timbres.js?v=b4d8ee1b6e";
-import { monterFugue } from "./fugue.js?v=b4d8ee1b6e";
-import { monterBritten } from "./britten.js?v=b4d8ee1b6e";
-import { monterVariations } from "./variations.js?v=b4d8ee1b6e";
-import { svgIcone, dessin } from "./icones.js?v=b4d8ee1b6e";
-import { PHOTOS } from "./photos.js?v=b4d8ee1b6e";
-import { FICHES } from "./fiches.js?v=b4d8ee1b6e";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=ad77b02a98";
+import { voicerAccord } from "./accord.js?v=ad77b02a98";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=ad77b02a98";
+import { monterTimbres } from "./timbres.js?v=ad77b02a98";
+import { monterFugue } from "./fugue.js?v=ad77b02a98";
+import { monterBritten } from "./britten.js?v=ad77b02a98";
+import { monterVariations } from "./variations.js?v=ad77b02a98";
+import { svgIcone, dessin } from "./icones.js?v=ad77b02a98";
+import { PHOTOS } from "./photos.js?v=ad77b02a98";
+import { FICHES } from "./fiches.js?v=ad77b02a98";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -20,7 +21,7 @@ function visuel(id, t, titre) {
   return '<img class="photo" src="photos/' + p.f + '" width="' + Math.round(p.w * k) + '" height="' + Math.round(p.h * k) + '" alt="' + esc(titre || "") + '">';
 }
 function imageSvg(id) { const p = PHOTOS[id], k = 100 / Math.max(p.w, p.h), w = p.w * k, h = p.h * k; return '<image class="photo-svg" href="photos/' + p.f + '" x="' + (50 - w / 2).toFixed(1) + '" y="' + (50 - h / 2).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '"/>'; }
-const etat = { melange: [], choisir: false, choix: null, famille: null, vue: "plan", note: null };
+const etat = { melange: [], choix: null, famille: null, vue: "plan", note: null };
 // ---------------------------------------------------------------- le plan
 // Les dessins d'une section, posés en grille polaire dans son secteur, debout, la tête vers l'extérieur (les musiciens font face au chef).
 function iconesDuSecteur(i) {
@@ -72,21 +73,14 @@ function dessinerTessitures() {
 
 // ---------------------------------------------------------------- le mélange : des sections choisies sur le plan jouent ensemble un accord de do majeur
 const PRESETS = { cordes: i => i.fam === "cordes", bois: i => i.fam === "bois", cuivres: i => i.fam === "cuivres", tout: () => true };
-export function notePourAccord(inst, classe) {   // la note de la classe (0 = do, 4 = mi, 7 = sol) la plus proche du bas-médium de la zone jouable
-  const z = jouables(inst); if (!z) return null; const cible = z[0] + (z[1] - z[0]) * 0.4; let meilleur = null;
-  for (let m = z[0]; m <= z[1]; m++) if (m % 12 === classe && (meilleur === null || Math.abs(m - cible) < Math.abs(meilleur - cible))) meilleur = m;
-  return meilleur;
-}
-function accordDeLaSelection() {
-  const sel = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && jouables(i)).sort((a, b) => (jouables(a)[0] + jouables(a)[1]) - (jouables(b)[0] + jouables(b)[1])), classes = [0, 7, 4];
-  return sel.map((inst, k) => { let m = notePourAccord(inst, classes[k % 3]); if (m === null) m = notePourAccord(inst, classes[(k + 1) % 3]); return { inst, m }; }).filter(x => x.m !== null);
+function accordDeLaSelection() {   // les instruments choisis, du grave à l'aigu : chacun joue une note de do majeur, jamais à l'unisson d'un autre
+  return voicerAccord(INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && jouables(i)));
 }
 function majMelange() {
   const n = etat.melange.length, muets = etat.melange.filter(id => !jouables(parId(id)));
   $("m-etat").textContent = n ? n + (n > 1 ? " sections choisies" : " section choisie") + (muets.length ? " (" + muets.length + " sans enregistrement, ignorée" + (muets.length > 1 ? "s" : "") + ")" : "") + "." : "Aucune section choisie.";
-  $("m-choisir").setAttribute("aria-pressed", String(etat.choisir)); $("plan").classList.toggle("mode-melange", etat.choisir);
   document.querySelectorAll(".sect").forEach(g => g.classList.toggle("dans-melange", etat.melange.indexOf(g.dataset.id) >= 0));
-  if (etat.choisir) document.querySelectorAll(".sect").forEach(g => g.setAttribute("aria-pressed", String(etat.melange.indexOf(g.dataset.id) >= 0)));
+  document.querySelectorAll(".sect").forEach(g => g.setAttribute("aria-pressed", String(etat.melange.indexOf(g.dataset.id) >= 0)));
 }
 async function jouerMelange() {
   const parts = accordDeLaSelection(); if (!parts.length) { message("choisis d'abord des sections qui ont un enregistrement"); return; }
@@ -94,11 +88,11 @@ async function jouerMelange() {
   const lr = await Promise.all(parts.map(p => rendreMelodie(p.inst, [{ t: 0, duree: 3.4, notes: [p.m], vitesse: 0.8 }], duree, j)));
   if (perimee(j)) return;
   const buf = sommer(lr, duree); lire([{ buf }], () => message("prêt"));
-  message("accord de do majeur : " + parts.map(p => (p.inst.id === "violons2" ? "seconds violons" : p.inst.nom.toLowerCase()) + " " + nomNote(p.m)).join(", "));
+  const sans = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && jouables(i) && !parts.some(p => p.inst.id === i.id)).map(i => i.nom.toLowerCase());
+  message("accord de do majeur : " + parts.map(p => (p.inst.id === "violons2" ? "seconds violons" : p.inst.nom.toLowerCase()) + " " + nomNote(p.m)).join(", ") + (sans.length ? ". Sans note dans l'accord, faute de hauteur libre sans unisson : " + sans.join(", ") : ""));
 }
 function brancherMelange() {
-  $("m-choisir").onclick = () => { etat.choisir = !etat.choisir; if (!etat.choisir) marquer(); majMelange(); };
-  document.querySelectorAll("[data-preset]").forEach(b => { b.onclick = () => { etat.melange = INSTRUMENTS.filter(PRESETS[b.dataset.preset]).filter(i => jouables(i)).map(i => i.id); etat.choisir = true; majMelange(); jouerMelange(); }; });
+  document.querySelectorAll("[data-preset]").forEach(b => { b.onclick = () => { etat.melange = INSTRUMENTS.filter(PRESETS[b.dataset.preset]).filter(i => jouables(i)).map(i => i.id); majMelange(); jouerMelange(); }; });
   $("m-vider").onclick = () => { etat.melange = []; majMelange(); arreter(); };
   $("m-jouer").onclick = jouerMelange;
 }
@@ -167,7 +161,7 @@ function fiche() {
 
 // ---------------------------------------------------------------- sélection, familles, vues
 function marquer() {
-  document.querySelectorAll(".sect, .tess-ligne, .carte-g").forEach(g => { g.setAttribute("aria-pressed", String(etat.choisir && g.classList.contains("sect") ? etat.melange.indexOf(g.dataset.id) >= 0 : g.dataset.id === etat.choix)); g.classList.toggle("attenue", !!etat.famille && g.dataset.fam !== etat.famille); });
+  document.querySelectorAll(".sect, .tess-ligne, .carte-g").forEach(g => { g.setAttribute("aria-pressed", String(g.classList.contains("sect") ? etat.melange.indexOf(g.dataset.id) >= 0 : g.dataset.id === etat.choix)); g.classList.toggle("attenue", !!etat.famille && g.dataset.fam !== etat.famille); });
   document.querySelectorAll("#familles button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f === etat.famille)));
 }
 function choisir(id, focus) {
@@ -202,7 +196,7 @@ function demarrer() {
   parcours(); dessinerPlan(); dessinerGalerie(); dessinerTessitures();
   $("familles").innerHTML = ORDRE_FAMILLES.map(f => '<button type="button" data-f="' + f + '" aria-pressed="false" style="--c:' + FAMILLES[f].couleur + '">' + esc(FAMILLES[f].court) + "</button>").join("");
   $("familles").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; etat.famille = etat.famille === b.dataset.f ? null : b.dataset.f; marquer(); });
-  $("explorer").addEventListener("click", e => { const g = e.target.closest(".sect, .tess-ligne, .carte-g"); if (!g) return; if (etat.choisir && g.classList.contains("sect")) { const k = etat.melange.indexOf(g.dataset.id); if (k >= 0) etat.melange.splice(k, 1); else etat.melange.push(g.dataset.id); majMelange(); return; } choisir(g.dataset.id, true); });
+  $("explorer").addEventListener("click", e => { const g = e.target.closest(".sect, .tess-ligne, .carte-g"); if (!g) return; if (g.classList.contains("sect")) { const k = etat.melange.indexOf(g.dataset.id); if (k >= 0) etat.melange.splice(k, 1); else etat.melange.push(g.dataset.id); majMelange(); } choisir(g.dataset.id, false); });
   $("explorer").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".sect, .tess-ligne")) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent("click", { bubbles: true })); } });
   brancherMelange(); majMelange();
   $("v-plan").onclick = () => vue("plan"); $("v-gal").onclick = () => vue("gal"); $("v-tess").onclick = () => vue("tess");

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Orchestre</title>
 <meta name="description" content="Explorer l'orchestre symphonique : le plan des musiciens, les quatre familles, chaque instrument, sa tessiture et son timbre.">
-<link rel="stylesheet" href="../studio/studio.css?v=b4d8ee1b6e">
-<link rel="stylesheet" href="orchestre.css?v=b4d8ee1b6e">
+<link rel="stylesheet" href="../studio/studio.css?v=ad77b02a98">
+<link rel="stylesheet" href="orchestre.css?v=ad77b02a98">
 </head>
 <body>
 <a class="saut" href="#contenu">Aller au contenu</a>
@@ -28,14 +28,13 @@
     </div>
     <div class="melange" id="melange" role="group" aria-label="Faire jouer des sections ensemble">
       <span class="etq">Mélanger</span>
-      <button type="button" id="m-choisir" aria-pressed="false">Choisir des sections sur le plan</button>
       <button type="button" data-preset="cordes">Les cordes</button><button type="button" data-preset="bois">Les bois</button><button type="button" data-preset="cuivres">Les cuivres</button><button type="button" data-preset="tout">Tout l'orchestre</button>
       <button type="button" class="principal" id="m-jouer">Écouter l'accord de do majeur</button><button type="button" id="m-vider">Vider</button>
-      <span class="m-etat" id="m-etat" role="status" aria-live="polite">Aucune section choisie.</span>
+      <span class="m-etat" id="m-etat" role="status" aria-live="polite">Touche les instruments du plan pour les choisir.</span>
     </div>
     <div class="cadre">
       <div class="scene">
-        <div id="plan"></div>
+        <div id="plan" class="mode-melange"></div>
         <div id="galerie" class="galerie" hidden></div>
         <div id="tessitures" hidden></div>
       </div>
@@ -63,8 +62,8 @@
     <div class="fiche fiche-fugue" id="variations-corps"></div>
   </section>
 </main>
-<script type="module" src="orchestre.js?v=b4d8ee1b6e"></script>
-<script src="../barre-cours.js?v=b4d8ee1b6e"></script>
-<script src="../retour.js?v=b4d8ee1b6e"></script>
+<script type="module" src="orchestre.js?v=ad77b02a98"></script>
+<script src="../barre-cours.js?v=ad77b02a98"></script>
+<script src="../retour.js?v=ad77b02a98"></script>
 </body>
 </html>

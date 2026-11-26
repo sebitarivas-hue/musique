@@ -1,9 +1,9 @@
 // Profil d'un programme de la Library : type, modules employés, et mesures faites sur le son réellement produit.
 // Sans DOM : tourne dans Node (tests) comme dans la page. Rien n'est écrit à la main : chaque chiffre vient d'un rendu.
 // Un instrument est mesuré avec un accord de trois notes tenu 1,2 s ; un effet reçoit un bruit blanc d'amplitude 0,3 (le même à chaque fois).
-import { compiler, MODULES } from "../src/index.js?v=b4d8ee1b6e";
-import { rendre } from "../src/rendu.js?v=b4d8ee1b6e";
-import * as A from "../science/mesure-signal.js?v=b4d8ee1b6e";
+import { compiler, MODULES } from "../src/index.js?v=ad77b02a98";
+import { rendre } from "../src/rendu.js?v=ad77b02a98";
+import * as A from "../science/mesure-signal.js?v=ad77b02a98";
 
 const SR = 44100, NOMS = Object.keys(MODULES).filter(n => !n.startsWith("lib_"));
 export function modulesEmployes(code) {
