@@ -40,6 +40,6 @@ export const EXEMPLES = [
     ecoute: "Des notes détachées, sèches, toutes courtes : l'accord devient une suite de petits coups d'archet.",
     repere: "Compare avec l'exemple « Les cordes » : même accord, même instruments, notes beaucoup plus courtes." },
   { id: "tutti", titre: "Le tutti : tout l'orchestre sur do majeur", accord: "do", ids: "tout",
-    ecoute: "Tous les instruments qui ont un son jouent ensemble : chaque instrument a sa propre note.",
+    ecoute: "Tout l'orchestre joue ensemble : chaque instrument à hauteur précise a sa propre note, et les percussions frappent avec l'accord.",
     repere: "Écoute la masse : elle se construit à partir des timbres, et non d'un seul son répété." },
 ];

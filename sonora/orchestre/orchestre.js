@@ -1,17 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=d76f27378a";
-import { ACCORDS, voicerAccord } from "./accord.js?v=d76f27378a";
-import { EXEMPLES } from "./exemples.js?v=d76f27378a";
-import { CADENCES, voicerCadence } from "./cadences.js?v=d76f27378a";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=d76f27378a";
-import { monterTimbres } from "./timbres.js?v=d76f27378a";
-import { monterFugue } from "./fugue.js?v=d76f27378a";
-import { monterBritten } from "./britten.js?v=d76f27378a";
-import { monterVariations } from "./variations.js?v=d76f27378a";
-import { svgIcone, dessin } from "./icones.js?v=d76f27378a";
-import { PHOTOS } from "./photos.js?v=d76f27378a";
-import { FICHES } from "./fiches.js?v=d76f27378a";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=ccc22b0ed5";
+import { ACCORDS, voicerAccord } from "./accord.js?v=ccc22b0ed5";
+import { EXEMPLES } from "./exemples.js?v=ccc22b0ed5";
+import { CADENCES, voicerCadence } from "./cadences.js?v=ccc22b0ed5";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=ccc22b0ed5";
+import { monterTimbres } from "./timbres.js?v=ccc22b0ed5";
+import { monterFugue } from "./fugue.js?v=ccc22b0ed5";
+import { monterBritten } from "./britten.js?v=ccc22b0ed5";
+import { monterVariations } from "./variations.js?v=ccc22b0ed5";
+import { svgIcone, dessin } from "./icones.js?v=ccc22b0ed5";
+import { PHOTOS } from "./photos.js?v=ccc22b0ed5";
+import { FICHES } from "./fiches.js?v=ccc22b0ed5";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -74,7 +74,9 @@ function dessinerTessitures() {
 }
 
 // ---------------------------------------------------------------- le mélange : des sections choisies sur le plan jouent ensemble un accord de do majeur
-const PRESETS = { cordes: i => i.fam === "cordes", bois: i => i.fam === "bois", cuivres: i => i.fam === "cuivres", tout: () => true };
+// Les préréglages : une famille, ou tout l'orchestre. Les percussions sans hauteur en font partie : elles jouent leur coup avec l'accord.
+const PRESETS = { cordes: i => i.fam === "cordes", bois: i => i.fam === "bois", cuivres: i => i.fam === "cuivres", percussions: i => i.fam === "percussions", tout: () => true };
+const aUnSon = i => !!(jouables(i) || i.coup);
 // La version jouée d'un instrument : à l'archet, son enregistrement ; en pizzicato ou en trémolo, sa banque particulière (ou rien, s'il n'en a pas).
 const JEUX = { pizz: PIZZICATO, trem: TREMOLO, col: COL_LEGNO, hrm: HARMONIQUES, stacc: STACCATO, marc: MARCATO };
 function versionJeu(i) {
@@ -140,7 +142,7 @@ async function jouerCadence() {
 function brancherMelange() {
   $("m-cadence-jouer").onclick = jouerCadence;
   $("m-cadence").innerHTML = CADENCES.map(c => '<option value="' + c.id + '">' + esc(c.nom) + "</option>").join("");
-  document.querySelectorAll("[data-preset]").forEach(b => { b.onclick = () => { etat.melange = INSTRUMENTS.filter(PRESETS[b.dataset.preset]).filter(i => jouables(i)).map(i => i.id); majMelange(); jouerMelange(); }; });
+  document.querySelectorAll("[data-preset]").forEach(b => { b.onclick = () => { etat.melange = INSTRUMENTS.filter(PRESETS[b.dataset.preset]).filter(aUnSon).map(i => i.id); majMelange(); jouerMelange(); }; });
   $("m-vider").onclick = () => { etat.melange = []; majMelange(); arreter(); };
   $("m-jouer").onclick = jouerMelange;
   $("m-accord").onchange = e => { etat.accord = e.target.value; };
@@ -148,7 +150,7 @@ function brancherMelange() {
   $("exemples").insertAdjacentHTML("beforeend", EXEMPLES.map(x => '<button type="button" data-exemple="' + x.id + '">' + esc(x.titre) + "</button>").join(""));
   document.querySelectorAll("[data-exemple]").forEach(b => { b.onclick = () => {
     const ex = EXEMPLES.find(x => x.id === b.dataset.exemple); if (!ex) return;
-    etat.melange = (ex.ids === "tout" ? INSTRUMENTS.filter(i => jouables(i)) : ex.ids.map(parId)).filter(Boolean).map(i => i.id);
+    etat.melange = (ex.ids === "tout" ? INSTRUMENTS.filter(aUnSon) : ex.ids.map(parId)).filter(Boolean).map(i => i.id);
     etat.accord = ex.accord; $("m-accord").value = ex.accord; setJeu(ex.jeu || "arco");
     majMelange(); $("m-exemple").textContent = ex.titre + ". " + ex.ecoute + " " + ex.repere;
     jouerMelange();
