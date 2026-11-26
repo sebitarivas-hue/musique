@@ -1,16 +1,16 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=6a08b0b0dc";
-import { ACCORDS, voicerAccord } from "./accord.js?v=6a08b0b0dc";
-import { EXEMPLES } from "./exemples.js?v=6a08b0b0dc";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=6a08b0b0dc";
-import { monterTimbres } from "./timbres.js?v=6a08b0b0dc";
-import { monterFugue } from "./fugue.js?v=6a08b0b0dc";
-import { monterBritten } from "./britten.js?v=6a08b0b0dc";
-import { monterVariations } from "./variations.js?v=6a08b0b0dc";
-import { svgIcone, dessin } from "./icones.js?v=6a08b0b0dc";
-import { PHOTOS } from "./photos.js?v=6a08b0b0dc";
-import { FICHES } from "./fiches.js?v=6a08b0b0dc";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=044d79469e";
+import { ACCORDS, voicerAccord } from "./accord.js?v=044d79469e";
+import { EXEMPLES } from "./exemples.js?v=044d79469e";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=044d79469e";
+import { monterTimbres } from "./timbres.js?v=044d79469e";
+import { monterFugue } from "./fugue.js?v=044d79469e";
+import { monterBritten } from "./britten.js?v=044d79469e";
+import { monterVariations } from "./variations.js?v=044d79469e";
+import { svgIcone, dessin } from "./icones.js?v=044d79469e";
+import { PHOTOS } from "./photos.js?v=044d79469e";
+import { FICHES } from "./fiches.js?v=044d79469e";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -85,19 +85,23 @@ function accordDeLaSelection() {   // les instruments choisis, du grave à l'aig
   return voicerAccord(INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && jouable(i)).map(versionJeu), undefined, ACCORDS[etat.accord]);
 }
 function majMelange() {
-  const n = etat.melange.length, muets = etat.melange.filter(id => !jouable(parId(id)));
-  $("m-etat").textContent = n ? n + (n > 1 ? " sections choisies" : " section choisie") + (muets.length ? " (" + muets.length + " sans enregistrement, ignorée" + (muets.length > 1 ? "s" : "") + ")" : "") + "." : "Aucune section choisie.";
+  const n = etat.melange.length, sansHauteur = etat.melange.filter(id => !parId(id)?.tess), muets = etat.melange.filter(id => parId(id)?.tess && !jouable(parId(id)));
+  const bouts = [];
+  if (muets.length) bouts.push(muets.length + (etat.jeu === "pizz" ? " sans pizzicato" : " sans enregistrement") + ", ignorée" + (muets.length > 1 ? "s" : ""));
+  if (sansHauteur.length) bouts.push(sansHauteur.length + " sans hauteur précise (percussion), hors accord");
+  $("m-etat").textContent = n ? n + (n > 1 ? " sections choisies" : " section choisie") + (bouts.length ? " (" + bouts.join(" ; ") + ")" : "") + "." : "Aucune section choisie.";
   document.querySelectorAll(".sect").forEach(g => g.classList.toggle("dans-melange", etat.melange.indexOf(g.dataset.id) >= 0));
   document.querySelectorAll(".sect").forEach(g => g.setAttribute("aria-pressed", String(etat.melange.indexOf(g.dataset.id) >= 0)));
 }
 async function jouerMelange() {
-  const parts = accordDeLaSelection(); if (!parts.length) { message("choisis d'abord des sections qui ont un enregistrement"); return; }
+  const parts = accordDeLaSelection(); if (!parts.length) { message(etat.melange.length ? "un accord a besoin d'un instrument à hauteur précise : les percussions sans hauteur ne forment pas d'accord" : "choisis d'abord des instruments sur le plan"); return; }
   const j = debut(); message("chargement de " + parts.length + " sections…"); const duree = 4.6;
   const lr = await Promise.all(parts.map(p => rendreMelodie(p.inst, [{ t: 0, duree: 3.4, notes: [p.m], vitesse: 0.8 }], duree, j)));
   if (perimee(j)) return;
   const buf = sommer(lr, duree); lire([{ buf }], () => message("prêt"));
-  const sans = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && !parts.some(p => p.inst.id === i.id)).map(i => i.nom.toLowerCase());
-  message("accord de " + ACCORDS[etat.accord].nom + (etat.jeu === "pizz" ? " en pizzicato" : "") + " : " + parts.map(p => (p.inst.id === "violons2" ? "seconds violons" : p.inst.nom.toLowerCase()) + " " + nomNote(p.m)).join(", ") + (sans.length ? ". Sans note dans l'accord, faute de hauteur libre sans unisson : " + sans.join(", ") : ""));
+  const hors = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && !i.tess).map(i => i.nom.toLowerCase());
+  const sans = INSTRUMENTS.filter(i => i.tess && etat.melange.indexOf(i.id) >= 0 && !parts.some(p => p.inst.id === i.id)).map(i => i.nom.toLowerCase());
+  message("accord de " + ACCORDS[etat.accord].nom + (etat.jeu === "pizz" ? " en pizzicato" : "") + " : " + parts.map(p => (p.inst.id === "violons2" ? "seconds violons" : p.inst.nom.toLowerCase()) + " " + nomNote(p.m)).join(", ") + (sans.length ? ". Sans note dans l'accord, faute de hauteur libre sans unisson : " + sans.join(", ") : "") + (hors.length ? ". Hors accord (percussions sans hauteur) : " + hors.join(", ") : ""));
 }
 function setJeu(jeu) { etat.jeu = jeu; $("m-pizz").setAttribute("aria-pressed", String(jeu === "pizz")); majMelange(); }
 function brancherMelange() {
@@ -221,7 +225,7 @@ function demarrer() {
   $("v-plan").onclick = () => vue("plan"); $("v-gal").onclick = () => vue("gal"); $("v-tess").onclick = () => vue("tess");
   if (window.matchMedia("(max-width: 700px)").matches) vue("gal");
   const id = decodeURIComponent((location.hash || "").slice(1)); choisir(parId(id) ? id : null, false); espace(["timbres", "fugue", "britten", "variations"].indexOf(id) >= 0 ? id : "explorer");
-  window.addEventListener("hashchange", () => { const h = decodeURIComponent((location.hash || "").slice(1)); if (["timbres", "fugue", "britten", "variations"].indexOf(h) >= 0) espace(h); else if (parId(h)) { espace("explorer"); if (h !== etat.choix) choisir(h, false); } });
+  window.addEventListener("hashchange", () => { const h = decodeURIComponent((location.hash || "").slice(1)); if (h === "") espace("explorer"); else if (["timbres", "fugue", "britten", "variations"].indexOf(h) >= 0) espace(h); else if (parId(h)) { espace("explorer"); if (h !== etat.choix) choisir(h, false); } });
   document.addEventListener("click", e => { const a = e.target.closest("[data-voir]"); if (a) { e.preventDefault(); espace("explorer"); choisir(a.dataset.voir, true); } });
   window.ORCHESTRE_PRET = true;
 }
