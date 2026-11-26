@@ -115,6 +115,23 @@ export function centre(inst, cx = 500, cy = 540) {
 
 // Le pizzicato : la banque d'échantillons qui remplace celle de l'archet quand le jeu est pincé. Mêmes tessitures que l'archet (vérifié par les tests).
 // Les altos n'ont pas de pizzicato dans la banque : en mode pizzicato, ils sont laissés de côté et l'écran le dit.
-// Le trémolo : la banque des violons vibrés (tessiture de l'archet). Violoncelles, altos et contrebasses n'en ont pas : ils sont laissés de côté en trémolo.
-export const TREMOLO = { violons1: "violons-trem", violons2: "violons-trem" };
-export const PIZZICATO = { violons1: "violons-piz", violons2: "violons-piz", violoncelles: "celli-piz", contrebasses: "basses-piz", harpe: "harpe" };
+// Les techniques de jeu : pour chaque instrument, la banque qui remplace celle de l'archet et sa tessiture enregistrée.
+// Un instrument absent d'une technique n'est pas joué dans cette technique : l'écran le dit, sans jouer à l'archet à la place.
+// Les banques de cordes viennent de Sonatina Symphonic Orchestra (Creative Commons Sampling Plus 1.0) ; violons-trem vient de VSCO 2 CE (CC0).
+export const PIZZICATO = {
+  violons1: { banque: "violons-piz", echant: [55, 91] }, violons2: { banque: "violons-piz", echant: [55, 91] },
+  violoncelles: { banque: "celli-piz", echant: [36, 72] }, contrebasses: { banque: "basses-piz", echant: [24, 60] },
+  harpe: { banque: "harpe", echant: [35, 93] },
+};
+export const TREMOLO = {
+  violons1: { banque: "violons-trem", echant: [55, 91] }, violons2: { banque: "violons-trem", echant: [55, 91] },
+  violoncelles: { banque: "celli-trm", echant: [36, 72] }, altos: { banque: "violas-trm", echant: [48, 84] }, contrebasses: { banque: "basses-trm", echant: [24, 60] },
+};
+export const COL_LEGNO = {
+  violons1: { banque: "violons-col", echant: [55, 87] }, violons2: { banque: "violons-col", echant: [55, 87] },
+  altos: { banque: "altos-col", echant: [48, 74] }, contrebasses: { banque: "basses-col", echant: [28, 54] },
+};
+export const HARMONIQUES = {
+  violons1: { banque: "violons-hrm", echant: [55, 94] }, violons2: { banque: "violons-hrm", echant: [55, 94] },
+  violoncelles: { banque: "celli-hrm", echant: [36, 72] }, altos: { banque: "altos-hrm", echant: [48, 84] },
+};
