@@ -1,0 +1,30 @@
+// SONORA Orchestre : des exemples d'orchestration à écouter (sans DOM, testé dans Node).
+// Chaque exemple choisit des instruments du plan et un accord ; l'accord est joué avec la règle de accord.js (pas d'unisson).
+// `ids` : les instruments (identifiants de donnees.js), ou "tout" pour tout l'orchestre qui a un son. `accord` : une clé de ACCORDS.
+// `ecoute` : ce qu'on entend ; `repere` : le point à observer. Les consignes décrivent ce qui s'entend dans la version jouée ici, pas une analyse de partition.
+export const EXEMPLES = [
+  { id: "cordes", titre: "Les cordes, du grave à l'aigu", accord: "do", ids: ["contrebasses", "violoncelles", "altos", "violons2", "violons1"],
+    ecoute: "Une masse chaude et continue : les cinq pupitres de cordes jouent ensemble, un accord de do majeur.",
+    repere: "Repère la note la plus grave, jouée par les contrebasses, et la plus aiguë, jouée par les premiers violons." },
+  { id: "bois", titre: "Quatre bois sur le même accord", accord: "do", ids: ["flutes", "hautbois", "clarinettes", "bassons"],
+    ecoute: "Quatre timbres différents sur des notes voisines : chacun garde sa couleur, même dans l'accord.",
+    repere: "Essaie de reconnaître la flûte, puis le hautbois, dans l'accord complet." },
+  { id: "cuivres", titre: "L'éclat des cuivres", accord: "do", ids: ["cors", "trompettes", "trombones", "tuba"],
+    ecoute: "La puissance des cuivres, aiguë avec les trompettes, grave avec le tuba.",
+    repere: "Compare l'accord des cuivres avec celui des cordes : même accord, autre attaque et autre couleur." },
+  { id: "trio", titre: "Un trio : violoncelle, hautbois, flûte", accord: "do", ids: ["violoncelles", "hautbois", "flutes"],
+    ecoute: "Trois instruments seuls, trois timbres très différents, trois notes de l'accord.",
+    repere: "Le trio est le plus petit accord possible : chaque note doit rester audible." },
+  { id: "mineur", titre: "La mineur : la même couleur sombre", accord: "la", ids: ["contrebasses", "violoncelles", "clarinetteBasse", "altos"],
+    ecoute: "Le même type d'instruments qu'avec le do majeur, mais l'accord est mineur : l'ambiance change.",
+    repere: "Écoute d'abord l'exemple « Les cordes » (do majeur), puis celui-ci : quelle note a changé ?" },
+  { id: "dominante", titre: "Sol 7 : la tension de la dominante", accord: "sol7", ids: ["contrebasses", "cors", "violons1", "flutes"],
+    ecoute: "Quatre notes qui cherchent à revenir vers le do : l'accord sonne comme une question.",
+    repere: "Le sol 7 contient une note de plus que le do majeur : repère la quatrième voix, la plus instable." },
+  { id: "percussions", titre: "Un accord frappé : timbales, cloches, xylophone", accord: "do", ids: ["timbales", "cloches", "xylophone"],
+    ecoute: "Des instruments qu'on frappe : la note est précise, mais elle s'éteint vite.",
+    repere: "Compare la durée de ces notes avec celle des cordes, qui se prolongent." },
+  { id: "tutti", titre: "Le tutti : tout l'orchestre sur do majeur", accord: "do", ids: "tout",
+    ecoute: "Tous les instruments qui ont un son jouent ensemble : chaque instrument a sa propre note.",
+    repere: "Écoute la masse : elle se construit à partir des timbres, et non d'un seul son répété." },
+];
