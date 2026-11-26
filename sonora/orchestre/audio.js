@@ -1,33 +1,33 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=b455aa0d78";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=b455aa0d78";
+import { nomNote } from "./donnees.js?v=3f82da1bd0";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=3f82da1bd0";
 
 let ctx = null, sources = [], jeton = 0, sortie = null, salle = null;   // salle : la réverbération, une seule par contexte   // sortie : le seul nœud de gain en service (un par lecture, retiré à l'arrêt)
 // Une seule lecture compte : la dernière demandée. Chaque demande prend un numéro (`debut`) ; arrêter, ou demander autre chose, rend périmées celles qui sont encore en préparation.
 // Avant (rafale de clics sur les instruments, 24/11/2026) : huit rendus complets étaient calculés à la suite, chacun coupant le précédent, et l'écran se figeait sur un poste lent.
 // La réverbération : une réponse impulsionnelle de salle (bruit décroissant, 2,4 s, stéréo), générée une fois et partagée par toutes les lectures.
-function reverberation(c) {
+export function reverberation(c) {
   if (salle && salle.ctx === c) return salle.entree;
-  const sr = c.sampleRate, n = Math.round(3.2 * sr), b = c.createBuffer(2, n, sr);
+  const sr = c.sampleRate, n = Math.round(3.8 * sr), b = c.createBuffer(2, n, sr);
   // générateur pseudo-aléatoire de qualité (mulberry32) : pas de motifs audibles dans la queue
   let g = 0x2545f491;
   const hasard = () => { g = (g + 0x6d2b79f5) | 0; let t = Math.imul(g ^ (g >>> 15), 1 | g); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return (((t ^ (t >>> 14)) >>> 0) / 4294967296) * 2 - 1; };
-  const pre = Math.round(0.014 * sr);
+  const pre = Math.round(0.024 * sr);   // avant-délai : le son direct reste net, la salle arrive après
   for (let ch = 0; ch < 2; ch++) {
     const d = b.getChannelData(ch); let y = 0;
     for (let i = pre; i < n; i++) {
       const t = (i - pre) / sr;
       // la queue s'assombrit : le filtre passe-bas se ferme avec le temps, comme l'air et les matériaux d'une salle
-      const coupe = 0.55 * Math.exp(-t * 1.4) + 0.04;
+      const coupe = 0.6 * Math.exp(-t * 1.1) + 0.05;
       y += coupe * (hasard() - y);
-      d[i] = y * Math.exp(-t * 1.6) * (1 - Math.exp(-t * 80));
+      d[i] = y * Math.exp(-t * 1.25) * (1 - Math.exp(-t * 80));
     }
     // réflexions précoces, légèrement différentes à gauche et à droite
     [[0.023, 0.5], [0.037, 0.35], [0.052, 0.25], [0.071, 0.18]].forEach(([tp, a], k) => { const i = Math.round((tp + (ch ? 0.003 * (k + 1) : 0)) * sr); if (i < n) d[i] += a * (k % 2 ? -1 : 1) * 0.5; });
   }
   const conv = c.createConvolver(); conv.buffer = b;
-  const retour = c.createGain(); retour.gain.value = 0.36; conv.connect(retour); retour.connect(c.destination);
+  const retour = c.createGain(); retour.gain.value = 1.2; conv.connect(retour); retour.connect(c.destination);
   salle = { ctx: c, entree: conv }; return conv;
 }
 // Spatialisation : un instrument garde sa place sur le plan. Son centre (g0, g1 : angles depuis le chef) donne la position gauche-droite,
