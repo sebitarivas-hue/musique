@@ -4,14 +4,14 @@
 //              joués à deux mesures, au tempo du projet ;
 //   Sons       les neuf sons de synthèse d'Harmonie (basse 808, sous-basse, lead, nappe, piano électrique, pincé, orgue rock, cloches, stab) sur la note et la durée de son choix.
 // Tout est fabriqué à la demande, sans fichier ni réseau, et reproductible. Sans DOM : testé dans Node.
-import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS, GROUPES_KITS, chargerKit, chargerTousLesKits, assurerKit } from "../harmonie/batterie.js?v=9d0351982c";
+import { son as pieceBatterie, rendreBatterie, SONS_BATTERIE, KITS, GROUPES_KITS, chargerKit, chargerTousLesKits, assurerKit } from "../harmonie/batterie.js?v=23003f7c81";
 export { KITS, GROUPES_KITS, assurerKit };   // le séquenceur à pas (panneaux.js) liste les kits et charge celui qu'on choisit
 export const preparerBatterie = (ctx, base) => chargerKit(ctx, base, "reel").then(() => chargerTousLesKits(ctx, base));   // la vraie batterie d'abord, puis les autres kits enregistrés, en arrière-plan au démarrage de Pistes
-import { GENRES } from "../harmonie/genres.js?v=9d0351982c";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=9d0351982c";
-import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=9d0351982c";
-import { rendreSuite } from "../harmonie/son.js?v=9d0351982c";
-import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=9d0351982c";
+import { GENRES } from "../harmonie/genres.js?v=23003f7c81";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=23003f7c81";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=23003f7c81";
+import { rendreSuite } from "../harmonie/son.js?v=23003f7c81";
+import { rendreSuiteEch, preparer } from "../harmonie/echantillons.js?v=23003f7c81";
 
 export const NOMS_PIECES = { kick: "Grosse caisse", snare: "Caisse claire", clap: "Clap", hatc: "Charleston fermé", hato: "Charleston ouvert", rim: "Rimshot", tom: "Tom", cow: "Cloche", shaker: "Shaker", ride: "Cymbale ride", crash: "Cymbale crash" };
 // Des rythmes du monde, sur seize pas (huit, neuf ou douze quand le rythme l'exige). Les mêmes que ceux de l'atelier sonore du cours.

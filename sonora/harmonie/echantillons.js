@@ -7,7 +7,7 @@
 export const BANQUE = { piano: "clavier", orgue: "orgue", cordes: "cordes", harpe: "harpe", guitare: "guitare", clavecin: "clavecin", violoncelle: "violoncelle", flute: "souffle", guitareElec: "guitare-elec", guitareJazz: "guitare-jazz", guitareFolk: "guitare-folk", violonsOrch: "violons-ens", corsOrch: "cors-ens", clarinettesOrch: "clarinettes-ens", choeur: "choeur-f", celesta: "celesta" };
 // Niveau relatif et durée de relâchement (secondes) de chaque instrument de la banque : les mêmes valeurs que celles du site (outils/site_gabarit.html, tables NIVEAU et RELACHE).
 export const NIVEAU = { triangle: 2.2, "caisse-claire": 1.2, "tambour-basque": 1.3, fouet: 1.4, "blocs-chinois": 1, piccolo: 1, "guitare-elec": 1.2, "guitare-jazz": 1.2, "guitare-folk": 1.2, "clarinettes-ens": 1, "choeur-f": 1, "cors-ens": 1, "trompettes-ens": 1, "trombones-ens": 1, "flutes-ens": 1, "hautbois-ens": 1, "bassons-ens": 1, "choeur-h": 1, "altos-ens": 1, "celli-ens": 1, basse: 1.4, "violons-ens": 0.9, "violons-stacc": 1, "violons-piz": 1.2, "violons-trem": 0.9, "celli-piz": 1.2, "basses-piz": 1.3, "basses-ens": 1.1, celesta: 1.1, souffle: 1, cordes: 1, clavier: 1, "piano-droit": 1, orgue: 0.9, guitare: 1.2, clavecin: 1.1, violoncelle: 1, harpe: 1 };
-export const RELACHE = { triangle: 1.6, cymbales: 1.4, "tam-tam": 2.6, "grosse-caisse": 0.9, "caisse-claire": 0.25, "tambour-basque": 0.3, fouet: 0.2, "blocs-chinois": 0.25, "sax-tenor": 0.25, "sax-soprano": 0.25, "sax-baryton": 0.25, rhodes: 0.4, wurlitzer: 0.35, "guitare-verte": 0.4, "guitare-noire": 0.4, "violoncelle-solo": 0.3, "voix-ah": 0.3, pianet: 0.3, cp80: 0.4, "basse-moderne": 0.18, "sax-alto": 0.25, synthe: 0.35, "guitare-elec": 0.5, "guitare-jazz": 0.5, "guitare-folk": 0.6, basse: 0.16, "violons-ens": 0.6, "violons-stacc": 0.3, "violons-piz": 0.4, "violons-trem": 0.5, "altos-ens": 0.6, "celli-ens": 0.6, "celli-piz": 0.4, "basses-ens": 0.6, "basses-piz": 0.4, "cors-ens": 0.5, "trompettes-ens": 0.35, "trombones-ens": 0.4, "flutes-ens": 0.35, "hautbois-ens": 0.35, "clarinettes-ens": 0.35, "bassons-ens": 0.4, "choeur-h": 0.7, "choeur-f": 0.7, celesta: 0.8, souffle: 0.3, cordes: 0.5, clavier: 0.6, "piano-droit": 0.6, orgue: 0.25, guitare: 0.6, clavecin: 0.5, violoncelle: 0.5, harpe: 1.2 };
+export const RELACHE = { celesta: 2.2, cloche: 2.0, triangle: 1.6, cymbales: 1.4, "tam-tam": 2.6, "grosse-caisse": 0.9, "caisse-claire": 0.25, "tambour-basque": 0.3, fouet: 0.2, "blocs-chinois": 0.25, "sax-tenor": 0.25, "sax-soprano": 0.25, "sax-baryton": 0.25, rhodes: 0.4, wurlitzer: 0.35, "guitare-verte": 0.4, "guitare-noire": 0.4, "violoncelle-solo": 0.3, "voix-ah": 0.3, pianet: 0.3, cp80: 0.4, "basse-moderne": 0.18, "sax-alto": 0.25, synthe: 0.35, "guitare-elec": 0.5, "guitare-jazz": 0.5, "guitare-folk": 0.6, basse: 0.16, "violons-ens": 0.6, "violons-stacc": 0.3, "violons-piz": 0.4, "violons-trem": 0.5, "altos-ens": 0.6, "celli-ens": 0.6, "celli-piz": 0.4, "basses-ens": 0.6, "basses-piz": 0.4, "cors-ens": 0.5, "trompettes-ens": 0.35, "trombones-ens": 0.4, "flutes-ens": 0.35, "hautbois-ens": 0.35, "clarinettes-ens": 0.35, "bassons-ens": 0.4, "choeur-h": 0.7, "choeur-f": 0.7, celesta: 0.8, souffle: 0.3, cordes: 0.5, clavier: 0.6, "piano-droit": 0.6, orgue: 0.25, guitare: 0.6, clavecin: 0.5, violoncelle: 0.5, harpe: 1.2 };
 
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 
@@ -83,19 +83,33 @@ export function rendreSuiteEch(evenements, tampons, { instrument = "clavier", sr
 const CACHE = { catalogue: null, instruments: {} };
 export function racineBanque() { return new URL("../../faust/banque/", import.meta.url).href; }
 export function catalogue(base = racineBanque()) {
-  if (!CACHE.catalogue) CACHE.catalogue = fetch(base + "catalogue.json").then(r => (r.ok ? r.json() : [])).catch(() => []);
-  return CACHE.catalogue;
+  CACHE.catalogues = CACHE.catalogues || {};
+  if (!CACHE.catalogues[base]) CACHE.catalogues[base] = fetch(base + "catalogue.json").then(r => { if (!r.ok) throw new Error("catalogue"); return r.json(); }).catch(() => { delete CACHE.catalogues[base]; return null; });   // un échec n'est pas gardé : on réessaie au prochain son
+  return CACHE.catalogues[base];
 }
 // Charge tous les échantillons d'un instrument de la banque. Renvoie la liste de tampons (vide si la banque n'est pas servie : l'appelant garde alors la synthèse).
 export function chargerInstrument(nomBanque, ctx, base = racineBanque()) {
-  if (!CACHE.instruments[nomBanque]) CACHE.instruments[nomBanque] = catalogue(base).then(cat => Promise.all(cat.filter(e => e.i === nomBanque).map(e => fetch(`${base}${e.id}.mp3`).then(r => r.arrayBuffer())
-    .then(b => new Promise((ok, ko) => { const p = ctx.decodeAudioData(b, ok, ko); if (p && p.catch) p.catch(ko); })).then(buf => {
-      const canal = buf.getChannelData(0); let m = 0; for (let i = 0; i < canal.length; i++) m = Math.max(m, Math.abs(canal[i]));
-      let o = 0; while (o < canal.length && Math.abs(canal[o]) < m * 0.003) o++; // le silence du début (retard du codeur MP3) est sauté
-      return { id: e.id, f: e.f, canal, sr: buf.sampleRate, off: o / buf.sampleRate, a: e.a, b: e.b, c: e.c };
-    }).catch(() => null)))).then(L => L.filter(Boolean).sort((x, y) => x.f - y.f));
+  if (CACHE.instruments[nomBanque]) return CACHE.instruments[nomBanque];
+  const charger = async () => {
+    const cat = await catalogue(base);
+    if (!cat) { delete CACHE.instruments[nomBanque]; return []; }   // catalogue injoignable : rien n'est gardé, on réessaie au prochain son
+    const entrees = cat.filter(e => e.i === nomBanque);
+    const L = await Promise.all(entrees.map(async e => {
+      try {
+        const b = await (await fetch(`${base}${e.id}.mp3`)).arrayBuffer();
+        const buf = await new Promise((ok, ko) => { const p = ctx.decodeAudioData(b, ok, ko); if (p && p.catch) p.catch(ko); });
+        const canal = buf.getChannelData(0); let m = 0; for (let i = 0; i < canal.length; i++) m = Math.max(m, Math.abs(canal[i]));
+        let o = 0; while (o < canal.length && Math.abs(canal[o]) < m * 0.003) o++; // le silence du début (retard du codeur MP3) est sauté
+        return { id: e.id, f: e.f, canal, sr: buf.sampleRate, off: o / buf.sampleRate, a: e.a, b: e.b, c: e.c };
+      } catch (err) { return null; }
+    }));
+    const ok = L.filter(Boolean);
+    if (ok.length < entrees.length) delete CACHE.instruments[nomBanque];   // un fichier manquant : on réessaie au prochain son
+    return ok.sort((x, y) => x.f - y.f);
+  };
+  CACHE.instruments[nomBanque] = charger();
   return CACHE.instruments[nomBanque];
 }
 export const tamponsPrets = nomBanque => CACHE.instruments[nomBanque] && CACHE.instruments[nomBanque].resolved;
 // Mémorise le résultat une fois chargé, pour que les appels synchrones de la page sachent si l'instrument est prêt.
-export async function preparer(nomBanque, ctx, base) { const L = await chargerInstrument(nomBanque, ctx, base); CACHE.instruments[nomBanque].resolved = L.length ? L : null; return CACHE.instruments[nomBanque].resolved; }
+export async function preparer(nomBanque, ctx, base) { const L = await chargerInstrument(nomBanque, ctx, base); if (CACHE.instruments[nomBanque]) CACHE.instruments[nomBanque].resolved = L.length ? L : null; return L.length ? L : null; }

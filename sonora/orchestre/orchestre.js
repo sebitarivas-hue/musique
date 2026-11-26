@@ -1,17 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=9d0351982c";
-import { ACCORDS, voicerAccord } from "./accord.js?v=9d0351982c";
-import { EXEMPLES } from "./exemples.js?v=9d0351982c";
-import { CADENCES, voicerCadence } from "./cadences.js?v=9d0351982c";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=9d0351982c";
-import { monterTimbres } from "./timbres.js?v=9d0351982c";
-import { monterFugue } from "./fugue.js?v=9d0351982c";
-import { monterBritten } from "./britten.js?v=9d0351982c";
-import { monterVariations } from "./variations.js?v=9d0351982c";
-import { svgIcone, dessin } from "./icones.js?v=9d0351982c";
-import { PHOTOS } from "./photos.js?v=9d0351982c";
-import { FICHES } from "./fiches.js?v=9d0351982c";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=23003f7c81";
+import { ACCORDS, voicerAccord } from "./accord.js?v=23003f7c81";
+import { EXEMPLES } from "./exemples.js?v=23003f7c81";
+import { CADENCES, voicerCadence } from "./cadences.js?v=23003f7c81";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=23003f7c81";
+import { monterTimbres } from "./timbres.js?v=23003f7c81";
+import { monterFugue } from "./fugue.js?v=23003f7c81";
+import { monterBritten } from "./britten.js?v=23003f7c81";
+import { monterVariations } from "./variations.js?v=23003f7c81";
+import { svgIcone, dessin } from "./icones.js?v=23003f7c81";
+import { PHOTOS } from "./photos.js?v=23003f7c81";
+import { FICHES } from "./fiches.js?v=23003f7c81";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -99,12 +99,15 @@ async function jouerMelange() {
   const parts = accordDeLaSelection(), percs = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && i.coup);
   if (!parts.length && !percs.length) { message(etat.melange.length ? "un accord a besoin d'un instrument à hauteur précise" : "choisis d'abord des instruments sur le plan"); return; }
   const j = debut(); message("chargement…"); const duree = 4.6;
-  const lr = await Promise.all([
+  const insts = [...parts.map(p => p.inst), ...percs];
+  const brut = await Promise.all([
     ...parts.map(p => rendreMelodie(p.inst, [{ t: 0, duree: 3.4, notes: [p.m], vitesse: 0.8 }], duree, j)),
     ...percs.map(i => rendreMelodie({ banque: i.coup.banque, nom: i.nom }, [{ t: 0, duree: 1, notes: [60], vitesse: 0.8 }], duree, j)),
   ]);
   if (perimee(j)) return;
-  const buf = sommer(lr, duree); lire([{ buf }], () => message("prêt"));
+  const muets = insts.filter((_, k) => !brut[k]).map(i => i.nom.toLowerCase());
+  const buf = sommer(equilibrer(brut.map((x, k) => placer(x, insts[k]))), duree); lire([{ buf }], () => message("prêt"));
+  if (muets.length) message("son non chargé pour " + muets.join(", ") + " : choisis-les à nouveau pour réessayer");
   const txt = parts.length ? "accord de " + ACCORDS[etat.accord].nom + (etat.jeu === "pizz" ? " en pizzicato" : "") + " : " + parts.map(p => (p.inst.id === "violons2" ? "seconds violons" : p.inst.nom.toLowerCase()) + " " + nomNote(p.m)).join(", ") : "percussions seules";
   const sans = INSTRUMENTS.filter(i => i.tess && etat.melange.indexOf(i.id) >= 0 && !parts.some(p => p.inst.id === i.id)).map(i => i.nom.toLowerCase());
   message(txt + (percs.length ? ". Avec les percussions : " + percs.map(i => i.nom.toLowerCase()).join(", ") : "") + (sans.length ? ". Sans note dans l'accord, faute de hauteur libre sans unisson : " + sans.join(", ") : ""));
@@ -121,10 +124,11 @@ async function jouerCadence() {
   const parIns = new Map();
   v.forEach((acc, k) => acc.parts.forEach(p => { if (!parIns.has(p.inst.id)) parIns.set(p.inst.id, { inst: p.inst, ev: [] }); parIns.get(p.inst.id).ev.push({ t: k * T, duree: T * 0.95, notes: [p.m], vitesse: 0.8 }); }));
   const pistes = [...parIns.values()].map(x => rendreMelodie(x.inst, x.ev, duree, j));
-  for (const i of percs) pistes.push(rendreMelodie({ banque: i.coup.banque, nom: i.nom }, v.map((_, k) => ({ t: k * T, duree: 0.9, notes: [60], vitesse: 0.8 })), duree, j));
+  const insts = [...parIns.values()].map(x => x.inst);
+  for (const i of percs) { pistes.push(rendreMelodie({ banque: i.coup.banque, nom: i.nom }, v.map((_, k) => ({ t: k * T, duree: 0.9, notes: [60], vitesse: 0.8 })), duree, j)); insts.push(i); }
   const lr = await Promise.all(pistes);
   if (perimee(j)) return;
-  const buf = sommer(lr, duree); lire([{ buf }], () => message("prêt"));
+  const buf = sommer(equilibrer(lr.map((x, k) => placer(x, insts[k]))), duree); lire([{ buf }], () => message("prêt"));
   message(c.nom + " : " + v.map(x => x.accord.nom).join(", ") + ".");
   $("m-exemple").textContent = c.nom + ". " + c.explication;
 }

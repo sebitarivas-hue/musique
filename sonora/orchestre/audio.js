@@ -1,7 +1,7 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=9d0351982c";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=9d0351982c";
+import { nomNote } from "./donnees.js?v=23003f7c81";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=23003f7c81";
 
 let ctx = null, sources = [], jeton = 0, sortie = null, salle = null;   // salle : la réverbération, une seule par contexte   // sortie : le seul nœud de gain en service (un par lecture, retiré à l'arrêt)
 // Une seule lecture compte : la dernière demandée. Chaque demande prend un numéro (`debut`) ; arrêter, ou demander autre chose, rend périmées celles qui sont encore en préparation.
@@ -9,12 +9,34 @@ let ctx = null, sources = [], jeton = 0, sortie = null, salle = null;   // salle
 // La réverbération : une réponse impulsionnelle de salle (bruit décroissant, 2,4 s, stéréo), générée une fois et partagée par toutes les lectures.
 function reverberation(c) {
   if (salle && salle.ctx === c) return salle.entree;
-  const n = Math.round(2.4 * c.sampleRate), b = c.createBuffer(2, n, c.sampleRate), pre = Math.round(0.018 * c.sampleRate);
+  const n = Math.round(3.2 * c.sampleRate), b = c.createBuffer(2, n, c.sampleRate), pre = Math.round(0.018 * c.sampleRate);
   let graine = 12345; const hasard = () => { graine = (graine * 1103515245 + 12345) & 0x7fffffff; return graine / 0x7fffffff * 2 - 1; };
-  for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = pre; i < n; i++) { const t = (i - pre) / c.sampleRate; d[i] = hasard() * Math.exp(-t * 2.4) * (1 - Math.exp(-t * 60)); } }
+  for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = pre; i < n; i++) { const t = (i - pre) / c.sampleRate; d[i] = hasard() * Math.exp(-t * 1.5) * (1 - Math.exp(-t * 60)); } }
   const conv = c.createConvolver(); conv.buffer = b;
-  const retour = c.createGain(); retour.gain.value = 0.28; conv.connect(retour); retour.connect(c.destination);
+  const retour = c.createGain(); retour.gain.value = 0.42; conv.connect(retour); retour.connect(c.destination);
   salle = { ctx: c, entree: conv }; return conv;
+}
+// Spatialisation : un instrument garde sa place sur le plan. Son centre (g0, g1 : angles depuis le chef) donne la position gauche-droite,
+// et le rang (0 cordes devant, 4 percussions au fond) donne la profondeur : les rangs du fond sont un peu plus loin. Puissance constante.
+export function placer(lr, inst) {
+  if (!lr || !inst) return lr;
+  const [L, R] = lr, n = L.length, a = ((inst.g0 + inst.g1) / 2) * Math.PI / 180;
+  const pan = Math.max(-0.85, Math.min(0.85, Math.sin(a) * 0.85)), th = (pan + 1) * Math.PI / 4;
+  const prof = [1, 0.94, 0.88, 0.82, 0.78][inst.rang] ?? 0.9, gl = Math.cos(th) * prof, gr = Math.sin(th) * prof;
+  const OL = new Float32Array(n), OR = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const m = (L[i] + R[i]) / 2; OL[i] = m * gl; OR[i] = m * gr; }
+  return [OL, OR];
+}
+// Équilibrage : chaque piste ramenée à un même niveau moyen (gain borné), pour qu'un instrument doux ne soit pas couvert par un instrument fort.
+export function equilibrer(listes) {
+  const cible = 0.045;
+  return listes.map(lr => {
+    if (!lr) return lr;
+    let s2 = 0, k = 0; for (let i = 0; i < lr[0].length; i++) { const v = lr[0][i] * lr[0][i] + lr[1][i] * lr[1][i]; if (v > 0) { s2 += v; k++; } }
+    const rms = k ? Math.sqrt(s2 / (2 * k)) : 0; if (rms < 1e-6) return lr;
+    const g = Math.max(0.5, Math.min(3, cible / rms));
+    return [lr[0].map(v => v * g), lr[1].map(v => v * g)];
+  });
 }
 export function arreter() { jeton++; for (const s of sources) { try { s.stop(); } catch (e) {} } sources = []; if (sortie) { try { sortie.disconnect(); } catch (e) {} sortie = null; } }
 export const enCours = () => sources.length > 0;   // vrai tant qu'un son joue (une animation peut s'arrêter quand il se tait)
