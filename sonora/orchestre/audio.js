@@ -1,7 +1,7 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=3f82da1bd0";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=3f82da1bd0";
+import { nomNote } from "./donnees.js?v=133e7b3e5d";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=133e7b3e5d";
 
 let ctx = null, sources = [], jeton = 0, sortie = null, salle = null;   // salle : la réverbération, une seule par contexte   // sortie : le seul nœud de gain en service (un par lecture, retiré à l'arrêt)
 // Une seule lecture compte : la dernière demandée. Chaque demande prend un numéro (`debut`) ; arrêter, ou demander autre chose, rend périmées celles qui sont encore en préparation.
@@ -42,17 +42,22 @@ export function placer(lr, inst) {
   return [OL, OR];
 }
 // Équilibrage : chaque piste ramenée à un même niveau moyen (gain borné), pour qu'un instrument doux ne soit pas couvert par un instrument fort.
-// Poids d'équilibrage : les sons qui résonnent peu (célesta, cloches) et les frappes (grosse caisse, caisse claire, fouet) sont laissés un peu plus présents,
-// car à niveau moyen égal une attaque se perd derrière un son tenu.
-const POIDS = { celesta: 1.25, cloches: 1.2, xylophone: 1.1, grosseCaisse: 1.4, caisseClaire: 1.4, fouet: 1.5, tamTam: 1.3, triangle: 1.3, cymbales: 1.3, tambourBasque: 1.3, blocsChinois: 1.3, castagnettes: 1.3 };
+// Équilibre d'orchestre, en décibels, par instrument (approximation d'une balance symphonique typique, pas une mesure) :
+// les cuivres dominent en forte, les cordes forment la base, les bois sont en retrait, la harpe et le célesta sont doux, les timbales et la grosse caisse sont accentués.
+// Les échantillons de la banque sont déjà ramenés à un même niveau à la fabrication : cette table redonne la hiérarchie, sans jamais amplifier une piste.
+export const NIVEAU_ORCHESTRE = {
+  violons1: 0, violons2: -0.5, altos: -1, violoncelles: -1, contrebasses: -2,
+  harpe: -4, piccolo: -2, flutes: -2, hautbois: -2, corAnglais: -2, clarinettes: -2, clarinetteBasse: -2, bassons: -2,
+  cors: 2, trompettes: 3, trombones: 3, tuba: 3, timbales: 1,
+  xylophone: -2, cloches: -2, celesta: -5, grosseCaisse: 0, caisseClaire: -1, cymbales: -1, tamTam: 0,
+  triangle: -5, tambourBasque: -3, fouet: -3, castagnettes: -4, blocsChinois: -4,
+};
+// Applique le niveau relatif de chaque instrument. Aucune mesure, aucune amplification : une piste reste à son niveau, à un décibel près.
 export function equilibrer(listes, ids = []) {
-  const cible = 0.05;
   return listes.map((lr, k) => {
     if (!lr) return lr;
-    let s2 = 0, n = 0; for (let i = 0; i < lr[0].length; i++) { const m = (lr[0][i] + lr[1][i]) / 2; if (m * m > 0) { s2 += m * m; n++; } }
-    const rms = n ? Math.sqrt(s2 / n) : 0; if (rms < 1e-6) return lr;
-    const g = Math.max(0.25, Math.min(8, (cible * (POIDS[ids[k]] || 1)) / rms));
-    return [lr[0].map(v => v * g), lr[1].map(v => v * g)];
+    const g = Math.pow(10, (NIVEAU_ORCHESTRE[ids[k]] ?? 0) / 20);
+    return g === 1 ? lr : [lr[0].map(v => v * g), lr[1].map(v => v * g)];
   });
 }
 export function arreter() { jeton++; for (const s of sources) { try { s.stop(); } catch (e) {} } sources = []; if (sortie) { try { sortie.disconnect(); } catch (e) {} sortie = null; } }

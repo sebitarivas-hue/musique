@@ -1,17 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=3f82da1bd0";
-import { ACCORDS, voicerAccord } from "./accord.js?v=3f82da1bd0";
-import { EXEMPLES } from "./exemples.js?v=3f82da1bd0";
-import { CADENCES, voicerCadence } from "./cadences.js?v=3f82da1bd0";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=3f82da1bd0";
-import { monterTimbres } from "./timbres.js?v=3f82da1bd0";
-import { monterFugue } from "./fugue.js?v=3f82da1bd0";
-import { monterBritten } from "./britten.js?v=3f82da1bd0";
-import { monterVariations } from "./variations.js?v=3f82da1bd0";
-import { svgIcone, dessin } from "./icones.js?v=3f82da1bd0";
-import { PHOTOS } from "./photos.js?v=3f82da1bd0";
-import { FICHES } from "./fiches.js?v=3f82da1bd0";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=133e7b3e5d";
+import { ACCORDS, voicerAccord } from "./accord.js?v=133e7b3e5d";
+import { EXEMPLES } from "./exemples.js?v=133e7b3e5d";
+import { CADENCES, voicerCadence } from "./cadences.js?v=133e7b3e5d";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=133e7b3e5d";
+import { monterTimbres } from "./timbres.js?v=133e7b3e5d";
+import { monterFugue } from "./fugue.js?v=133e7b3e5d";
+import { monterBritten } from "./britten.js?v=133e7b3e5d";
+import { monterVariations } from "./variations.js?v=133e7b3e5d";
+import { svgIcone, dessin } from "./icones.js?v=133e7b3e5d";
+import { PHOTOS } from "./photos.js?v=133e7b3e5d";
+import { FICHES } from "./fiches.js?v=133e7b3e5d";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
