@@ -1,7 +1,7 @@
 // La console de mixage de SONORA Pistes : une voie par piste (fader, panoramique, muet, solo, effets, vumètre), et la voie maître.
 // Elle lit et écrit le même projet que la vue pistes et la vue blocs : rien n'est doublé. Les vumètres lisent les analyseurs des chaînes de lecture (pistes.js).
-import * as B from "./blocs.js?v=23003f7c81";
-import { pictoDe } from "./blocs-ui.js?v=23003f7c81";
+import * as B from "./blocs.js?v=555a8431a2";
+import { pictoDe } from "./blocs-ui.js?v=555a8431a2";
 
 // Des couleurs fluo sur fond noir : le jaune acide reste la signature du site, les voies prennent les autres.
 export const COULEURS = ["#D6FF00", "#19E3FF", "#FF2BD6", "#FF8A1F", "#2BFF88", "#9B6BFF", "#3D7BFF", "#FF3D5A"];
