@@ -3,25 +3,28 @@
 // Règles : chaque instrument reçoit une note de do majeur (do, mi ou sol) dans sa propre zone jouable ; deux instruments ne jouent jamais la même hauteur (unisson interdit) ;
 // le plus grave joue le do ; les notes suivent l'ordre grave à aigu do, sol, mi, pour que les trois notes se répartissent.
 // Le placement est un appariement complet (Kuhn) : un instrument ne perd sa note que si aucun placement sans unisson n'existe pour tous.
-import { jouables } from "./donnees.js?v=ad77b02a98";
+import { jouables } from "./donnees.js?v=632814132b";
 
 const CLASSES = [0, 4, 7];                 // do, mi, sol (0 = do)
 const PREFERE = [0, 7, 4];                 // le plus grave au do, puis sol, puis mi
 const cible = z => z[0] + (z[1] - z[0]) * 0.4;   // le registre visé : au tiers bas de la zone, là où l'instrument sonne le plus naturellement
+// Zone étendue : jusqu'à MARGE demi-tons au-delà des enregistrements (la tessiture réelle de l'instrument reste la limite). Sans cette marge, vingt instruments ne trouvent pas assez de hauteurs distinctes.
+const MARGE = 4, PENALITE_HORS = 6;
+export const zoneEtendue = inst => (!inst.banque || !inst.echant || !inst.tess) ? null : [Math.max(inst.tess[0], inst.echant[0] - MARGE), Math.min(inst.tess[1], inst.echant[1] + MARGE)];
 
 // instruments : objets du plan (donnees.js) avec une zone jouable. Renvoie [{ inst, m }] du grave à l'aigu, m = numéro MIDI (60 = do4).
-export function voicerAccord(instruments) {
-  const zones = instruments.map(inst => ({ inst, z: jouables(inst) })).filter(x => x.z);
+export function voicerAccord(instruments, zoneDe = zoneEtendue) {   // zoneDe : la zone où l'instrument peut jouer ; une note hors de la zone enregistrée coûte plus cher
+  const zones = instruments.map(inst => ({ inst, z: zoneDe(inst) })).filter(x => x.z);
   zones.sort((a, b) => (a.z[0] + a.z[1]) - (b.z[0] + b.z[1]) || a.inst.id.localeCompare(b.inst.id));   // ordre fixe : même sélection, même accord
   const n = zones.length;
   // candidats de chaque instrument, du meilleur au moins bon
-  const candidats = zones.map(({ z }, k) => {
-    const liste = [];
+  const candidats = zones.map(({ inst, z }, k) => {
+    const liste = [], enregistre = jouables(inst);
     for (let m = z[0]; m <= z[1]; m++) {
       const c = CLASSES.indexOf(m % 12);
       if (c < 0) continue;
-      const pref = PREFERE[k % 3];
-      liste.push({ m, cout: Math.abs(m - cible(z)) / 12 * 3 + (CLASSES[c] === pref ? 0 : 4) });
+      const pref = PREFERE[k % 3], hors = !enregistre || m < enregistre[0] || m > enregistre[1];
+      liste.push({ m, cout: Math.abs(m - cible(z)) / 12 * 3 + (CLASSES[c] === pref ? 0 : 4) + (hors ? PENALITE_HORS : 0) });
     }
     return liste.sort((a, b) => a.cout - b.cout || a.m - b.m).map(x => x.m);
   });
