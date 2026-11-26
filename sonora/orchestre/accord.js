@@ -3,13 +3,16 @@
 // Règles : chaque instrument reçoit une note de l'accord dans sa propre zone jouable ; deux instruments ne jouent jamais la même hauteur (unisson interdit) ;
 // la basse joue la fondamentale quand elle le peut, et les autres notes se répartissent dans l'ordre indiqué par l'accord.
 // Le placement est un appariement complet (Kuhn) : un instrument ne perd sa note que si aucun placement sans unisson n'existe pour tous.
-import { jouables } from "./donnees.js?v=9dd0136b34";
+import { jouables } from "./donnees.js?v=a6a5a8c5db";
 
 // Les accords : classes de hauteur (0 = do), fondamentale en tête, puis l'ordre de répartition du grave à l'aigu.
 export const ACCORDS = {
   do: { id: "do", nom: "do majeur", classes: [0, 4, 7], ordre: [0, 7, 4] },
   la: { id: "la", nom: "la mineur", classes: [9, 0, 4], ordre: [9, 4, 0] },
   sol7: { id: "sol7", nom: "sol 7 (dominante)", classes: [7, 11, 2, 5], ordre: [7, 2, 11, 5] },
+  fa: { id: "fa", nom: "fa majeur", classes: [5, 9, 0], ordre: [5, 0, 9] },
+  sol: { id: "sol", nom: "sol majeur", classes: [7, 11, 2], ordre: [7, 2, 11] },
+  re: { id: "re", nom: "ré mineur", classes: [2, 5, 9], ordre: [2, 9, 5] },
 };
 const cible = z => z[0] + (z[1] - z[0]) * 0.4;   // le registre visé : au tiers bas de la zone, là où l'instrument sonne le plus naturellement
 // Zone étendue : jusqu'à MARGE demi-tons au-delà des enregistrements (la tessiture réelle de l'instrument reste la limite). Sans cette marge, vingt instruments ne trouvent pas assez de hauteurs distinctes.
@@ -17,7 +20,8 @@ const MARGE = 4, PENALITE_HORS = 6;
 export const zoneEtendue = inst => (!inst.banque || !inst.echant || !inst.tess) ? null : [Math.max(inst.tess[0], inst.echant[0] - MARGE), Math.min(inst.tess[1], inst.echant[1] + MARGE)];
 
 // instruments : objets du plan (donnees.js) avec une zone jouable. Renvoie [{ inst, m }] du grave à l'aigu, m = numéro MIDI (60 = do4).
-export function voicerAccord(instruments, zoneDe = zoneEtendue, accord = ACCORDS.do) {   // zoneDe : la zone où l'instrument peut jouer ; une note hors de la zone enregistrée coûte plus cher
+// precedent (facultatif) : Map identifiant d'instrument -> note précédente ; une voix qui suit un accord reste alors près de sa note précédente.
+export function voicerAccord(instruments, zoneDe = zoneEtendue, accord = ACCORDS.do, precedent = null) {   // zoneDe : la zone où l'instrument peut jouer ; une note hors de la zone enregistrée coûte plus cher
   const zones = instruments.map(inst => ({ inst, z: zoneDe(inst) })).filter(x => x.z);
   zones.sort((a, b) => (a.z[0] + a.z[1]) - (b.z[0] + b.z[1]) || a.inst.id.localeCompare(b.inst.id));   // ordre fixe : même sélection, même accord
   const n = zones.length;
@@ -27,7 +31,8 @@ export function voicerAccord(instruments, zoneDe = zoneEtendue, accord = ACCORDS
     for (let m = z[0]; m <= z[1]; m++) {
       if (accord.classes.indexOf(m % 12) < 0) continue;
       const hors = !enregistre || m < enregistre[0] || m > enregistre[1];
-      liste.push({ m, cout: Math.abs(m - cible(z)) / 12 * 3 + (m % 12 === pref ? 0 : 4) + (hors ? PENALITE_HORS : 0) });
+      const pr = precedent && precedent.get(inst.id);
+      liste.push({ m, cout: Math.abs(m - cible(z)) / 12 * 3 + (m % 12 === pref ? 0 : 4) + (hors ? PENALITE_HORS : 0) + (pr != null ? Math.abs(m - pr) * 0.6 : 0) });
     }
     return liste.sort((a, b) => a.cout - b.cout || a.m - b.m).map(x => x.m);
   });

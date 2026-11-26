@@ -1,16 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=9dd0136b34";
-import { ACCORDS, voicerAccord } from "./accord.js?v=9dd0136b34";
-import { EXEMPLES } from "./exemples.js?v=9dd0136b34";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=9dd0136b34";
-import { monterTimbres } from "./timbres.js?v=9dd0136b34";
-import { monterFugue } from "./fugue.js?v=9dd0136b34";
-import { monterBritten } from "./britten.js?v=9dd0136b34";
-import { monterVariations } from "./variations.js?v=9dd0136b34";
-import { svgIcone, dessin } from "./icones.js?v=9dd0136b34";
-import { PHOTOS } from "./photos.js?v=9dd0136b34";
-import { FICHES } from "./fiches.js?v=9dd0136b34";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=a6a5a8c5db";
+import { ACCORDS, voicerAccord } from "./accord.js?v=a6a5a8c5db";
+import { EXEMPLES } from "./exemples.js?v=a6a5a8c5db";
+import { CADENCES, voicerCadence } from "./cadences.js?v=a6a5a8c5db";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=a6a5a8c5db";
+import { monterTimbres } from "./timbres.js?v=a6a5a8c5db";
+import { monterFugue } from "./fugue.js?v=a6a5a8c5db";
+import { monterBritten } from "./britten.js?v=a6a5a8c5db";
+import { monterVariations } from "./variations.js?v=a6a5a8c5db";
+import { svgIcone, dessin } from "./icones.js?v=a6a5a8c5db";
+import { PHOTOS } from "./photos.js?v=a6a5a8c5db";
+import { FICHES } from "./fiches.js?v=a6a5a8c5db";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -109,7 +110,27 @@ async function jouerMelange() {
   message(txt + (percs.length ? ". Avec les percussions : " + percs.map(i => i.nom.toLowerCase()).join(", ") : "") + (sans.length ? ". Sans note dans l'accord, faute de hauteur libre sans unisson : " + sans.join(", ") : ""));
 }
 function setJeu(jeu) { etat.jeu = jeu; $("m-pizz").setAttribute("aria-pressed", String(jeu === "pizz")); majMelange(); }
+// Une cadence : la suite des accords jouée par les instruments choisis, voix conduites d'un accord à l'autre ; les percussions frappent leur coup à chaque accord.
+async function jouerCadence() {
+  const c = CADENCES.find(x => x.id === $("m-cadence").value); if (!c) return;
+  const instruments = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && jouable(i)).map(versionJeu);
+  const percs = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && i.coup);
+  if (!instruments.length && !percs.length) { message("choisis d'abord des instruments sur le plan"); return; }
+  const v = voicerCadence(instruments, c), T = 1.8, duree = v.length * T + 1.2, j = debut();
+  message("chargement de la cadence…");
+  const parIns = new Map();
+  v.forEach((acc, k) => acc.parts.forEach(p => { if (!parIns.has(p.inst.id)) parIns.set(p.inst.id, { inst: p.inst, ev: [] }); parIns.get(p.inst.id).ev.push({ t: k * T, duree: T * 0.95, notes: [p.m], vitesse: 0.8 }); }));
+  const pistes = [...parIns.values()].map(x => rendreMelodie(x.inst, x.ev, duree, j));
+  for (const i of percs) pistes.push(rendreMelodie({ banque: i.coup.banque, nom: i.nom }, v.map((_, k) => ({ t: k * T, duree: 0.9, notes: [60], vitesse: 0.8 })), duree, j));
+  const lr = await Promise.all(pistes);
+  if (perimee(j)) return;
+  const buf = sommer(lr, duree); lire([{ buf }], () => message("prêt"));
+  message(c.nom + " : " + v.map(x => x.accord.nom).join(", ") + ".");
+  $("m-exemple").textContent = c.nom + ". " + c.explication;
+}
 function brancherMelange() {
+  $("m-cadence-jouer").onclick = jouerCadence;
+  $("m-cadence").innerHTML = CADENCES.map(c => '<option value="' + c.id + '">' + esc(c.nom) + "</option>").join("");
   document.querySelectorAll("[data-preset]").forEach(b => { b.onclick = () => { etat.melange = INSTRUMENTS.filter(PRESETS[b.dataset.preset]).filter(i => jouables(i)).map(i => i.id); majMelange(); jouerMelange(); }; });
   $("m-vider").onclick = () => { etat.melange = []; majMelange(); arreter(); };
   $("m-jouer").onclick = jouerMelange;

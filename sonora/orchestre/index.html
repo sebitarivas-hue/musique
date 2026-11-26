@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SONORA Orchestre</title>
 <meta name="description" content="Explorer l'orchestre symphonique : le plan des musiciens, les quatre familles, chaque instrument, sa tessiture et son timbre.">
-<link rel="stylesheet" href="../studio/studio.css?v=9dd0136b34">
-<link rel="stylesheet" href="orchestre.css?v=9dd0136b34">
+<link rel="stylesheet" href="../studio/studio.css?v=a6a5a8c5db">
+<link rel="stylesheet" href="orchestre.css?v=a6a5a8c5db">
 </head>
 <body>
 <a class="saut" href="#contenu">Aller au contenu</a>
@@ -32,6 +32,8 @@
       <button type="button" id="m-pizz" aria-pressed="false">Pizzicato</button>
       <label class="m-etat">Accord <select id="m-accord"><option value="do">do majeur</option><option value="la">la mineur</option><option value="sol7">sol 7 (dominante)</option></select></label>
       <button type="button" class="principal" id="m-jouer">Écouter l'accord</button><button type="button" id="m-vider">Vider</button>
+      <label class="m-etat">Cadence <select id="m-cadence"></select></label>
+      <button type="button" id="m-cadence-jouer">Écouter la cadence</button>
       <span class="m-etat" id="m-etat" role="status" aria-live="polite">Touche les instruments du plan pour les choisir.</span>
       <div class="exemples" id="exemples" role="group" aria-label="Exemples d'orchestration à écouter"><span class="etq">Exemples</span></div>
       <p class="m-etat" id="m-exemple" aria-live="polite"></p>
@@ -66,8 +68,8 @@
     <div class="fiche fiche-fugue" id="variations-corps"></div>
   </section>
 </main>
-<script type="module" src="orchestre.js?v=9dd0136b34"></script>
-<script src="../barre-cours.js?v=9dd0136b34"></script>
-<script src="../retour.js?v=9dd0136b34"></script>
+<script type="module" src="orchestre.js?v=a6a5a8c5db"></script>
+<script src="../barre-cours.js?v=a6a5a8c5db"></script>
+<script src="../retour.js?v=a6a5a8c5db"></script>
 </body>
 </html>
