@@ -1,11 +1,11 @@
 // SONORA Orchestre, espace 04 : comprendre les variations. On part d'un thème (celui de l'élève, sinon le sujet d'exemple) et on le transforme de huit façons ; chaque variation s'écoute avec l'instrument de son choix,
 // après le thème, pour entendre à la fois ce qui change (la forme) et ce qui reste (l'identité). Le Rondeau de Purcell, thème de Britten, s'ajoutera quand une partition libre sera dans le dépôt.
-import { FAMILLES, parId, nomNote } from "./donnees.js?v=a806993f0a";
-import { POOL, etiquette } from "./timbres_logique.js?v=a806993f0a";
-import { caler, PAS } from "./fugue_logique.js?v=a806993f0a";
-import { SUJET_EXEMPLE, melodie, TRANSFORMATIONS, FAMILLES_THEME, dureeTemps, evenements } from "./variations_logique.js?v=a806993f0a";
-import { liensEcoute } from "./ecoutes.js?v=a806993f0a";
-import { rendreMelodie, sommer, lire, arreter, message, debut, perimee } from "./audio.js?v=a806993f0a";
+import { FAMILLES, parId, nomNote } from "./donnees.js?v=aa3f217773";
+import { POOL, etiquette } from "./timbres_logique.js?v=aa3f217773";
+import { caler, PAS } from "./fugue_logique.js?v=aa3f217773";
+import { SUJET_EXEMPLE, melodie, TRANSFORMATIONS, FAMILLES_THEME, dureeTemps, evenements } from "./variations_logique.js?v=aa3f217773";
+import { liensEcoute } from "./ecoutes.js?v=aa3f217773";
+import { rendreMelodie, sommer, lire, arreter, message, debut, perimee } from "./audio.js?v=aa3f217773";
 
 const $ = id => document.getElementById(id), CLE_FUGUE = "sonora.orchestre.fugue";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

@@ -1,17 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, ROULEMENTS, ROULEMENTS_RECONSTITUES, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=a806993f0a";
-import { ACCORDS, voicerAccord } from "./accord.js?v=a806993f0a";
-import { EXEMPLES } from "./exemples.js?v=a806993f0a";
-import { CADENCES, voicerCadence } from "./cadences.js?v=a806993f0a";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=a806993f0a";
-import { monterTimbres } from "./timbres.js?v=a806993f0a";
-import { monterFugue } from "./fugue.js?v=a806993f0a";
-import { monterBritten } from "./britten.js?v=a806993f0a";
-import { monterVariations } from "./variations.js?v=a806993f0a";
-import { svgIcone, dessin } from "./icones.js?v=a806993f0a";
-import { PHOTOS } from "./photos.js?v=a806993f0a";
-import { FICHES } from "./fiches.js?v=a806993f0a";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, ROULEMENTS, ROULEMENTS_RECONSTITUES, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=aa3f217773";
+import { ACCORDS, voicerAccord } from "./accord.js?v=aa3f217773";
+import { EXEMPLES } from "./exemples.js?v=aa3f217773";
+import { CADENCES, voicerCadence } from "./cadences.js?v=aa3f217773";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=aa3f217773";
+import { monterTimbres } from "./timbres.js?v=aa3f217773";
+import { monterFugue } from "./fugue.js?v=aa3f217773";
+import { monterBritten } from "./britten.js?v=aa3f217773";
+import { monterVariations } from "./variations.js?v=aa3f217773";
+import { svgIcone, dessin } from "./icones.js?v=aa3f217773";
+import { PHOTOS } from "./photos.js?v=aa3f217773";
+import { FICHES } from "./fiches.js?v=aa3f217773";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -79,9 +79,12 @@ const PRESETS = { cordes: i => i.fam === "cordes", bois: i => i.fam === "bois", 
 const aUnSon = i => !!(jouables(i) || i.coup);
 // La version jouée d'un instrument : à l'archet, son enregistrement ; en pizzicato ou en trémolo, sa banque particulière (ou rien, s'il n'en a pas).
 const JEUX = { pizz: PIZZICATO, trem: TREMOLO, col: COL_LEGNO, hrm: HARMONIQUES, stacc: STACCATO, marc: MARCATO };
+// Une technique de jeu ne concerne que les cordes frottées : les bois, les cuivres, la harpe et les percussions jouent normalement avec elles.
+// Une corde frottée sans la technique demandée est laissée de côté (et signalée), plutôt que de jouer à l'archet au milieu d'un pizzicato.
+const CORDES_FROTTEES = ["violons1", "violons2", "altos", "violoncelles", "contrebasses"];
 function versionJeu(i) {
   if (!i) return null;
-  if (etat.jeu === "arco") return jouables(i) ? i : null;
+  if (etat.jeu === "arco" || !CORDES_FROTTEES.includes(i.id)) return jouables(i) ? i : null;
   const t = (JEUX[etat.jeu] || {})[i.id];
   return t ? { ...i, banque: t.banque, echant: t.echant } : null;
 }
