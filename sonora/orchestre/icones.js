@@ -61,6 +61,10 @@ function xylophone() {
 function cloches() {
   let s = L(8, 8, 92, 8, 3.4) + L(8, 8, 8, 96, 3) + L(92, 8, 92, 96, 3); for (let i = 0; i < 7; i++) { const h = 84 - i * 8, x = 17 + i * 10; s += L(x + 3, 8, x + 3, 14, 1.4) + R(x, 14, 6.4, h, ARGENT, 3); } return s;
 }
+function celesta() {
+  let s = R(8, 30, 84, 56, BOIS, 3) + L(8, 30, 92, 30, 3.4) + L(8, 86, 92, 86, 3); for (let i = 0; i < 8; i++) { const x = 15 + i * 9.4, h = 30 - i * 1.4; s += R(x, 40, 6, h, ARGENT, 1.2); }
+  for (let i = 0; i < 9; i++) s += R(12 + i * 8.6, 74, 7, 10, "#FFFFFF", 1); return s;
+}
 const triangle = () => P("M50 10 L90 86 L10 86 Z", "none", 4.2) + L(50, 2, 50, 10, 1.6) + L(80, 30, 96, 8, 3, ROUGE);
 const tambourBasque = () => C(50, 50, 40, BOIS, 2.2) + C(50, 50, 32, PEAU, 1.8) + [0, 1, 2, 3, 4, 5, 6, 7].map(i => { const a = i * Math.PI / 4; return C((50 + 36 * Math.cos(a)).toFixed(1), (50 + 36 * Math.sin(a)).toFixed(1), 3.4, OR, 1.2); }).join("");
 const castagnettes = () => L(50, 8, 36, 40, 1.6) + L(50, 8, 66, 40, 1.6) + E(34, 62, 22, 24, BOIS, 2) + E(68, 66, 20, 22, BOIS2, 2) + C(34, 62, 4, NOIR, 1) + C(68, 66, 4, NOIR, 1);
@@ -91,7 +95,7 @@ const glockenspiel = () => { let s = P("M6 26 L94 26 L84 80 L16 80 Z", "none", 2
 const FABRIQUE = {
   violons1: () => cordeFrottee(0.9), violons2: () => cordeFrottee(0.9), altos: () => cordeFrottee(0.97), violoncelles: () => cordeFrottee(1.03, L(50, 94, 50, 100, 2.4)), contrebasses: () => cordeFrottee(1.07, L(50, 94, 50, 100, 2.4)),
   harpe, piccolo: () => flute(true), flutes: () => flute(false), hautbois: () => anche("hautbois"), corAnglais: () => anche("cor"), clarinettes: () => anche("clarinette"), clarinetteBasse: () => anche("basse"), bassons: basson,
-  cors: cor, trompettes: trompette, trombones: trombone, tuba, timbales: timbale, caisseClaire, grosseCaisse, cymbales, tamTam: tamtam, xylophone, cloches, triangle, tambourBasque, castagnettes, blocsChinois, fouet
+  cors: cor, trompettes: trompette, trombones: trombone, tuba, timbales: timbale, caisseClaire, grosseCaisse, cymbales, tamTam: tamtam, xylophone, cloches, celesta, triangle, tambourBasque, castagnettes, blocsChinois, fouet
 };
 // Les dessins de TIMBRE (scène et monde) : ils ne sont pas dans le plan de l'orchestre, donc pas dans identifiants().
 const SUPPLEMENT = {

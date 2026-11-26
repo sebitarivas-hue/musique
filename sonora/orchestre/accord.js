@@ -3,7 +3,7 @@
 // Règles : chaque instrument reçoit une note de l'accord dans sa propre zone jouable ; deux instruments ne jouent jamais la même hauteur (unisson interdit) ;
 // la basse joue la fondamentale quand elle le peut, et les autres notes se répartissent dans l'ordre indiqué par l'accord.
 // Le placement est un appariement complet (Kuhn) : un instrument ne perd sa note que si aucun placement sans unisson n'existe pour tous.
-import { jouables } from "./donnees.js?v=a6a5a8c5db";
+import { jouables } from "./donnees.js?v=9d0351982c";
 
 // Les accords : classes de hauteur (0 = do), fondamentale en tête, puis l'ordre de répartition du grave à l'aigu.
 export const ACCORDS = {
@@ -13,6 +13,7 @@ export const ACCORDS = {
   fa: { id: "fa", nom: "fa majeur", classes: [5, 9, 0], ordre: [5, 0, 9] },
   sol: { id: "sol", nom: "sol majeur", classes: [7, 11, 2], ordre: [7, 2, 11] },
   re: { id: "re", nom: "ré mineur", classes: [2, 5, 9], ordre: [2, 9, 5] },
+  mi: { id: "mi", nom: "mi majeur", classes: [4, 8, 11], ordre: [4, 11, 8] },
 };
 const cible = z => z[0] + (z[1] - z[0]) * 0.4;   // le registre visé : au tiers bas de la zone, là où l'instrument sonne le plus naturellement
 // Zone étendue : jusqu'à MARGE demi-tons au-delà des enregistrements (la tessiture réelle de l'instrument reste la limite). Sans cette marge, vingt instruments ne trouvent pas assez de hauteurs distinctes.

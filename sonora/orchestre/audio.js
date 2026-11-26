@@ -1,11 +1,21 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=a6a5a8c5db";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=a6a5a8c5db";
+import { nomNote } from "./donnees.js?v=9d0351982c";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=9d0351982c";
 
-let ctx = null, sources = [], jeton = 0, sortie = null;   // sortie : le seul nœud de gain en service (un par lecture, retiré à l'arrêt)
+let ctx = null, sources = [], jeton = 0, sortie = null, salle = null;   // salle : la réverbération, une seule par contexte   // sortie : le seul nœud de gain en service (un par lecture, retiré à l'arrêt)
 // Une seule lecture compte : la dernière demandée. Chaque demande prend un numéro (`debut`) ; arrêter, ou demander autre chose, rend périmées celles qui sont encore en préparation.
 // Avant (rafale de clics sur les instruments, 24/11/2026) : huit rendus complets étaient calculés à la suite, chacun coupant le précédent, et l'écran se figeait sur un poste lent.
+// La réverbération : une réponse impulsionnelle de salle (bruit décroissant, 2,4 s, stéréo), générée une fois et partagée par toutes les lectures.
+function reverberation(c) {
+  if (salle && salle.ctx === c) return salle.entree;
+  const n = Math.round(2.4 * c.sampleRate), b = c.createBuffer(2, n, c.sampleRate), pre = Math.round(0.018 * c.sampleRate);
+  let graine = 12345; const hasard = () => { graine = (graine * 1103515245 + 12345) & 0x7fffffff; return graine / 0x7fffffff * 2 - 1; };
+  for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = pre; i < n; i++) { const t = (i - pre) / c.sampleRate; d[i] = hasard() * Math.exp(-t * 2.4) * (1 - Math.exp(-t * 60)); } }
+  const conv = c.createConvolver(); conv.buffer = b;
+  const retour = c.createGain(); retour.gain.value = 0.28; conv.connect(retour); retour.connect(c.destination);
+  salle = { ctx: c, entree: conv }; return conv;
+}
 export function arreter() { jeton++; for (const s of sources) { try { s.stop(); } catch (e) {} } sources = []; if (sortie) { try { sortie.disconnect(); } catch (e) {} sortie = null; } }
 export const enCours = () => sources.length > 0;   // vrai tant qu'un son joue (une animation peut s'arrêter quand il se tait)
 export const debut = () => { arreter(); return jeton; };
@@ -37,7 +47,7 @@ export function sommer(listes, duree) {
 export const heure = () => (ctx ? ctx.currentTime : 0);
 // Joue une liste de parties : [{ buf, delai }] (secondes). Appelle fin() à la fin de la dernière.
 export function lire(parties, fin) {
-  const c = contexte(); arreter(); const g = c.createGain(); g.gain.value = 0.8; g.connect(c.destination); sortie = g; const t0 = c.currentTime + 0.05; let dernier = null, fin0 = 0;
+  const c = contexte(); arreter(); const g = c.createGain(); g.gain.value = 0.8; g.connect(c.destination); g.connect(reverberation(c)); sortie = g; /* son direct + envoi vers la salle */ const t0 = c.currentTime + 0.05; let dernier = null, fin0 = 0;
   for (const p of parties) { const s = c.createBufferSource(); s.buffer = p.buf; s.connect(g); s.start(t0 + (p.delai || 0)); sources.push(s); if ((p.delai || 0) + p.buf.duration >= fin0) { fin0 = (p.delai || 0) + p.buf.duration; dernier = s; } }
   if (dernier) dernier.onended = () => { if (sources.indexOf(dernier) >= 0) { sources = []; if (fin) fin(); } };
   return t0;

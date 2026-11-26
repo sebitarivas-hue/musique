@@ -1,17 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=a6a5a8c5db";
-import { ACCORDS, voicerAccord } from "./accord.js?v=a6a5a8c5db";
-import { EXEMPLES } from "./exemples.js?v=a6a5a8c5db";
-import { CADENCES, voicerCadence } from "./cadences.js?v=a6a5a8c5db";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=a6a5a8c5db";
-import { monterTimbres } from "./timbres.js?v=a6a5a8c5db";
-import { monterFugue } from "./fugue.js?v=a6a5a8c5db";
-import { monterBritten } from "./britten.js?v=a6a5a8c5db";
-import { monterVariations } from "./variations.js?v=a6a5a8c5db";
-import { svgIcone, dessin } from "./icones.js?v=a6a5a8c5db";
-import { PHOTOS } from "./photos.js?v=a6a5a8c5db";
-import { FICHES } from "./fiches.js?v=a6a5a8c5db";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=9d0351982c";
+import { ACCORDS, voicerAccord } from "./accord.js?v=9d0351982c";
+import { EXEMPLES } from "./exemples.js?v=9d0351982c";
+import { CADENCES, voicerCadence } from "./cadences.js?v=9d0351982c";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=9d0351982c";
+import { monterTimbres } from "./timbres.js?v=9d0351982c";
+import { monterFugue } from "./fugue.js?v=9d0351982c";
+import { monterBritten } from "./britten.js?v=9d0351982c";
+import { monterVariations } from "./variations.js?v=9d0351982c";
+import { svgIcone, dessin } from "./icones.js?v=9d0351982c";
+import { PHOTOS } from "./photos.js?v=9d0351982c";
+import { FICHES } from "./fiches.js?v=9d0351982c";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
