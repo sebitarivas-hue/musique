@@ -1,16 +1,16 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=b43ca581e7";
-import { ACCORDS, voicerAccord } from "./accord.js?v=b43ca581e7";
-import { EXEMPLES } from "./exemples.js?v=b43ca581e7";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=b43ca581e7";
-import { monterTimbres } from "./timbres.js?v=b43ca581e7";
-import { monterFugue } from "./fugue.js?v=b43ca581e7";
-import { monterBritten } from "./britten.js?v=b43ca581e7";
-import { monterVariations } from "./variations.js?v=b43ca581e7";
-import { svgIcone, dessin } from "./icones.js?v=b43ca581e7";
-import { PHOTOS } from "./photos.js?v=b43ca581e7";
-import { FICHES } from "./fiches.js?v=b43ca581e7";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=9dd0136b34";
+import { ACCORDS, voicerAccord } from "./accord.js?v=9dd0136b34";
+import { EXEMPLES } from "./exemples.js?v=9dd0136b34";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee } from "./audio.js?v=9dd0136b34";
+import { monterTimbres } from "./timbres.js?v=9dd0136b34";
+import { monterFugue } from "./fugue.js?v=9dd0136b34";
+import { monterBritten } from "./britten.js?v=9dd0136b34";
+import { monterVariations } from "./variations.js?v=9dd0136b34";
+import { svgIcone, dessin } from "./icones.js?v=9dd0136b34";
+import { PHOTOS } from "./photos.js?v=9dd0136b34";
+import { FICHES } from "./fiches.js?v=9dd0136b34";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -88,20 +88,25 @@ function majMelange() {
   const n = etat.melange.length, sansHauteur = etat.melange.filter(id => !parId(id)?.tess), muets = etat.melange.filter(id => parId(id)?.tess && !jouable(parId(id)));
   const bouts = [];
   if (muets.length) bouts.push(muets.length + (etat.jeu === "pizz" ? " sans pizzicato" : " sans enregistrement") + ", ignorée" + (muets.length > 1 ? "s" : ""));
-  if (sansHauteur.length) bouts.push(sansHauteur.length + " sans hauteur précise (percussion), hors accord");
+  if (sansHauteur.length) bouts.push(sansHauteur.length + " sans hauteur précise (percussion) : elles jouent avec l'accord");
   $("m-etat").textContent = n ? n + (n > 1 ? " sections choisies" : " section choisie") + (bouts.length ? " (" + bouts.join(" ; ") + ")" : "") + "." : "Aucune section choisie.";
   document.querySelectorAll(".sect").forEach(g => g.classList.toggle("dans-melange", etat.melange.indexOf(g.dataset.id) >= 0));
   document.querySelectorAll(".sect").forEach(g => g.setAttribute("aria-pressed", String(etat.melange.indexOf(g.dataset.id) >= 0)));
 }
 async function jouerMelange() {
-  const parts = accordDeLaSelection(); if (!parts.length) { message(etat.melange.length ? "un accord a besoin d'un instrument à hauteur précise : les percussions sans hauteur ne forment pas d'accord" : "choisis d'abord des instruments sur le plan"); return; }
-  const j = debut(); message("chargement de " + parts.length + " sections…"); const duree = 4.6;
-  const lr = await Promise.all(parts.map(p => rendreMelodie(p.inst, [{ t: 0, duree: 3.4, notes: [p.m], vitesse: 0.8 }], duree, j)));
+  // Les percussions sans hauteur jouent leur coup (do4) avec l'accord, au même instant : elles ne sont pas séparées de l'accord.
+  const parts = accordDeLaSelection(), percs = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && i.coup);
+  if (!parts.length && !percs.length) { message(etat.melange.length ? "un accord a besoin d'un instrument à hauteur précise" : "choisis d'abord des instruments sur le plan"); return; }
+  const j = debut(); message("chargement…"); const duree = 4.6;
+  const lr = await Promise.all([
+    ...parts.map(p => rendreMelodie(p.inst, [{ t: 0, duree: 3.4, notes: [p.m], vitesse: 0.8 }], duree, j)),
+    ...percs.map(i => rendreMelodie({ banque: i.coup.banque, nom: i.nom }, [{ t: 0, duree: 1, notes: [60], vitesse: 0.8 }], duree, j)),
+  ]);
   if (perimee(j)) return;
   const buf = sommer(lr, duree); lire([{ buf }], () => message("prêt"));
-  const hors = INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && !i.tess).map(i => i.nom.toLowerCase());
+  const txt = parts.length ? "accord de " + ACCORDS[etat.accord].nom + (etat.jeu === "pizz" ? " en pizzicato" : "") + " : " + parts.map(p => (p.inst.id === "violons2" ? "seconds violons" : p.inst.nom.toLowerCase()) + " " + nomNote(p.m)).join(", ") : "percussions seules";
   const sans = INSTRUMENTS.filter(i => i.tess && etat.melange.indexOf(i.id) >= 0 && !parts.some(p => p.inst.id === i.id)).map(i => i.nom.toLowerCase());
-  message("accord de " + ACCORDS[etat.accord].nom + (etat.jeu === "pizz" ? " en pizzicato" : "") + " : " + parts.map(p => (p.inst.id === "violons2" ? "seconds violons" : p.inst.nom.toLowerCase()) + " " + nomNote(p.m)).join(", ") + (sans.length ? ". Sans note dans l'accord, faute de hauteur libre sans unisson : " + sans.join(", ") : "") + (hors.length ? ". Hors accord (percussions sans hauteur) : " + hors.join(", ") : ""));
+  message(txt + (percs.length ? ". Avec les percussions : " + percs.map(i => i.nom.toLowerCase()).join(", ") : "") + (sans.length ? ". Sans note dans l'accord, faute de hauteur libre sans unisson : " + sans.join(", ") : ""));
 }
 function setJeu(jeu) { etat.jeu = jeu; $("m-pizz").setAttribute("aria-pressed", String(jeu === "pizz")); majMelange(); }
 function brancherMelange() {
@@ -223,7 +228,6 @@ function demarrer() {
   $("explorer").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".sect, .tess-ligne")) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent("click", { bubbles: true })); } });
   brancherMelange(); majMelange();
   $("v-plan").onclick = () => vue("plan"); $("v-gal").onclick = () => vue("gal"); $("v-tess").onclick = () => vue("tess");
-  if (window.matchMedia("(max-width: 700px)").matches) vue("gal");
   const id = decodeURIComponent((location.hash || "").slice(1)); choisir(parId(id) ? id : null, false); espace(["timbres", "fugue", "britten", "variations"].indexOf(id) >= 0 ? id : "explorer");
   window.addEventListener("hashchange", () => { const h = decodeURIComponent((location.hash || "").slice(1)); if (h === "") espace("explorer"); else if (["timbres", "fugue", "britten", "variations"].indexOf(h) >= 0) espace(h); else if (parId(h)) { espace("explorer"); if (h !== etat.choix) choisir(h, false); } });
   document.addEventListener("click", e => { const a = e.target.closest("[data-voir]"); if (a) { e.preventDefault(); espace("explorer"); choisir(a.dataset.voir, true); } });
