@@ -131,6 +131,16 @@ export const COL_LEGNO = {
   violons1: { banque: "violons-col", echant: [55, 87] }, violons2: { banque: "violons-col", echant: [55, 87] },
   altos: { banque: "altos-col", echant: [48, 74] }, contrebasses: { banque: "basses-col", echant: [28, 54] },
 };
+// Staccato (notes détachées) : les violons viennent de VSCO 2 CE (violons-stacc) ; les autres sections de Sonatina Symphonic Orchestra.
+export const STACCATO = {
+  violons1: { banque: "violons-stacc", echant: [55, 91] }, violons2: { banque: "violons-stacc", echant: [55, 91] },
+  violoncelles: { banque: "celli-stc", echant: [36, 72] }, altos: { banque: "violas-stc", echant: [48, 84] }, contrebasses: { banque: "basses-stc", echant: [24, 60] },
+};
+// Marcato (détaché accentué) : les quatre sections, de Sonatina Symphonic Orchestra.
+export const MARCATO = {
+  violons1: { banque: "violons-mrc", echant: [55, 94] }, violons2: { banque: "violons-mrc", echant: [55, 94] },
+  violoncelles: { banque: "celli-mrc", echant: [36, 72] }, altos: { banque: "violas-mrc", echant: [48, 84] }, contrebasses: { banque: "basses-mrc", echant: [24, 60] },
+};
 export const HARMONIQUES = {
   violons1: { banque: "violons-hrm", echant: [55, 94] }, violons2: { banque: "violons-hrm", echant: [55, 94] },
   violoncelles: { banque: "celli-hrm", echant: [36, 72] }, altos: { banque: "altos-hrm", echant: [48, 84] },

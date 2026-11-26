@@ -1,7 +1,7 @@
 // SONORA Orchestre : des exemples d'orchestration à écouter (sans DOM, testé dans Node).
 // Chaque exemple choisit des instruments du plan et un accord ; l'accord est joué avec la règle de accord.js (pas d'unisson).
 // `ids` : les instruments (identifiants de donnees.js), ou "tout" pour tout l'orchestre qui a un son. `accord` : une clé de ACCORDS.
-// `jeu` : "pizz", "trem", "col" (col legno) ou "hrm" (harmoniques) ; absent : à l'archet. `ecoute` : ce qu'on entend ; `repere` : le point à observer. Les consignes décrivent ce qui s'entend dans la version jouée ici, pas une analyse de partition.
+// `jeu` : "pizz", "trem", "col" (col legno), "hrm" (harmoniques), "stacc" (staccato) ou "marc" (marcato) ; absent : à l'archet. `ecoute` : ce qu'on entend ; `repere` : le point à observer. Les consignes décrivent ce qui s'entend dans la version jouée ici, pas une analyse de partition.
 export const EXEMPLES = [
   { id: "cordes", titre: "Les cordes, du grave à l'aigu", accord: "do", ids: ["contrebasses", "violoncelles", "altos", "violons2", "violons1"],
     ecoute: "Une masse chaude et continue : les cinq pupitres de cordes jouent ensemble, un accord de do majeur.",
@@ -36,6 +36,9 @@ export const EXEMPLES = [
   { id: "hrm", titre: "Harmoniques des cordes", accord: "do", jeu: "hrm", ids: ["violons1", "violons2", "violoncelles", "altos"],
     ecoute: "On effleure la corde à un point précis : le son devient clair, flûté, et se détache des autres.",
     repere: "Écoute l'aigu des harmoniques : il sonne au-dessus de la note écrite." },
+  { id: "stacc", titre: "Staccato des cordes", accord: "do", jeu: "stacc", ids: ["violons1", "violons2", "violoncelles", "altos", "contrebasses"],
+    ecoute: "Des notes détachées, sèches, toutes courtes : l'accord devient une suite de petits coups d'archet.",
+    repere: "Compare avec l'exemple « Les cordes » : même accord, même instruments, notes beaucoup plus courtes." },
   { id: "tutti", titre: "Le tutti : tout l'orchestre sur do majeur", accord: "do", ids: "tout",
     ecoute: "Tous les instruments qui ont un son jouent ensemble : chaque instrument a sa propre note.",
     repere: "Écoute la masse : elle se construit à partir des timbres, et non d'un seul son répété." },

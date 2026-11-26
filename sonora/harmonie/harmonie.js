@@ -1,21 +1,21 @@
 // SONORA Harmonie : explorer les gammes et les modes, jouer les progressions, s'exercer l'oreille, composer une grille.
 // Les sons sont rendus par des instruments SONORA (son.js) puis joués d'un bloc : le rythme est exact, et l'export WAV est le même son.
-import * as H from "./theorie.js?v=99c67b326d";
-import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=99c67b326d";
-import { BANQUE, preparer } from "./echantillons.js?v=99c67b326d";
-import { GENRES, LISTE_GENRES, rendreGenre, mettreReel } from "./genres.js?v=99c67b326d";
-import { chargerKit } from "./batterie.js?v=99c67b326d";
-import { heros, etatBouton } from "../studio/heros.js?v=99c67b326d";
-import { encoderWAV } from "../studio/wav.js?v=99c67b326d";
-import { dessinerOscillo } from "../studio/visuels.js?v=99c67b326d";
-import * as P from "../pistes/projet.js?v=99c67b326d";
-import { Stockage } from "../pistes/stockage.js?v=99c67b326d";
-import * as A from "./accords.js?v=99c67b326d";
-import * as V from "./voicings.js?v=99c67b326d";
-import * as G from "./grille.js?v=99c67b326d";
-import { partitionSVG } from "./partition.js?v=99c67b326d";
-import { monterNotions } from "../pistes/notions.js?v=99c67b326d";
-import { NOTIONS_H, ORDRE_H } from "./notions.js?v=99c67b326d";
+import * as H from "./theorie.js?v=d76f27378a";
+import { rendreSuite, evenementsProgression, NOMS_INSTR, TOUS, mettreTampons, sonReel } from "./son.js?v=d76f27378a";
+import { BANQUE, preparer } from "./echantillons.js?v=d76f27378a";
+import { GENRES, LISTE_GENRES, rendreGenre, mettreReel } from "./genres.js?v=d76f27378a";
+import { chargerKit } from "./batterie.js?v=d76f27378a";
+import { heros, etatBouton } from "../studio/heros.js?v=d76f27378a";
+import { encoderWAV } from "../studio/wav.js?v=d76f27378a";
+import { dessinerOscillo } from "../studio/visuels.js?v=d76f27378a";
+import * as P from "../pistes/projet.js?v=d76f27378a";
+import { Stockage } from "../pistes/stockage.js?v=d76f27378a";
+import * as A from "./accords.js?v=d76f27378a";
+import * as V from "./voicings.js?v=d76f27378a";
+import * as G from "./grille.js?v=d76f27378a";
+import { partitionSVG } from "./partition.js?v=d76f27378a";
+import { monterNotions } from "../pistes/notions.js?v=d76f27378a";
+import { NOTIONS_H, ORDRE_H } from "./notions.js?v=d76f27378a";
 
 const $ = id => document.getElementById(id);
 const points = (...a) => window.COURS_POINTS ? window.COURS_POINTS.gagner(...a) : (window.__pointsEnAttente = window.__pointsEnAttente || []).push(a); // points du cours (sonora/barre-cours.js)

@@ -1,7 +1,7 @@
 // Génération de code : un graphe optimisé devient une fonction JavaScript `creer(sr)` qui renvoie un noyau de calcul.
 // Le noyau ne fait aucune allocation dans `traiter`. Les contrôles sont évalués tous les 32 échantillons puis interpolés.
 // Un module polyphonique donne deux noyaux : celui d'une voix (instancié une fois par voix) et le noyau maître (qui reçoit la somme des voix).
-import { tardive } from "./graphe.js?v=99c67b326d";
+import { tardive } from "./graphe.js?v=d76f27378a";
 
 export const SOUS_BLOC = 32;
 const nombre = v => { const s = String(v); return v < 0 || Object.is(v, -0) ? `(${s})` : s; };

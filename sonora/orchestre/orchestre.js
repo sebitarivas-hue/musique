@@ -1,17 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=99c67b326d";
-import { ACCORDS, voicerAccord } from "./accord.js?v=99c67b326d";
-import { EXEMPLES } from "./exemples.js?v=99c67b326d";
-import { CADENCES, voicerCadence } from "./cadences.js?v=99c67b326d";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=99c67b326d";
-import { monterTimbres } from "./timbres.js?v=99c67b326d";
-import { monterFugue } from "./fugue.js?v=99c67b326d";
-import { monterBritten } from "./britten.js?v=99c67b326d";
-import { monterVariations } from "./variations.js?v=99c67b326d";
-import { svgIcone, dessin } from "./icones.js?v=99c67b326d";
-import { PHOTOS } from "./photos.js?v=99c67b326d";
-import { FICHES } from "./fiches.js?v=99c67b326d";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=d76f27378a";
+import { ACCORDS, voicerAccord } from "./accord.js?v=d76f27378a";
+import { EXEMPLES } from "./exemples.js?v=d76f27378a";
+import { CADENCES, voicerCadence } from "./cadences.js?v=d76f27378a";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=d76f27378a";
+import { monterTimbres } from "./timbres.js?v=d76f27378a";
+import { monterFugue } from "./fugue.js?v=d76f27378a";
+import { monterBritten } from "./britten.js?v=d76f27378a";
+import { monterVariations } from "./variations.js?v=d76f27378a";
+import { svgIcone, dessin } from "./icones.js?v=d76f27378a";
+import { PHOTOS } from "./photos.js?v=d76f27378a";
+import { FICHES } from "./fiches.js?v=d76f27378a";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -76,15 +76,15 @@ function dessinerTessitures() {
 // ---------------------------------------------------------------- le mélange : des sections choisies sur le plan jouent ensemble un accord de do majeur
 const PRESETS = { cordes: i => i.fam === "cordes", bois: i => i.fam === "bois", cuivres: i => i.fam === "cuivres", tout: () => true };
 // La version jouée d'un instrument : à l'archet, son enregistrement ; en pizzicato ou en trémolo, sa banque particulière (ou rien, s'il n'en a pas).
-const JEUX = { pizz: PIZZICATO, trem: TREMOLO, col: COL_LEGNO, hrm: HARMONIQUES };
+const JEUX = { pizz: PIZZICATO, trem: TREMOLO, col: COL_LEGNO, hrm: HARMONIQUES, stacc: STACCATO, marc: MARCATO };
 function versionJeu(i) {
   if (!i) return null;
   if (etat.jeu === "arco") return jouables(i) ? i : null;
   const t = (JEUX[etat.jeu] || {})[i.id];
   return t ? { ...i, banque: t.banque, echant: t.echant } : null;
 }
-const NOM_JEU = { arco: "", pizz: " en pizzicato", trem: " en trémolo", col: " col legno", hrm: " en harmoniques" };
-const MANQUE_JEU = { arco: " sans enregistrement", pizz: " sans pizzicato", trem: " sans trémolo", col: " sans col legno", hrm: " sans harmoniques" };
+const NOM_JEU = { arco: "", pizz: " en pizzicato", trem: " en trémolo", col: " col legno", hrm: " en harmoniques", stacc: " en staccato", marc: " en marcato" };
+const MANQUE_JEU = { arco: " sans enregistrement", pizz: " sans pizzicato", trem: " sans trémolo", col: " sans col legno", hrm: " sans harmoniques", stacc: " sans staccato", marc: " sans marcato" };
 function jouable(i) { const v = versionJeu(i); return !!(v && jouables(v)); }
 function accordDeLaSelection() {   // les instruments choisis, du grave à l'aigu : chacun joue une note de l'accord choisi, jamais à l'unisson d'un autre
   return voicerAccord(INSTRUMENTS.filter(i => etat.melange.indexOf(i.id) >= 0 && jouable(i)).map(versionJeu), undefined, ACCORDS[etat.accord]);
