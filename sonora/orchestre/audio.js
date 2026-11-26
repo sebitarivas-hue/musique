@@ -1,7 +1,7 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=555a8431a2";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=555a8431a2";
+import { nomNote } from "./donnees.js?v=b455aa0d78";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=b455aa0d78";
 
 let ctx = null, sources = [], jeton = 0, sortie = null, salle = null;   // salle : la réverbération, une seule par contexte   // sortie : le seul nœud de gain en service (un par lecture, retiré à l'arrêt)
 // Une seule lecture compte : la dernière demandée. Chaque demande prend un numéro (`debut`) ; arrêter, ou demander autre chose, rend périmées celles qui sont encore en préparation.
@@ -42,7 +42,9 @@ export function placer(lr, inst) {
   return [OL, OR];
 }
 // Équilibrage : chaque piste ramenée à un même niveau moyen (gain borné), pour qu'un instrument doux ne soit pas couvert par un instrument fort.
-const POIDS = { celesta: 1.25, cloches: 1.2, xylophone: 1.1 };   // ces sons résonnent peu de temps : on les laisse un peu plus présents
+// Poids d'équilibrage : les sons qui résonnent peu (célesta, cloches) et les frappes (grosse caisse, caisse claire, fouet) sont laissés un peu plus présents,
+// car à niveau moyen égal une attaque se perd derrière un son tenu.
+const POIDS = { celesta: 1.25, cloches: 1.2, xylophone: 1.1, grosseCaisse: 1.4, caisseClaire: 1.4, fouet: 1.5, tamTam: 1.3, triangle: 1.3, cymbales: 1.3, tambourBasque: 1.3, blocsChinois: 1.3, castagnettes: 1.3 };
 export function equilibrer(listes, ids = []) {
   const cible = 0.05;
   return listes.map((lr, k) => {

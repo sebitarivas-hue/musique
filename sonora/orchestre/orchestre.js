@@ -1,17 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=555a8431a2";
-import { ACCORDS, voicerAccord } from "./accord.js?v=555a8431a2";
-import { EXEMPLES } from "./exemples.js?v=555a8431a2";
-import { CADENCES, voicerCadence } from "./cadences.js?v=555a8431a2";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=555a8431a2";
-import { monterTimbres } from "./timbres.js?v=555a8431a2";
-import { monterFugue } from "./fugue.js?v=555a8431a2";
-import { monterBritten } from "./britten.js?v=555a8431a2";
-import { monterVariations } from "./variations.js?v=555a8431a2";
-import { svgIcone, dessin } from "./icones.js?v=555a8431a2";
-import { PHOTOS } from "./photos.js?v=555a8431a2";
-import { FICHES } from "./fiches.js?v=555a8431a2";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=b455aa0d78";
+import { ACCORDS, voicerAccord } from "./accord.js?v=b455aa0d78";
+import { EXEMPLES } from "./exemples.js?v=b455aa0d78";
+import { CADENCES, voicerCadence } from "./cadences.js?v=b455aa0d78";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=b455aa0d78";
+import { monterTimbres } from "./timbres.js?v=b455aa0d78";
+import { monterFugue } from "./fugue.js?v=b455aa0d78";
+import { monterBritten } from "./britten.js?v=b455aa0d78";
+import { monterVariations } from "./variations.js?v=b455aa0d78";
+import { svgIcone, dessin } from "./icones.js?v=b455aa0d78";
+import { PHOTOS } from "./photos.js?v=b455aa0d78";
+import { FICHES } from "./fiches.js?v=b455aa0d78";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -102,7 +102,8 @@ async function jouerMelange() {
   const insts = [...parts.map(p => p.inst), ...percs];
   const brut = await Promise.all([
     ...parts.map(p => rendreMelodie(p.inst, [{ t: 0, duree: 3.4, notes: [p.m], vitesse: 0.8 }], duree, j)),
-    ...percs.map(i => rendreMelodie({ banque: i.coup.banque, nom: i.nom }, [{ t: 0, duree: 1, notes: [60], vitesse: 0.8 }], duree, j)),
+    // les frappes reviennent en pulsation (toutes les 1,15 s) : elles restent audibles sous les sons tenus
+    ...percs.map(i => rendreMelodie({ banque: i.coup.banque, nom: i.nom }, [0, 1, 2, 3].map(k => ({ t: k * 1.15, duree: 0.9, notes: [60], vitesse: 0.8 })), duree, j)),
   ]);
   if (perimee(j)) return;
   const muets = insts.filter((_, k) => !brut[k]).map(i => i.nom.toLowerCase());
