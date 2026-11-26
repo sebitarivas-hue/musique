@@ -1,12 +1,13 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=044d79469e";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=044d79469e";
+import { nomNote } from "./donnees.js?v=c4c67a398e";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=c4c67a398e";
 
-let ctx = null, sources = [], jeton = 0;
+let ctx = null, sources = [], jeton = 0, sortie = null;   // sortie : le seul nœud de gain en service (un par lecture, retiré à l'arrêt)
 // Une seule lecture compte : la dernière demandée. Chaque demande prend un numéro (`debut`) ; arrêter, ou demander autre chose, rend périmées celles qui sont encore en préparation.
 // Avant (rafale de clics sur les instruments, 24/11/2026) : huit rendus complets étaient calculés à la suite, chacun coupant le précédent, et l'écran se figeait sur un poste lent.
-export function arreter() { jeton++; for (const s of sources) { try { s.stop(); } catch (e) {} } sources = []; }
+export function arreter() { jeton++; for (const s of sources) { try { s.stop(); } catch (e) {} } sources = []; if (sortie) { try { sortie.disconnect(); } catch (e) {} sortie = null; } }
+export const enCours = () => sources.length > 0;   // vrai tant qu'un son joue (une animation peut s'arrêter quand il se tait)
 export const debut = () => { arreter(); return jeton; };
 export const perimee = j => j !== jeton;
 export function message(t) { const e = document.getElementById("etat"); if (e) e.textContent = t; }
@@ -36,7 +37,7 @@ export function sommer(listes, duree) {
 export const heure = () => (ctx ? ctx.currentTime : 0);
 // Joue une liste de parties : [{ buf, delai }] (secondes). Appelle fin() à la fin de la dernière.
 export function lire(parties, fin) {
-  const c = contexte(); arreter(); const g = c.createGain(); g.gain.value = 0.8; g.connect(c.destination); const t0 = c.currentTime + 0.05; let dernier = null, fin0 = 0;
+  const c = contexte(); arreter(); const g = c.createGain(); g.gain.value = 0.8; g.connect(c.destination); sortie = g; const t0 = c.currentTime + 0.05; let dernier = null, fin0 = 0;
   for (const p of parties) { const s = c.createBufferSource(); s.buffer = p.buf; s.connect(g); s.start(t0 + (p.delai || 0)); sources.push(s); if ((p.delai || 0) + p.buf.duration >= fin0) { fin0 = (p.delai || 0) + p.buf.duration; dernier = s; } }
   if (dernier) dernier.onended = () => { if (sources.indexOf(dernier) >= 0) { sources = []; if (fin) fin(); } };
   return t0;
