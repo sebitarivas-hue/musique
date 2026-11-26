@@ -2,7 +2,7 @@
 // Hauteurs en numéros MIDI (60 = do4, la4 = 440 Hz, comme dans Découvertes). Les tessitures sont les hauteurs réellement entendues, en usage courant d'orchestre ; elles varient un peu selon les ouvrages.
 // `banque` : l'instrument de la banque d'échantillons du site (outils/faust/banque) qui sert de son ; `echant` : la zone enregistrée dans cette banque (vérifiée contre catalogue.json par les tests).
 // `coup` : les percussions sans hauteur, enregistrées (banque, duree d'écoute en s, notes : les coups joués ; do4 = 60). Elles n'ont ni tessiture ni clavier.
-// Les castagnettes n'ont pas d'enregistrement libre dans la banque : la fiche le dit, sans faux son. Le cor anglais et la clarinette basse viennent de Sonatina Symphonic Orchestra (Creative Commons Sampling Plus 1.0, voir outils/banque_sso.py).
+// Le cor anglais, la clarinette basse et les castagnettes viennent de Sonatina Symphonic Orchestra (Creative Commons Sampling Plus 1.0, voir outils/banque_sso.py).
 
 export const FAMILLES = {
   cordes: { pale: "#FFE2C2", nom: "Les cordes", court: "Cordes", couleur: "#FF9F43", son: "Une corde vibre, frottée par un archet ou pincée." },
@@ -66,7 +66,7 @@ export const INSTRUMENTS = [
     texte: "Une tige d'acier pliée en triangle, suspendue à un cordon et frappée avec une petite baguette de métal. Un son aigu et clair, qui tinte longtemps si on le laisse vibrer. Sans hauteur précise." },
   { id: "tambourBasque", effectif: "1", visuels: 1, nom: "Tambour de basque", fam: "percussions", rang: 4, g0: -36, g1: -12, banque: null, coup: { banque: "tambour-basque", duree: 1.2 }, tess: null, mode: "peau tendue et cymbalettes",
     texte: "Un cadre de bois recouvert d'une peau, bordé de petites cymbalettes de métal : on le frappe avec la main ou on le secoue pour faire sonner les cymbalettes. Sans hauteur précise." },
-  { id: "castagnettes", effectif: "1", visuels: 1, nom: "Castagnettes", fam: "percussions", rang: 4, g0: -12, g1: 12, banque: null, tess: null, mode: "bois entrechoqués",
+  { id: "castagnettes", effectif: "1", visuels: 1, nom: "Castagnettes", fam: "percussions", rang: 4, g0: -12, g1: 12, banque: null, coup: { banque: "castagnettes", duree: 1.0 }, tess: null, mode: "bois entrechoqués",
     texte: "Deux petites coques de bois dur reliées par un cordon, que l'on fait claquer. Un claquement sec, qui évoque tout de suite l'Espagne. Sans hauteur précise." },
   { id: "blocsChinois", effectif: "1", visuels: 1, nom: "Blocs chinois", fam: "percussions", rang: 4, g0: 12, g1: 36, banque: null, coup: { banque: "blocs-chinois", duree: 1.0, notes: [60, 67, 72, 77] }, tess: null, mode: "blocs de bois frappés",
     texte: "Des blocs de bois creux, de tailles différentes, alignés sur un support et frappés avec une baguette : un son sec et creux, d'autant plus grave que le bloc est grand. Sans hauteur précise. Ici, un seul wood block enregistré est joué plus ou moins vite pour faire entendre quatre blocs de tailles différentes : ce ne sont pas quatre vrais blocs." },

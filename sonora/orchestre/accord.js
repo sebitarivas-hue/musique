@@ -3,7 +3,7 @@
 // Règles : chaque instrument reçoit une note de do majeur (do, mi ou sol) dans sa propre zone jouable ; deux instruments ne jouent jamais la même hauteur (unisson interdit) ;
 // le plus grave joue le do ; les notes suivent l'ordre grave à aigu do, sol, mi, pour que les trois notes se répartissent.
 // Le placement est un appariement complet (Kuhn) : un instrument ne perd sa note que si aucun placement sans unisson n'existe pour tous.
-import { jouables } from "./donnees.js?v=632814132b";
+import { jouables } from "./donnees.js?v=37e26e3155";
 
 const CLASSES = [0, 4, 7];                 // do, mi, sol (0 = do)
 const PREFERE = [0, 7, 4];                 // le plus grave au do, puis sol, puis mi

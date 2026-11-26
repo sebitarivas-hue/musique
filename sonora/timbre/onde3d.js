@@ -1,6 +1,6 @@
 // L'écran des outils (labo, studio Faust) en 3D : le spectre du son devient un paysage qui s'éloigne dans la profondeur,
 // l'onde du moment brille au premier plan. Même couleur que la salle de jeux : vert citron sur fond sombre.
-import * as T from "./vendor/three.module.min.js?v=632814132b";
+import * as T from "./vendor/three.module.min.js?v=37e26e3155";
 const LIGNES = 44, PTS = 96;
 export function monterOnde3d(cv2d) {
   const hote = cv2d.parentElement; if (!hote || cv2d.__onde3d) return null;
