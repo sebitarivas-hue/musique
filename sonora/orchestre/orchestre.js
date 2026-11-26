@@ -1,17 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, ROULEMENTS, ROULEMENTS_RECONSTITUES, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=aa3f217773";
-import { ACCORDS, voicerAccord } from "./accord.js?v=aa3f217773";
-import { EXEMPLES } from "./exemples.js?v=aa3f217773";
-import { CADENCES, voicerCadence } from "./cadences.js?v=aa3f217773";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=aa3f217773";
-import { monterTimbres } from "./timbres.js?v=aa3f217773";
-import { monterFugue } from "./fugue.js?v=aa3f217773";
-import { monterBritten } from "./britten.js?v=aa3f217773";
-import { monterVariations } from "./variations.js?v=aa3f217773";
-import { svgIcone, dessin } from "./icones.js?v=aa3f217773";
-import { PHOTOS } from "./photos.js?v=aa3f217773";
-import { FICHES } from "./fiches.js?v=aa3f217773";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, ROULEMENTS, ROULEMENTS_RECONSTITUES, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=e921369dbd";
+import { ACCORDS, voicerAccord } from "./accord.js?v=e921369dbd";
+import { EXEMPLES } from "./exemples.js?v=e921369dbd";
+import { CADENCES, voicerCadence } from "./cadences.js?v=e921369dbd";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=e921369dbd";
+import { monterTimbres } from "./timbres.js?v=e921369dbd";
+import { monterFugue } from "./fugue.js?v=e921369dbd";
+import { monterBritten } from "./britten.js?v=e921369dbd";
+import { monterVariations } from "./variations.js?v=e921369dbd";
+import { svgIcone, dessin } from "./icones.js?v=e921369dbd";
+import { PHOTOS } from "./photos.js?v=e921369dbd";
+import { FICHES } from "./fiches.js?v=e921369dbd";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -82,6 +82,13 @@ const JEUX = { pizz: PIZZICATO, trem: TREMOLO, col: COL_LEGNO, hrm: HARMONIQUES,
 // Une technique de jeu ne concerne que les cordes frottées : les bois, les cuivres, la harpe et les percussions jouent normalement avec elles.
 // Une corde frottée sans la technique demandée est laissée de côté (et signalée), plutôt que de jouer à l'archet au milieu d'un pizzicato.
 const CORDES_FROTTEES = ["violons1", "violons2", "altos", "violoncelles", "contrebasses"];
+// Staccato et marcato sont des articulations pour tout l'orchestre : les cordes ont leurs échantillons dédiés,
+// les autres instruments à hauteur précise jouent des notes courtes (staccato) ou accentuées et plus brèves (marcato).
+function articulation(dureeBase) {
+  if (etat.jeu === "stacc") return { duree: 0.22, vitesse: 0.8 };
+  if (etat.jeu === "marc") return { duree: Math.min(dureeBase, 0.9), vitesse: 1.0 };
+  return { duree: dureeBase, vitesse: 0.8 };
+}
 function versionJeu(i) {
   if (!i) return null;
   if (etat.jeu === "arco" || !CORDES_FROTTEES.includes(i.id)) return jouables(i) ? i : null;
@@ -120,9 +127,9 @@ async function jouerMelange() {
   const insts = [...parts.map(p => p.inst), ...percs];
   const brut = await Promise.all([
     // les timbales roulent sur leur note de l'accord si l'option est active
-    ...parts.map(p => rendreMelodie(p.inst, etat.roul && ROULEMENTS_RECONSTITUES.includes(p.inst.id) ? roulement(0, 3.4, p.m) : [{ t: 0, duree: 3.4, notes: [p.m], vitesse: 0.8 }], duree, j)),
-    // sans roulement, les frappes reviennent en pulsation (toutes les 1,15 s) : elles restent audibles sous les sons tenus
-    ...percs.map(i => { const r = piste_percu(i, [0], 3.4); return r ? rendreMelodie(r.inst, r.ev, duree, j) : rendreMelodie({ banque: i.coup.banque, nom: i.nom }, [0, 1, 2, 3].map(k => ({ t: k * 1.15, duree: 0.9, notes: [60], vitesse: 0.8 })), duree, j); }),
+    ...parts.map(p => { const a = articulation(3.4); return rendreMelodie(p.inst, etat.roul && ROULEMENTS_RECONSTITUES.includes(p.inst.id) ? roulement(0, 3.4, p.m) : [{ t: 0, duree: a.duree, notes: [p.m], vitesse: a.vitesse }], duree, j); }),
+    // sans roulement, chaque percussion sans hauteur frappe une fois, avec l'accord
+    ...percs.map(i => { const r = piste_percu(i, [0], 3.4); return r ? rendreMelodie(r.inst, r.ev, duree, j) : rendreMelodie({ banque: i.coup.banque, nom: i.nom }, [{ t: 0, duree: 0.9, notes: [60], vitesse: 0.8 }], duree, j); }),
   ]);
   if (perimee(j)) return;
   const muets = insts.filter((_, k) => !brut[k]).map(i => i.nom.toLowerCase());
@@ -142,7 +149,7 @@ async function jouerCadence() {
   const v = voicerCadence(instruments, c), T = 1.8, duree = v.length * T + 1.2, j = debut();
   message("chargement de la cadence…");
   const parIns = new Map();
-  v.forEach((acc, k) => acc.parts.forEach(p => { if (!parIns.has(p.inst.id)) parIns.set(p.inst.id, { inst: p.inst, ev: [] }); const e = parIns.get(p.inst.id).ev; if (etat.roul && ROULEMENTS_RECONSTITUES.includes(p.inst.id)) e.push(...roulement(k * T, T * 0.95, p.m)); else e.push({ t: k * T, duree: T * 0.95, notes: [p.m], vitesse: 0.8 }); }));
+  v.forEach((acc, k) => acc.parts.forEach(p => { if (!parIns.has(p.inst.id)) parIns.set(p.inst.id, { inst: p.inst, ev: [] }); const e = parIns.get(p.inst.id).ev; if (etat.roul && ROULEMENTS_RECONSTITUES.includes(p.inst.id)) e.push(...roulement(k * T, T * 0.95, p.m)); else { const a = articulation(T * 0.95); e.push({ t: k * T, duree: a.duree, notes: [p.m], vitesse: a.vitesse }); } }));
   const pistes = [...parIns.values()].map(x => rendreMelodie(x.inst, x.ev, duree, j));
   const insts = [...parIns.values()].map(x => x.inst);
   for (const i of percs) { const r = piste_percu(i, v.map((_, k) => k * T), T * 0.95); pistes.push(r ? rendreMelodie(r.inst, r.ev, duree, j) : rendreMelodie({ banque: i.coup.banque, nom: i.nom }, v.map((_, k) => ({ t: k * T, duree: 0.9, notes: [60], vitesse: 0.8 })), duree, j)); insts.push(i); }

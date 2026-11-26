@@ -3,14 +3,14 @@
 // Maintenant : un seul mécanisme pour tout. Chaque instrument est un jeu de notes (des « tampons ») : des enregistrements réels de la banque du site, ou des notes rendues
 // une fois par SONORA (synthèse) à plusieurs hauteurs. Le clavier les joue en direct par transposition (Sampleur) et le clip est mixé avec les mêmes tampons (mixer) :
 // ce qu'on entend est ce qui est mis sur la piste. Plus de dépendance au moteur temps réel : si le son sort ailleurs sur la page, il sort ici.
-import { compiler } from "../src/index.js?v=aa3f217773";
-import { rendre } from "../src/rendu.js?v=aa3f217773";
-import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=aa3f217773";
-import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=aa3f217773";
-import { ENTREES } from "../library/catalogue.js?v=aa3f217773";
-import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=aa3f217773";
-import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=aa3f217773";
-import { INSTRUMENTS_BATTERIE, tamponsBatterieAsync, kitDe } from "./batterie_midi.js?v=aa3f217773";
+import { compiler } from "../src/index.js?v=e921369dbd";
+import { rendre } from "../src/rendu.js?v=e921369dbd";
+import { SONS_SYNTHESE } from "../harmonie/sons_synthese.js?v=e921369dbd";
+import { SONS_PERCUSSION } from "../harmonie/sons_percussion.js?v=e921369dbd";
+import { ENTREES } from "../library/catalogue.js?v=e921369dbd";
+import { preparer, choisir, NIVEAU, RELACHE } from "../harmonie/echantillons.js?v=e921369dbd";
+import { INSTRUMENTS_ECH } from "./bibliotheque.js?v=e921369dbd";
+import { INSTRUMENTS_BATTERIE, tamponsBatterieAsync, kitDe } from "./batterie_midi.js?v=e921369dbd";
 
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 export const GROUPES = ["Claviers", "Cordes", "Orchestre", "Batteries", "Vents", "Voix", "Percussions à hauteurs", "Percussions du monde", "Synthés et basses", "Effets sonores"];
