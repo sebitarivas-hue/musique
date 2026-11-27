@@ -1,17 +1,17 @@
 // SONORA Orchestre, espace 01 : explorer l'orchestre. Le plan des musiciens (SVG), les tessitures comparées, une fiche par instrument avec un clavier limité à sa tessiture et sa gamme jouée par la banque d'échantillons du site.
 // Les sons sont des enregistrements (voir ../harmonie/echantillons.js) : un instrument sans enregistrement le dit au lieu de faire un faux son.
-import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, ROULEMENTS, ROULEMENTS_RECONSTITUES, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=19ef21d316";
-import { ACCORDS, voicerAccord } from "./accord.js?v=19ef21d316";
-import { EXEMPLES } from "./exemples.js?v=19ef21d316";
-import { CADENCES, voicerCadence } from "./cadences.js?v=19ef21d316";
-import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=19ef21d316";
-import { monterTimbres } from "./timbres.js?v=19ef21d316";
-import { monterFugue } from "./fugue.js?v=19ef21d316";
-import { monterBritten } from "./britten.js?v=19ef21d316";
-import { monterVariations } from "./variations.js?v=19ef21d316";
-import { svgIcone, dessin } from "./icones.js?v=19ef21d316";
-import { PHOTOS } from "./photos.js?v=19ef21d316";
-import { FICHES } from "./fiches.js?v=19ef21d316";
+import { FAMILLES, ORDRE_FAMILLES, INSTRUMENTS, PIZZICATO, TREMOLO, COL_LEGNO, HARMONIQUES, STACCATO, MARCATO, ROULEMENTS, ROULEMENTS_RECONSTITUES, parId, nomNote, noire, jouables, gamme, secteur, centre, ANNEAUX } from "./donnees.js?v=5b2cd7bf62";
+import { ACCORDS, voicerAccord } from "./accord.js?v=5b2cd7bf62";
+import { EXEMPLES } from "./exemples.js?v=5b2cd7bf62";
+import { CADENCES, voicerCadence } from "./cadences.js?v=5b2cd7bf62";
+import { message, arreter, jouer, rendreMelodie, sommer, lire, debut, perimee, placer, equilibrer } from "./audio.js?v=5b2cd7bf62";
+import { monterTimbres } from "./timbres.js?v=5b2cd7bf62";
+import { monterFugue } from "./fugue.js?v=5b2cd7bf62";
+import { monterBritten } from "./britten.js?v=5b2cd7bf62";
+import { monterVariations } from "./variations.js?v=5b2cd7bf62";
+import { svgIcone, dessin } from "./icones.js?v=5b2cd7bf62";
+import { PHOTOS } from "./photos.js?v=5b2cd7bf62";
+import { FICHES } from "./fiches.js?v=5b2cd7bf62";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -297,6 +297,7 @@ function demarrer() {
   $("explorer").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".sect, .tess-ligne")) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent("click", { bubbles: true })); } });
   brancherMelange(); majMelange();
   $("v-plan").onclick = () => vue("plan"); $("v-gal").onclick = () => vue("gal"); $("v-tess").onclick = () => vue("tess");
+  vue("gal");   // on arrive sur les instruments (la galerie) ; le plan, avec sa consigne, sert à les faire jouer ensemble
   const id = decodeURIComponent((location.hash || "").slice(1)); choisir(parId(id) ? id : null, false); espace(["timbres", "fugue", "britten", "variations"].indexOf(id) >= 0 ? id : "explorer");
   window.addEventListener("hashchange", () => { const h = decodeURIComponent((location.hash || "").slice(1)); if (h === "") espace("explorer"); else if (["timbres", "fugue", "britten", "variations"].indexOf(h) >= 0) espace(h); else if (parId(h)) { espace("explorer"); if (h !== etat.choix) choisir(h, false); } });
   document.addEventListener("click", e => { const a = e.target.closest("[data-voir]"); if (a) { e.preventDefault(); espace("explorer"); choisir(a.dataset.voir, true); } });

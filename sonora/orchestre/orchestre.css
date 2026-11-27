@@ -190,3 +190,5 @@ select.juste { background: #CDEFB4; border-color: #3FA34D; } select.faux { backg
   .m-etat { margin-left: 0; }
 }
 #m-roul[aria-pressed="true"] { background: var(--noir); color: var(--papier); }
+.consigne { flex-basis: 100%; margin: 2px 0 6px; padding: 8px 10px; background: var(--papier); border-left: 4px solid var(--acide); font-size: .92rem; line-height: 1.4; }
+@media (max-width: 520px) { .melange > .consigne { grid-column: 1 / -1; } }

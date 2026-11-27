@@ -4,7 +4,7 @@
 // inclinaison d'axe et leur propre orbite elliptique inclinée autour du soleil (excentricité et inclinaison d'après les vraies, les distances sont resserrées).
 // Le soleil remplace la flamme : éteint tant qu'on n'a pas joué aujourd'hui, de plus en plus brillant au fil des parties, remis à zéro à minuit (donnees.soleil.eclat, de 0 à 1).
 // La caméra vole, plonge vers la planète touchée ; les étiquettes sont de vrais boutons HTML (clavier, lecteur d'écran). Three.js (licence MIT) est dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=19ef21d316";
+import * as T from "./vendor/three.module.min.js?v=5b2cd7bf62";
 
 const alea = graine => { let s = graine >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; };
 const bornes = (x, a, b) => Math.max(a, Math.min(b, x));

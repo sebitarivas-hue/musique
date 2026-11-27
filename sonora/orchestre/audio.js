@@ -1,7 +1,7 @@
 // SONORA Orchestre : lecture des échantillons de la banque du site, partagée par les espaces 01 (explorer) et 03 (timbres).
 // Chaque lecture est rendue à l'avance (mixer) puis jouée : une seule lecture à la fois, `arreter` coupe tout.
-import { nomNote } from "./donnees.js?v=19ef21d316";
-import { mixer, preparer } from "../harmonie/echantillons.js?v=19ef21d316";
+import { nomNote } from "./donnees.js?v=5b2cd7bf62";
+import { mixer, preparer } from "../harmonie/echantillons.js?v=5b2cd7bf62";
 
 let ctx = null, sources = [], jeton = 0, sortie = null, salle = null;   // salle : la réverbération, une seule par contexte   // sortie : le seul nœud de gain en service (un par lecture, retiré à l'arrêt)
 // Une seule lecture compte : la dernière demandée. Chaque demande prend un numéro (`debut`) ; arrêter, ou demander autre chose, rend périmées celles qui sont encore en préparation.
