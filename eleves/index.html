@@ -1931,7 +1931,7 @@ html.signal .labo { background: linear-gradient(160deg, rgba(36,60,22,.82), rgba
 .gal-son.on .gs-ic i:nth-child(2) { animation-delay: .2s; } .gal-son.on .gs-ic i:nth-child(3) { animation-delay: .45s; } .gal-son.on .gs-ic i:nth-child(4) { animation-delay: .7s; }
 .gal-son.charge { opacity: .75; } @keyframes gs-bar { 0%, 100% { height: 4px; } 50% { height: 16px; } }
 @media (prefers-reduced-motion: reduce) { .gal-son.on .gs-ic i { animation: none; height: 10px; } }
-.vocab-ep{flex-basis:100%;margin-top:4px}.vocab-plus{flex-basis:100%}.gal-points{list-style:none;padding:0;margin:6px 0 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px 16px}.gal-points li{display:flex;justify-content:space-between;gap:8px}.rt-liste{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:12px}.rt{border-left:3px solid var(--navy);padding-left:10px}.rt p{margin:2px 0 0}.rt-l{font-family:var(--f-mono);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}.rt-devoir{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}.rt-devoir p{margin:2px 0 0}.plus-seance{margin-top:14px}.plus-seance>summary{cursor:pointer;padding:10px 0;font-size:1rem}.fil-notion{border-left:4px solid var(--navy);margin:10px 0}.fil-notion h2{margin:4px 0 8px}
+.vocab-ep{flex-basis:100%;margin-top:4px}.vocab-plus{flex-basis:100%}.gal-points{list-style:none;padding:0;margin:6px 0 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px 16px}.gal-points li{display:flex;justify-content:space-between;gap:8px}.rt-liste{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:12px}.rt{border-left:3px solid var(--navy);padding-left:10px}.rt p{margin:2px 0 0}.rt-l{font-family:var(--f-mono);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}.rt-ecoute{margin-top:8px}.rt-devoir{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}.rt-devoir p{margin:2px 0 0}.plus-seance{margin-top:14px}.plus-seance>summary{cursor:pointer;padding:10px 0;font-size:1rem}.fil-notion{border-left:4px solid var(--navy);margin:10px 0}.fil-notion h2{margin:4px 0 8px}
 </style>
 </head>
 <body>
@@ -2382,13 +2382,14 @@ function tempsReels(R) {
   R.temps.filter(([r]) => r !== "reserve" && r !== "fin").forEach(([r, m, t]) => ajoute(r, m, t));
   return L;
 }
-function carteSeanceReelle(k, seq, num, c) {
+function carteSeanceReelle(k, seq, num, c, ec) {
   const R = reelleDe(k, seq, num); if (!R) return "";
   let i = 0;
   const lignes = tempsReels(R).map(x => {
     const num_ = x.r === "projet" || x.r === "garde" ? "" : `${++i}. `;
     const corps = x.r === "retenir" ? (R.retenir.length ? R.retenir : ["Je copie la trace de la séance dans mon cahier."]) : x.t;
-    return `<li class="rt rt-${x.r}"><span class="rt-l">${num_}${LIB_TEMPS[x.r]}, ${x.m} min</span>${corps.map(t => `<p>${esc(t)}</p>`).join("")}</li>`; }).join("");
+    const oeuvre = x.r === "ecouter" && ec && ec.length ? `<div class="rt-ecoute"><span class="label">À réécouter à la maison</span>${ecoutesHtml(ec.filter(e => !e.ext).slice(0, 1))}</div>` : "";
+    return `<li class="rt rt-${x.r}"><span class="rt-l">${num_}${LIB_TEMPS[x.r]}, ${x.m} min</span>${corps.map(t => `<p>${esc(t)}</p>`).join("")}${oeuvre}</li>`; }).join("");
   return `<section class="card reelle"><h2 class="blk-t">En classe aujourd'hui</h2><ol class="rt-liste">${lignes}</ol>
     <div class="rt-devoir"><span class="label">Pour la prochaine fois</span><p>${esc(c.devoirs)}</p></div></section>`;
 }
@@ -2410,7 +2411,7 @@ function vueSeance(k, seq, num) {
   let h = `<header class="top"><div class="brand"><span class="lvlbadge sm" style="background:${D.couleurs[k]}">${k}</span><span>Séquence ${seq}, ${esc(s.titre)}</span></div>
     <div class="label">Séance ${num}, semaine du ${esc(e.semaine)}</div><h1>${esc(se.objectif)}</h1><p class="lead">${esc(s.question)}</p>${filsHtml(filsDe(k, seq, num))}</header>`;
   h += `<div class="pager"><a class="wbtn" href="${prev ? "#" + seanceId(k, prev) : "#cours-" + k}" aria-label="Séance précédente">&#8249;</a>
-    <a class="btn-main" href="#proj-${k}-${seq}-${num}">${role() === "prof" ? "Projeter" : "Voir le diaporama"}</a><a class="wbtn" href="${next ? "#" + seanceId(k, next) : "#cours-" + k}" aria-label="Séance suivante">&#8250;</a></div>`;
+    ${role() === "prof" || !reelleDe(k, seq, num) ? `<a class="btn-main" href="#proj-${k}-${seq}-${num}">${role() === "prof" ? "Projeter" : "Voir le diaporama"}</a>` : `<span class="small">Séance ${num} sur ${c.seances.length}</span>`}<a class="wbtn" href="${next ? "#" + seanceId(k, next) : "#cours-" + k}" aria-label="Séance suivante">&#8250;</a></div>`;
   h += optionsBandeau(k, e, 1);
   const atlasS = atlasBloc(k, seq); if (role() === "prof") h += atlasS;
   const ec = ecoutesSeance(k, seq, num);
@@ -2447,12 +2448,17 @@ function vueSeance(k, seq, num) {
       ["ecouter", "2", "Écouter", "ecoute", (P.chant || "") + (P.ecoute || "") + (P.reso || "") + (P.classer || "") + (P.comparer || "") + (P.partitions || "") + (P.sons || "") + (P.echo || "")],
       ["retenir", "3", "Retenir", "notion", (P.retiens || "") + (P.devoirs || "") + (P.eval || "")],
       ["entrainer", "4", "S'entraîner", "eval", `<section class="card entr"><h2 class="blk-t">Je m'entraîne</h2><div class="gros-liens"><a class="gros-lien" href="#quiz-${k}-${seq}">${medaille("eval", true, D.couleurs[k])}<b>Le quiz de la séquence</b><span class="small">${(D.quiz[k][seq - 1] || []).length} questions, correction immédiate</span></a><a class="gros-lien" href="#pratiquer-${k}-jeux">${medaille("oreille", true, D.couleurs[k])}<b>Les jeux d'écoute</b><span class="small">L'oreille fine, le clavier, le rythme…</span></a><a class="gros-lien" href="#faust">${medaille("code", true, D.couleurs[k])}<b>Le laboratoire du son</b><span class="small">Fabriquer des sons avec Faust</span></a></div></section>` + ludoDeSeance(k, seq, num) + plusHtml(k, seq, num, true) + (P.faust || "") + (P.ressources || "") + `<details class="seq"><summary><span class="seqhead"><span class="meta">Pour les curieux</span><h3>Comment se déroule la séance en classe</h3></span><span class="chev" aria-hidden="true">&#8250;</span></summary><div class="body">${P.deroule || ""}</div></details>`]];
-    const ouverte = get("etape:" + k + "-" + seq + "-" + num, "decouvrir");
-    h += carteSeanceReelle(k, seq, num, c) + `<details class="plus-seance"${reelleDe(k, seq, num) ? "" : " open"}><summary>Pour aller plus loin : tout le cours de la séance</summary>` + atlasS;
-    h += `<nav class="etapes" role="tablist" aria-label="Les étapes de la séance" style="--c:${D.couleurs[k]}">${ETAPES.map(([id, n, lib, pic]) => `<button type="button" role="tab" id="et-${id}" aria-controls="pa-${id}" aria-selected="${id === ouverte}" data-etape="${id}"><span class="et-n">${n}</span><span class="et-l">${lib}</span></button>`).join("")}</nav>`;
-    h += ETAPES.map(([id, , lib, , contenu], x) => `<div class="stack panneau" role="tabpanel" id="pa-${id}" aria-labelledby="et-${id}"${id === ouverte ? "" : " hidden"}>${contenu}
-      <div class="suite">${x < 3 ? `<button type="button" class="btn-main" data-etape="${ETAPES[x + 1][0]}">Étape suivante : ${ETAPES[x + 1][2]} &#8250;</button>` : `<a class="btn-main" href="#parcours">Voir mon parcours</a>`}</div></div>`).join("");
-    h += `</details><div>`;
+    /* 27/11/2026, décision de Sébastien : l'élève ne voit que ce qui se fait en classe (les trois temps, l'œuvre à réécouter, Je retiens, les devoirs).
+       Le cours complet reste dans l'espace du professeur. Sans séance réelle connue, l'ancienne présentation en quatre étapes reste. */
+    if (reelleDe(k, seq, num)) h += carteSeanceReelle(k, seq, num, c, ec);
+    else {
+      const ouverte = get("etape:" + k + "-" + seq + "-" + num, "decouvrir");
+      h += `<nav class="etapes" role="tablist" aria-label="Les étapes de la séance" style="--c:${D.couleurs[k]}">${ETAPES.map(([id, n, lib, pic]) => `<button type="button" role="tab" id="et-${id}" aria-controls="pa-${id}" aria-selected="${id === ouverte}" data-etape="${id}"><span class="et-n">${n}</span><span class="et-l">${lib}</span></button>`).join("")}</nav>`;
+      h += ETAPES.map(([id, , lib, , contenu], x) => `<div class="stack panneau" role="tabpanel" id="pa-${id}" aria-labelledby="et-${id}"${id === ouverte ? "" : " hidden"}>${contenu}
+        <div class="suite">${x < 3 ? `<button type="button" class="btn-main" data-etape="${ETAPES[x + 1][0]}">Étape suivante : ${ETAPES[x + 1][2]} &#8250;</button>` : `<a class="btn-main" href="#parcours">Voir mon parcours</a>`}</div></div>`).join("");
+    h += atlasS;
+    }
+    h += `<div>`;
   }
   h += `</div><p class="small" style="margin-top:12px;text-align:center"><a href="#semaine-${widx}">Toute la semaine</a></p>`;
   h += `<div class="pager" style="margin-top:12px">${prev ? `<a class="btn2" href="#${seanceId(k, prev)}">&#8249; Séance précédente</a>` : "<span></span>"}${next ? `<a class="btn2" href="#${seanceId(k, next)}">Séance suivante &#8250;</a>` : "<span></span>"}</div>`;
@@ -2529,21 +2535,22 @@ function vueCours(k, seqOuverte) {
   h += `<p style="margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px"><a class="chip" href="#${role() === "prof" ? "eval" : "reviser"}-${k}">${role() === "prof" ? "Évaluer : grilles, saisie, bilan" : "Réviser : critères, quiz"}</a><a class="chip" href="#fiches">Les ${Object.keys(D.fiches).length} fiches de notions : le programme</a><a class="chip" href="#projets">Projets de l'année : la planche en groupe</a><a class="chip" href="#sortie">La sortie de l'année</a><a class="chip" href="#vocabulaire">Le vocabulaire pour classer</a><a class="chip" href="#fils">Les passerelles : danse, cinéma, littérature, sciences</a></p>`;
   if (role() === "prof") h += `<div class="seg" role="group" aria-label="Affichage"><button type="button" id="m-eleve" aria-pressed="${mode !== "prof"}">Vue élève : œuvres, chant, partitions, échos</button><button type="button" id="m-prof" aria-pressed="${mode === "prof"}">Vue professeur : déroulés</button></div>`;
   if (mode !== "prof") {
+    const eleveSeul = role() !== "prof" && !!D.reelle;   /* 27/11/2026 : l'élève ne voit pas les échos, la carte, les partitions IMSLP ni les galeries */
     h += `<section class="edito"><h2>L'année de ${k}, séquence par séquence</h2><ol class="edito-seq">${n.sequences.map((s, i) => `<li><a href="#cours-${k}-${i + 1}"><span class="edito-n" style="background:${D.couleurs[k]}">${i + 1}</span><span><b>${esc(s.titre)}</b><span class="edito-q">${esc(s.question)}</span>${filDe(k, i + 1) ? `<span class="edito-m">La notion : ${esc(filDe(k, i + 1).notion)}</span>` : ""}${s.accroche ? `<span class="edito-a">${esc(s.accroche)}</span>` : ""}<span class="edito-m">${esc(PER[s.periode])}, ${n.contenus[i].seances.length} séances, un chant : ${esc(s.chant)}</span></span></a></li>`).join("")}</ol></section>
       <div class="dl">${pdf(`Plan_${k}_eleves_parents.pdf`, "Le plan de l'année")}</div><div class="stack" style="margin-top:14px">`;
     n.sequences.forEach((s, i) => {
       const c = n.contenus[i], ouvert = seqOuverte ? seqOuverte === i + 1 : cur && cur.seq === i + 1;
       const evs = listeSeances(k).filter(e => e.seq === i + 1 && estEval(k, e.seq, e.num))[0];
       h += `<details class="seq"${ouvert ? " open" : ""}><summary>${vignette(k, i)}<span class="seqhead"><span class="meta">Séquence ${i + 1}, ${esc(PER[s.periode])}${ouvert ? ", en cours" : ""}</span><h3>${esc(s.titre)}</h3></span><span class="chev" aria-hidden="true">&#8250;</span></summary><div class="body">
-        <p class="q">${esc(s.question)}</p>${notionPrincipale(k, i + 1)}${filsHtml(filsDe(k, i + 1))}${encartPlanche(k, i + 1)}
-        ${galerieHtml(D.imagesSeq[k][i] || [])}
+        <p class="q">${esc(s.question)}</p>${notionPrincipale(k, i + 1)}${eleveSeul ? "" : filsHtml(filsDe(k, i + 1))}${encartPlanche(k, i + 1)}
+        ${eleveSeul ? "" : galerieHtml(D.imagesSeq[k][i] || [])}
         <div><h4 class="blk-t">Ce que j'apprends</h4><ul class="plain">${c.objectifs.map(o => `<li>${esc(o)}</li>`).join("")}</ul></div>
-        <div><h4 class="blk-t">Les œuvres</h4><div class="listens">${s.oeuvres.map(o => ecoute(o, o)).join("")}</div></div>
+        <div><h4 class="blk-t">Les œuvres</h4><div class="listens">${(eleveSeul ? s.oeuvres.filter(o => !/^Pour aller plus loin/.test(o)).slice(0, 3) : s.oeuvres).map(o => ecoute(o, o)).join("")}</div></div>
         <div><h4 class="blk-t">Le chant</h4><p>${esc(s.chant)}</p></div>
-        ${atlasBloc(k, i + 1)}
-        ${resoCourt(k, i + 1)}
-        ${((D.imslp[k] || {})[i + 1] || []).length ? `<div><h4 class="blk-t">Partitions complètes (domaine public, IMSLP)</h4>${liensHtml(D.imslp[k][i + 1].map(([l, q]) => [l, "https://imslp.org/index.php?title=Special:Search&search=" + encodeURIComponent(q)]))}</div>` : ""}
-        ${echosDe(k, i + 1).length ? `<div><h4 class="blk-t">Échos d'aujourd'hui</h4><div class="stack" style="gap:8px">${echosListe(echosDe(k, i + 1))}</div></div>` : ""}
+        ${eleveSeul ? "" : atlasBloc(k, i + 1)}
+        ${eleveSeul ? "" : resoCourt(k, i + 1)}
+        ${!eleveSeul && ((D.imslp[k] || {})[i + 1] || []).length ? `<div><h4 class="blk-t">Partitions complètes (domaine public, IMSLP)</h4>${liensHtml(D.imslp[k][i + 1].map(([l, q]) => [l, "https://imslp.org/index.php?title=Special:Search&search=" + encodeURIComponent(q)]))}</div>` : ""}
+        ${!eleveSeul && echosDe(k, i + 1).length ? `<div><h4 class="blk-t">Échos d'aujourd'hui</h4><div class="stack" style="gap:8px">${echosListe(echosDe(k, i + 1))}</div></div>` : ""}
         <div><h4 class="blk-t">Je dois savoir</h4><div class="chips">${vocabHtml(k, i + 1, s.vocabulaire)}</div></div>
         <div><h4 class="blk-t">Je retiens</h4><div class="trace">${c.trace.map(t => `<p>${esc(t)}</p>`).join("")}</div></div>
         <div><h4 class="blk-t">Les séances</h4><ol class="sl">${c.seances.map((se, j) => `<li><a href="#seance-${k}-${i + 1}-${j + 1}"><span class="meta">${esc(dates[(i + 1) + "-" + (j + 1)] || "")}</span><span>${esc(se.objectif)}</span></a></li>`).join("")}</ol></div>
@@ -6576,7 +6583,25 @@ function notionPrincipale(k, a) {
     <div class="chips">${f.mots.map(m => `<span class="tag fil-mot">${esc(m)}</span>`).join("")}</div>
     ${fiches.length ? `<p class="small">La fiche : ${fiches.map(x => `<a href="#fiche-${x}">${esc(D.fiches[x].titre)}</a>`).join(", ")}</p>` : ""}</section>`;
 }
+/* La page de séquence de l'élève (27/11/2026, décision de Sébastien) : la notion, les œuvres du cours, le chant, ce qu'il faut retenir, les séances.
+   Pas d'échos, de carte, d'expériences ni de ressources extérieures : elles restent dans l'espace du professeur. */
+function vueSequenceEleve(k, a) {
+  const n = D.niveaux[k], s = n.sequences[a - 1], c = n.contenus[a - 1];
+  const prev = a > 1 ? `<a class="btn2" href="#seq-${k}-${a - 1}">&#8249; Séquence ${a - 1}</a>` : `<a class="btn2" href="#cours-${k}">Toutes les séquences</a>`;
+  const next = a < n.sequences.length ? `<a class="btn2" href="#seq-${k}-${a + 1}">Séquence ${a + 1} &#8250;</a>` : `<a class="btn2" href="#cours-${k}">Toutes les séquences</a>`;
+  let h = head(`${k}, séquence ${a}, ${PER[s.periode]}`, s.titre, s.question) + notionPrincipale(k, a) + encartPlanche(k, a);
+  h += `<section class="pseq-p" id="p-ecouter"><h2 class="sec">Les œuvres du cours</h2><div class="listens">${s.oeuvres.filter(o => !/^Pour aller plus loin/.test(o)).slice(0, 3).map(o => ecoute(o, o)).join("")}</div></section>`;
+  h += `<section class="pseq-p" id="p-chanter"><h2 class="sec">Le chant</h2><p class="q">${esc(s.chant)}</p></section>`;
+  h += `<section class="pseq-p" id="p-retenir"><h2 class="sec">Retenir</h2>
+    <h3 class="blk-t">Je dois savoir</h3><div class="chips">${vocabHtml(k, a, s.vocabulaire)}</div>
+    <h3 class="blk-t">Je retiens</h3><div class="trace">${c.trace.map(t => `<p>${esc(t)}</p>`).join("")}</div>
+    <div class="actions"><a class="btn-main" href="#quiz-${k}-${a}">Le quiz de la séquence</a><a class="btn2" href="#reviser-${k}">Critères de réussite</a></div>
+    <div class="due"><h3 class="blk-t">Évaluation</h3><p>${esc(c.eval.consigne)}</p></div></section>`;
+  h += `<section class="pseq-p"><h2 class="sec">Les séances</h2><ol class="sl">${c.seances.map((se, j) => `<li><a href="#seance-${k}-${a}-${j + 1}"><span class="meta">Séance ${j + 1}</span><span>${esc(se.objectif)}</span></a></li>`).join("")}</ol></section>`;
+  return h + `<div class="pager" style="margin-top:14px">${prev}${next}</div>`;
+}
 function vueSequence(k, a) {
+  if (role() !== "prof" && D.reelle) return vueSequenceEleve(k, a);
   const n = D.niveaux[k], s = n.sequences[a - 1], c = n.contenus[a - 1], L = (D.liens[k] || {})[String(a)] || {}, i = a - 1;
   const lieux = (L.lieux || []).map(id => D.monde.lieux.find(l => l.id === id)).filter(Boolean);
   const ateliers = (D.grille.faust[k] || {})[String(a)] || [], jeux = (L.jeux || []).map(atelierDe).filter(Boolean);
