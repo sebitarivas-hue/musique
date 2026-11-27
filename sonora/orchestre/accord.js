@@ -3,7 +3,7 @@
 // Règles : chaque instrument reçoit une note de l'accord dans sa propre zone jouable ; deux instruments ne jouent jamais la même hauteur (unisson interdit) ;
 // la basse joue la fondamentale quand elle le peut, et les autres notes se répartissent dans l'ordre indiqué par l'accord.
 // Le placement est un appariement complet (Kuhn) : un instrument ne perd sa note que si aucun placement sans unisson n'existe pour tous.
-import { jouables } from "./donnees.js?v=5b2cd7bf62";
+import { jouables } from "./donnees.js?v=0e75ee115d";
 
 // Les accords : classes de hauteur (0 = do), fondamentale en tête, puis l'ordre de répartition du grave à l'aigu.
 export const ACCORDS = {

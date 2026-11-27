@@ -1931,7 +1931,7 @@ html.signal .labo { background: linear-gradient(160deg, rgba(36,60,22,.82), rgba
 .gal-son.on .gs-ic i:nth-child(2) { animation-delay: .2s; } .gal-son.on .gs-ic i:nth-child(3) { animation-delay: .45s; } .gal-son.on .gs-ic i:nth-child(4) { animation-delay: .7s; }
 .gal-son.charge { opacity: .75; } @keyframes gs-bar { 0%, 100% { height: 4px; } 50% { height: 16px; } }
 @media (prefers-reduced-motion: reduce) { .gal-son.on .gs-ic i { animation: none; height: 10px; } }
-.vocab-ep{flex-basis:100%;margin-top:4px}.vocab-plus{flex-basis:100%}.fil-notion{border-left:4px solid var(--navy);margin:10px 0}.fil-notion h2{margin:4px 0 8px}
+.vocab-ep{flex-basis:100%;margin-top:4px}.vocab-plus{flex-basis:100%}.gal-points{list-style:none;padding:0;margin:6px 0 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px 16px}.gal-points li{display:flex;justify-content:space-between;gap:8px}.fil-notion{border-left:4px solid var(--navy);margin:10px 0}.fil-notion h2{margin:4px 0 8px}
 </style>
 </head>
 <body>
@@ -5180,7 +5180,7 @@ function carte3D(j) {
    et la même bille marque la famille sur chaque rang et chaque carte. */
 const FAM_PLANETE = ["rythme", "ecoute", "instruments", "theorie", "creation", "atlas"];
 const COURT_FAM = { rythme: "Rythme", ecoute: "Écoute", instruments: "Instruments", theorie: "Théorie", creation: "Création", atlas: "Terre" };
-function planetesFam() { const G = GAL_DONNEES = GAL_DONNEES || galaxieDonnees(), m = {}; G.P.forEach(p => { m[p.id] = p; }); return m; }
+function planetesFam() { const G = GAL_DONNEES = GAL_DONNEES || galaxieDonnees(), m = {}; G.COINS.forEach(p => { m[p.id] = p; }); return m; }
 const bille = (p, taille) => `<span class="pl-bille${p && p.terre ? " terre" : ""}" style="--k:${p ? p.couleur : "#b8f54a"}${taille ? `;--t:${taille}px` : ""}" aria-hidden="true"></span>`;
 function filtresJeux(J, base) {
   const P = planetesFam();
@@ -6197,7 +6197,9 @@ function vueLaboJeu(liste, lien, txt) {
    tout ce qui se lit ici existe aussi en liste, pour les lecteurs d'écran et quand WebGL manque. Les points sont classés par planète depuis le 18/11/2026 (jeu.src). */
 let GAL = null, GAL_DONNEES = null;
 /* Le soleil est éteint tant qu'on n'a pas joué aujourd'hui, et brille de plus en plus à mesure des parties terminées et des points gagnés ; à minuit le jour change et il redevient éteint. */
-const CORPS_NOM = { atlas: "La Terre", cours: "Jupiter", oeuvres: "Saturne", quiz: "Mars", rythme: "Mercure", ecoute: "Vénus", instruments: "Uranus", theorie: "Neptune", creation: "Pluton", timbre: "Cérès", labo: "Éris", harmonie: "Makémaké", orchestre: "Hauméa" };
+const COURT_DOM = { son: "Le son", hauteur: "Hauteur", simultane: "Superposer", temps: "Le temps", timbre: "Timbre", expression: "Expression", forme: "La forme", styles: "Les styles" };
+const COUL_DOM = ["#ffd23f", "#ff8a00", "#ff3d7f", "#ff5a36", "#12b76a", "#7c5cff", "#0ea5e9", "#b8f400"];
+const CORPS_NOM = { "n-son": "Mercure", "n-hauteur": "Vénus", "n-simultane": "Mars", "n-temps": "Jupiter", "n-timbre": "Saturne", "n-expression": "Uranus", "n-forme": "Neptune", "n-styles": "Pluton", atlas: "La Terre", cours: "Jupiter", oeuvres: "Saturne", quiz: "Mars", rythme: "Mercure", ecoute: "Vénus", instruments: "Uranus", theorie: "Neptune", creation: "Pluton", timbre: "Cérès", labo: "Éris", harmonie: "Makémaké", orchestre: "Hauméa" };
 const eclatSoleil = (parties, xp) => Math.max(0, Math.min(1, .72 * Math.min(1, parties / duoObjectif()) + .28 * Math.min(1, xp / 60)));
 const texteSoleil = e => e <= 0 ? "Soleil éteint : termine une partie pour l'allumer." : e < .5 ? `Soleil allumé à ${Math.round(e * 100)} %. Continue, il brille de plus en plus.` : e < 1 ? `Soleil à ${Math.round(e * 100)} %. Encore un peu pour qu'il flamboie.` : "Soleil à pleine puissance aujourd'hui !";
 function galaxieDonnees() {
@@ -6206,7 +6208,7 @@ function galaxieDonnees() {
     return { progres: L.length ? min1(et / (9 * L.length)) : 0, texte: `${joues} jeu${joues > 1 ? "x" : ""} joué${joues > 1 ? "s" : ""} sur ${L.length}, ${et} étoile${et > 1 ? "s" : ""} sur ${9 * L.length}.`, lien: ["#jouer", "Jouer à cette famille"] }; };
   const seancesLues = compte(new RegExp(`^seance:${k}-`)), fiches = compte(/^fiche:/), nFiches = Object.keys(D.fiches || {}).length || 29, nSons = Object.keys(D.sons).length, nParts = Object.keys(D.partitions).length;
   const quizN = (D.quiz[k] || []).filter(q => q.length).length || 5, labo = compte(/^(academy|library|science|pistes|harmonie|studio|faust|code|defi-atelier|myst|jeu):/), parcAtlas = compte(/^atlas:p:/), ficheAtlas = compte(/^atlas:e:/);
-  const P = [
+  const COINS = [
     { id: "cours", nom: "Cours et séances", couleur: "#0ea5e9", progres: min1(.7 * seancesLues / 24 + .3 * fiches / nFiches), texte: `${seancesLues} séance${seancesLues > 1 ? "s" : ""} lue${seancesLues > 1 ? "s" : ""} sur 24 en ${k}, ${fiches} fiche${fiches > 1 ? "s" : ""} de notions sur ${nFiches}.`, lien: ["#cours", "Ouvrir le cours"] },
     { id: "oeuvres", nom: "Œuvres et partitions", couleur: "#ff8a00", progres: min1(.5 * (j.c.sons || 0) / nSons + .5 * (j.c.parts || 0) / nParts), texte: `${j.c.sons || 0} son${(j.c.sons || 0) > 1 ? "s" : ""} écouté${(j.c.sons || 0) > 1 ? "s" : ""} sur ${nSons}, ${j.c.parts || 0} partition${(j.c.parts || 0) > 1 ? "s" : ""} suivie${(j.c.parts || 0) > 1 ? "s" : ""} sur ${nParts}.`, lien: ["#ecouter", "Écouter des œuvres"] },
     { id: "quiz", nom: "Quiz du cours", couleur: "#ff3d7f", progres: min1((j.c.quiz || 0) / quizN), texte: `${j.c.quiz || 0} quiz terminé${(j.c.quiz || 0) > 1 ? "s" : ""} sur ${quizN}, ${j.c.parfaits || 0} sans faute.`, lien: [`#quiz-${k}-1`, "Faire un quiz"] },
@@ -6217,20 +6219,37 @@ function galaxieDonnees() {
     { id: "atlas", nom: "Terre : l'Atlas des musiques", couleur: "#2f7be8", terre: true, progres: min1(.6 * parcAtlas / 67 + .4 * ficheAtlas / 300), texte: `${ficheAtlas} fiche${ficheAtlas > 1 ? "s" : ""} lue${ficheAtlas > 1 ? "s" : ""}, ${parcAtlas} parcours terminé${parcAtlas > 1 ? "s" : ""} sur 67, ${compte(/^quiz:(lieux|ordre|trajets|cours)/)} étoile${compte(/^quiz:(lieux|ordre|trajets|cours)/) > 1 ? "s" : ""} aux quiz.`, lien: [(D.atlas || "#ecouter"), "Partir dans l'Atlas"] },
   ];
   const harm = compte(/^harmonie:/);
-  if (D.sonora_harmonie) P.push({ id: "harmonie", nom: "Harmonie : gammes et accords", couleur: "#12d6a0", progres: min1(harm / 27), texte: `${harm} partie${harm > 1 ? "s" : ""} faite${harm > 1 ? "s" : ""} au jeu d'oreille de l'harmonie, sur 27 possibles.`, lien: [D.sonora_harmonie, "Entrer dans l'Harmonie"] });
-  if (D.sonora_orchestre) P.push({ id: "orchestre", nom: "L'orchestre", couleur: "#ff3d9a", progres: 0, texte: "Le plan de l'orchestre, chaque instrument en photo avec son timbre, un guide d'écoute et une fugue à construire.", lien: [D.sonora_orchestre, "Entrer dans l'orchestre"] });
+  if (D.sonora_harmonie) COINS.push({ id: "harmonie", nom: "Harmonie : gammes et accords", couleur: "#12d6a0", progres: min1(harm / 27), texte: `${harm} partie${harm > 1 ? "s" : ""} faite${harm > 1 ? "s" : ""} au jeu d'oreille de l'harmonie, sur 27 possibles.`, lien: [D.sonora_harmonie, "Entrer dans l'Harmonie"] });
+  if (D.sonora_orchestre) COINS.push({ id: "orchestre", nom: "L'orchestre", couleur: "#ff3d9a", progres: 0, texte: "Le plan de l'orchestre, chaque instrument en photo avec son timbre, un guide d'écoute et une fugue à construire.", lien: [D.sonora_orchestre, "Entrer dans l'orchestre"] });
   const COURT = { cours: "Cours", oeuvres: "Œuvres", quiz: "Quiz", rythme: "Rythme", ecoute: "Écoute", instruments: "Instruments", theorie: "Théorie", creation: "Création", timbre: "TIMBRE", labo: "Labo", atlas: "Terre", harmonie: "Harmonie", orchestre: "Orchestre" };
-  P.forEach(p => { p.xp = src[p.id] || 0; p.court = COURT[p.id] || p.nom; });
+  COINS.forEach(p => { p.xp = src[p.id] || 0; p.court = COURT[p.id] || p.nom; });
+  /* Les planètes de la galaxie (27/11/2026) : une par domaine de notions (outils/notions_fil_rouge.py), plus la Terre (l'Atlas).
+     Une planète se remplit avec les séquences de l'année qui travaillent ce domaine : séances lues, questions de quiz réussies, étoiles aux jeux reliés.
+     Les points restent rangés par coin du site (COINS, planeteDe), comme dans SONORA : rien n'est perdu. */
+  const FR = D.filRouge || { domaines: {}, seq: {} }, NV = ["6e", "5e", "4e", "3e"];
+  const progSeq = a => { const c = D.niveaux[k].contenus[a - 1], Q = (D.quiz[k] || [])[a - 1] || [], L = D.ludo.jeux.filter(g => g.moteur && (g.seances || []).some(x => x[0] === k && x[1] === a));
+    const parts = [[.4, c.seances.filter((_, n) => F[`seance:${k}-${a}-${n + 1}`]).length / c.seances.length], [.3, Q.length ? Q.filter((_, x) => F[`quizq:${k}-${a}-${x}`]).length / Q.length : null], [.3, L.length ? L.reduce((t, g) => t + ludoEtoiles(g.id), 0) / (9 * L.length) : null]].filter(x => x[1] !== null);
+    return parts.reduce((t, [w, v]) => t + w * v, 0) / parts.reduce((t, [w]) => t + w, 0); };
+  const P = Object.entries(FR.domaines).map(([d, nom], i) => {
+    const seqs = Object.entries(FR.seq[k] || {}).filter(([, f]) => f.domaine === d).map(([a, f]) => [+a, f]), couleur = COUL_DOM[i % COUL_DOM.length];
+    if (!seqs.length) { const plus = NV.slice(NV.indexOf(k) + 1).find(n => Object.values(FR.seq[n] || {}).some(f => f.domaine === d)), avant = NV.slice(0, NV.indexOf(k)).reverse().find(n => Object.values(FR.seq[n] || {}).some(f => f.domaine === d));
+      return { id: "n-" + d, domaine: d, nom, couleur, progres: 0, texte: plus ? `Cette notion arrive en ${plus}.` : `Pas de séquence sur cette notion cette année${avant ? ` : elle a été vue en ${avant}` : ""}.`, lien: ["#fiches", "Les fiches de notions"], seqs: [] }; }
+    const pr = seqs.map(([a]) => progSeq(a)), progres = min1(pr.reduce((t, x) => t + x, 0) / pr.length), suite = seqs.find(([a], x) => pr[x] < 1) || seqs[0];
+    return { id: "n-" + d, domaine: d, nom, couleur, progres, seqs: seqs.map(([a, f]) => [a, f.notion]),
+      texte: seqs.map(([a, f]) => `Séquence ${a} : ${f.notion}.`).join(" ") + " Lis tes séances, réussis le quiz et joue aux jeux de la séquence pour remplir la planète.",
+      lien: [`#seq-${k}-${suite[0]}`, `Ouvrir la séquence ${suite[0]}`] }; });
+  const terre = COINS.find(p => p.id === "atlas"); if (terre) P.splice(Math.min(2, P.length), 0, terre);
+  P.forEach(p => { if (p.domaine) { p.xp = 0; p.court = COURT_DOM[p.domaine] || p.nom; } });
   const classes = Object.values(src).reduce((a, b) => a + b, 0), etoiles = Object.values(j.etoiles || {}).reduce((x, y) => x + y, 0) + etoilesTimbre(), jr = jourLocal(), jours = [];
   for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const c = jourLocal(d), a = (j.dj || {})[c] || {}; jours.push({ c, l: ["D", "L", "M", "M", "J", "V", "S"][d.getDay()], p: a.p || 0, b: a.b || 0, xp: (j.xpj || {})[c] || 0 }); }
   const auj = jours[6], eclat = eclatSoleil(auj.p, auj.xp);
-  P.forEach(p => { p.corps = CORPS_NOM[p.id] || ""; });
-  return { j, k, n, P, classes, avant: Math.max(0, j.xp - classes), etoiles, jours, auj, soleil: { niveau: n + 1, nom: NIVEAUX_JEU[n][1], xp: j.xp, eclat } };
+  P.forEach(p => { p.corps = CORPS_NOM[p.id] || ""; }); COINS.forEach(p => { p.corps = CORPS_NOM[p.id] || ""; });
+  return { j, k, n, P, COINS, classes, avant: Math.max(0, j.xp - classes), etoiles, jours, auj, soleil: { niveau: n + 1, nom: NIVEAUX_JEU[n][1], xp: j.xp, eclat } };
 }
 /* La musique de la galaxie : un programme Faust (outils/faust/stellaire/stellaire.dsp) joué en direct. Un drone, un chœur d'argent, des granulations aiguës, un vent solaire, un pulsar, une grande salle.
    L'éclat du soleil du jour règle la brillance et la densité des grains ; la planète touchée donne la racine et le mode. Tout est désactivé tant que l'élève n'a pas touché le bouton (le navigateur l'exige aussi). */
 const SON_GAL = { soleil: [55, 0, 0], mercure: [73.42, 4, 1], venus: [61.74, 0, 2], terre: [55, 3, 3], mars: [49, 2, 4], jupiter: [36.71, 5, 5], saturne: [41.2, 1, 6], uranus: [43.65, 4, 7], neptune: [32.7, 3, 8], pluton: [58.27, 2, 9], ceres: [69.3, 5, 10], eris: [77.78, 1, 11], makemake: [51.91, 0, 12], haumea: [46.25, 4, 13], lune: [65.41, 3, 3] };
-const SON_ID = { atlas: "terre", cours: "jupiter", oeuvres: "saturne", quiz: "mars", rythme: "mercure", ecoute: "venus", instruments: "uranus", theorie: "neptune", creation: "pluton", timbre: "ceres", labo: "eris", harmonie: "makemake", orchestre: "haumea" };
+const SON_ID = { "n-son": "mercure", "n-hauteur": "venus", "n-simultane": "mars", "n-temps": "jupiter", "n-timbre": "saturne", "n-expression": "uranus", "n-forme": "neptune", "n-styles": "pluton", atlas: "terre", cours: "jupiter", oeuvres: "saturne", quiz: "mars", rythme: "mercure", ecoute: "venus", instruments: "uranus", theorie: "neptune", creation: "pluton", timbre: "ceres", labo: "eris", harmonie: "makemake", orchestre: "haumea" };
 const SG = window.__SG = window.__SG || { node: null, etat: "arret", corps: "soleil" };
 function sonEclat() { const j = jeu(), a = (j.dj || {})[jourLocal()] || {}; return eclatSoleil(a.p || 0, (j.xpj || {})[jourLocal()] || 0); }
 function sonRegler(corps) { if (corps) SG.corps = corps; if (!SG.node || !SG.ch) return; const c = SON_GAL[SG.corps] || SON_GAL.soleil; try { SG.node.setParamValue(SG.ch.racine, c[0]); SG.node.setParamValue(SG.ch.mode, c[1]); SG.node.setParamValue(SG.ch.planete, c[2]); SG.node.setParamValue(SG.ch.eclat, sonEclat()); } catch (_) {} }
@@ -6261,10 +6280,10 @@ function sonArreter() {
 addEventListener("hashchange", () => setTimeout(() => { if (SG.etat !== "arret" && !document.getElementById("galaxie3d")) sonArreter(); }, 150));
 function galaxieScene() {
   const G = GAL_DONNEES = galaxieDonnees(), j = G.j;
-  return `<section class="gal accueil" aria-labelledby="gal-t"><h2 class="sr" id="gal-t">Ma galaxie : le soleil, c'est toi, chaque planète est un coin du site</h2>
+  return `<section class="gal accueil" aria-labelledby="gal-t"><h2 class="sr" id="gal-t">Ma galaxie : le soleil, c'est toi, chaque planète est une notion du cours</h2>
     <div class="gal-scene"><canvas id="galaxie3d" aria-hidden="true"></canvas><div id="gal-etiq"></div><div class="gal-sans3d"><p class="small">La galaxie en 3D demande WebGL. Voici les planètes en liste.</p><ul>${G.P.map(p => `<li><a href="${esc(p.lien[0])}" style="--k:${p.couleur}">${bille(p)}${esc(p.court)} <b>${Math.round(p.progres * 100)} %</b></a></li>`).join("")}</ul></div>
       <div class="gal-soleil"><b>Niveau ${G.soleil.niveau}</b><span>${esc(G.soleil.nom)}, ${j.xp} XP</span><span id="gal-soleil-txt">${esc(texteSoleil(G.soleil.eclat))}</span><span>${duoSerie()} jour${duoSerie() > 1 ? "s" : ""} de suite</span></div>
-      <p class="gal-aide" id="gal-aide">Touche une planète pour y entrer. Glisse pour tourner.</p>
+      <p class="gal-aide" id="gal-aide">Chaque planète est une notion du cours, la Terre les musiques du monde. Touche une planète pour y entrer.</p>
       <button type="button" class="gal-son" id="gal-son" aria-pressed="false"><span class="gs-ic" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="gal-son-t">Écouter la galaxie</span></button>
       <div class="gal-popup" id="gal-popup" role="dialog" aria-label="Planète choisie" hidden></div></div></section>`;
 }
@@ -6277,8 +6296,10 @@ function galaxieFeuille(liens) {
     <div class="gal-recap"><div class="gal-tuiles">${tuile(G.auj.p, "partie" + (G.auj.p > 1 ? "s" : "") + " aujourd'hui")}${tuile(G.auj.b, "avec deux étoiles ou plus")}${tuile("+" + G.auj.xp, "XP aujourd'hui")}${tuile(G.jours.reduce((a, x) => a + x.p, 0), "parties cette semaine")}${tuile(G.jours.reduce((a, x) => a + x.xp, 0), "XP cette semaine")}${tuile(G.etoiles, "étoiles en tout")}</div>
       <ol class="gal-semaine" aria-label="Les sept derniers jours">${G.jours.map(x => `<li class="${x.c === jourLocal() ? "auj" : ""}"><i style="height:${Math.round(8 + 52 * x.p / maxj)}px" title="${x.p} partie${x.p > 1 ? "s" : ""}"></i><u style="height:${Math.round(4 + 34 * x.xp / maxx)}px" title="${x.xp} XP"></u><span>${x.l}</span></li>`).join("")}</ol><p class="small gal-legende">Barre verte : les parties. Barre jaune : les XP.</p></div>
     <h3 class="gal-h2">Planète par planète</h3>
-    <ul class="gal-liste">${G.P.map(p => `<li><${liens ? `a href="${esc(p.lien[0])}"` : `button type="button" data-gal="${p.id}"`} class="gal-carte" style="--k:${p.couleur}"><span class="gal-pastille" aria-hidden="true"></span><span class="gal-nom">${esc(p.nom)}</span><span class="gal-pc">${Math.round(p.progres * 100)} %</span><span class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></span><span class="gal-txt">${esc(p.texte)}</span><span class="gal-xp">${p.xp ? `${p.xp} XP gagnés ici` : "Aucun point ici pour l'instant"}</span></${liens ? "a" : "button"}></li>`).join("")}</ul>
-    <p class="small">${G.avant ? `${G.avant} XP viennent d'avant ce tableau : ils comptent pour ton niveau, mais on ne sait plus d'où ils viennent. ` : ""}Les points sont rangés par planète à partir du 18 novembre 2026.</p></section>`;
+    <ul class="gal-liste">${G.P.map(p => `<li><${liens ? `a href="${esc(p.lien[0])}"` : `button type="button" data-gal="${p.id}"`} class="gal-carte" style="--k:${p.couleur}"><span class="gal-pastille" aria-hidden="true"></span><span class="gal-nom">${esc(p.nom)}</span><span class="gal-pc">${Math.round(p.progres * 100)} %</span><span class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></span><span class="gal-txt">${esc(p.texte)}</span>${p.domaine ? "" : `<span class="gal-xp">${p.xp ? `${p.xp} XP gagnés ici` : "Aucun point ici pour l'instant"}</span>`}</${liens ? "a" : "button"}></li>`).join("")}</ul>
+    <h3 class="gal-h2">D'où viennent tes points</h3>
+    <ul class="gal-points">${G.COINS.filter(c => c.id !== "atlas").map(c => `<li><a href="${esc(c.lien[0])}">${esc(c.nom)}</a> <b>${c.xp} XP</b></li>`).join("")}</ul>
+    <p class="small">${G.avant ? `${G.avant} XP viennent d'avant ce tableau : ils comptent pour ton niveau, mais on ne sait plus d'où ils viennent. ` : ""}Les points sont rangés par coin du site à partir du 18 novembre 2026.</p></section>`;
 }
 function brancherGalaxie() {
   const cv = document.getElementById("galaxie3d"), G = GAL_DONNEES; if (!G) return; if (GAL) { try { GAL.arreter(); } catch (_) {} GAL = null; }
@@ -6288,7 +6309,7 @@ function brancherGalaxie() {
   try { if (localStorage.getItem("galaxie-son") === "1" && SG.etat === "arret") document.addEventListener("pointerdown", () => { if (document.getElementById("galaxie3d")) sonDemarrer(); }, { once: true }); } catch (_) {}
   const fermer = () => { sonRegler("soleil"); if (pop) pop.hidden = true; if (scene) scene.classList.remove("a-popup"); document.querySelectorAll("[data-gal]").forEach(b => b.setAttribute("aria-pressed", "false")); };
   const montrer = id => { const p = G.P.find(x => x.id === id); if (!p || !pop) return; sonRegler(SON_ID[p.id] || "soleil");
-    pop.style.setProperty("--k", p.couleur); pop.innerHTML = `<button type="button" class="gal-x" aria-label="Fermer">&#10005;</button>${p.corps ? `<span class="gal-corps">${esc(p.corps)}</span>` : ""}<h3>${esc(p.nom)}</h3><div class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></div><p>${esc(p.texte)}</p><p class="small">${p.xp ? `${p.xp} XP gagnés ici.` : "Aucun point gagné ici pour l'instant."}</p><a class="btn-main" data-entrer="${p.id}" href="${esc(p.lien[0])}">${esc(p.lien[1])} &#8250;</a>`;
+    pop.style.setProperty("--k", p.couleur); pop.innerHTML = `<button type="button" class="gal-x" aria-label="Fermer">&#10005;</button>${p.corps ? `<span class="gal-corps">${esc(p.corps)}</span>` : ""}<h3>${esc(p.nom)}</h3><div class="gal-barre" role="img" aria-label="${Math.round(p.progres * 100)} pour cent"><i style="width:${Math.round(p.progres * 100)}%"></i></div><p>${esc(p.texte)}</p>${p.domaine ? "" : `<p class="small">${p.xp ? `${p.xp} XP gagnés ici.` : "Aucun point gagné ici pour l'instant."}</p>`}<a class="btn-main" data-entrer="${p.id}" href="${esc(p.lien[0])}">${esc(p.lien[1])} &#8250;</a>`;
     pop.hidden = false; scene.classList.add("a-popup");
     pop.querySelector(".gal-x").onclick = () => { if (GAL) GAL.retour(); fermer(); };
     const e = pop.querySelector("[data-entrer]"); e.onclick = ev => { const fam = ["rythme", "ecoute", "instruments", "theorie", "creation"].includes(p.id) ? p.id : "";

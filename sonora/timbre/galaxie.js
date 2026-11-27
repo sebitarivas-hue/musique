@@ -4,7 +4,7 @@
 // inclinaison d'axe et leur propre orbite elliptique inclinée autour du soleil (excentricité et inclinaison d'après les vraies, les distances sont resserrées).
 // Le soleil remplace la flamme : éteint tant qu'on n'a pas joué aujourd'hui, de plus en plus brillant au fil des parties, remis à zéro à minuit (donnees.soleil.eclat, de 0 à 1).
 // La caméra vole, plonge vers la planète touchée ; les étiquettes sont de vrais boutons HTML (clavier, lecteur d'écran). Three.js (licence MIT) est dans vendor/.
-import * as T from "./vendor/three.module.min.js?v=5b2cd7bf62";
+import * as T from "./vendor/three.module.min.js?v=0e75ee115d";
 
 const alea = graine => { let s = graine >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; };
 const bornes = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -101,8 +101,8 @@ const CORPS = {
 };
 const BASE = { mercure: 0x8a8580, venus: 0xe6c88a, atlas: 0x2f6fd0, mars: 0xb86a3a, ceres: 0x7a7772, jupiter: 0xcfa57a, saturne: 0xe0c690, uranus: 0x9fe0e6, neptune: 0x3f6ae0, pluton: 0xb59a80, haumea: 0xe2e4ea, makemake: 0xb4784f, eris: 0xd8dae0 };
 // Quel contenu du site est quel corps (treize contenus, treize corps)
-const ATTRIBUTION = { atlas: "atlas", cours: "jupiter", oeuvres: "saturne", quiz: "mars", rythme: "mercure", ecoute: "venus", instruments: "uranus", theorie: "neptune", creation: "pluton", timbre: "ceres", labo: "eris", harmonie: "makemake", orchestre: "haumea" };
-const ORDRE = ["mercure", "venus", "atlas", "mars", "ceres", "jupiter", "saturne", "uranus", "neptune", "pluton", "haumea", "makemake", "eris"];  // l'ordre réel de distance au soleil
+const ATTRIBUTION = { "n-son": "mercure", "n-hauteur": "venus", "n-simultane": "mars", "n-temps": "jupiter", "n-timbre": "saturne", "n-expression": "uranus", "n-forme": "neptune", "n-styles": "pluton", atlas: "atlas", cours: "jupiter", oeuvres: "saturne", quiz: "mars", rythme: "mercure", ecoute: "venus", instruments: "uranus", theorie: "neptune", creation: "pluton", timbre: "ceres", labo: "eris", harmonie: "makemake", orchestre: "haumea" };
+const ORDRE = ["mercure", "venus", "atlas", "mars", "ceres", "jupiter", "saturne", "uranus", "neptune", "pluton", "haumea", "makemake", "eris"];  // l'ordre réel de distance au soleil ; depuis le 27/11/2026, les planètes sont les domaines de notions (n-…) et la Terre
 
 const lueur = (couleur, taille, force = .9) => { const cv = document.createElement("canvas"); cv.width = cv.height = 128; const g = cv.getContext("2d"), r = g.createRadialGradient(64, 64, 2, 64, 64, 64), c = new T.Color(couleur);
   const rgb = `${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)}`; r.addColorStop(0, `rgba(${rgb},${force})`); r.addColorStop(.35, `rgba(${rgb},${force * .3})`); r.addColorStop(1, `rgba(${rgb},0)`); g.fillStyle = r; g.fillRect(0, 0, 128, 128);
